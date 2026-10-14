@@ -1,0 +1,94 @@
+/* Wren's design system, version 1: the tokens.
+
+   The design system belongs to neither a hub nor a groove. A hub themes it; a
+   groove is built against it and says so, by linking this version. What
+   crosses between them is here - colour, type, space, shape and depth, each
+   named for what it is *for* rather than what it looks like - and nothing else.
+
+   The cascade, lowest first, declared once so every file agrees:
+
+     tokens      these defaults
+     base        elements - the page, links, headings, form controls
+     components  .card, .btn, .field and the rest, in components.css
+     host        a hub's own chrome, and its own token values if it has any
+
+   and, above every layer, whatever a groove writes itself. That last part is
+   the point of layers: a groove's plain `.metronome input` beats a hub's
+   `input:not([type=hidden]):not(...)` without matching its specificity, or
+   knowing it exists. A layer is a statement about who wins; specificity is an
+   accident of how somebody else wrote their selector.
+
+   These values sit in the lowest layer so that they are defaults, not
+   decisions. A hub that wants its own accent writes `--accent` anywhere else
+   and wins; a hub that writes nothing still gets a palette that works; and a
+   groove on a bare page, with no hub around it at all, renders as it should.
+
+   Colours are OKLCH, each written once with light-dark(), so one definition
+   serves both themes. Which theme applies is `color-scheme`, which is the
+   host's to set: the page belongs to the host, so the host decides how it
+   looks, and a groove never asks. */
+
+@layer tokens, base, components, host;
+
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* Surfaces, from the page back to the most raised */
+    --bg:             light-dark(oklch(0.982 0.004 75), oklch(0.165 0.006 60));
+    --surface:        light-dark(oklch(1 0 0),          oklch(0.205 0.007 60));
+    --surface-raised: light-dark(oklch(1 0 0),          oklch(0.24 0.008 60));
+    --surface-sunken: light-dark(oklch(0.962 0.005 75), oklch(0.145 0.006 60));
+
+    /* Lines */
+    --border:        light-dark(oklch(0.905 0.006 75), oklch(0.29 0.008 60));
+    --border-strong: light-dark(oklch(0.83 0.008 75),  oklch(0.38 0.01 60));
+
+    /* Text */
+    --fg:        light-dark(oklch(0.23 0.012 55), oklch(0.955 0.004 75));
+    --fg-muted:  light-dark(oklch(0.45 0.012 55), oklch(0.77 0.008 70));
+    --fg-subtle: light-dark(oklch(0.57 0.01 55),  oklch(0.63 0.008 70));
+
+    /* The one colour that means "this" - a warm sienna, by default */
+    --accent:       light-dark(oklch(0.56 0.14 45),  oklch(0.74 0.13 52));
+    --accent-hover: light-dark(oklch(0.5 0.14 45),   oklch(0.79 0.12 52));
+    --accent-fg:    light-dark(oklch(0.99 0.005 60), oklch(0.2 0.03 50));
+    --accent-soft:  light-dark(oklch(0.95 0.03 55),  oklch(0.3 0.05 50));
+
+    /* Meaning */
+    --good:        light-dark(oklch(0.52 0.12 150), oklch(0.76 0.13 150));
+    --good-soft:   light-dark(oklch(0.95 0.04 150), oklch(0.29 0.05 150));
+    --warn:        light-dark(oklch(0.6 0.13 70),   oklch(0.82 0.13 80));
+    --warn-soft:   light-dark(oklch(0.96 0.05 85),  oklch(0.31 0.05 75));
+    --danger:      light-dark(oklch(0.55 0.18 27),  oklch(0.72 0.16 25));
+    --danger-soft: light-dark(oklch(0.96 0.03 25),  oklch(0.3 0.06 25));
+
+    /* Series, for charts: distinct in hue and legible on both surfaces */
+    --series-1: light-dark(oklch(0.58 0.14 45),  oklch(0.74 0.13 52));
+    --series-2: light-dark(oklch(0.55 0.14 255), oklch(0.72 0.12 255));
+    --series-3: light-dark(oklch(0.56 0.12 160), oklch(0.74 0.13 160));
+    --series-4: light-dark(oklch(0.55 0.15 330), oklch(0.73 0.13 330));
+    --series-5: light-dark(oklch(0.64 0.13 85),  oklch(0.8 0.13 90));
+
+    /* Type */
+    --font-sans: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --text-xs: 0.75rem;   --text-sm: 0.8125rem; --text-base: 0.9375rem;
+    --text-md: 1rem;      --text-lg: 1.125rem;  --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;  --text-3xl: 2.5rem;   --text-4xl: 3.5rem;
+
+    /* Space, on a 4px step */
+    --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem; --space-4: 1rem;
+    --space-5: 1.25rem; --space-6: 1.5rem;  --space-8: 2rem;    --space-10: 2.5rem;
+
+    /* Shape and depth */
+    --radius-sm: 0.375rem; --radius-md: 0.625rem; --radius-lg: 0.875rem; --radius-full: 999px;
+    --shadow-sm: 0 1px 2px light-dark(oklch(0 0 0 / 0.05), oklch(0 0 0 / 0.4));
+    --shadow-md: 0 1px 2px light-dark(oklch(0 0 0 / 0.04), oklch(0 0 0 / 0.35)),
+                 0 4px 16px light-dark(oklch(0.3 0.02 60 / 0.07), oklch(0 0 0 / 0.35));
+    --shadow-lg: 0 12px 40px light-dark(oklch(0.3 0.02 60 / 0.16), oklch(0 0 0 / 0.55));
+
+    --ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+  }
+}

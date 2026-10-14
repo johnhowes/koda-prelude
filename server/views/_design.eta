@@ -1,0 +1,56 @@
+<%/* The design surface: one screen of the design in a frame, with a picker,
+     Refresh, Open in browser and Pop out. It is a region that answers with
+     itself, and reloads itself whenever the server says the design changed -
+     its files, the screen on show, or a pop-out window opening or closing - so
+     every window showing it stays in step with no script.
+
+     `view` is 'inline' (beside the chat) or 'window' (a pop-out). While a
+     window is open, the inline surface shrinks to a strip. */%>
+<% const cur = it.current; const url = `${it.base}/preview?view=${it.view}`; %>
+<div id="design" class="design <%= it.popped ? 'popped' : '' %>" ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
+  <div class="design-bar">
+    <% if (it.screens.length > 0) { %>
+    <details class="menu screens-menu">
+      <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span><%= cur.title %></summary>
+      <form class="menu-list" action="<%= it.base %>/screen" method="post" ko-target="design">
+        <input type="hidden" name="view" value="<%= it.view %>">
+        <% for (const screen of it.screens) { %>
+        <button type="submit" name="screen" value="<%= screen.id %>" <% if (screen.id === cur.id) { %>aria-current="true"<% } %>>
+          <span class="item-title"><%= screen.title %></span>
+          <span class="muted"><%= screen.file %></span>
+        </button>
+        <% } %>
+      </form>
+    </details>
+    <% } %>
+    <span class="muted"><%= it.screens.length %> <%= it.screens.length === 1 ? 'screen' : 'screens' %></span>
+    <span class="spacer"></span>
+    <% if (it.popped) { %>
+    <span class="muted">Showing in its own window</span>
+    <a class="btn small ghost" href="<%= it.base %>/window" target="<%= it.windowName %>" data-pop-out>Show window</a>
+    <% } else if (cur) { %>
+    <a class="btn small ghost" href="<%= url %>" ko-target="design">Refresh</a>
+    <a class="btn small ghost" href="<%= it.files %>/screens/<%= encodeURIComponent(cur.file) %>" target="_blank">
+      <span class="icon icon-external" aria-hidden="true"></span>Open in browser
+    </a>
+    <% } %>
+    <% if (it.view === 'inline' && !it.popped) { %>
+    <%/* A named target: the browser opens one window for this design and
+         reuses it, so pressing Pop out again finds the window already open.
+         In the desktop app, data-pop-out makes it a real window instead. */%>
+    <a class="btn small ghost" href="<%= it.base %>/window" target="<%= it.windowName %>" data-pop-out>
+      <span class="icon icon-expand" aria-hidden="true"></span>Pop out
+    </a>
+    <% } %>
+  </div>
+  <% if (!it.popped) { %>
+  <div class="design-frame">
+    <% if (cur) { %>
+    <%/* Served from the preview origin, so the screen can't reach Prelude. */%>
+    <iframe title="<%= cur.title %>" src="<%= it.files %>/screens/<%= encodeURIComponent(cur.file) %>?v=<%= it.version %>"></iframe>
+    <% } else { %>
+    <p class="design-empty muted">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
+    <% } %>
+  </div>
+  <% } %>
+</div>

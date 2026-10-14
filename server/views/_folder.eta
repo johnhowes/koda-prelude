@@ -1,0 +1,54 @@
+<section class="page folder">
+  <p class="crumbs"><a href="/">Folders</a></p>
+  <h1><%= it.folder.name %></h1>
+  <p class="muted"><%= it.folder.path %></p>
+
+  <div class="card">
+    <h2>Designs</h2>
+    <% if (it.groups.length === 0) { %>
+    <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions.</p>
+    <% } %>
+    <% for (const group of it.groups) { %>
+    <% if (group.area) { %><h3 class="area"><%= group.area %></h3><% } %>
+    <ul class="list">
+      <% for (const design of group.designs) { %>
+      <li>
+        <a class="item" href="/f/<%= it.folder.id %>/d/<%= design.id %>">
+          <span class="icon icon-screen" aria-hidden="true"></span>
+          <span class="item-text">
+            <span class="item-title"><%= design.title %></span>
+            <span class="muted">prelude/<%= design.id %></span>
+          </span>
+        </a>
+      </li>
+      <% } %>
+    </ul>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>New design</h2>
+    <form action="/f/<%= it.folder.id %>/designs" method="post">
+      <div class="fields">
+        <label class="field">
+          <span class="f">Title</span>
+          <input name="title" value="<%= it.form.title %>" placeholder="Sign up" autocomplete="off"
+                 <% if (it.form.errors.title) { %>ko-invalid-server="<%= it.form.errors.title %>"<% } %>>
+          <% if (it.form.errors.title) { %><span class="err"><%= it.form.errors.title %></span><% } %>
+        </label>
+        <label class="field">
+          <span class="f">Area <span class="muted">(optional)</span></span>
+          <input name="area" value="<%= it.form.area %>" placeholder="onboarding" autocomplete="off" list="areas"
+                 <% if (it.form.errors.area) { %>ko-invalid-server="<%= it.form.errors.area %>"<% } %>>
+          <% if (it.form.errors.area) { %><span class="err"><%= it.form.errors.area %></span><% } %>
+          <datalist id="areas">
+            <% for (const group of it.groups) { if (group.area) { %><option value="<%= group.area %>"></option><% } } %>
+          </datalist>
+        </label>
+      </div>
+      <div class="rowbtns">
+        <button class="btn small primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Create design</button>
+      </div>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,72 @@
+// The folders Prelude has opened, remembered on this machine only.
+//
+// A folder is named in URLs by a short id derived from its path, so a path
+// never appears in a URL. The list lives in <home>/folders.json - a machine-local
+// convenience, never anything a design depends on (plan: ground rule 1).
+
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
+
+const KEEP = 20;
+
+export function canonical(path) {
+  try { return realpathSync.native(resolve(path)); } catch { return resolve(path); }
+}
+
+export function folderId(path) {
+  const normal = canonical(path);
+  const key = process.platform === 'win32' ? normal.toLowerCase() : normal;
+  return createHash('sha256').update(key).digest('hex').slice(0, 10);
+}
+
+/** A path as a person typed or pasted it: Explorer's "Copy as path" adds quotes. */
+export function cleanPath(input) {
+  return String(input ?? '').trim().replace(/^"(.*)"$/, '$1').trim();
+}
+
+/** Why this path can't be opened, or null if it can. */
+export function refuseFolder(path) {
+  if (path === '') return 'Enter the path of a folder.';
+  let stat;
+  try { stat = statSync(path); } catch { return 'There is no folder at that path.'; }
+  if (!stat.isDirectory()) return 'That path is a file, not a folder.';
+  return null;
+}
+
+export function createFolders(home) {
+  const file = join(home, 'folders.json');
+
+  const read = () => {
+    try { return JSON.parse(readFileSync(file, 'utf8')); } catch { return []; }
+  };
+  const write = list => {
+    mkdirSync(home, { recursive: true });
+    writeFileSync(file, JSON.stringify(list, null, 2) + '\n');
+  };
+
+  return {
+    recent: read,
+
+    get(id) {
+      return read().find(folder => folder.id === id) ?? null;
+    },
+
+    /**
+     * Put the folder at the top of the recent list and return it. The path is
+     * stored in its canonical form: on Windows a short name (JOHNHO~1) would
+     * otherwise stop the agent's path-scoped permissions from matching the
+     * long paths its tools use.
+     */
+    open(path) {
+      const full = canonical(path);
+      const folder = { id: folderId(full), path: full, name: basename(full) || full, openedAt: new Date().toISOString() };
+      write([folder, ...read().filter(other => other.id !== folder.id)].slice(0, KEEP));
+      return folder;
+    },
+
+    forget(id) {
+      write(read().filter(folder => folder.id !== id));
+    },
+  };
+}

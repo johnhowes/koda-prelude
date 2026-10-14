@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.title ?? 'Prelude' %></title>
+<link rel="icon" href="/static/icon.svg">
+<link rel="stylesheet" href="/ds/v1/tokens.css">
+<link rel="stylesheet" href="/ds/v1/components.css">
+<link rel="stylesheet" href="/ds/v1/icons.css">
+<link rel="stylesheet" href="/static/prelude.css">
+<script type="importmap">{ "imports": { "@kodalang/core": "/koda/koda.js" } }</script>
+</head>
+<body>
+<div class="prelude">
+  <% if (!it.bare) { %>
+  <header class="bar">
+    <a class="brand" href="/">Prelude</a>
+  </header>
+  <% } %>
+  <main id="workspace" ko-scope="/" ko-location="<%= it.path %>" ko-history>
+<%~ it.body %>
+  </main>
+</div>
+<script type="module" src="/static/desktop.js"></script>
+<script type="module">
+  import { start } from '@kodalang/core';
+  start(document);
+</script>
+</body>
+</html>

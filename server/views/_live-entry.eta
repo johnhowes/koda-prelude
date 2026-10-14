@@ -1,0 +1,1 @@
+<li class="entry agent live" id="<%= it.id %>" ko-region><div class="say" id="<%= it.id %>-text" ko-region><%= it.text %></div></li>

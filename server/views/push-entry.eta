@@ -1,0 +1,1 @@
+<div ko-into="transcript" ko-attach="last"><%~ it.html %></div>

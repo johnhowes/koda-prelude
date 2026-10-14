@@ -1,0 +1,67 @@
+<%/* A design: the chat (session switcher, transcript, status line, message
+     box) beside the design surface. With no session yet, the first message
+     starts one. */%>
+<section class="session-page">
+  <header class="session-head">
+    <div>
+      <p class="crumbs">
+        <a href="/">Folders</a> ›
+        <a href="/f/<%= it.folder.id %>"><%= it.folder.name %></a>
+        <% if (it.design.area) { %>› <span><%= it.design.area %></span><% } %>
+      </p>
+      <h1><%= it.design.title %></h1>
+    </div>
+    <nav class="sessions" aria-label="Sessions">
+      <% if (it.sessions.length > 0) { %>
+      <details class="menu">
+        <summary class="btn small ghost">
+          <span class="icon icon-conversation" aria-hidden="true"></span>
+          <%= it.session ? it.session.title : `Sessions (${it.sessions.length})` %>
+        </summary>
+        <ul class="menu-list">
+          <% for (const s of it.sessions) { %>
+          <li><a href="<%= it.urls.design %>/sessions/<%= s.id %>" <% if (it.session && s.id === it.session.id) { %>aria-current="page"<% } %>>
+            <span class="item-title"><%= s.title %></span>
+            <span class="muted"><%= new Date(s.startedAt).toLocaleString() %></span>
+          </a></li>
+          <% } %>
+        </ul>
+      </details>
+      <% } %>
+      <a class="btn small" href="<%= it.urls.design %>/sessions/new"><span class="icon icon-add" aria-hidden="true"></span>New session</a>
+    </nav>
+  </header>
+
+  <div class="workspace">
+  <div class="chat">
+    <div class="filters" role="group" aria-label="Show">
+      <span class="muted">Show</span>
+      <label><input type="checkbox" class="show-agent" checked> Agent</label>
+      <label><input type="checkbox" class="show-tools" checked> Tools</label>
+    </div>
+
+    <%/* The scroller is a reversed column, so it starts at the bottom and stays
+         there as entries arrive - unless the person has scrolled up to read. */%>
+    <div class="transcript-scroll">
+    <ol id="transcript" class="transcript" ko-region aria-live="polite">
+      <% if (!it.session) { %>
+      <li class="entry empty muted">
+        <%= it.sessions.length === 0 ? 'This design has no sessions yet.' : 'A new session.' %>
+        The agent starts from the design’s files and its NOTES.md, so tell it what you want to work on.
+      </li>
+      <% } %>
+      <% for (const entry of it.entries) { %><%~ include('./_entry', { entry }) %><% } %>
+    </ol>
+    </div>
+
+    <div id="agent-status" ko-region><%~ include('./_status', { state: it.state }) %></div>
+
+    <%~ include('./_composer', it.composer) %>
+
+    <% if (it.session) { %><div hidden ko-connect="<%= it.urls.live %>"></div><% } %>
+  </div>
+
+  <%~ include('./_design', it.surface) %>
+  </div>
+  <div hidden ko-connect="<%= it.designLive %>"></div>
+</section>

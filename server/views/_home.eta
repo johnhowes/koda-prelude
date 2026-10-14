@@ -1,0 +1,34 @@
+<section class="page home">
+  <h1>Open a folder</h1>
+  <p class="sec">Usually a repo. Everything Prelude makes goes in the folder’s <code>prelude/</code> directory, committed alongside the code.</p>
+
+  <form class="open" action="/folders" method="post">
+    <label class="f" for="path">Folder path</label>
+    <div class="inline">
+      <input id="path" name="path" value="<%= it.value %>" placeholder="C:\Projects\my-app" autocomplete="off" spellcheck="false"
+             <% if (it.error) { %>ko-invalid-server="<%= it.error %>" aria-describedby="path-error"<% } %>>
+      <button class="btn small" type="button" data-pick-folder data-desktop-only>Choose…</button>
+      <button class="btn small primary" type="submit">Open</button>
+    </div>
+    <% if (it.error) { %><span class="err" id="path-error"><%= it.error %></span><% } %>
+  </form>
+
+  <% if (it.recent.length > 0) { %>
+  <div class="card">
+    <h2>Recent</h2>
+    <ul class="list">
+      <% for (const folder of it.recent) { %>
+      <li>
+        <a class="item" href="/f/<%= folder.id %>">
+          <span class="icon icon-folder" aria-hidden="true"></span>
+          <span class="item-text">
+            <span class="item-title"><%= folder.name %></span>
+            <span class="muted"><%= folder.path %></span>
+          </span>
+        </a>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+  <% } %>
+</section>

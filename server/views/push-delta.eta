@@ -1,0 +1,1 @@
+<div ko-into="<%= it.id %>-text?" ko-attach="last"><%= it.text %></div>

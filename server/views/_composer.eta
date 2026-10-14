@@ -1,0 +1,24 @@
+<%/* The message box. In a session it answers with itself (cleared, or with
+     the refusal); for a new session the answer is the new session's page. */%>
+<form class="composer" action="<%= it.action %>" method="post" ko-item
+      <% if (it.self) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
+  <label class="sr-only" for="message">Message</label>
+  <textarea id="message" name="message" ko-as="message" rows="3" required
+            placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."
+            <% if (it.error) { %>ko-invalid-server="<%= it.error %>" aria-describedby="message-error"<% } %>><%= it.value ?? '' %></textarea>
+  <div class="composer-foot">
+    <% if (it.error) { %><span class="err" id="message-error"><%= it.error %></span><% } else { %><span></span><% } %>
+    <button class="btn small primary" type="submit">Send</button>
+  </div>
+  <script type="koda">
+    // Enter sends and Shift+Enter starts a new line: a keyboard shortcut,
+    // which no binding or trigger expresses.
+    const { message } = koda.scope();
+    message.element.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        message.element.form.requestSubmit();
+      }
+    });
+  </script>
+</form>

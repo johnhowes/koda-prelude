@@ -1,0 +1,18 @@
+<%/* One transcript entry. Renders nothing for entries that show nothing
+     (a tool's successful result, a turn that ended normally). */%>
+<% const e = it.entry; %>
+<% if (e.type === 'user') { %>
+<li class="entry user"><div class="bubble"><%= e.text %></div></li>
+<% } else if (e.type === 'text') { %>
+<li class="entry agent"><div class="say markdown"><%~ e.html %></div></li>
+<% } else if (e.type === 'tool') { %>
+<li class="entry tool"><span class="tool-name"><%= e.name %></span> <span class="tool-summary"><%= e.summary %></span></li>
+<% } else if (e.type === 'tool-result' && e.error) { %>
+<li class="entry tool failed">
+  <details><summary><%= e.name ?? 'Tool' %> was refused or failed</summary><pre><%= e.text %></pre></details>
+</li>
+<% } else if (e.type === 'turn' && e.stopped) { %>
+<li class="entry note">Stopped.</li>
+<% } else if (e.type === 'turn' && !e.ok) { %>
+<li class="entry note failed"><%= e.error ?? 'The agent stopped with an error.' %></li>
+<% } %>
