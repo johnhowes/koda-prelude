@@ -312,94 +312,136 @@ As built:
 - **No versions yet**: one system, linked directly (Koda's `/ds/v1` versioning is
   deferred).
 
-### Step 6: Screen states — proposal, not yet decided
+### Step 6: Screens in the app's own stack, with states as fake data — proposal, not yet decided
 
 Real screens have states: empty, loading, an error, a refusal, a long list, someone
-without permission. Today the agent can show only one of each screen. A state is not a
-new noun. **It's a property of a screen**, picked in the Design bar beside the screen.
+without permission. A state isn't only which parts show. **It is fake data**: these
+names, this many rows, this amount, this validation error. The best designs use the
+app's real components fed with that data, which is what OrchestratR does through
+Spark's DesignHost.
 
-**The options, weighed:**
+**What DesignHost shows works, and what it struggles with** (from reading
+`App/DesignHost` and real designs in `features/…/design/`):
+- **Works:**
+  - Screens are real Razor with the real tag helpers and partials, so the output is
+    byte-for-byte what production emits.
+  - The handoff is "port, don't redesign".
+  - An inventory script checks a design against its own porting checklist.
+- **Fake data is flat:**
+  - `states.json` holds only string values, error strings and boolean flags, keyed by
+    dotted path.
+  - Lists and nested data end up as inline C# in the screen, chosen by flags. One real
+    screen has 11 states, all flags.
+  - The screen binds to stand-in fields (`design-name` instead of `asp-for`) rather than
+    the real view model, because a C# model needs a recompile and that kills the loop.
+- **Translation is a manual port:** swap `design-name` back to `asp-for`, write the
+  controller and model, re-inline partials.
+- **Nothing detects drift between an approved design and the implemented page.** That
+  check is listed as future work.
 
-| | How | Static-servable | Cost |
-|---|---|---|---|
-| A. A file per state | `03-list.html`, `03-list.empty.html`, `03-list.error.html` | yes | Markup duplicated in every state. The agent keeps the copies in step, and drift is likely as screens grow. |
-| B. One file plus state data | A template plus `03-list.states.json`, rendered by Prelude (OrchestratR's model) | no, needs a renderer | A template language is exactly what made KodaDesign heavy. |
-| **C. One file, states marked in it** | The screen lists its states; elements say which states they belong to; `?state=` picks one | **yes** | A convention and one small shared script. |
-| D. The folder's own stack | Real components, real conditions | depends on the stack | This is "build", a later step of its own. |
+**The proposal: a state is a fake view model, rendered by the real view.**
 
-**Recommended: C.** It's still plain HTML that opens in any browser, with no build step
-and no renderer. A screen is one file, so its states can't drift apart, and the same
-convention carries over to real components later as conditions.
-
-**The convention:**
-
-```html
-<html lang="en" data-states="filled empty loading error">   <!-- the first is the default -->
-<head>
-  …
-  <script src="../../states.js" defer></script>            <!-- relative path to prelude/states.js -->
-</head>
-<body>
-  <ul class="orders" data-when="filled">…</ul>
-  <p class="empty" data-when="empty">No orders yet. <a href="…">Create one</a></p>
-  <div class="spinner" data-when="loading"></div>
-  <p class="field-error" data-when="error">We couldn't load your orders.</p>
-</body>
+```
+prelude/<design>/screens/
+  03-orders.<ext>              a screen in the app's own template language: its real
+                               layout, components and partials (.cshtml, .eta, .tsx, …)
+  03-orders.states.json        one entry per state, the first the default. Each is the
+                               whole model the view receives, as structured JSON: lists,
+                               nesting, numbers, dates, plus the errors to show.
 ```
 
-- `data-states` on `<html>` lists the screen's states, in order, default first, named
-  in kebab-case.
-- `data-when="empty error"` shows an element only in those states. An element with no
-  `data-when` shows in every state.
-- The chosen state is also set as `<html data-state="empty">`, so CSS can vary anything
-  else by state: `[data-state="loading"] .orders { opacity: .5 }`.
-- **`?state=<name>` picks one.** So a link between screens can land on a state
-  (`02-verify.html?state=resent`), and so can a shared link.
-- **`prelude/states.js`, one per folder:** about fifteen lines. It reads `data-states`
-  and `?state=`, sets `data-state`, and hides what doesn't belong. Prelude writes and
-  owns it, committed with the designs. The agent links it but never edits it. With
-  scripts off, a screen shows every state at once, which is still readable.
+```json
+{
+  "filled":  { "model": { "orders": [{ "id": "P-10482", "borrower": "Harbor Street Bakery", "amount": 250000 }, …] } },
+  "empty":   { "model": { "orders": [] } },
+  "long-names": { "model": { "orders": [{ "borrower": "The Very Long Business Name of Many Words, LLC", … }] } },
+  "refused": { "model": { … }, "errors": { "Amount": "Enter an amount in dollars." } }
+}
+```
 
-**In the preview:**
-- **A state picker joins the screen picker:** "Sign up · Error ▾". It appears only for a
-  screen with more than one state.
-- **The state on show is server state, like the current screen:** every window shows
-  it, and picking a new screen resets it to that screen's default.
-- **Following a link to `…?state=resent` inside a screen** moves every window to that
-  state. This reuses step 3's frame-load trick, now reading the query too.
-- **Open in browser carries the state** in its URL.
-- **Prelude reads a screen's states** from `data-states`, as it already reads the
-  screen's `<title>`.
+What changes compared with today's plain HTML (step 2) and DesignHost:
+- **Conditions are the real component's own logic.** An empty list shows the empty
+  state because the view says so, not because a flag forces it. A state proves the view
+  handles that data.
+- **Lists, nesting and realistic data are ordinary JSON,** with no inline code in the
+  screen and no flags multiplying.
+- **The state's shape is the view model's shape.** Designing the screen also designs
+  the contract the controller must meet.
 
-**The agent is told:**
-- give a screen states when it really has them: empty, loading, error, refusals, long
-  content, permissions;
-- the happy state comes first;
-- mark elements with `data-when` rather than copying the screen;
-- link `states.js` with the exact relative path, as it's told the system's;
-- name states in plain words: `empty`, `no-permission`, `long-names`.
+**How it renders: a host per stack, in the repo.** Prelude stays general-purpose by
+not knowing any stack. A repository that wants real components provides a **design
+host**: a small program or route that renders (screen, state) with the app's own
+engine and components. It's declared in a committed `prelude/prelude.json`:
+
+```json
+{ "host": { "start": "dotnet run --project App/DesignHost", "url": "http://localhost:5100",
+            "render": "/prelude/{design}/{screen}?state={state}" } }
+```
+
+- **Prelude's part:** start the host, point the preview frame at it, list each screen's
+  states from `states.json` (the state picker), and reload on change as it does now.
+- **The host reads `prelude/` straight from disk,** since the designs are in the same
+  repository.
+- **A repo without a host keeps plain HTML screens,** as now. Design systems stay plain
+  HTML too: their gallery must render anywhere.
+
+**Translating to the real app later.** The screen is already a real view and the state
+is already its model, so porting is small:
+1. Move the view into the app.
+2. Write the controller or loader that produces the same model.
+3. Keep the `states.json` entries **as test fixtures for that view**.
+
+Nothing gets redesigned or re-marked-up. The step-2 kind of plain HTML screen, by
+contrast, is a rewrite.
+
+**Detecting drift, at three levels:**
+1. **Before porting, designs track the live components:** a component change shows up
+   in every design that uses it, which is the drift you want. Prelude can re-render a
+   design's screens and states to show what a component change did.
+2. **The contract:** a check deserializes each state into the real view-model type (C#)
+   or type-checks it (TypeScript). When the model changes, the stale design states fail
+   by name: "orders.amount is now a Money, not a number".
+3. **The page:** after porting, the fixtures render the production view in CI, compared
+   against snapshots captured from the approved design. A changed page fails with a
+   visual diff. DesignHost doesn't have this yet; here it follows directly from states
+   being fixtures.
+
+**The honest costs:**
+- **A design host is real work per stack:** stubbing services, authorization and data
+  that views reach for (DesignHost's `DesignServiceStubs`, its "faking ladder" for view
+  components). The agent can draft one in a session, but someone owns it.
+- **Real view models in compiled stacks.** Binding a Razor screen to a real C# model
+  type needs that type to compile. The options:
+  - bind to a JSON-backed dynamic model while designing, typed at port time;
+  - let the host generate model types from `states.json`;
+  - keep DesignHost's `design-name` approach for Spark.
+
+  Interpreted stacks (Eta, React, Vue, Koda) have no such problem.
+- **Static servability (ground rule 7) is lost for these screens.** Sharing needs the
+  host running, or Prelude saves each rendered (screen, state) as static HTML for a
+  share. Plain HTML screens keep it.
 
 **Sub-steps:**
-1. **6a:** `prelude/states.js`, written by Prelude when a folder is opened (if missing
-   or outdated), plus the convention in the agent's prompt.
-2. **6b:** The state picker, the state as server state, following `?state=` links, and
-   Open in browser.
-3. **6c:** Verify with the real agent, for example "give the sign-up screen its error
-   states".
-
-**Done when:** you ask for a screen's empty and error states, then flip between them
-in the preview (and in a pop-out) without the agent copying the screen.
-
-**Deferred:** states driven by data (a JSON of names and amounts filling the same
-markup; that's option B, if C ever runs out), interactions within a state, and a flow
-map of which states lead where.
+1. **6a:** `states.json` and the state picker. The current state becomes server state
+   like the current screen; `?state=` links in screens are followed; the agent is told
+   the format.
+2. **6b:** The host contract (`prelude/prelude.json`, start, render URL, reload),
+   proven with the cheapest real stack, Eta, the template engine Prelude itself uses.
+   That lets Prelude be designed in Prelude.
+3. **6c:** Spark: DesignHost as Spark's host, reading `prelude/` and taking structured
+   states.
+4. **6d:** The contract check (states against real model types), and render snapshots
+   for drift.
 
 Open questions:
-1. Option C (recommended), or a file per state (A)?
-2. `prelude/states.js` once per folder (recommended), or a copy inside each design so
-   a design can be shared on its own?
-3. Are `data-states` and `data-when` the right names? (`data-state` is the chosen
-   state.)
+1. Does "a state is the view model, rendered by the real view, through a per-repo
+   design host" match what you want from real components plus fake data?
+2. Which first host: Eta, to prove the contract cheaply and let Prelude design itself,
+   or go straight to Spark's DesignHost?
+3. For Spark's compiled models: dynamic while designing (typed at port), generated
+   from `states.json`, or keep `design-name`?
+4. Are plain HTML screens kept for repos without a host, and for design systems
+   (proposed)?
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
