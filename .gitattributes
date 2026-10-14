@@ -1,0 +1,9 @@
+# Text is stored and checked out with LF line endings on every platform, so
+# diffs stay clean whoever edits a file and wherever.
+* text=auto eol=lf
+
+# Binary: never touch.
+*.png binary
+*.ico binary
+*.icns binary
+*.exe binary
