@@ -297,6 +297,21 @@ Decided 2026-10-14:
 - One system per folder for now.
 - No built-in starter; other repos' CSS is reached through reference folders.
 
+As built:
+- **Rules from Koda's `koda-styling` skill**, written into the system's prompt:
+  - one layer order, first in every `system/` CSS file;
+  - role-named tokens, with colours written once with `light-dark()` and literals
+    only in the tokens layer;
+  - components built from tokens alone, laid out with container queries;
+  - icons as one SVG per meaning, drawn with a mask, with `forced-color-adjust: none`.
+- **One deliberate deviation:** Koda's icon tokens use root-relative URLs
+  (`/ds/v1/icons/close.svg`), but a Prelude system has to work at whatever path it is
+  served from. So icon tokens use URLs relative to `system/icons.css`, and every rule
+  that uses them stays in that file, where relative URLs resolve. A design never
+  redefines `--icon-*`.
+- **No versions yet**: one system, linked directly (Koda's `/ds/v1` versioning is
+  deferred).
+
 ### Step 6: Screen states (the decision to move beyond plain HTML)
 Expected soon after step 2, since real screens have states: empty, loading, error,
 filled. This step is a decision before it is any code. Options to weigh then:

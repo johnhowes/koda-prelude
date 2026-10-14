@@ -17,6 +17,7 @@ let server;
 let base;
 
 const designUrl = `/f/${folderId(repo)}/d/checkout`;
+const previewUrl = `/f/${folderId(repo)}/p/checkout`;
 const designDir = join(repo, 'prelude', 'checkout');
 
 before(async () => {
@@ -71,7 +72,7 @@ test('the design surface shows the current screen in a frame, and answers with i
 
   const first = await (await get(`${designUrl}/preview`)).text();
   assert.match(first, /2 screens/);
-  assert.match(first, /<iframe title="Cart" src="[^"]+\/files\/screens\/01-cart\.html\?v=\d+"/, 'the first screen until one is picked');
+  assert.match(first, /<iframe title="Cart" src="[^"]+\/p\/checkout\/screens\/01-cart\.html\?v=\d+"/, 'the first screen until one is picked');
   assert.match(first, /id="design"[^>]*ko-attach="replace"[^>]*ko-invoke="event:design-changed"/);
   assert.match(first, /target="_blank"/, 'Open in browser leaves Koda alone');
 
@@ -118,7 +119,7 @@ test('pop out: a window of its own, and the inline surface steps aside while it 
 test('following a link inside a screen changes the screen on show, in every window', async () => {
   await post(`${designUrl}/screen`, { screen: '01-cart', view: 'inline' });
   const frameGet = (file, dest) => new Promise((resolve, reject) => {
-    const req = request(`${base}${designUrl}/files/screens/${file}`, {
+    const req = request(`${base}${previewUrl}/screens/${file}`, {
       headers: { host: `preview.localhost:${server.address().port}`, 'sec-fetch-dest': dest },
     }, res => { res.resume(); res.on('end', resolve); });
     req.on('error', reject);
@@ -147,28 +148,38 @@ function previewGet(path) {
 
 test('the design’s files are served as written, on the preview origin only; sessions never', async () => {
   writeFileSync(join(designDir, 'styles.css'), 'body { color: red; }');
-  const css = await previewGet(`${designUrl}/files/styles.css`);
+  const css = await previewGet(`${previewUrl}/styles.css`);
   assert.equal(css.status, 200);
   assert.match(css.headers['content-type'], /text\/css/);
 
-  const html = await previewGet(`${designUrl}/files/screens/01-cart.html`);
+  const html = await previewGet(`${previewUrl}/screens/01-cart.html`);
   assert.equal(html.status, 200);
   assert.match(html.body, /href="\.\.\/styles\.css"/);
 
   mkdirSync(join(designDir, 'sessions', 'x'), { recursive: true });
   writeFileSync(join(designDir, 'sessions', 'x', 'transcript.jsonl'), '{}');
-  assert.equal((await previewGet(`${designUrl}/files/sessions/x/transcript.jsonl`)).status, 404);
-  assert.equal((await previewGet(`${designUrl}/files/.git/config`)).status, 404);
-  assert.equal((await previewGet(`${designUrl}/files/screens/nope.html`)).status, 404);
+  assert.equal((await previewGet(`${previewUrl}/sessions/x/transcript.jsonl`)).status, 404);
+  assert.equal((await previewGet(`${previewUrl}/.git/config`)).status, 404);
+  assert.equal((await previewGet(`${previewUrl}/screens/nope.html`)).status, 404);
 
   // The preview origin serves nothing of Prelude's, and Prelude serves no design files.
   assert.equal((await previewGet('/')).status, 404);
   assert.equal((await previewGet(`${designUrl}/preview`)).status, 404);
-  assert.equal((await get(`${designUrl}/files/styles.css`, false)).status, 404);
+  assert.equal((await get(`${previewUrl}/styles.css`, false)).status, 404);
+
+  // URLs mirror prelude/, so a screen's relative link into another design
+  // resolves to that design's file, as it would on a static host.
+  mkdirSync(join(repo, 'prelude', 'design-system', 'system'), { recursive: true });
+  writeFileSync(join(repo, 'prelude', 'design-system', 'system', 'tokens.css'), ':root { --accent: red; }');
+  const linked = new URL('../../design-system/system/tokens.css', `http://x${previewUrl}/screens/01-cart.html`).pathname;
+  assert.equal((await previewGet(linked)).body, ':root { --accent: red; }');
+  mkdirSync(join(repo, 'prelude', 'design-system', 'sessions', 's'), { recursive: true });
+  writeFileSync(join(repo, 'prelude', 'design-system', 'sessions', 's', 'transcript.jsonl'), '{}');
+  assert.equal((await previewGet(`/f/${folderId(repo)}/p/design-system/sessions/s/transcript.jsonl`)).status, 404, 'no design’s sessions');
 
   // The frame and Open in browser point at the preview origin.
   const surface = await (await get(`${designUrl}/preview`)).text();
-  assert.ok(surface.includes(`src="http://preview.localhost:${server.address().port}${designUrl}/files/screens/`));
+  assert.ok(surface.includes(`src="http://preview.localhost:${server.address().port}${previewUrl}/screens/`));
 });
 
 test('changes are refused from any origin but Prelude’s own', async () => {

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { areaSegments, createDesign, groupByArea, listDesigns, slugify } from '../server/designs.js';
+import { areaSegments, createDesign, findDesign, findSystem, groupByArea, listDesigns, slugify } from '../server/designs.js';
 
 const folder = () => mkdtempSync(join(tmpdir(), 'prelude-designs-'));
 
@@ -44,8 +44,8 @@ test('the scan stops at a design and skips reserved and hidden folders', () => {
   // Something inside a design that happens to have a design.json is not a design.
   mkdirSync(join(root, 'prelude', 'checkout', 'sessions', 'x'), { recursive: true });
   writeFileSync(join(root, 'prelude', 'checkout', 'sessions', 'x', 'design.json'), '{}');
-  mkdirSync(join(root, 'prelude', 'design-system', 'components'), { recursive: true });
-  writeFileSync(join(root, 'prelude', 'design-system', 'design.json'), '{}');
+  mkdirSync(join(root, 'prelude', 'node_modules', 'x'), { recursive: true });
+  writeFileSync(join(root, 'prelude', 'node_modules', 'x', 'design.json'), '{}');
   mkdirSync(join(root, 'prelude', '.cache', 'thing'), { recursive: true });
   writeFileSync(join(root, 'prelude', '.cache', 'thing', 'design.json'), '{}');
 
@@ -63,7 +63,7 @@ test('refusals: empty, reserved, duplicate, and a design inside a design', () =>
   const root = folder();
   assert.ok(createDesign(root, { title: '  ' }).errors.title);
   assert.ok(createDesign(root, { title: '???' }).errors.title);
-  assert.ok(createDesign(root, { title: 'Design System' }).errors.title);
+  assert.ok(createDesign(root, { title: 'Screens' }).errors.title);
   assert.ok(createDesign(root, { title: 'X', area: 'sessions' }).errors.area);
 
   createDesign(root, { title: 'Sign up', area: 'onboarding' });
@@ -71,4 +71,20 @@ test('refusals: empty, reserved, duplicate, and a design inside a design', () =>
   assert.match(createDesign(root, { title: 'Step two', area: 'onboarding/sign-up' }).errors.area, /can't contain/);
   // An area that already holds designs can't itself become a design.
   assert.match(createDesign(root, { title: 'Onboarding' }).errors.title, /already exists/);
+});
+
+test('a design system is a design marked "kind": "system", one per folder', () => {
+  const root = folder();
+  assert.equal(findSystem(root), null);
+  createDesign(root, { title: 'Checkout' });
+  const made = createDesign(root, { title: 'Design system', kind: 'system' });
+  assert.equal(made.design.kind, 'system');
+  assert.equal(JSON.parse(readFileSync(join(root, 'prelude', 'design-system', 'design.json'), 'utf8')).kind, 'system');
+
+  assert.deepEqual(listDesigns(root).map(d => [d.id, d.kind]), [['checkout', 'design'], ['design-system', 'system']]);
+  assert.equal(findSystem(root).id, 'design-system');
+  assert.equal(findDesign(root, ['design-system', 'screens']).design.kind, 'system');
+
+  assert.match(createDesign(root, { title: 'Another system', kind: 'system' }).errors.kind, /already has a design system: "Design system"/);
+  assert.ok(createDesign(root, { title: 'Ordinary' }).design, 'ordinary designs are still fine');
 });

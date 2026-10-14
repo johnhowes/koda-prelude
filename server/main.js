@@ -5,17 +5,18 @@
 // response the application produces, including its own refusals.
 
 import { createReadStream, existsSync, statSync } from 'node:fs';
+import { posix } from 'node:path';
 import { createServer as createHttpServer } from 'node:http';
 import { homedir } from 'node:os';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
-import { createDesign, findDesign, groupByArea, listDesigns } from './designs.js';
+import { PRELUDE_DIR, createDesign, findDesign, findSystem, groupByArea, listDesigns } from './designs.js';
 import { cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
 import { createLive } from './live.js';
-import { createWatches, listScreens, serveDesignFile } from './preview.js';
+import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
 import { createTurns, designKey, sessionKey } from './turns.js';
 import { presentEntry, render, shaped } from './views.js';
@@ -77,20 +78,25 @@ async function handle(req, res, app) {
   // The preview origin serves the designs' files and nothing else. Screens are
   // written by the agent; on an origin of their own they can't read Prelude's
   // pages, and the check below refuses anything they post.
+  //
+  // It serves the folder's whole prelude/ directory at /f/<folder>/p/<path>,
+  // so its URLs mirror the folders: a screen's relative link to another
+  // design (the folder's design system, say) resolves the same here as on any
+  // static host the folder is shared on.
   if (isPreviewHost(req)) {
-    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/d\/(.+)$/);
+    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/p\/(.+)$/);
     const folder = match && folders.get(match[1]);
-    const found = folder && findDesign(folder.path, match[2].split('/'));
-    if (!found || found.rest[0] !== 'files') return notFoundText();
-    const rel = found.rest.slice(1).join('/');
+    if (!folder) return notFoundText();
+    const rel = match[2];
     // A screen loading in a frame is the screen on show: when someone follows a
     // link inside a screen, every window follows it. A screen opened in a tab
     // of its own (sec-fetch-dest: document) changes nothing.
-    const screen = rel.match(/^screens\/([^/]+)\.html$/i);
-    if (screen && req.headers['sec-fetch-dest'] === 'iframe' && existsSync(join(found.dir, rel))) {
+    const found = req.headers['sec-fetch-dest'] === 'iframe' && findDesign(folder.path, rel.split('/'));
+    const screen = found && found.rest.length === 2 && found.rest[0] === 'screens' && found.rest[1].match(/^(.+)\.html$/i);
+    if (screen && existsSync(join(found.dir, 'screens', found.rest[1]))) {
       app.designs.show(designKey(folder, found.design), screen[1], { shown: listScreens(found.dir)[0]?.id });
     }
-    return serveDesignFile(res, found.dir, rel, notFoundText);
+    return servePreludeFile(res, join(folder.path, PRELUDE_DIR), rel, notFoundText);
   }
 
   // Only Prelude's own pages may change anything: not a screen on the preview
@@ -138,6 +144,7 @@ async function handle(req, res, app) {
     const view = (status, form, reference = { value: '', error: null }) => page(status, 'folder', {
       folder,
       groups: groupByArea(listDesigns(folder.path)),
+      system: findSystem(folder.path),
       form,
       references: app.references.of(folder.id),
       reference,
@@ -163,7 +170,7 @@ async function handle(req, res, app) {
 
     if (rest === '/designs' && req.method === 'POST') {
       const form = await readForm(req);
-      const input = { title: form.get('title') ?? '', area: form.get('area') ?? '' };
+      const input = { title: form.get('title') ?? '', area: form.get('area') ?? '', kind: form.get('kind') === 'system' ? 'system' : 'design' };
       const result = createDesign(folder.path, input);
       if (result.errors) return view(422, { ...input, errors: result.errors });
       return redirect(res, `/f/${folder.id}/d/${result.design.id}`);
@@ -188,7 +195,6 @@ async function handle(req, res, app) {
 //   POST …/d/<design>/sessions/<id>/stop      stop the agent
 //   GET  …/d/<design>/sessions/<id>/live      the session's live channel
 //   GET  …/d/<design>/preview?screen=<id>     the design surface, showing that screen
-//   GET  …/d/<design>/files/<path>            the design's files, as written - on the preview host only
 //   POST …/d/<design>/screen                  show a screen, in every window
 //   GET  …/d/<design>/window                  the design surface alone, for a pop-out window
 //   GET  …/d/<design>/live                    the design's channel: "design-changed"
@@ -198,6 +204,22 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const title = `${design.title} · Prelude`;
   const notFound = () => page(404, 'not-found', { what: 'There’s no such session.' }, 'Not found');
   const dKey = designKey(folder, design);
+
+  // The folder's design system, as this design uses it: null for the system
+  // itself, or when the folder has none. `href` is the system's system/
+  // folder relative to this design's screens/, as a screen links it.
+  const systemFor = () => {
+    const system = design.kind === 'system' ? null : findSystem(folder.path);
+    if (!system) return null;
+    const path = `${PRELUDE_DIR}/${system.id}`;
+    return {
+      id: system.id,
+      title: system.title,
+      path,
+      href: posix.relative(`${PRELUDE_DIR}/${design.id}/screens`, `${path}/system`),
+      hasIcons: existsSync(join(folder.path, PRELUDE_DIR, ...system.id.split('/'), 'system', 'icons.css')),
+    };
+  };
 
   // The design surface, as one window shows it: 'inline' beside the chat, or
   // 'window' when it has a window of its own.
@@ -209,7 +231,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return {
       base,
       view,
-      files: `${previewOrigin(req)}${base}/files`,
+      files: `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`,
       screens,
       current,
       version: designs.version(dKey),
@@ -239,10 +261,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   if (req.method === 'GET' && rest[0] === 'live' && rest.length === 1) {
     const release = watches.acquire(dKey, dir, () => designs.filesChanged(dKey));
+    // A design's screens link its folder's design system, so they change when
+    // the system does: watch that too, under a key of this design's own.
+    const system = systemFor();
+    const releaseSystem = system
+      ? watches.acquire(`${dKey}>system`, join(folder.path, PRELUDE_DIR, ...system.id.split('/'), 'system'), () => designs.filesChanged(dKey))
+      : () => {};
     // A pop-out window says so by how it connects, and the inline surface
     // shrinks while one is open - and grows back when its channel closes.
     const closed = url.searchParams.get('view') === 'window' ? designs.windowOpened(dKey) : () => {};
-    return live.open(designChannel(dKey), req, res, [], { onClose: () => { closed(); release(); } });
+    return live.open(designChannel(dKey), req, res, [], { onClose: () => { closed(); release(); releaseSystem(); } });
   }
 
   const sessionView = (status, session, composer) => {
@@ -259,12 +287,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       composer: { action: session ? `${sessionUrl}/messages` : `${base}/sessions`, self: Boolean(session), ...composer },
       surface: surface('inline'),
       designLive: `${base}/live`,
+      system: systemFor(),
     }, title);
   };
 
   // What the agent is told besides the design: what else it may read, and
   // the folder's design system.
-  const agentContext = () => ({ references: app.references.of(folder.id), system: null });
+  const agentContext = () => ({ references: app.references.of(folder.id), system: systemFor() });
 
   const [section, sessionId, action, ...extra] = rest;
   if (extra.length > 0) return notFound();

@@ -10,6 +10,11 @@
         <% if (it.design.area) { %>› <span><%= it.design.area %></span><% } %>
       </p>
       <h1><%= it.design.title %></h1>
+      <% if (it.design.kind === 'system') { %>
+      <p class="muted">The folder’s design system. Every other design here uses it.</p>
+      <% } else if (it.system) { %>
+      <p class="muted">Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a></p>
+      <% } %>
     </div>
     <nav class="sessions" aria-label="Sessions">
       <% if (it.sessions.length > 0) { %>

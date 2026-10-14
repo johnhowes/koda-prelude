@@ -5,6 +5,10 @@
 // knows they exist. Designs don't nest, so the scan stops at the first
 // design.json on each path. A design's id is its path relative to prelude/,
 // with forward slashes (plan: "Designs, features and areas").
+//
+// A design whose design.json says "kind": "system" is the folder's design
+// system (plan: step 5). It is a design in every other way; what it adds is a
+// system/ folder that the folder's other designs link. One per folder.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,7 +16,7 @@ import { join } from 'node:path';
 export const PRELUDE_DIR = 'prelude';
 
 // Names inside prelude/ that are never areas or designs.
-const RESERVED = new Set(['design-system', 'sessions', 'screens', 'node_modules']);
+const RESERVED = new Set(['sessions', 'screens', 'node_modules']);
 
 export function slugify(text) {
   return String(text ?? '')
@@ -25,6 +29,13 @@ export function slugify(text) {
 /** "Onboarding / Sign up" -> ["onboarding", "sign-up"]; empty segments dropped. */
 export function areaSegments(area) {
   return String(area ?? '').split(/[\\/]+/).map(slugify).filter(Boolean);
+}
+
+const kindOf = meta => (meta.kind === 'system' ? 'system' : 'design');
+
+/** The folder's design system, if it has one (the first, should there be two). */
+export function findSystem(folderPath) {
+  return listDesigns(folderPath).find(design => design.kind === 'system') ?? null;
 }
 
 function readDesign(dir) {
@@ -50,6 +61,7 @@ export function listDesigns(folderPath) {
           slug: entry.name,
           area: segments.join('/'),
           title: typeof meta.title === 'string' && meta.title.trim() ? meta.title : entry.name,
+          kind: kindOf(meta),
           createdAt: meta.createdAt ?? null,
         });
       } else {
@@ -80,6 +92,7 @@ export function findDesign(folderPath, segments) {
         slug: here.at(-1),
         area: here.slice(0, -1).join('/'),
         title: typeof meta.title === 'string' && meta.title.trim() ? meta.title : here.at(-1),
+        kind: kindOf(meta),
         createdAt: meta.createdAt ?? null,
       };
       return { design, dir, rest: segments.slice(i) };
@@ -104,7 +117,7 @@ export function groupByArea(designs) {
  * Create a design. Returns { design } or { errors: { field: message } }.
  * Refuses a design inside another design, and a folder that already exists.
  */
-export function createDesign(folderPath, { title, area }) {
+export function createDesign(folderPath, { title, area, kind = 'design' }) {
   const cleanTitle = String(title ?? '').trim();
   const slug = slugify(cleanTitle);
   const segments = areaSegments(area);
@@ -116,6 +129,9 @@ export function createDesign(folderPath, { title, area }) {
 
   const reservedArea = segments.find(segment => RESERVED.has(segment));
   if (reservedArea) errors.area = `"${reservedArea}" is reserved. Choose another area.`;
+
+  const system = kind === 'system' && findSystem(folderPath);
+  if (system) errors.kind = `This folder already has a design system: "${system.title}".`;
 
   if (Object.keys(errors).length > 0) return { errors };
 
@@ -131,7 +147,7 @@ export function createDesign(folderPath, { title, area }) {
   if (existsSync(dir)) return { errors: { title: `prelude/${id} already exists.` } };
 
   mkdirSync(dir, { recursive: true });
-  const meta = { title: cleanTitle, createdAt: new Date().toISOString() };
+  const meta = { title: cleanTitle, ...(kind === 'system' ? { kind: 'system' } : {}), createdAt: new Date().toISOString() };
   writeFileSync(join(dir, 'design.json'), JSON.stringify(meta, null, 2) + '\n');
-  return { design: { id, slug, area: segments.join('/'), ...meta } };
+  return { design: { id, slug, area: segments.join('/'), kind: kindOf(meta), ...meta } };
 }

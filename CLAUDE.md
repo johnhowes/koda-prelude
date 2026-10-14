@@ -42,7 +42,16 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     `server/live.js` holds the SSE channels.
   - `server/sessions.js` handles `session.json` and `transcript.jsonl`.
   - `server/preview.js` lists screens, serves design files and watches design
-    folders. Design files are served only on `preview.localhost:<port>`.
+    folders. The folder's whole `prelude/` directory is served at
+    `/f/<folder>/p/<path>`, only on `preview.localhost:<port>` and never a
+    `sessions/` folder, so relative links between designs work.
+  - `server/designs.js` finds designs, and the folder's design system: a design
+    with `"kind": "system"`, one per folder. The agent's prompt for each kind,
+    and for a design that uses the system, is `designPrompt` in `server/agent.js`.
+  - The agent reads the folder, plus the reference folders added on the folder
+    page (`createReferences` in `server/folders.js`, passed as `--add-dir`).
+    Never add a bare `Read`, `Glob` or `Grep` to its `--allowedTools`: that
+    opens the whole machine.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

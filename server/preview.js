@@ -1,12 +1,13 @@
-// The design surface's side of the server: a design's screens, its files
-// served as they are, and a watch on its folder that says when they change.
+// The design surface's side of the server: a design's screens, the prelude/
+// folder's files served as they are, and a watch on a design's folder that
+// says when they change.
 //
-// The design's files are served exactly as written, at
-// …/d/<design>/files/<path>, so the relative links between screens and to
-// ../styles.css work here and on any static host (plan: ground rule 7). They
-// are served on an origin of their own (preview.localhost, see main.js), not
-// sandboxed: a sandboxed screen loses localStorage and same-origin fonts,
-// which real prototypes use.
+// The files are served exactly as written, at /f/<folder>/p/<path in
+// prelude/>, so relative links - between screens, to ../styles.css, to the
+// folder's design system - work here and on any static host (plan: ground
+// rule 7). They are served on an origin of their own (preview.localhost, see
+// main.js), not sandboxed: a sandboxed screen loses localStorage and
+// same-origin fonts, which real prototypes use.
 
 import { createReadStream, readdirSync, readFileSync, statSync, watch } from 'node:fs';
 import { extname, join, normalize, sep } from 'node:path';
@@ -50,12 +51,15 @@ export function listScreens(designDir) {
     });
 }
 
-/** Serve one of the design's files. Never sessions/, dotfiles, or anything outside the design. */
-export function serveDesignFile(res, designDir, rel, send) {
+/**
+ * Serve a file from a folder's prelude/ directory. Never a design's sessions/
+ * (transcripts aren't for showing), never a dotfile, never anything outside.
+ */
+export function servePreludeFile(res, root, rel, send) {
   const parts = rel.split('/');
-  if (parts[0] === 'sessions' || parts.some(p => p === '' || p.startsWith('.'))) return send(404);
-  const file = normalize(join(designDir, ...parts));
-  if (!file.startsWith(designDir + sep)) return send(404);
+  if (parts.some(p => p === '' || p === 'sessions' || p.startsWith('.'))) return send(404);
+  const file = normalize(join(root, ...parts));
+  if (!file.startsWith(root + sep)) return send(404);
   let stat;
   try { stat = statSync(file); } catch { stat = null; }
   if (!stat?.isFile()) return send(404);

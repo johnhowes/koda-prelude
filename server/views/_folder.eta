@@ -6,7 +6,7 @@
   <div class="card">
     <h2>Designs</h2>
     <% if (it.groups.length === 0) { %>
-    <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions.</p>
+    <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions. A design system is a design too: its screens are its gallery, and every other design in the folder uses it.</p>
     <% } %>
     <% for (const group of it.groups) { %>
     <% if (group.area) { %><h3 class="area"><%= group.area %></h3><% } %>
@@ -16,7 +16,7 @@
         <a class="item" href="/f/<%= it.folder.id %>/d/<%= design.id %>">
           <span class="icon icon-screen" aria-hidden="true"></span>
           <span class="item-text">
-            <span class="item-title"><%= design.title %></span>
+            <span class="item-title"><%= design.title %><% if (design.kind === 'system') { %><span class="pill">Design system</span><% } %></span>
             <span class="muted">prelude/<%= design.id %></span>
           </span>
         </a>
@@ -46,6 +46,15 @@
           </datalist>
         </label>
       </div>
+      <% if (it.system) { %>
+      <p class="muted">Designs here use the folder’s design system, <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a>.</p>
+      <% } else { %>
+      <label class="check">
+        <input type="checkbox" name="kind" value="system" <% if (it.form.kind === 'system') { %>checked<% } %>>
+        <span>This is the folder’s design system <span class="muted">· every other design here will use it</span></span>
+      </label>
+      <% } %>
+      <% if (it.form.errors.kind) { %><span class="err"><%= it.form.errors.kind %></span><% } %>
       <div class="rowbtns">
         <button class="btn small primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Create design</button>
       </div>
