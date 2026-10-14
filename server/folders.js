@@ -70,3 +70,51 @@ export function createFolders(home) {
     },
   };
 }
+
+/**
+ * Reference folders: other folders on this machine the agent may read while
+ * working in a folder - another repository whose CSS a design system starts
+ * from, say. Paths on this machine, so they live in <home>/references.json,
+ * keyed by folder id, and never in the folder itself.
+ */
+export function createReferences(home) {
+  const file = join(home, 'references.json');
+
+  const read = () => {
+    try { return JSON.parse(readFileSync(file, 'utf8')); } catch { return {}; }
+  };
+  const write = all => {
+    mkdirSync(home, { recursive: true });
+    writeFileSync(file, JSON.stringify(all, null, 2) + '\n');
+  };
+
+  return {
+    /** The folder's reference folders: [{ path, name }], in the order added. */
+    of(folderId) {
+      return (read()[folderId] ?? []).map(path => ({ path, name: basename(path) || path }));
+    },
+
+    /** Add one. Returns an error message instead when it can't be added. */
+    add(folder, input) {
+      const value = cleanPath(input);
+      const refused = refuseFolder(value);
+      if (refused) return { error: refused };
+      const path = canonical(value);
+      const key = p => (process.platform === 'win32' ? p.toLowerCase() : p);
+      if (key(path) === key(folder.path)) return { error: 'That’s this folder. The agent can always read it.' };
+      const all = read();
+      const list = all[folder.id] ?? [];
+      if (list.some(p => key(p) === key(path))) return { error: 'The agent can already read that folder.' };
+      all[folder.id] = [...list, path];
+      write(all);
+      return { path };
+    },
+
+    remove(folderId, path) {
+      const all = read();
+      all[folderId] = (all[folderId] ?? []).filter(p => p !== path);
+      if (all[folderId].length === 0) delete all[folderId];
+      write(all);
+    },
+  };
+}

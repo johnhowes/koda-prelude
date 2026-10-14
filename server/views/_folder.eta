@@ -51,4 +51,36 @@
       </div>
     </form>
   </div>
+
+  <div class="card">
+    <h2>What the agent can read</h2>
+    <p class="sec">This folder, and any folders you add here, such as another repository whose CSS a design system should start from. Nothing else on this machine. The agent writes only inside the design it’s working on.</p>
+    <ul class="list">
+      <li><span class="item"><span class="icon icon-folder" aria-hidden="true"></span>
+        <span class="item-text"><span class="item-title"><%= it.folder.name %></span><span class="muted"><%= it.folder.path %></span></span></span></li>
+      <% for (const reference of it.references) { %>
+      <li>
+        <span class="item">
+          <span class="icon icon-folder" aria-hidden="true"></span>
+          <span class="item-text"><span class="item-title"><%= reference.name %></span><span class="muted"><%= reference.path %></span></span>
+          <span class="spacer"></span>
+          <form action="/f/<%= it.folder.id %>/references/remove" method="post">
+            <input type="hidden" name="path" value="<%= reference.path %>">
+            <button class="btn small ghost" type="submit" aria-label="Stop reading <%= reference.name %>"><span class="icon icon-close" aria-hidden="true"></span></button>
+          </form>
+        </span>
+      </li>
+      <% } %>
+    </ul>
+    <form class="add-reference" action="/f/<%= it.folder.id %>/references" method="post">
+      <label class="f" for="reference-path">Add a folder</label>
+      <div class="inline">
+        <input id="reference-path" name="path" value="<%= it.reference.value %>" placeholder="C:\Projects\another-app" autocomplete="off" spellcheck="false"
+               <% if (it.reference.error) { %>ko-invalid-server="<%= it.reference.error %>" aria-describedby="reference-error"<% } %>>
+        <button class="btn small" type="button" data-pick-folder data-desktop-only>Choose…</button>
+        <button class="btn small" type="submit">Add</button>
+      </div>
+      <% if (it.reference.error) { %><span class="err" id="reference-error"><%= it.reference.error %></span><% } %>
+    </form>
+  </div>
 </section>

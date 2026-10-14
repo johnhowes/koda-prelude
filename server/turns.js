@@ -80,8 +80,12 @@ export function createTurns({ runner, live }) {
       return turn.sessionId === sessionId ? { kind: 'working', stopUrl: turn.stopUrl } : { kind: 'busy' };
     },
 
-    /** Start a turn. Returns an error message instead when one can't start. */
-    start({ folder, design, designDir, sessionId, message, stopUrl }) {
+    /**
+     * Start a turn. Returns an error message instead when one can't start.
+     * `references` are the folders the agent may also read ([{ name, path }]),
+     * and `system` the folder's design system, as designPrompt takes it.
+     */
+    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -98,8 +102,9 @@ export function createTurns({ runner, live }) {
         sessionId: session.claudeSessionId,
         resume: session.started === true,
         prompt: message,
-        systemPrompt: designPrompt({ title: design.title, designPath }),
+        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, system }),
         designPath,
+        references: references.map(reference => reference.path),
         onEvent: event => {
           if (event.type === 'init') {
             if (!ctx.session.started) ctx.session = updateSession(designDir, sessionId, { started: true }) ?? ctx.session;

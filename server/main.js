@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
 import { createDesign, findDesign, groupByArea, listDesigns } from './designs.js';
-import { cleanPath, createFolders, refuseFolder } from './folders.js';
+import { cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, serveDesignFile } from './preview.js';
@@ -46,6 +46,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner() 
   const live = createLive();
   const app = {
     folders: createFolders(home),
+    references: createReferences(home),
     live,
     turns: createTurns({ runner, live }),
     watches: createWatches(),
@@ -134,15 +135,30 @@ async function handle(req, res, app) {
     const rest = folderMatch[2] ?? '';
 
     // The folder: its designs, grouped by area, and "New design".
-    const view = (status, form) => page(status, 'folder', {
+    const view = (status, form, reference = { value: '', error: null }) => page(status, 'folder', {
       folder,
       groups: groupByArea(listDesigns(folder.path)),
       form,
+      references: app.references.of(folder.id),
+      reference,
     }, `${folder.name} · Prelude`);
 
     if (rest === '' && req.method === 'GET') {
       folders.open(folder.path);
       return view(200, { title: '', area: '', errors: {} });
+    }
+
+    // Reference folders: what else the agent may read while working here.
+    if (rest === '/references' && req.method === 'POST') {
+      const value = cleanPath((await readForm(req)).get('path'));
+      const added = app.references.add(folder, value);
+      if (added.error) return view(422, { title: '', area: '', errors: {} }, { value, error: added.error });
+      return redirect(res, `/f/${folder.id}`);
+    }
+
+    if (rest === '/references/remove' && req.method === 'POST') {
+      app.references.remove(folder.id, String((await readForm(req)).get('path') ?? ''));
+      return redirect(res, `/f/${folder.id}`);
     }
 
     if (rest === '/designs' && req.method === 'POST') {
@@ -246,6 +262,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     }, title);
   };
 
+  // What the agent is told besides the design: what else it may read, and
+  // the folder's design system.
+  const agentContext = () => ({ references: app.references.of(folder.id), system: null });
+
   const [section, sessionId, action, ...extra] = rest;
   if (extra.length > 0) return notFound();
 
@@ -264,7 +284,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const busy = turns.state(folder, design, null);
     if (busy.kind !== 'idle') return sessionView(409, null, { value: message, error: 'The agent is working on this design in another session. Wait for it to finish.' });
     const session = createSession(dir, { title: titleFrom(message) });
-    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop` });
+    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, ...agentContext() });
     if (started.error) return sessionView(409, null, { value: message, error: started.error });
     return redirect(res, `${base}/sessions/${session.id}`);
   }
@@ -279,7 +299,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const message = String((await readForm(req)).get('message') ?? '').trim();
     const composer = (status, data) => send(res, status, render('./_composer', { action: `${sessionUrl}/messages`, self: true, ...data }));
     if (!message) return composer(422, { error: 'Write a message first.' });
-    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${sessionUrl}/stop` });
+    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${sessionUrl}/stop`, ...agentContext() });
     if (started.error) return composer(409, { value: message, error: started.error });
     return composer(200, {});
   }

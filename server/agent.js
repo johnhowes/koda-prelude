@@ -1,6 +1,6 @@
 // The agent: the Claude Code CLI, run once per turn in the chosen folder.
 //
-//   runner.turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, onEvent })
+//   runner.turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references, onEvent })
 //     -> { done: Promise<{ ok, stopped?, error?, costUsd? }>, stop() }
 //
 // onEvent gets a few plain events:
@@ -13,33 +13,42 @@
 //   { type: 'tool-result', id, isError, text }
 //
 // The agent gets ordinary file tools and nothing else (plan: ground rule 3).
-// It may read anything in the folder and write only inside its design's
-// folder, never in that design's sessions/. Anything else is refused without
-// asking. No MCP servers, no skills, and none of this machine's settings, so a
-// broad "allow" in someone's user settings can't widen what the agent may write.
+// It may read the folder and the folder's reference folders, and nothing else
+// on the machine; it may write only inside its design's folder, never in that
+// design's sessions/. Anything else is refused without asking. No MCP servers,
+// no skills, and none of this machine's settings, so a broad "allow" in
+// someone's user settings can't widen what the agent may read or write.
 
 import { spawn } from 'node:child_process';
 
 const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
 
-export function permissionArgs(designPath) {
+/**
+ * Reads are fenced by Claude Code itself: with no read rule of ours, it allows
+ * reading the working directory and each --add-dir, and in dontAsk mode
+ * refuses the rest. (A bare "Read" in --allowedTools would allow the whole
+ * machine; it was there until step 5.) Reference folders must be canonical
+ * paths, or a Windows short name stops them matching.
+ */
+export function permissionArgs(designPath, references = []) {
   const scope = `${designPath}/**`;
   const sessions = `${designPath}/sessions/**`;
   return [
     '--tools', TOOLS.join(','),
-    '--allowedTools', ['Read', 'Glob', 'Grep', `Edit(${scope})`, `Write(${scope})`].join(','),
+    '--allowedTools', [`Edit(${scope})`, `Write(${scope})`].join(','),
     '--disallowedTools', [`Edit(${sessions})`, `Write(${sessions})`].join(','),
+    ...references.flatMap(path => ['--add-dir', path]),
     '--permission-mode', 'dontAsk',
   ];
 }
 
 export function createCliRunner({ command = 'claude', model = null } = {}) {
   return {
-    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, onEvent = () => {} }) {
+    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references = [], onEvent = () => {} }) {
       const args = [
         '-p',
         '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
-        ...permissionArgs(designPath),
+        ...permissionArgs(designPath, references),
         '--strict-mcp-config',
         '--setting-sources', '',
         '--disable-slash-commands',
@@ -153,17 +162,54 @@ export function createStreamReader(onEvent) {
   };
 }
 
-/** The instructions appended to Claude Code's own system prompt for a design session. */
-export function designPrompt({ title, designPath }) {
-  return `You are working in Prelude, a tool where a person designs an application with you.
 
-You are working on the design "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
+/**
+ * The instructions appended to Claude Code's own system prompt for a session
+ * on a design.
+ *
+ *   title, designPath   the design ("Sign up", "prelude/onboarding/sign-up")
+ *   references          folders the agent may also read: [{ name, path }]
+ *   kind                'design', or 'system' for the folder's design system
+ *   system              for a design, the folder's design system if it has one:
+ *                       { title, path, href } - href is system/ relative to
+ *                       the design's screens/, as a screen links it
+ */
+export function designPrompt({ title, designPath, references = [], kind = 'design', system = null }) {
+  const parts = [`You are working in Prelude, a tool where a person designs an application with you.
 
-- Write only inside ${designPath}/, and never inside ${designPath}/sessions/. Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.
-- A design is built up over many sessions, and this conversation is one of them. The design's memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what is in ${designPath}/screens/.
-- Keep ${designPath}/NOTES.md current: what the design is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
-- Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Styles shared by screens go in ${designPath}/styles.css, linked from a screen as ../styles.css. Link between screens with relative links. No build step, no frameworks, no requests to other sites.
-- When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`;
+You are working on the ${kind === 'system' ? 'design system' : 'design'} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
+
+- Write only inside ${designPath}/, and never inside ${designPath}/sessions/. Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
+- You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
+- A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what is in ${designPath}/screens/.
+- Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
+- Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.
+- When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];
+
+  if (kind === 'system') {
+    parts.push(`This is the folder's design system. Every other design in the folder uses it, by linking its files. It lives in ${designPath}/system/:
+
+- system/tokens.css - the tokens: custom properties on :root named for their role, never their look (--bg, --surface, --surface-sunken, --border, --fg, --fg-muted, --fg-subtle, --accent, --accent-hover, --accent-fg, --accent-soft, --good, --warn, --danger, --space-1…, --radius-sm…, --text-xs…, --font-sans, --shadow-md, --ring). Write each colour once with light-dark(). Literal colours belong here and nowhere else.
+- system/components.css - the components: classes built from the tokens and nothing else (no literal colours, spaces or radii), with a base section for bare elements, including [hidden] { display: none !important; }. Lay out with container queries, never @media.
+- system/components/<name>.html - one file per component: its canonical markup, starting with an HTML comment that says what it is for and when to use it. This is what designs copy, so keep it exactly in step with components.css.
+- system/guidelines.md - the rules, each with its reason and a short do and don't, and the product's words with the words to avoid.
+- system/icons/<meaning>.svg and system/icons.css, if the system has icons: one SVG per glyph, named for what it means (close, not x), drawn by masking a box filled with currentColor, with forced-color-adjust: none. Each glyph's URL is a token defined in icons.css, relative to icons.css; keep every rule that uses those tokens in icons.css, so the relative URLs resolve there.
+- Every CSS file in system/ starts with the same line, @layer tokens, base, components, host; and puts its rules in those layers: tokens in tokens, bare elements in base, classes in components. Designs' own rules stay unlayered, so they win.
+
+The screens are the system's gallery: a tokens screen, a components screen showing each component and its variants, and a guidelines screen. They link ../system/tokens.css, ../system/components.css (and ../system/icons.css), and use the system exactly as a design would. Whenever you change system/, bring the gallery up to date in the same turn.
+
+If the person points you at existing CSS (this repository's, or a reference folder's), draft the system from what is really there: its colours, spacing, type and components, renamed by role, rather than inventing a new look.`);
+  } else if (system) {
+    parts.push(`This folder has a design system, "${system.title}", in ${system.path}/system/. Use it:
+
+- Before designing, read ${system.path}/system/guidelines.md and the components in ${system.path}/system/components/.
+- Every screen links the system's styles, in this order, before its own: ${system.href}/tokens.css, ${system.href}/components.css${system.hasIcons ? `, ${system.href}/icons.css` : ''}. Then ../styles.css for this design's own rules, if it needs any.
+- Build screens from the system's components, copying their markup and classes. Write no literal colours, spaces or radii; use the tokens.
+- Don't change the design system from here. If it lacks something this design needs, design around it, and note in ${designPath}/NOTES.md what the system is missing, so it can be added in a session on the system itself.`);
+  } else {
+    parts.push(`Styles shared by screens go in ${designPath}/styles.css, linked from a screen as ../styles.css. This folder has no design system yet; when it gets one, its designs will use it.`);
+  }
+  return parts.join('\n\n');
 }
 
 /** A one-line description of a tool use, with paths shown relative to the folder. */

@@ -45,6 +45,8 @@
   .area:first-child { margin-top: 0; }
 
   .rowbtns form { margin: 0; }
+  .item form { margin: 0; }
+  .add-reference { margin-top: var(--space-4); }
 
   /* What only the desktop app can do is shown only in it (desktop.js). */
   [data-desktop-only] { display: none; }
