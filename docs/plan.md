@@ -191,19 +191,111 @@ Each step ends with something usable, and stops there for a look before the next
   pop-out is the nicer one.
 
 ### Step 5: Design systems (first cut)
-Stop and decide here before building. The proposal:
-- A design system is a folder: `prelude/design-system/`, or a path to one elsewhere,
-  such as a shared repo.
-- First cut is a small subset of KodaDesign's format (`kodadesign-system.json`,
-  `tokens.json`, `components/<name>/{markup.html,style.css,guidelines.md}`,
-  `guidelines/`). Reuse `packages/format/system.js` and `hub/ds-files.js` to produce
-  `tokens.css` + `components.css`.
-- Screens link the served CSS. The prompt tells the agent to read the system's files
-  before designing and to use its classes and markup. No enforcement on save yet.
-- Where it shows up in the UI: one control on the design (not the session),
-  "Design system: <name> ▾", recorded in `design.json`. Nothing else.
-- Deferred: releases/semver, extension, promotion, behaviors, interaction checks,
-  save-time validation.
+
+**The idea: a design system is a design.** It gets no new noun and no new screen. A
+system is a design whose `design.json` says `"kind": "system"`. Everything else about
+it is what a design already has:
+
+- **Sessions** are where you shape it: "draft our system from the app's existing
+  CSS", "make the buttons denser".
+- **Screens** are its gallery (`01-tokens.html`, `02-components.html`, …), which the
+  agent keeps current. You watch them in the same Design surface and can pop them out.
+- **`NOTES.md`** holds its decisions.
+
+What a system adds is one folder, `system/`, which other designs link to:
+
+```
+prelude/design-system/            a design, with "kind": "system"
+  design.json  NOTES.md  sessions/  screens/   (as any design)
+  system/
+    tokens.css          role-named tokens (--bg, --accent, …), each colour written
+                        with light-dark(), in @layer tokens
+    components.css      the classes, built from the tokens only, in @layer components
+    components/<name>.html   the canonical markup for each component, with a
+                        comment saying when to use it: what the agent copies
+    guidelines.md       the rules: rule, reason, do and don't; the product's words
+                        and the words to avoid
+    icons/<meaning>.svg + icons.css   optional
+```
+
+It is a subset of KodaDesign's format, translated for plain HTML screens:
+- **Dropped:** the template dialect, props and variants JSON, releases and semver,
+  `extends`, behaviours, interaction checks and the Razor form.
+- **Kept:** tokens, components, guidelines, the lexicon (folded into
+  `guidelines.md`) and icons.
+- **Tokens:** CSS is the source, not `tokens.json`. Screens consume CSS, and the agent
+  edits CSS well.
+
+**Using one.** With one system per folder there is nothing to pick: every design in
+the folder uses the folder's system, if it has one. A design page shows which, as a
+link to the system ("Uses Acme's design system"). A second system in the folder is
+refused when it's created. If several systems per folder are ever needed, this is
+where a picker would go, recorded in `design.json`. When a design has a system, the
+agent's prompt says to:
+- read `guidelines.md` and `components/` before designing;
+- link `tokens.css` and `components.css` from every screen;
+- use the system's classes and markup;
+- write no literal colours;
+- note in `NOTES.md` anything the system lacks. It doesn't edit the system from
+  another design: that's work for a session on the system itself.
+
+**Where systems come from.** No import feature is needed: the agent can read the repo.
+- Start blank: New design → "This is a design system".
+- Draft from the app: in a session on the system, ask the agent to harvest the
+  existing CSS and markup.
+- Draft from another repo, such as "base it on Spark's CSS": add that repo as a
+  reference folder (below), then ask.
+- Prelude's own design system (KodaDesign's v1) is not offered as a starter for now.
+  Anyone who wants it can add it as a reference folder and ask.
+
+**Reference folders: what the agent may read.** Found while planning this step:
+the agent's Read, Glob and Grep weren't scoped, so it could read any file on the
+machine. Writes were always fenced to the design. Reads become fenced too:
+- **By default:** the chosen folder only.
+- **Plus reference folders**, added per folder on the folder page: "Also reads: Spark
+  ✕ · Add a folder…", using the native picker in the desktop app or a typed path in
+  the browser.
+- The agent gets them with `--add-dir`, read-only permission rules for those paths
+  alone, and one line in its prompt naming them.
+- **Machine-local:** stored in `~/.prelude/`, keyed by folder, never in `prelude/`.
+  They are paths on this machine, so committing them would mean nothing to anyone
+  else.
+- A design's `NOTES.md` can still say "based on Spark's CSS" in words.
+
+**Needed first: the preview URL must mirror the folder.** Today a design's files are
+served at `/f/<fid>/d/<design>/files/…`. A screen in one design can't reach another
+design's `system/` with a relative link that would also work on a static host. Serve
+the whole `prelude/` folder on the preview host instead, at `/f/<fid>/p/<path>`. Then
+`../../design-system/system/tokens.css` from `prelude/checkout/screens/01.html`
+resolves the same in Prelude and when shared (ground rule 7). `sessions/` stays
+unserved.
+
+**Sub-steps**, each usable on its own:
+0. **5.0:** Fence the agent's reads to the folder, and add reference folders. This
+   comes first because it closes a gap that exists today.
+1. **5a:** The preview URL mirrors `prelude/`. This is a refactor of step 2's route.
+2. **5b:** `"kind": "system"`:
+   - the New design checkbox;
+   - a system's own prompt (keep `system/` and the gallery in step);
+   - lifting the `design-system` reserved name;
+   - systems marked in the folder list.
+3. **5c:** Designs use the folder's system: the "Uses … design system" link, and the
+   using-a-system prompt.
+4. **5d:** The optional starter, and docs.
+
+**Done when:** you can draft a system from an existing app's CSS in one session, pick
+it for a design in another, and see the design's screens come out in the system's
+look.
+
+**Deferred:** more than one level of systems (themes extending a base), sharing a
+system across repositories, versions, and checking screens against the system on
+save (reusing KodaDesign's `ds-classes.js` idea).
+
+Decided 2026-10-14:
+- A system is a design.
+- The preview URL mirrors `prelude/`.
+- One system per folder for now.
+- No built-in starter; other repos' CSS is reached through reference folders.
 
 ### Step 6: Screen states (the decision to move beyond plain HTML)
 Expected soon after step 2, since real screens have states: empty, loading, error,
