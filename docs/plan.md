@@ -312,20 +312,94 @@ As built:
 - **No versions yet**: one system, linked directly (Koda's `/ds/v1` versioning is
   deferred).
 
-### Step 6: Screen states (the decision to move beyond plain HTML)
-Expected soon after step 2, since real screens have states: empty, loading, error,
-filled. This step is a decision before it is any code. Options to weigh then:
-- **Separate files per state:** `screens/03-list.empty.html`. Stays plain HTML but
-  duplicates markup.
-- **One file plus state data:** HTML with a tiny templating layer, plus a
-  `03-list.states.json`, as OrchestratR does. Adds a renderer.
-- **One file with state attributes:** e.g. `data-state="empty"` sections, toggled by a
-  state picker. Stays plain HTML, adds a convention.
-- **The folder's own stack.** Real components, with the design closer to production.
-  This is where "build" begins.
+### Step 6: Screen states — proposal, not yet decided
 
-The state picker joins the screen picker on the Design bar. Whatever we choose must keep
-designs static-servable (ground rule 7).
+Real screens have states: empty, loading, an error, a refusal, a long list, someone
+without permission. Today the agent can show only one of each screen. A state is not a
+new noun. **It's a property of a screen**, picked in the Design bar beside the screen.
+
+**The options, weighed:**
+
+| | How | Static-servable | Cost |
+|---|---|---|---|
+| A. A file per state | `03-list.html`, `03-list.empty.html`, `03-list.error.html` | yes | Markup duplicated in every state. The agent keeps the copies in step, and drift is likely as screens grow. |
+| B. One file plus state data | A template plus `03-list.states.json`, rendered by Prelude (OrchestratR's model) | no, needs a renderer | A template language is exactly what made KodaDesign heavy. |
+| **C. One file, states marked in it** | The screen lists its states; elements say which states they belong to; `?state=` picks one | **yes** | A convention and one small shared script. |
+| D. The folder's own stack | Real components, real conditions | depends on the stack | This is "build", a later step of its own. |
+
+**Recommended: C.** It's still plain HTML that opens in any browser, with no build step
+and no renderer. A screen is one file, so its states can't drift apart, and the same
+convention carries over to real components later as conditions.
+
+**The convention:**
+
+```html
+<html lang="en" data-states="filled empty loading error">   <!-- the first is the default -->
+<head>
+  …
+  <script src="../../states.js" defer></script>            <!-- relative path to prelude/states.js -->
+</head>
+<body>
+  <ul class="orders" data-when="filled">…</ul>
+  <p class="empty" data-when="empty">No orders yet. <a href="…">Create one</a></p>
+  <div class="spinner" data-when="loading"></div>
+  <p class="field-error" data-when="error">We couldn't load your orders.</p>
+</body>
+```
+
+- `data-states` on `<html>` lists the screen's states, in order, default first, named
+  in kebab-case.
+- `data-when="empty error"` shows an element only in those states. An element with no
+  `data-when` shows in every state.
+- The chosen state is also set as `<html data-state="empty">`, so CSS can vary anything
+  else by state: `[data-state="loading"] .orders { opacity: .5 }`.
+- **`?state=<name>` picks one.** So a link between screens can land on a state
+  (`02-verify.html?state=resent`), and so can a shared link.
+- **`prelude/states.js`, one per folder:** about fifteen lines. It reads `data-states`
+  and `?state=`, sets `data-state`, and hides what doesn't belong. Prelude writes and
+  owns it, committed with the designs. The agent links it but never edits it. With
+  scripts off, a screen shows every state at once, which is still readable.
+
+**In the preview:**
+- **A state picker joins the screen picker:** "Sign up · Error ▾". It appears only for a
+  screen with more than one state.
+- **The state on show is server state, like the current screen:** every window shows
+  it, and picking a new screen resets it to that screen's default.
+- **Following a link to `…?state=resent` inside a screen** moves every window to that
+  state. This reuses step 3's frame-load trick, now reading the query too.
+- **Open in browser carries the state** in its URL.
+- **Prelude reads a screen's states** from `data-states`, as it already reads the
+  screen's `<title>`.
+
+**The agent is told:**
+- give a screen states when it really has them: empty, loading, error, refusals, long
+  content, permissions;
+- the happy state comes first;
+- mark elements with `data-when` rather than copying the screen;
+- link `states.js` with the exact relative path, as it's told the system's;
+- name states in plain words: `empty`, `no-permission`, `long-names`.
+
+**Sub-steps:**
+1. **6a:** `prelude/states.js`, written by Prelude when a folder is opened (if missing
+   or outdated), plus the convention in the agent's prompt.
+2. **6b:** The state picker, the state as server state, following `?state=` links, and
+   Open in browser.
+3. **6c:** Verify with the real agent, for example "give the sign-up screen its error
+   states".
+
+**Done when:** you ask for a screen's empty and error states, then flip between them
+in the preview (and in a pop-out) without the agent copying the screen.
+
+**Deferred:** states driven by data (a JSON of names and amounts filling the same
+markup; that's option B, if C ever runs out), interactions within a state, and a flow
+map of which states lead where.
+
+Open questions:
+1. Option C (recommended), or a file per state (A)?
+2. `prelude/states.js` once per folder (recommended), or a copy inside each design so
+   a design can be shared on its own?
+3. Are `data-states` and `data-when` the right names? (`data-state` is the chosen
+   state.)
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
