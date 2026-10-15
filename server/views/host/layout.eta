@@ -18,6 +18,17 @@
 <main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history>
 <%~ it.body %>
 </main>
+<%/* The regions a page may ask for (ko-target="drawer?"). Each prints what the
+     host puts in it for a deep link to an overlay, marked with where it came
+     from, so Koda knows what the region holds. */%>
+<% const drawer = it.regions?.drawer, modal = it.regions?.modal; %>
+<aside id="drawer" class="prelude-drawer" ko-region<% if (drawer) { %> ko-location="<%= drawer.location %>"<% } %>><%~ drawer?.html ?? '' %></aside>
+<dialog id="modal" class="prelude-modal" ko-region<% if (modal) { %> ko-location="<%= modal.location %>" open<% } %>><%~ modal?.html ?? '' %></dialog>
+<style>
+  .prelude-drawer { position: fixed; inset: 0 0 0 auto; inline-size: min(28rem, 100%); overflow: auto; background: Canvas; border-inline-start: 1px solid GrayText; padding: 1rem; }
+  .prelude-drawer:empty { display: none; }
+  .prelude-modal[open] { position: fixed; inset: 0; margin: auto; }
+</style>
 <script type="module">
   import { start } from '@kodalang/core';
   start(document);

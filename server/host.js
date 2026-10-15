@@ -7,7 +7,8 @@
 //   views/            Eta views: pages, and fragments (_row.eta) that pages
 //                     include and that also answer alone
 //   routes.json       { "/orders/:id": { "view": "orders/detail", "title": "Order",
-//                                        "data": "orders/:id", "layout": "app" } }
+//                                        "data": "orders/:id", "layout": "app" },
+//                       "/orders/:id/edit": { ..., "over": "/orders/:id", "in": "drawer" } }
 //   states/           NN-name.json: each a fake dataset for the whole design;
 //                     the first is the default. "layout" in a state overrides
 //                     the shell's sample data.
@@ -17,6 +18,12 @@
 // and Koda's ko-scope="/" owns the page as it will in production. One URL
 // answers in two shapes, as a Koda server does: the view alone for a region
 // (x-koda-fragment: 1), inside its layout for anything else.
+//
+// An overlay - a route with "over" (the page beneath) and "in" (the region it
+// is presented in, such as drawer or modal) - answers a fragment request with
+// its view alone, as any fragment does, and a cold load with the page beneath,
+// the overlay already in its region: the layout prints it from it.regions.
+// That is how the app's server should answer a deep link to a drawer.
 //
 // Layouts come from, in order: the design's own views/layouts/<name>.eta, the
 // folder's shell (layouts/<name>.eta, "kind": "shell"), a real layout in the
@@ -89,11 +96,34 @@ export function readRoutes(designDir) {
       title: typeof route.title === 'string' ? route.title : null,
       data: typeof route.data === 'string' ? route.data : '',
       layout: typeof route.layout === 'string' ? route.layout : 'app',
+      over: typeof route.over === 'string' && route.over.startsWith('/') ? route.over : null,
+      in: typeof route.in === 'string' && /^[a-z][a-z0-9-]*$/i.test(route.in) ? route.in : null,
     }));
 }
 
 /** The pages the screen picker offers: titled routes that need no parameters. */
 export const pagesOf = routes => routes.filter(route => route.title && !route.pattern.includes(':'));
+
+/**
+ * What the preview's picker offers: every titled route, its :params filled
+ * with sample ids from the dataset, each overlay listed after the page it is
+ * presented over ("Order › Edit order"). [{ id: path, title, overlay? }]
+ */
+export function pickable(routes, dataset) {
+  const samples = samplePaths(routes, dataset).filter(sample => sample.route.title);
+  const pages = samples.filter(sample => !sample.route.over);
+  const overlays = samples.filter(sample => sample.route.over);
+  const picks = [];
+  for (const page of pages) {
+    picks.push({ id: page.path, title: page.route.title });
+    for (const overlay of overlays) {
+      if (fillParams(overlay.route.over, overlay.params) === page.path) {
+        picks.push({ id: overlay.path, title: `${page.route.title} › ${overlay.route.title}`, overlay: true });
+      }
+    }
+  }
+  return picks;
+}
 
 /** Match a path against the routes, first match wins: { route, params } or null. */
 export function matchRoute(routes, path) {
@@ -241,7 +271,9 @@ export async function handleDesignHost(req, res, app, host) {
   // link inside a design moves every window to it. A fragment, or a page in
   // a tab of its own, changes nothing.
   if (!fragment && req.headers['sec-fetch-dest'] === 'iframe' && matchRoute(readRoutes(designDir), path)) {
-    app.designs.show(key, path, { shown: pagesOf(readRoutes(designDir))[0]?.pattern });
+    const states = listStates(designDir);
+    const state = states.find(s => s.id === app.designs.state(key)) ?? states[0] ?? null;
+    app.designs.show(key, path, { shown: pickable(readRoutes(designDir), readState(designDir, state))[0]?.id });
   }
 
   const answer = await renderPath(app, { folder, design, designDir, path, fragment, stateId: app.designs.state(key) });
@@ -274,24 +306,64 @@ export async function renderPath(app, { folder, design, designDir, path, fragmen
     return { status: 404, html: `<p>There's nothing at "${escape(route.data)}" in the ${state ? `"${escape(state.title)}"` : 'empty'} state.</p>` };
   }
 
-  const page = { views: join(designDir, 'views'), template: `./${route.view}`, data: model };
-  let layout = null;
-  if (!fragment) {
-    const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: route.layout })
-      ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {} };
-    const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
-    layout = {
-      views: found.views,
-      template: found.template,
-      data: { ...shellData, layout: shellData, title: route.title ?? design.title, location: path, path, hasSystem: Boolean(dirOf('system')) },
-    };
+  const views = join(designDir, 'views');
+  const overlay = { views, template: `./${route.view}`, data: model };
+  if (fragment) return render(app, folder, { page: overlay });
+
+  // A cold load of an overlay: the page beneath, with the overlay in its
+  // region. The page beneath must be a page, not another overlay.
+  let pageRoute = route;
+  let pagePath = path;
+  let pageModel = model;
+  const regions = {};
+  if (route.over && route.in) {
+    pagePath = fillParams(route.over, params);
+    const beneath = matchRoute(routes, pagePath);
+    if (!beneath || beneath.route.over) {
+      return { status: 404, html: `<p>The page beneath this overlay, ${escape(pagePath)}, isn't a page of this design.</p>` };
+    }
+    pageModel = lookup(dataset, beneath.route.data, beneath.params);
+    if (pageModel === undefined) {
+      return { status: 404, html: `<p>There's nothing at "${escape(beneath.route.data)}" for the page beneath, in this state.</p>` };
+    }
+    pageRoute = beneath.route;
+    regions[route.in] = { ...overlay, location: path };
   }
 
+  const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: pageRoute.layout })
+    ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {} };
+  const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
+  return render(app, folder, {
+    page: { views, template: `./${pageRoute.view}`, data: pageModel },
+    layout: {
+      views: found.views,
+      template: found.template,
+      data: {
+        ...shellData,
+        layout: shellData,
+        title: route.title ?? pageRoute.title ?? design.title,
+        location: pagePath,
+        path: pagePath,
+        hasSystem: Boolean(dirOf('system')),
+      },
+    },
+    regions,
+  });
+}
+
+/** Ask the folder's sandboxed renderer for a page: { status, html, error? }. */
+async function render(app, folder, job) {
   try {
-    return { status: 200, html: await app.renderers.render(folder.path, { page, layout }) };
+    return { status: 200, html: await app.renderers.render(folder.path, job) };
   } catch (error) {
-    return { status: 500, html: `<pre class="prelude-render-error">${escape(error.message)}</pre>`, error: String(error.message) };
+    const message = String(error.message);
+    return { status: 500, html: `<pre class="prelude-render-error">${message.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</pre>`, error: message };
   }
+}
+
+/** "/orders/:id" with { id: "7" } -> "/orders/7". */
+export function fillParams(pattern, params) {
+  return pattern.replace(/:([A-Za-z0-9_]+)/g, (_, name) => encodeURIComponent(params[name] ?? ''));
 }
 
 /**
@@ -317,9 +389,9 @@ export function samplePaths(routes, dataset) {
       }
     }
     if (!ok) continue;
-    const path = route.pattern.replace(/:([A-Za-z0-9_]+)/g, (_, name) => encodeURIComponent(params[name] ?? ''));
+    const path = fillParams(route.pattern, params);
     if (path.includes('//') || /\/$/.test(path) && path !== '/') continue;
-    paths.push({ route, path, fragment: !route.title });
+    paths.push({ route, path, params, fragment: !route.title });
   }
   return paths;
 }
@@ -334,9 +406,12 @@ export async function checkDesign(app, { folder, design, designDir }) {
   const states = listStates(designDir);
   const failures = [];
   for (const state of states.length ? states : [null]) {
-    for (const { path, fragment } of samplePaths(routes, readState(designDir, state))) {
-      const answer = await renderPath(app, { folder, design, designDir, path, fragment, stateId: state?.id });
-      if (answer.status === 500) failures.push({ state: state?.title ?? null, path, error: answer.error });
+    for (const { route, path, fragment } of samplePaths(routes, readState(designDir, state))) {
+      // An overlay is rendered both ways: alone, and over the page beneath.
+      for (const alone of route.over ? [true, false] : [fragment]) {
+        const answer = await renderPath(app, { folder, design, designDir, path, fragment: alone, stateId: state?.id });
+        if (answer.status === 500) failures.push({ state: state?.title ?? null, path: route.over && alone ? `${path} (alone)` : path, error: answer.error });
+      }
     }
   }
   return failures;

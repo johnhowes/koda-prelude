@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { checkDesign, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pagesOf, readRoutes } from './host.js';
+import { checkDesign, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes, readState } from './host.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
@@ -268,12 +268,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     };
     if (hosted) {
       const routes = readRoutes(dir);
-      const screens = pagesOf(routes).map(route => ({ id: route.pattern, title: route.title, file: route.pattern }));
-      const path = designs.current(dKey) ?? screens[0]?.id ?? null;
-      const matched = path && matchRoute(routes, path);
-      const current = matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null;
       const states = listStates(dir);
       const state = states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
+      // Every titled route, with sample ids from this state; overlays under
+      // their page. A page followed to inside the frame may not be one of
+      // them (another record), and is shown by its route's title.
+      const screens = pickable(routes, readState(dir, state)).map(pick => ({ ...pick, file: pick.id }));
+      const path = designs.current(dKey) ?? screens[0]?.id ?? null;
+      const matched = path && matchRoute(routes, path);
+      const current = screens.find(screen => screen.id === path)
+        ?? (matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null);
       const origin = designOrigin(req, folder, design);
       return { ...common, hosted: true, screens, current, states, state, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
     }
@@ -294,7 +298,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const view = viewOf(form.get('view'));
     const wanted = String(form.get('screen') ?? '');
     const known = hosted
-      ? pagesOf(readRoutes(dir)).some(route => route.pattern === wanted)
+      ? Boolean(matchRoute(readRoutes(dir), wanted))
       : listScreens(dir).some(screen => screen.id === wanted);
     if (known) designs.show(dKey, wanted);
     return send(res, 200, render('./_design', surface(view)));

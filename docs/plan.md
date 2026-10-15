@@ -709,6 +709,23 @@ Decided 2026-10-15:
 - Routes with `:params` are pickable everywhere, filled with sample ids from the
   current state.
 
+As built (6a.2):
+- **Rendering:** `renderPath` renders a cold load of an overlay as its `over` page,
+  through that page's own route, data and layout. The overlay goes in as
+  `it.regions[in] = { html, location }`, and the layout's main region gets the page's
+  location.
+- **The renderer** renders regions in the same sandboxed job as the page and layout.
+- **The built-in layout** offers a drawer and a modal.
+- **The picker** uses `pickable()`: every titled route, filled with sample ids, with
+  overlays after their page. The check renders each overlay alone and over its page.
+- **Verified with the real agent:**
+  - The shell's layouts were updated to print their regions.
+  - Packages gained an Edit Package drawer over the detail page.
+  - A direct visit to `/…/packages/10482/edit` showed the package page with the drawer
+    open and pre-filled from the same state.
+  - The Edit button (a link with `ko-target="drawer?"`) opened the same view in the
+    drawer through Koda, staying on the page.
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

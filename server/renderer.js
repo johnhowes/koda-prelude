@@ -9,9 +9,12 @@
 // doesn't yet cover the network; that remains a known gap.)
 //
 // Messages, over the IPC channel:
-//   in:  { id, page: { views, template, data }, layout?: { views, template, data } }
+//   in:  { id, page: { views, template, data }, layout?: { views, template, data },
+//          regions?: { <name>: { views, template, data, location } } }
 //   out: { id, html } or { id, error }
-// The layout, when there is one, gets the rendered page as `it.body`.
+// The layout, when there is one, gets the rendered page as `it.body`, and each
+// rendered region (an overlay presented over the page) as
+// `it.regions.<name> = { html, location }`, to print inside the region it offers.
 
 import { Eta } from 'eta';
 
@@ -26,10 +29,14 @@ function engine(views) {
   return engines.get(views);
 }
 
-function render({ page, layout }) {
+function render({ page, layout, regions = {} }) {
   const body = engine(page.views).render(page.template, page.data ?? {});
   if (!layout) return body;
-  return engine(layout.views).render(layout.template, { ...layout.data, body });
+  const rendered = {};
+  for (const [name, region] of Object.entries(regions)) {
+    rendered[name] = { html: engine(region.views).render(region.template, region.data ?? {}), location: region.location };
+  }
+  return engine(layout.views).render(layout.template, { ...layout.data, body, regions: rendered });
 }
 
 process.on('message', message => {

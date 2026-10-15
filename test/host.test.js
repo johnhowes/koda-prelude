@@ -29,7 +29,7 @@ before(async () => {
   createDesign(repo, { title: 'Acme', kind: 'system' });
   write('acme/system/tokens.css', ':root { --accent: teal; }');
   createDesign(repo, { title: 'Shell', kind: 'shell' });
-  write('shell/layouts/app.eta', '<html><title><%= it.title %></title><nav><%= it.layout.user %> · <%= it.layout.unread %></nav><main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history><%~ it.body %></main></html>');
+  write('shell/layouts/app.eta', '<html><title><%= it.title %></title><nav><%= it.layout.user %> · <%= it.layout.unread %></nav><main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history><%~ it.body %></main><aside id="drawer" ko-region<% if (it.regions.drawer) { %> ko-location="<%= it.regions.drawer.location %>"<% } %>><%~ it.regions.drawer?.html ?? "" %></aside></html>');
   write('shell/layouts/app.json', { user: 'Dana Ruiz', unread: 3 });
 
   createDesign(repo, { title: 'Orders' });
@@ -41,10 +41,12 @@ before(async () => {
     '/real': { view: 'wizard', title: 'Real shell', data: '', layout: '@app/src/views/layout' },
     '/sneaky': { view: 'sneaky', title: 'Sneaky', data: '' },
     '/vandal': { view: 'vandal', title: 'Vandal', data: '' },
+    '/orders/:id/edit': { view: 'orders/_edit', title: 'Edit order', data: 'orders/:id', over: '/orders/:id', in: 'drawer' },
   });
   write('orders/views/orders/list.eta', '<ul id="orders"><% for (const o of it.orders) { %><%~ include("./_row", o) %><% } %></ul><% if (!it.orders.length) { %><p class="empty">No orders yet.</p><% } %>');
   write('orders/views/orders/_row.eta', '<li id="order-<%= it.id %>" ko-region><%= it.borrower %>: <%= it.amount %></li>');
   write('orders/views/orders/detail.eta', '<h1><%= it.borrower %></h1>');
+  write('orders/views/orders/_edit.eta', '<form class="edit"><input name="borrower" value="<%= it.borrower %>"></form>');
   write('orders/views/wizard.eta', '<p>Step one</p>');
   write('orders/views/layouts/bare.eta', '<html><body class="bare"><%~ it.body %></body></html>');
   write('orders/views/sneaky.eta', "<%= process.getBuiltinModule('node:fs').readFileSync('" + join(home, 'folders.json').replace(/\\/g, '/') + "', 'utf8') %>");
@@ -183,7 +185,8 @@ test('/_prelude/ serves Koda, the system, the shell and the design, never sessio
 
 test('the preview offers the design’s pages and states, framed on its own origin', async () => {
   const surface = await (await get(`/f/${fid}/d/orders/preview`)).text();
-  assert.match(surface, /5 pages/, 'titled routes without parameters');
+  assert.match(surface, /7 pages/, 'every titled route, overlays included');
+  assert.ok(surface.includes('value="/orders/1"'), 'a route with :id is pickable, with the first record’s id');
   assert.ok(surface.includes(`src="http://orders.${fid}.preview.localhost:${port}/orders?v=`));
   assert.match(surface, /State: Typical/);
   assert.match(surface, /value="\/wizard"/);
@@ -251,4 +254,39 @@ test('after a turn, every route is rendered; what fails is shown, and told to th
   await post(`${sessionUrl}/messages`, { message: 'Fix it' });
   await until(() => runner.turns.length >= 2);
   assert.match(runner.turns.at(-1).prompt, /^\(From Prelude[\s\S]*Could not find template[\s\S]*Fix it$/);
+});
+
+test('an overlay: alone for a region, over its page for a cold load', async () => {
+  const alone = await hostGet('orders', '/orders/1/edit', { 'x-koda-fragment': '1' });
+  assert.equal(alone.body, '<form class="edit"><input name="borrower" value="Harbor Street Bakery"></form>');
+
+  const page = (await hostGet('orders', '/orders/1/edit')).body;
+  assert.ok(page.includes('<title>Edit order</title>'));
+  assert.ok(page.includes('<main id="main" ko-scope="/" ko-location="/orders/1" ko-history><h1>Harbor Street Bakery</h1></main>'), 'the page beneath, at its own location');
+  assert.ok(page.includes('<aside id="drawer" ko-region ko-location="/orders/1/edit"><form class="edit">'), 'the overlay in its region, knowing where it came from');
+
+  assert.equal((await hostGet('orders', '/orders/99/edit')).status, 404);
+});
+
+test('the picker lists overlays under their page, and the check renders them both ways', async () => {
+  const surface = await (await get(`/f/${fid}/d/orders/preview`)).text();
+  const order = surface.indexOf('value="/orders/1"');
+  const edit = surface.indexOf('value="/orders/1/edit"');
+  assert.ok(order > 0 && edit > order, 'the overlay comes after its page');
+  assert.match(surface, /Order › Edit order/);
+
+  const { checkDesign } = await import('../server/host.js');
+  const { createRenderers } = await import('../server/renderers.js');
+  const { fileURLToPath } = await import('node:url');
+  const renderers = createRenderers({ appRoot: fileURLToPath(new URL('..', import.meta.url)) });
+  write('orders/views/orders/_edit.eta', '<%~ include("./_nope", it) %>');
+  try {
+    const failures = await checkDesign({ renderers }, { folder: { path: repo }, design: { id: 'orders' }, designDir: join(repo, 'prelude', 'orders') });
+    const paths = failures.map(f => f.path);
+    assert.ok(paths.includes('/orders/1/edit (alone)'), 'the overlay alone');
+    assert.ok(paths.includes('/orders/1/edit'), 'the overlay over its page');
+  } finally {
+    renderers.closeAll();
+    write('orders/views/orders/_edit.eta', '<form class="edit"><input name="borrower" value="<%= it.borrower %>"></form>');
+  }
 });
