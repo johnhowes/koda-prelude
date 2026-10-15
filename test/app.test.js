@@ -151,7 +151,10 @@ test('features wait for the app; the default app build ports the shell and serve
   write(worktree, 'app/views/layouts/app.eta', '<html><body class="real-app"><%= it.layout.user %>: <%~ it.body %></body></html>');
   write(worktree, 'prelude/shell/layouts.json', { app: '@app/app/views/layouts/app' });
   write(worktree, 'prelude/prelude.json', { app: { stack: DEFAULT_STACK, path: 'app' }, host: { start: 'node app/server.js', url: 'http://localhost:59998', views: '.eta' } });
-  await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Ported' });
+  await until(() => readEntries(workDir, sid).some(e => e.type === 'turn'));
+  await new Promise(resolve => setTimeout(resolve, 50));   // the turn's last bookkeeping
+  const ported = await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Ported' });
+  assert.equal(ported.status, 200, 'the message is taken, not refused as "already working"');
   await until(() => readEntries(workDir, sid).filter(e => e.type === 'note').length >= 3);
   const notes = readEntries(workDir, sid).filter(e => e.type === 'note').map(e => e.text);
   assert.ok(notes.some(text => /design host needs your approval first/.test(text)), 'an unapproved host waits for the person, failing nothing');
