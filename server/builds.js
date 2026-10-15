@@ -57,12 +57,13 @@ export function createBuilds({ home }) {
      * when the folder isn't a git repository, or the design has uncommitted
      * changes (the branch would build an older design). { build } or { error }.
      */
-    start({ folder, design, group }) {
+    start({ folder, design, group, clean = null }) {
       if (!isRepository(folder.path)) return { error: 'A build session works on a git branch, and this folder isn’t the top of a git repository.' };
-      const designPath = `prelude/${design.id}`;
+      // What must be committed: the design, or (for the app build) all of prelude/.
+      const designPath = clean ?? `prelude/${design.id}`;
       try {
         if (git(folder.path, 'status', '--porcelain', '--', designPath)) {
-          return { error: `The design has changes that aren’t committed. Commit ${designPath}/ first: the build branch starts from the last commit.` };
+          return { error: `${clean ? 'The designs have' : 'The design has'} changes that aren’t committed. Commit ${designPath}/ first: the build branch starts from the last commit.` };
         }
       } catch (error) {
         return { error: `git couldn’t read the design’s status: ${error.message}` };

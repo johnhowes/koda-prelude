@@ -72,6 +72,8 @@ before(async () => {
   write(repo, 'prelude/borrowers/states/01-typical.json', { borrowers: [{ id: 1, name: 'Maria Delgado', email: 'maria@example.com' }] });
   write(repo, 'prelude/borrowers/states/02-underwriter.json', { borrowers: [{ id: 1, name: 'Maria Delgado', email: 'maria@example.com' }] });
   write(repo, 'prelude/borrowers/RULES.md', RULES);
+  // The app exists (step 8): features are built into app/.
+  write(repo, 'prelude/prelude.json', { app: { stack: 'Node, Express, Eta and Koda', path: 'app' } });
   git(repo, 'add', '-A');
   git(repo, 'commit', '-q', '-m', 'Design borrowers');
 

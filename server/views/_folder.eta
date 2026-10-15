@@ -26,6 +26,37 @@
     <% } %>
   </div>
 
+  <%/* The app (step 8): its stack once chosen, and, until it exists, the build
+       that creates it. Features are built into it, so it comes first. */%>
+  <% if (it.app.stack) { %>
+  <div class="card" id="app">
+    <h2>The app</h2>
+    <% if (it.app.built) { %>
+    <p class="sec"><%= it.app.stack %><% if (it.app.path) { %>, in <code><%= it.app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
+    <% } else { %>
+    <p class="sec">It will be <%= it.app.stack %>. There’s no app yet: the app build creates it on a branch of its own, with the shell’s layouts and the design system, so features can be built on top of it.<% if (it.app.custom) { %> Designs here wait for it, since they’re written in its language.<% } %></p>
+    <% if (it.appError) { %><p class="err" role="alert"><%= it.appError %></p><% } %>
+    <% if (it.canBuild) { %>
+    <form action="/f/<%= it.folder.id %>/app/build" method="post">
+      <button class="btn small primary" type="submit">Start the app build</button>
+    </form>
+    <% } else { %>
+    <p class="muted">A build works on a git branch: make this folder a git repository and commit <code>prelude/</code> first.</p>
+    <% } %>
+    <% } %>
+    <% if (it.appBuilds.length) { %>
+    <ul class="list">
+      <% for (const build of it.appBuilds) { %>
+      <li><a class="item" href="/f/<%= build.id %>/d/<%= build.design %>">
+        <span class="icon icon-conversation" aria-hidden="true"></span>
+        <span class="item-text"><span class="item-title">App build</span><span class="muted">branch <code><%= build.branch %></code></span></span>
+      </a></li>
+      <% } %>
+    </ul>
+    <% } %>
+  </div>
+  <% } %>
+
   <div class="card">
     <h2>New design</h2>
     <form action="/f/<%= it.folder.id %>/designs" method="post">
@@ -67,6 +98,22 @@
       </p>
       <% } %>
       <% if (it.form.errors.kind) { %><span class="err"><%= it.form.errors.kind %></span><% } %>
+      <%/* Asked once, the first time a design is made: the app's stack, which
+           its designs are written in. The default is one click; another stack
+           is a quiet option (step 8). */%>
+      <% if (!it.app.stack) { %>
+      <div class="stack-choice">
+        <p class="muted">Designs are written as the app’s own views. The app will be <strong><%= it.defaultStack %></strong>.</p>
+        <details>
+          <summary class="muted">Choose another stack</summary>
+          <label class="field">
+            <span class="f">The app’s stack</span>
+            <input name="stack" placeholder="ASP.NET Core MVC with Razor" autocomplete="off">
+          </label>
+          <p class="muted">Its app is built first, with a design host, and designs are then written in its language. The design system can be designed straight away.</p>
+        </details>
+      </div>
+      <% } %>
       <div class="rowbtns">
         <button class="btn small primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Create design</button>
       </div>

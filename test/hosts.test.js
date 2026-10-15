@@ -158,3 +158,22 @@ test('the host check runs a folder’s designs through its host', async () => {
     write('prelude/prelude.json', { host: { start: `node "${reference}" ${hostPort}`, url: `http://localhost:${hostPort}`, views: '.eta', guide: 'prelude/HOST.md' } });
   }
 });
+
+test('a host gets the port of its own url as PORT, never Prelude’s', async () => {
+  const { createHosts } = await import('../server/hosts.js');
+  const port = await freePort();
+  const folder = { id: 'portcheck', path: repo };
+  // No port on the command line: the host listens on PORT, as an app would.
+  const config = { start: `node "${reference}"`, url: `http://localhost:${port}`, views: '.eta', fingerprint: 'p' };
+  const hosts = createHosts({ home: mkdtempSync(join(tmpdir(), 'prelude-port-')) });
+  const was = process.env.PORT;
+  process.env.PORT = '1';   // Prelude's own PORT, which the host must not inherit
+  try {
+    hosts.approve(folder, config);
+    const { html } = await hosts.render(folder, config, { page: { views: join(repo, 'prelude', 'loans', 'views'), template: './loans/list', data: { loans: [] } } });
+    assert.equal(html, '<h1>Loans</h1>');
+  } finally {
+    if (was === undefined) delete process.env.PORT; else process.env.PORT = was;
+    hosts.closeAll();
+  }
+});

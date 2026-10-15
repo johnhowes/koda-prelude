@@ -254,6 +254,22 @@ test('after a turn, every route is rendered; what fails is shown, and told to th
   await post(`${sessionUrl}/messages`, { message: 'Fix it' });
   await until(() => runner.turns.length >= 2);
   assert.match(runner.turns.at(-1).prompt, /^\(From Prelude[\s\S]*Could not find template[\s\S]*Fix it$/);
+
+  // Prelude restarts (a second server on the same home and folder): what the
+  // last check found still reaches the agent, from the session's transcript.
+  await until(() => readEntries(sessionDir, id).filter(e => e.type === 'check').length === 2 && readEntries(sessionDir, id).filter(e => e.type === 'turn').length === 2);
+  const again = createFakeRunner();
+  const restarted = createServer({ home, runner: again });
+  await new Promise(resolve => restarted.listen(0, '127.0.0.1', resolve));
+  try {
+    await fetch(`http://127.0.0.1:${restarted.address().port}${sessionUrl}/messages`, { method: 'POST', body: new URLSearchParams({ message: 'Again' }), redirect: 'manual' });
+    await until(() => again.turns.length >= 1);
+    assert.match(again.turns[0].prompt, /^\(From Prelude[\s\S]*Could not find template[\s\S]*Again$/);
+    await until(() => readEntries(sessionDir, id).filter(e => e.type === 'turn').length === 3);
+  } finally {
+    restarted.closeAllConnections();
+    restarted.close();
+  }
 });
 
 test('an overlay: alone for a region, over its page for a cold load', async () => {

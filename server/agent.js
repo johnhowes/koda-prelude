@@ -20,6 +20,7 @@
 // someone's user settings can't widen what the agent may read or write.
 
 import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
 
@@ -280,6 +281,54 @@ The shell's own routes.json, views and states are its gallery: a page per layout
   return lines.join('\n\n');
 }
 
+// What an app build is told about the design-host contract: the contract as
+// hosts.js states it, and the reference host, which a Node app can follow
+// almost as it is. Read from Prelude's own files, so they never drift.
+const hostContract = () => {
+  const text = readFileSync(new URL('./hosts.js', import.meta.url), 'utf8');
+  return text.slice(0, text.indexOf('\nimport ')).split('\n').map(line => line.replace(/^\/\/ ?/, '')).join('\n').trim();
+};
+const referenceHost = () => readFileSync(new URL('../tools/reference-host.js', import.meta.url), 'utf8');
+
+/**
+ * The instructions for the app build (plan: step 8): create the app itself in
+ * a repository that has only its designs, as its own design host, with the
+ * shell's layouts ported and the design system served. `shell` is the design
+ * whose session this is; `designs` the folder's designs; `system` as
+ * designPrompt takes it.
+ */
+export function appBuildPrompt({ stack, shell, designs, system = null, branch, references = [], kodaPath = null, kodaVersion = null }) {
+  const isDefault = stack === 'Node, Express, Eta and Koda';
+  const shellPath = `prelude/${shell.id}`;
+  const list = designs.filter(design => design.kind === 'design').map(design => `  - ${design.title} (prelude/${design.id})`).join('\n') || '  (none yet)';
+  return `You are building the app itself: this repository has its designs (prelude/) but no app yet. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and opens the pull request.
+
+The app's stack is ${stack}${isDefault ? ': a Node server using Express, rendering Eta views, with Koda in the browser' : ''}. The designs are the specification:
+- The app's shell, ${shellPath}: its layouts are in ${shellPath}/layouts/ (each <name>.eta, with sample data in <name>.json), and its routes, views and states are their gallery.${system ? `\n- The design system, ${system.path}/system/: tokens.css, components.css${system.hasIcons ? ', icons.css' : ''}, and its guidelines.` : ''}
+- The feature designs, each built later as stories of their own:
+${list}
+
+Build the foundation, and nothing else:
+1. **The app**, in its own folder (app/ unless the stack has a convention), following the stack's conventions, with a README saying how to run it. ${isDefault ? `A package.json (Express, Eta, and @kodalang/core${kodaVersion ? ` ${kodaVersion}, the version the designs use` : ''}), and a server that answers each URL in Koda's two shapes: a request with the header x-koda-fragment: 1 gets the view alone, any other the view inside its layout; every answer sets x-koda: 1 and Vary: x-koda-fragment; a refused form answers 422 with the form. Read ${kodaPath ? `${kodaPath}/.claude/skills/koda-server-setup/SKILL.md` : 'the koda-server-setup skill'} first and follow it. Views live in app/views as Eta, rendered with autoEscape on.` : `Follow ${stack}'s usual project layout, and Koda's server conventions${kodaPath ? ` (${kodaPath}/.claude/skills/koda-server-setup/SKILL.md)` : ''}: one URL in two shapes, x-koda-fragment, x-koda: 1, Vary, 422 for a refused form.`}
+2. **The app is its own design host.** Started with the environment variable PRELUDE_HOST=1, it also answers Prelude's contract, below, rendering views with the same engine, the same helpers and the same views folder as its own pages, so a design renders exactly as the app will. Any other GET serves the app's own static files, so the design system and Koda load from the app's real URLs.${isDefault ? ' The reference host below is that contract in Node, rendering Eta: build the same into the app, sharing its Eta setup.' : ' The reference host below is that contract in Node, to translate.'}
+3. **prelude/prelude.json**: keep "app.stack", set "app.path" to the app's folder, and add "host": { "start": the command that ${isDefault ? 'installs the dependencies and starts the app (for example "npm install --no-audit --no-fund && node app/server.js")' : 'builds and starts the app'}, run in the repository with PRELUDE_HOST=1 already set; "url": the address it listens on, a localhost port of its own such as http://localhost:5300; "views": ${isDefault ? '".eta"' : 'the views\' extension'}; "guide": "prelude/HOST.md" }. Write prelude/HOST.md: how views, partials, layouts and form fields are written in this app, for the agents that design and build here.
+4. **The design system, served:** the app serves ${system ? `${system.path}/system/` : 'the design system\'s folder (prelude/<system>/system/), once there is one,'} at its own URL (such as /system/), from that folder, not a copy.
+5. **The shell's layouts, ported:** move each layout in ${shellPath}/layouts/ into the app's views (such as app/views/layouts/app.eta), element for element, changing only its links to the app's real URLs (the design system, Koda). It keeps printing what Prelude gives a layout (it.body, it.title, it.location, it.layout, it.regions). Then write ${shellPath}/layouts.json naming each: { "app": "@app/app/views/layouts/app" } (the path without its extension). Every design then renders in the app's real layout, and Prelude removes the shell's copy. If the shell has no layouts, write the app's layout from Koda's conventions: the design system's stylesheets, Koda started, and <main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history> around the page.
+6. **A place for data:** one data module per area, starting as an in-memory store seeded with the designs' typical state (copied into the app; the app never reads prelude/ for data). The feature pages themselves are built later, one story at a time.
+
+Don't add tests, CI, authentication, a database or anything else not listed: say in ${shellPath}/NOTES.md what you'd suggest next, and the person decides.
+
+You can't run commands. After each turn Prelude starts the app as its design host (running its "start" command, which installs what it needs), renders the shell's gallery through it, and tells you with the next message what fails. The first time, the person has to approve the host in the design bar, so the first check may wait for them.
+
+Prelude's design-host contract:
+
+${hostContract()}
+
+The reference host (tools/reference-host.js in Prelude):
+
+${referenceHost()}${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
 /**
  * The instructions for a build session (plan: step 7): implement one group of
  * a design - a page, its overlays, fragments and forms - in the app's real
@@ -301,7 +350,7 @@ ${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes th
 For each of them:
 - Port the view into the app, where the app keeps its views, following its conventions: the markup stays as designed, element for element. Change only what real code requires: a typed model instead of the untyped one, the stack's real field helpers instead of design stand-ins (as ${stack?.guide ?? 'the guide'} says), real URLs. Move a design view's partials with it, and the design's styles into the app's stylesheets.
 - Write the model from the states' shape, so every state still fits it, and the handler or controller that answers each route as routes.json says: the model from the app's data, a fragment for a fragment request and the page in its layout otherwise, an overlay's cold load with the page beneath, and each form exactly as its POST route says, refusal included.
-- Point the route at the app's view in routes.json: its "view" (and a POST route's "form" and answer views) becomes "@app/<path to the view, without its extension>".
+- Point the route at the app's view in routes.json: its "view" (and a POST route's "form" and answer views) becomes "@app/" and the view's path from the repository's root, without its extension: a view at app/views/orders/list${stack?.ext ?? '.eta'} is "@app/app/views/orders/list".
 - Make each proposed rule true, then remove its *proposed* line from RULES.md. Change nothing else in RULES.md.
 
 Never change the design's views, states, approved screens (${designPath}/snapshots/) or sessions; Prelude refuses those writes. If the design is wrong, incomplete or can't be built as it is, don't redesign it: say what and why in ${designPath}/NOTES.md, build the rest, and tell the person.

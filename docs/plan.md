@@ -1510,6 +1510,69 @@ Decided 2026-10-15:
   feature.
 - The app build stays minimal; everything else is decided with the agent while building.
 
+**As built (8):**
+- **The default app is its own design host** (a change from the plan above).
+  - **Why:** Prelude's built-in renderer never runs the app's code, so a default
+    Express app's server would go unchecked. Its ported layout's links to its real
+    URLs (`/system/…`, `/koda/…`) also wouldn't resolve in the preview.
+  - **What it does:** like the Razor demo, the app answers Prelude's contract when
+    started with `PRELUDE_HOST=1`, and its `prelude.json` names it as the host.
+  - **The result:** each check builds and runs the real app; assets are proxied to it;
+    the preview and production use the same URLs.
+  - **The agent's materials:** the app build is given the contract (the head of
+    `server/hosts.js`) and `tools/reference-host.js`, read from Prelude's files.
+- **`server/app-config.js`** reads and writes `prelude.json`'s `app`. `appOf` gives
+  `{ stack, custom, built, path }`; a folder with a design host and no `app` entry
+  counts as built. `chooseStack` writes the choice.
+- **The choice** happens in the New design form: one muted line naming the default, and
+  a "Choose another stack" disclosure with a field.
+  - The first design of views records it. The design system doesn't, since it's plain
+    HTML.
+  - A described stack refuses designs of views (409) until its app is built.
+- **The app build is a folder-level action**, the folder page's "The app" card, rather than
+  a group in a design's Build view (also a change from the plan).
+  - **Where it runs:** its session is a build session of the folder's shell, the app's
+    frame, made if there isn't one. Group `@app`, branch `build/<shell>-app`.
+  - **What must be committed:** all of `prelude/` (the stack choice included), not one
+    design.
+  - **Feature groups:** each design's Build view says "Build the app first", and
+    starting a feature build is refused until `appOf(...).built`.
+- **Shell layouts that are the app's:** the shell's `layouts.json` (`{ "app":
+  "@app/app/views/layouts/app" }`) makes `findLayout` use the app's file, with the
+  shell's `layouts/<name>.json` as sample data. A design's own draft layout still comes
+  first. After a build turn, Prelude removes the shell's shadowed copy.
+- **Found while proving it, and fixed:**
+  - **A host inherited Prelude's own `PORT`,** so an app that honours `PORT` tried to
+    listen where Prelude was, and exited. The desktop app sets `PORT=4200`, so it would
+    always have happened. A host now gets the port of its own `url` as `PORT`.
+  - **An unapproved host** made the check report failures, which were then told to the
+    agent. Now the check is skipped with a note asking the person to approve.
+  - **Findings lived only in memory,** so after Prelude restarted (the desktop app
+    reopened) the agent was told nothing. The check entry now keeps what's told (`told`).
+    A turn falls back to the session's last check if no message has gone since.
+  - **The build prompt's "@app/<path>" was ambiguous:** an agent wrote `@app/home/page`
+    for `app/views/home/page.eta`. It now says the path is from the repository root,
+    with an example.
+- **Proven on a copy of Apiary's designs** (system, shell with Settings, Landing page), in
+  a scratch repository with its own Prelude home:
+  1. **The stack.** Starting the app build settled the default stack and asked for
+     `prelude/` to be committed. The second start began the build.
+  2. **The app build** wrote an Express 5, Eta 4 and Koda 0.1.2 app in `app/`:
+     - two-shape responses, the 422 helper, and its own design host;
+     - the design system served from `prelude/` at `/system/`, and Koda at `/koda/`;
+     - the shell's layout ported, with only its links changed, and named in
+       `layouts.json`;
+     - data modules seeded from the typical state, `HOST.md`, and a README.
+  3. **Checking it.** Once the host was approved (and the `PORT` fix made), the check
+     rendered all 22 pages and forms through the real app. The design system's CSS and
+     Koda loaded through the preview's proxy.
+  4. **Features.** After merging the branch, the Landing page's Build view unlocked. Its
+     build ported the views, wrote the handlers (the drawer's cold load included) and
+     made two rules true in the data. Once its routes named `@app/app/views/…`, the
+     check passed.
+  5. **The real app** served the page and the drawer in both shapes, and gave a 404 for
+     an unknown request.
+
 ### Step 9 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

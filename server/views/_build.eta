@@ -29,6 +29,9 @@
   <% } %>
 
   <% if (it.error) { %><p class="err" role="alert"><%= it.error %></p><% } %>
+  <% if (!it.app.built) { %>
+  <p class="card">Features are built into the app, and there isn’t one yet. <a href="<%= it.appUrl %>">Build the app first</a><% if (it.app.stack) { %> (<%= it.app.stack %>)<% } %>; then build these on top of it. You can copy them as stories now.</p>
+  <% } %>
 
   <% for (const group of it.groups) { %>
   <div class="card build-group" ko-item>

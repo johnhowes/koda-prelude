@@ -1,7 +1,8 @@
 // Design hosts for other stacks (plan: step 6c).
 //
-// A repository whose app isn't Eta names a design host in a committed
-// prelude/prelude.json:
+// A repository whose app renders its own views - another stack, or (step 8)
+// the app a first build creates, which is its own design host - names it in a
+// committed prelude/prelude.json:
 //
 //   { "host": { "start": "dotnet run --project App --urls http://localhost:5199",
 //               "url": "http://localhost:5199", "views": ".cshtml",
@@ -119,7 +120,10 @@ export function createHosts({ home }) {
     const append = chunk => { entry.log = (entry.log + chunk).slice(-LOG_LIMIT); };
     append(`$ ${config.start}\n`);
     // The command is the repository's own, run in the repository, as `npm start` would be.
-    entry.child = spawn(config.start, { cwd: folder.path, shell: true, windowsHide: true, env: { ...process.env, PRELUDE_HOST: '1' } });
+    // PORT is the host's own (from its url), never Prelude's: an app that
+    // honours PORT would otherwise try to listen where Prelude already is.
+    const port = new URL(config.url).port || '80';
+    entry.child = spawn(config.start, { cwd: folder.path, shell: true, windowsHide: true, env: { ...process.env, PRELUDE_HOST: '1', PORT: port } });
     entry.child.stdout.on('data', append);
     entry.child.stderr.on('data', append);
     entry.child.on('exit', code => {

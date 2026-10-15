@@ -3,7 +3,7 @@
 // the render() function with that stack's engine - and the host Prelude's own
 // tests start through a prelude.json.
 //
-//   node tools/reference-host.js <port>
+//   node tools/reference-host.js [port]   (or PORT, as Prelude sets it)
 //
 // Unlike Prelude's built-in Eta host it is not sandboxed: like any design host
 // it runs a repository's views as code, which is why Prelude asks before it
@@ -15,7 +15,7 @@ import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Eta } from 'eta';
 
-const port = Number(process.argv[2] ?? 5299);
+const port = Number(process.argv[2] ?? process.env.PORT ?? 5299);
 const root = process.cwd();
 const DEFAULT_LAYOUT = fileURLToPath(new URL('../server/views/host', import.meta.url));
 

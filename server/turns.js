@@ -110,13 +110,20 @@ export function createTurns({ runner, live }) {
       const designPath = `prelude/${design.id}`;
       const pending = new Map();   // tool id -> name, to label its result
 
+      // What the last check found: from memory, or - after Prelude restarted -
+      // from this session's last check, if no message has gone since.
+      const entries = readEntries(designDir, sessionId);
+      const lastCheck = entries.findLast(entry => entry.type === 'check');
+      const sinceCheck = lastCheck ? entries.slice(entries.lastIndexOf(lastCheck)) : [];
+      const told = findings.get(dKey) ?? (lastCheck?.told && !sinceCheck.some(entry => entry.type === 'user') ? lastCheck.told : null);
+
       record(ctx, { type: 'user', text: message });
 
       const turn = runner.turn({
         cwd: folder.path,
         sessionId: session.claudeSessionId,
         resume: session.started === true,
-        prompt: withFindings(findings.get(dKey), message),
+        prompt: withFindings(told, message),
         // A build session (step 7) brings its own instructions and permissions.
         systemPrompt: systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack }),
         designPath,
@@ -161,7 +168,8 @@ export function createTurns({ runner, live }) {
             // differently from its approved snapshot is the person's to judge
             // (the agent was probably asked to change it), so it's only shown.
             const result = await check();
-            if (result) {
+            if (result?.blocked) record(ctx, { type: 'note', text: result.blocked });
+            else if (result) {
               const { failures, rendered = 0, differ = [], warnings = [], ahead = [] } = result;
               // Rules that point at nothing are the agent's to fix too.
               // A build session is also told what the app's models still lack.
@@ -173,7 +181,8 @@ export function createTurns({ runner, live }) {
                 ...(mode === 'build' ? differ.slice(0, 8).map(d => ({ info: true, state: null, path: d.name, error: `\n${d.diff.split('\n').slice(0, 14).join('\n')}` })) : []),
               ];
               if (told.length) findings.set(dKey, told);
-              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name), warnings, ahead });
+              // Kept with the check, so a restarted Prelude still tells the agent.
+              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name), warnings, ahead, ...(told.length ? { told } : {}) });
             }
           } catch { /* a failed check is no reason to lose the turn */ }
         }

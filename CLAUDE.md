@@ -102,6 +102,12 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     run in `mode: 'build'` (`buildPrompt`, `permissionArgs`), and each turn is
     committed to the branch. A host's `x-prelude-ahead` header (state members a
     typed model lacks) is reported, never failed.
+  - The app (plan, step 8): `server/app-config.js` reads `prelude.json`'s
+    `app` (the stack chosen with the first design, and the app's path once
+    built). The folder page's "The app" card starts the app build: a build
+    session of the shell (group `@app`, `appBuildPrompt`) that creates the app
+    as its own design host. Feature builds wait until it exists. A shell's
+    `layouts.json` names layouts that are the app's files.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

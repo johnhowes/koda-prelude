@@ -278,11 +278,32 @@ export function viewOf({ folderPath, designDir, view, ext = '.eta' }) {
 
 // --- layouts ---------------------------------------------------------------
 
+/** The shell's layouts that are the app's own files, from its layouts.json: { name: "@app/<path>" }. */
+export function shellLayoutLinks(shellDir) {
+  let links;
+  try { links = JSON.parse(readFileSync(join(shellDir, 'layouts.json'), 'utf8')); } catch { return {}; }
+  if (!links || typeof links !== 'object' || Array.isArray(links)) return {};
+  return Object.fromEntries(Object.entries(links).filter(([name, path]) => /^[a-z0-9][a-z0-9-]*$/i.test(name) && typeof path === 'string' && path.startsWith('@app/')));
+}
+
 /**
  * Where a route's layout comes from: { views, template, sample } or null.
  * "@app/<path>" is a real layout in the repository, read in place.
  */
 export function findLayout({ folderPath, designDir, shellDir, name, ext = '.eta' }) {
+  // A shell layout ported to the app (step 8): the shell's layouts.json names
+  // the app's file, and its sample data stays in the shell.
+  // (A design's own draft of the layout still comes first.)
+  const ownDraft = designDir && existsSync(join(designDir, 'views', 'layouts', `${name}${ext}`));
+  const link = !ownDraft && shellDir && shellLayoutLinks(shellDir)[name];
+  if (link) {
+    const found = findLayout({ folderPath, name: link, ext });
+    if (found) {
+      let sample = {};
+      try { sample = JSON.parse(readFileSync(join(shellDir, 'layouts', `${name}.json`), 'utf8')) ?? {}; } catch { /* no sample */ }
+      return { ...found, sample };
+    }
+  }
   if (name.startsWith('@app/')) {
     const file = normalize(join(folderPath, `${name.slice(5)}${extname(name) ? '' : ext}`));
     if (!file.startsWith(folderPath + sep) || !existsSync(file)) return null;
