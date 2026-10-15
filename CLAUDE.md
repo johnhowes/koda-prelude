@@ -60,7 +60,10 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     repo, then `server/views/host/layout.eta`), and answers each URL in two
     shapes. An overlay route (`over`, `in`) answers a cold load with the page
     beneath and the overlay in its region; layouts print regions from
-    `it.regions`. `/_prelude/` on that origin serves Koda, the system, the shell and
+    `it.regions`. POST routes (`readPostRoutes`, `postPath`) update, add or
+    remove at a data path, refuse empty required fields with a 422, and answer
+    with a redirect or a fragment plus `ko-into` envelopes. They change a
+    working copy of the state (`copy` in design-state.js), never the files. `/_prelude/` on that origin serves Koda, the system, the shell and
     the design's files.
   - Views are agent-written code, so they render only in `server/renderer.js`:
     a separate process under Node's permission model (`server/renderers.js`)

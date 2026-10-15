@@ -846,6 +846,29 @@ Decided 2026-10-15:
 - Refusals: `require`, answered with a 422 that re-renders `form`. Richer rules later.
 - GET forms (search and filter) come in the step after this one.
 
+As built (6b):
+- **POST routes are read beside the GET routes** (`readPostRoutes`) and answered by
+  `postPath`. Posting works on a clone of the current dataset, and the clone becomes
+  the working copy only when the post is accepted.
+- **Answers:**
+  - an event goes on the answer's root element, or in an envelope when there's no
+    view;
+  - table parts travel in `<template ko-into>`;
+  - an answer with nothing to show is an empty envelope addressed to a region no page
+    has (`prelude-nothing?`), so Koda leaves the asking region alone.
+- **Reset data** appears in the design bar once the current state's copy exists.
+  Picking a state drops the copy.
+- **The after-turn check posts each POST route** against a throwaway copy, filling
+  required fields from the record or with "Sample".
+- **Verified with the real agent,** in a new session on Packages, which picked up from
+  `NOTES.md` and read Koda's reference itself:
+  - it made the Edit Package drawer save with one POST route that updates the package,
+    refreshes the page's heading and summary out of band, and closes the drawer;
+  - in the browser, an empty borrower name was refused in place, with the field
+    marked and nothing changed;
+  - a valid save closed the drawer and updated the heading without leaving the page,
+    and the list showed the change too.
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

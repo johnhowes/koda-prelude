@@ -41,6 +41,12 @@
       </form>
     </details>
     <% } %>
+    <% if (it.changed) { %>
+    <form action="<%= it.base %>/reset" method="post" ko-target="design">
+      <input type="hidden" name="view" value="<%= it.view %>">
+      <button class="btn small ghost" type="submit" title="Forms have changed this state's data. Start again from its file.">Reset data</button>
+    </form>
+    <% } %>
     <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %></span>
     <span class="spacer"></span>
     <% if (it.popped) { %>

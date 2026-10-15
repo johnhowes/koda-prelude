@@ -140,6 +140,42 @@ export function matchRoute(routes, path) {
   return null;
 }
 
+/**
+ * The design's POST routes, from keys like "POST /orders/:id": each does one
+ * thing to the state's data at a path - update a record, add one to a list,
+ * or remove one - refuses when a required field is empty, and answers.
+ *   [{ pattern, verb, at, data, require, form, answer: { redirect, view, data, also, event } }]
+ */
+export function readPostRoutes(designDir) {
+  let table;
+  try { table = JSON.parse(readFileSync(join(designDir, 'routes.json'), 'utf8')); } catch { return []; }
+  if (!table || typeof table !== 'object' || Array.isArray(table)) return [];
+  const routes = [];
+  for (const [key, route] of Object.entries(table)) {
+    const match = key.match(/^POST\s+(\/\S*)$/);
+    if (!match || !route || typeof route !== 'object') continue;
+    const verb = ['update', 'add', 'remove'].find(name => typeof route[name] === 'string');
+    if (!verb) continue;
+    const answer = route.answer && typeof route.answer === 'object' ? route.answer : {};
+    routes.push({
+      pattern: match[1],
+      verb,
+      at: route[verb],
+      data: route[verb],   // so samplePaths can fill its :params
+      require: Array.isArray(route.require) ? route.require.filter(name => typeof name === 'string') : [],
+      form: typeof route.form === 'string' ? route.form : null,
+      answer: {
+        redirect: typeof answer.redirect === 'string' ? answer.redirect : null,
+        view: typeof answer.view === 'string' ? answer.view : null,
+        data: typeof answer.data === 'string' ? answer.data : '',
+        also: Array.isArray(answer.also) ? answer.also.filter(a => a && typeof a.into === 'string') : [],
+        event: typeof answer.event === 'string' ? answer.event : null,
+      },
+    });
+  }
+  return routes;
+}
+
 /** "02-empty.json" -> { id: "empty", file, title: "Empty" }, in file-name order. */
 export function listStates(designDir) {
   let files;
@@ -239,7 +275,7 @@ function sendHtml(res, status, html) {
  */
 export async function handleDesignHost(req, res, app, host) {
   const notFound = (message = 'Not found') => sendHtml(res, 404, `<p>${message}</p>`);
-  if (req.method !== 'GET' && req.method !== 'HEAD') return sendHtml(res, 405, '<p>Designs answer GET only, for now.</p>');
+  if (!['GET', 'HEAD', 'POST'].includes(req.method)) return sendHtml(res, 405, '<p>Designs answer GET and POST.</p>');
 
   const folder = app.folders.get(host.folderId);
   if (!folder) return notFound();
@@ -266,17 +302,32 @@ export async function handleDesignHost(req, res, app, host) {
 
   const fragment = req.headers['x-koda-fragment'] === '1';
   const key = app.designKey(folder, design);
+  const states = listStates(designDir);
+  const state = states.find(s => s.id === app.designs.state(key)) ?? states[0] ?? null;
+  const dataset = datasetOf(app, key, designDir, state);
+
+  // A form: change a copy of the data, keep it if the post was accepted, and
+  // answer as the app would (a redirect, a fragment, regions out of band).
+  if (req.method === 'POST') {
+    const fields = await readFormFields(req);
+    const working = structuredClone(dataset);
+    const answer = await postPath(app, { folder, design, designDir, path, fields, dataset: working });
+    if (answer.changed && answer.status < 400) app.designs.setCopy(key, state?.id ?? null, working);
+    if (answer.status === 303) {
+      res.writeHead(303, { location: answer.location, 'x-koda': '1', vary: 'x-koda-fragment' });
+      return res.end();
+    }
+    return sendHtml(res, answer.status, answer.html);
+  }
 
   // A page loading in the preview's frame is the page on show: following a
   // link inside a design moves every window to it. A fragment, or a page in
   // a tab of its own, changes nothing.
   if (!fragment && req.headers['sec-fetch-dest'] === 'iframe' && matchRoute(readRoutes(designDir), path)) {
-    const states = listStates(designDir);
-    const state = states.find(s => s.id === app.designs.state(key)) ?? states[0] ?? null;
-    app.designs.show(key, path, { shown: pickable(readRoutes(designDir), readState(designDir, state))[0]?.id });
+    app.designs.show(key, path, { shown: pickable(readRoutes(designDir), dataset)[0]?.id });
   }
 
-  const answer = await renderPath(app, { folder, design, designDir, path, fragment, stateId: app.designs.state(key) });
+  const answer = await renderPath(app, { folder, design, designDir, path, fragment, stateId: state?.id ?? null, dataset });
   return sendHtml(res, answer.status, answer.html);
 }
 
@@ -286,7 +337,7 @@ export async function handleDesignHost(req, res, app, host) {
  * 500 carrying the renderer's error. Used for requests, and for checking every
  * route after the agent's turn.
  */
-export async function renderPath(app, { folder, design, designDir, path, fragment = false, stateId = null }) {
+export async function renderPath(app, { folder, design, designDir, path, fragment = false, stateId = null, dataset: given = null }) {
   const escape = text => String(text).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   const dirOf = kind => {
     const found = findKind(folder.path, kind);
@@ -300,7 +351,7 @@ export async function renderPath(app, { folder, design, designDir, path, fragmen
 
   const states = listStates(designDir);
   const state = states.find(s => s.id === stateId) ?? states[0] ?? null;
-  const dataset = readState(designDir, state);
+  const dataset = given ?? readState(designDir, state);
   const model = lookup(dataset, route.data, params);
   if (model === undefined) {
     return { status: 404, html: `<p>There's nothing at "${escape(route.data)}" in the ${state ? `"${escape(state.title)}"` : 'empty'} state.</p>` };
@@ -406,6 +457,22 @@ export async function checkDesign(app, { folder, design, designDir }) {
   const states = listStates(designDir);
   const failures = [];
   for (const state of states.length ? states : [null]) {
+    // Each POST route, against a throwaway copy: a valid post must answer as
+    // described, and an empty one must be refused when fields are required.
+    for (const { route, path } of samplePaths(readPostRoutes(designDir), readState(designDir, state))) {
+      const label = `POST ${path}`;
+      const record = route.verb === 'update' ? lookup(readState(designDir, state), route.at, matchRoute([route], path)?.params ?? {}) : null;
+      const valid = Object.fromEntries([
+        ...Object.entries(record && typeof record === 'object' ? record : {}).filter(([, v]) => ['string', 'number', 'boolean'].includes(typeof v)).map(([k, v]) => [k, String(v)]),
+        ...route.require.map(name => [name, String(record?.[name] ?? 'Sample')]),
+      ]);
+      const ok = await postPath(app, { folder, design, designDir, path, fields: valid, dataset: structuredClone(readState(designDir, state)) });
+      if (ok.status >= 400) failures.push({ state: state?.title ?? null, path: label, error: ok.error ?? `answered ${ok.status}: ${ok.html.replace(/<[^>]+>/g, '').slice(0, 200)}` });
+      if (route.require.length) {
+        const refused = await postPath(app, { folder, design, designDir, path, fields: {}, dataset: structuredClone(readState(designDir, state)) });
+        if (refused.status !== 422) failures.push({ state: state?.title ?? null, path: `${label} (empty)`, error: refused.error ?? `should refuse with 422, answered ${refused.status}` });
+      }
+    }
     for (const { route, path, fragment } of samplePaths(routes, readState(designDir, state))) {
       // An overlay is rendered both ways: alone, and over the page beneath.
       for (const alone of route.over ? [true, false] : [fragment]) {
@@ -415,4 +482,166 @@ export async function checkDesign(app, { folder, design, designDir }) {
     }
   }
   return failures;
+}
+
+// --- forms: POST routes ----------------------------------------------------
+
+/**
+ * The dataset a design's routes read now: the working copy, if forms have
+ * changed the current state's data, else the state's file.
+ */
+export function datasetOf(app, key, designDir, state) {
+  const copy = app.designs?.copy?.(key);
+  if (copy && copy.stateId === (state?.id ?? null)) return copy.data;
+  return readState(designDir, state);
+}
+
+/** A posted form as an object; a name posted twice keeps its last value. */
+export async function readFormFields(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const request = new Request('http://localhost/', {
+    method: 'POST',
+    headers: { 'content-type': req.headers['content-type'] ?? 'application/x-www-form-urlencoded' },
+    body: Buffer.concat(chunks),
+  });
+  const fields = {};
+  for (const [name, value] of (await request.formData()).entries()) {
+    if (typeof value === 'string') fields[name] = value;
+  }
+  return fields;
+}
+
+/**
+ * A posted string, typed like the value it replaces: a number stays a number,
+ * a boolean a boolean ("on", "true", "1" are true; a checkbox sends a hidden
+ * "false" before it, so an unchecked box still says so).
+ */
+function typed(value, like) {
+  if (typeof like === 'number') return value.trim() === '' || Number.isNaN(Number(value)) ? value : Number(value);
+  if (typeof like === 'boolean') return ['on', 'true', '1', 'yes'].includes(value.toLowerCase());
+  return value;
+}
+
+/** Set each field on a record; "address.city" reaches inside. */
+function mergeFields(record, fields) {
+  for (const [name, value] of Object.entries(fields)) {
+    const steps = name.split('.').filter(Boolean);
+    if (steps.length === 0 || steps.some(step => step === '__proto__' || step === 'constructor' || step === 'prototype')) continue;
+    let here = record;
+    for (const step of steps.slice(0, -1)) {
+      if (!here[step] || typeof here[step] !== 'object') here[step] = {};
+      here = here[step];
+    }
+    const last = steps.at(-1);
+    here[last] = typed(value, here[last]);
+  }
+  return record;
+}
+
+/** The next id for a list: one more than the largest number, or a short random one. */
+function nextId(list) {
+  const ids = list.map(item => item?.id);
+  if (ids.length && ids.every(id => Number.isFinite(Number(id)))) return Math.max(...ids.map(Number)) + 1;
+  return Math.random().toString(36).slice(2, 8);
+}
+
+/** The list holding a path's last step, and that step's index or key in it. */
+function locate(data, path, params) {
+  const steps = path.split('/').filter(Boolean);
+  const parent = steps.length > 1 ? lookup(data, steps.slice(0, -1).join('/'), params) : data;
+  const last = steps.at(-1);
+  if (parent === null || typeof parent !== 'object' || last === undefined) return null;
+  const key = last.startsWith(':') ? params[last.slice(1)] : last;
+  if (Array.isArray(parent)) {
+    const index = parent.findIndex(item => item && typeof item === 'object' && String(item.id) === String(key));
+    return index < 0 ? null : { parent, key: index };
+  }
+  return key in parent ? { parent, key } : null;
+}
+
+/** Apply a POST route's verb to the data, in place. Returns { params } (with :new) or { missing }. */
+export function applyChange(data, route, params, fields) {
+  const after = { ...params };
+  if (route.verb === 'update') {
+    const record = lookup(data, route.at, params);
+    if (!record || typeof record !== 'object') return { missing: route.at };
+    mergeFields(record, fields);
+  } else if (route.verb === 'add') {
+    const list = lookup(data, route.at, params);
+    if (!Array.isArray(list)) return { missing: route.at };
+    const id = nextId(list);
+    list.push(mergeFields({ id }, fields));
+    after.new = String(id);
+  } else if (route.verb === 'remove') {
+    const found = locate(data, route.at, params);
+    if (!found) return { missing: route.at };
+    if (Array.isArray(found.parent)) found.parent.splice(found.key, 1);
+    else delete found.parent[found.key];
+  }
+  return { params: after };
+}
+
+const escapeHtml = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+/** An out-of-band fragment for a region; table parts travel in a template, as Koda requires. */
+function envelope(into, html = '') {
+  const tag = /^\s*<(tr|td|th|thead|tbody|tfoot|caption|colgroup|col)[\s>]/i.test(html) ? 'template' : 'div';
+  return `<${tag} ko-into="${escapeHtml(into)}">${html}</${tag}>`;
+}
+
+/**
+ * Answer a POST to a design's URL, against `dataset` (changed in place):
+ * { status, html, location?, changed }. A refusal (422) changes nothing and
+ * re-renders the route's form with what was typed and it.$errors.
+ */
+export async function postPath(app, { folder, design, designDir, path, fields, dataset }) {
+  const posts = readPostRoutes(designDir);
+  const matched = matchRoute(posts, path);
+  if (!matched) return { status: 404, html: `<p>This design has no POST route for ${escapeHtml(path)}.</p>`, changed: false };
+  const { route, params } = matched;
+  const views = join(designDir, 'views');
+  const renderView = (view, data) => render(app, folder, { page: { views, template: `./${view}`, data } });
+
+  // Refused: a required field is empty. Nothing changes; the form comes back
+  // with what was typed, and each refused field's message.
+  const missing = route.require.filter(name => !String(fields[name] ?? '').trim());
+  if (missing.length) {
+    const $errors = Object.fromEntries(missing.map(name => [name, 'This is required.']));
+    if (!route.form) return { status: 422, html: `<p>Required: ${missing.map(escapeHtml).join(', ')}.</p>`, changed: false };
+    const record = route.verb === 'update' ? lookup(dataset, route.at, params) : null;
+    const model = mergeFields(structuredClone(record && typeof record === 'object' ? record : {}), fields);
+    const answer = await renderView(route.form, { ...model, $errors });
+    return { status: answer.status === 200 ? 422 : answer.status, html: answer.html, error: answer.error, changed: false };
+  }
+
+  const applied = applyChange(dataset, route, params, fields);
+  if (applied.missing) return { status: 404, html: `<p>There's nothing at "${escapeHtml(applied.missing)}" to change.</p>`, changed: false };
+  const after = applied.params;
+
+  const { answer } = route;
+  if (answer.redirect) {
+    return { status: 303, location: fillParams(answer.redirect, after), html: '', changed: true };
+  }
+
+  // A fragment for wherever the form aimed it, plus anything out of band.
+  const parts = [];
+  if (answer.view) {
+    const main = await renderView(answer.view, lookup(dataset, answer.data, after));
+    if (main.status !== 200) return { ...main, changed: true };
+    parts.push(answer.event ? main.html.replace(/^(\s*<[a-z][a-z0-9-]*)/i, `$1 ko-event="${escapeHtml(answer.event)}"`) : main.html);
+  } else if (answer.event) {
+    parts.push(envelope('prelude-events?', `<i hidden ko-event="${escapeHtml(answer.event)}"></i>`));
+  }
+  for (const also of answer.also) {
+    if (!also.view) { parts.push(envelope(also.into)); continue; }   // the empty envelope: close that region
+    const part = await renderView(also.view, lookup(dataset, typeof also.data === 'string' ? also.data : '', after));
+    if (part.status !== 200) return { ...part, changed: true };
+    parts.push(envelope(also.into, part.html));
+  }
+  // An answer with nothing to show still has to say so: an answer made only of
+  // addressed fragments leaves the asking region alone, and this one is
+  // addressed to a region no page has, so Koda drops it.
+  if (parts.length === 0) parts.push(envelope('prelude-nothing?'));
+  return { status: 200, html: parts.join('\n'), changed: true };
 }

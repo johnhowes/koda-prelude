@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { checkDesign, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes, readState } from './host.js';
+import { checkDesign, datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes } from './host.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
@@ -273,20 +273,21 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       // Every titled route, with sample ids from this state; overlays under
       // their page. A page followed to inside the frame may not be one of
       // them (another record), and is shown by its route's title.
-      const screens = pickable(routes, readState(dir, state)).map(pick => ({ ...pick, file: pick.id }));
+      const screens = pickable(routes, datasetOf(app, dKey, dir, state)).map(pick => ({ ...pick, file: pick.id }));
       const path = designs.current(dKey) ?? screens[0]?.id ?? null;
       const matched = path && matchRoute(routes, path);
       const current = screens.find(screen => screen.id === path)
         ?? (matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null);
       const origin = designOrigin(req, folder, design);
-      return { ...common, hosted: true, screens, current, states, state, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
+      const changed = designs.copy(dKey)?.stateId === (state?.id ?? null);
+      return { ...common, hosted: true, screens, current, states, state, changed, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
     }
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
     const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
     const files = `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`;
     const at = current && `${files}/screens/${encodeURIComponent(current.file)}`;
-    return { ...common, hosted: false, screens, current, states: [], state: null, frame: at, open: at };
+    return { ...common, hosted: false, screens, current, states: [], state: null, changed: false, frame: at, open: at };
   };
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
@@ -302,6 +303,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       : listScreens(dir).some(screen => screen.id === wanted);
     if (known) designs.show(dKey, wanted);
     return send(res, 200, render('./_design', surface(view)));
+  }
+
+  // "Reset data": throw away what forms changed, back to the state's file.
+  if (req.method === 'POST' && rest[0] === 'reset' && rest.length === 1) {
+    const form = await readForm(req);
+    designs.resetCopy(dKey);
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')))));
   }
 
   if (req.method === 'POST' && rest[0] === 'state' && rest.length === 1) {

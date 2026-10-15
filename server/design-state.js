@@ -50,10 +50,30 @@ export function createDesignState({ live }) {
     /** The design-wide state on show (a hosted design's fake dataset), or null for its default. */
     state: key => of(key).state,
 
-    /** Someone picked a state. Says whether that was news. */
+    /** Someone picked a state. Says whether that was news. Forms' changes start again. */
     showState(key, stateId) {
       if (of(key).state === stateId) return false;
       of(key).state = stateId;
+      of(key).copy = null;
+      announce(key);
+      return true;
+    },
+
+    /**
+     * The working copy of the current state's data, once forms have changed it:
+     * { stateId, data }, or null. Changing it is not announced: the frame that
+     * posted already shows the answer, and reloading it would undo what Koda
+     * did in the page (a drawer closing, a row replaced).
+     */
+    copy: key => of(key).copy ?? null,
+    setCopy(key, stateId, data) {
+      of(key).copy = { stateId, data };
+    },
+
+    /** "Reset data": back to the state's file, in every window. */
+    resetCopy(key) {
+      if (!of(key).copy) return false;
+      of(key).copy = null;
       announce(key);
       return true;
     },
