@@ -650,7 +650,7 @@ Decided 2026-10-15:
 - For an Eta or Koda app with a layout, the shell points at the real layout files.
 - Shell data: sample data beside each layout, overridable per state under `layout`.
 
-#### Overlays in context (6a.2) — proposal, not yet decided
+#### Overlays in context (6a.2)
 
 A drawer, a modal or a side panel isn't a page. It's a fragment presented in a region
 the layout offers (`ko-target="drawer?"`), over the page the person was on. Shown
@@ -700,12 +700,14 @@ landing in the right region) are all real, not a picture of a page behind a pane
 overlays (a modal over a drawer). The `in` field can say `modal` over a route that is
 itself `over` a page, if that's ever needed.
 
-Open questions:
-1. Do `over` and `in` on the overlay's route capture it, with a cold load showing the
-   page beneath with the overlay open?
-2. Should layouts print offered regions from `it.regions` (proposed)?
-3. Should routes with `:params` be pickable everywhere, filled with sample ids from the
-   current state?
+Decided 2026-10-15:
+- `over` and `in` on the overlay's route; a cold load shows the page beneath with the
+  overlay open.
+- Layouts print each region they offer from `it.regions`, rather than Prelude splicing
+  the overlay into the HTML. That's what the app's own layout must do to answer a
+  deep link to a drawer, so the design's layout stays the real one.
+- Routes with `:params` are pickable everywhere, filled with sample ids from the
+  current state.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
