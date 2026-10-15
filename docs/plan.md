@@ -538,11 +538,14 @@ How it improves on KodaDesign:
    - the screen picker built from routes, plus a design-wide state picker. The state is
      server state, and a frame loading a route moves every window to it.
    - Plain `.html` screens keep working for designs without `routes.json`.
-2. **6b:** Forms and changes: POST routes, what they change in the state's data, and
+2. **6a.2:** Overlays in context: a drawer, modal or side panel shown over a real
+   page, not as a page of its own (below). It comes before forms, because most forms
+   live in overlays and their answers depend on the page behind.
+3. **6b:** Forms and changes: POST routes, what they change in the state's data, and
    their answers. Decided before it's built.
-3. **6c:** The host contract for other stacks (`prelude/prelude.json`), then Spark's
+4. **6c:** The host contract for other stacks (`prelude/prelude.json`), then Spark's
    DesignHost.
-4. **6d:** Drift: porting points a design at the production views, and states render
+5. **6d:** Drift: porting points a design at the production views, and states render
    as CI fixtures.
 
 Decided 2026-10-15:
@@ -646,6 +649,63 @@ Decided 2026-10-15:
   the design system. That keeps the system shareable at the organisation level later.
 - For an Eta or Koda app with a layout, the shell points at the real layout files.
 - Shell data: sample data beside each layout, overridable per state under `layout`.
+
+#### Overlays in context (6a.2) — proposal, not yet decided
+
+A drawer, a modal or a side panel isn't a page. It's a fragment presented in a region
+the layout offers (`ko-target="drawer?"`), over the page the person was on. Shown
+alone, as KodaDesign did, it can't be judged: its width against the page, what stays
+visible beside it, whether the page behind still makes sense. OrchestratR does it
+well, with a context layout that draws the panel over a frame of the page beneath.
+
+**The proposal: a deep link to an overlay is the page beneath with the overlay open,
+which is also how the real server should answer it.** Koda's guidance for a panel in a
+browser is to compose it into the host's URL, so that reloading a drawer's URL shows
+the order with its drawer open, not a bare fragment and not the order alone. So the
+design states it, and Prelude's host does what the real server would:
+
+```json
+{
+  "/orders/:id":      { "view": "orders/detail",    "title": "Order", "data": "orders/:id" },
+  "/orders/:id/edit": { "view": "orders/_edit",     "title": "Edit order", "data": "orders/:id",
+                        "over": "/orders/:id", "in": "drawer" }
+}
+```
+
+- **`over`** is the page beneath, written with the overlay's own `:params`.
+  **`in`** is the region it's presented in: `drawer`, `modal`, or any region a layout
+  offers.
+- **A fragment request** (Koda opening the drawer from a link with
+  `ko-target="drawer?"`) gets the overlay's view alone, as now.
+- **A cold load,** meaning the preview's frame, a reload or a shared link, gets the
+  page beneath, rendered as usual, with the overlay already in its region. The layout
+  receives `it.regions.drawer = { html, location }` and prints it inside the region it
+  offers, with `ko-location` set so Koda knows what the region holds. Closing the
+  drawer, or following any link, then behaves as it will in the app.
+- **The shell's layouts print each region they offer** from `it.regions`. That's one
+  line in each region, and the shell's prompt says so. The built-in layout offers a
+  drawer and a modal.
+- **The preview's page picker gets overlays too,** listed under their page ("Order ›
+  Edit order"). Routes with `:params` become pickable everywhere, filled with the first
+  matching record's ids in the current state, the same sample ids the after-turn
+  check uses. So "Edit order" shows order P-10482 with its drawer open.
+- **The check renders each overlay both ways,** alone and over its page.
+
+**Why this beats a context frame:** the page beneath is the real page, rendered from
+the same state, in the same document as the overlay. So the drawer's width, the page's
+scroll, focus, and Koda's own behaviour (Back closing the drawer, a link inside it
+landing in the right region) are all real, not a picture of a page behind a panel.
+
+**Not in this step:** overlays opened by script rather than by a route, and nested
+overlays (a modal over a drawer). The `in` field can say `modal` over a route that is
+itself `over` a page, if that's ever needed.
+
+Open questions:
+1. Do `over` and `in` on the overlay's route capture it, with a cold load showing the
+   page beneath with the overlay open?
+2. Should layouts print offered regions from `it.regions` (proposed)?
+3. Should routes with `:params` be pickable everywhere, filled with sample ids from the
+   current state?
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
