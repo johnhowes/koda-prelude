@@ -726,6 +726,127 @@ As built (6a.2):
   - The Edit button (a link with `ko-target="drawer?"`) opened the same view in the
     drawer through Koda, staying on the page.
 
+#### Forms and changes (6b) — proposal, not yet decided
+
+A design that can't save isn't a prototype. 6b lets forms post, changes the state's
+fake data, and answers the way the app will: in place, out of band, closing the
+drawer, or refusing with the fields marked. As everywhere in step 6, the aim is that
+the design's routes and views *are* the app's: the controller the app needs is the
+one the design describes.
+
+**What KodaDesign did:**
+- **Right:**
+  - real POST routes;
+  - answers in all of Koda's shapes: a 303 to a page, a fragment, `ko-into` refreshes,
+    the empty envelope that closes the panel that asked, refusals as 422;
+  - a contract test exported from it.
+- **Heavy:**
+  - an `exchanges.json` beside the routes, with its own effects language (sum, count,
+    set to today, …);
+  - per-viewer sessions behind a cookie;
+  - data kept per screen;
+  - a slice for each fragment.
+
+**The proposal: POST routes in the same `routes.json`, three verbs, and an answer.**
+
+```json
+{
+  "POST /spark/servicing/packages/:id": {
+    "update": "packages/:id",
+    "require": ["borrower", "program"],
+    "form": "packages/_edit",
+    "answer": { "view": "packages/_row", "data": "packages/:id",
+                "also": [ { "into": "drawer?" },
+                          { "into": "summary", "view": "packages/_summary", "data": "" } ] }
+  },
+  "POST /spark/servicing/packages": {
+    "add": "packages", "require": ["borrower"],
+    "form": "packages/_new",
+    "answer": { "redirect": "/spark/servicing/packages/:new" }
+  },
+  "POST /spark/servicing/packages/:id/delete": {
+    "remove": "packages/:id",
+    "answer": { "redirect": "/spark/servicing/packages" }
+  }
+}
+```
+
+**What each part does:**
+- **One verb, at a data path** (the same paths GET routes use):
+  - **`update`** merges the posted fields into that record. A field keeps the type its
+    current value has (a number stays a number, a checkbox a boolean), and a dotted name
+    (`address.city`) reaches inside.
+  - **`add`** appends a record to that list with the posted fields and a new `id`. The
+    answer can refer to it as `:new`.
+  - **`remove`** takes the record out.
+- **`require`** lists the fields that may not be empty. A missing one is refused with a
+  **422** that re-renders `form` with what was typed and the errors. The view sees them
+  as `it.$errors.borrower` and marks the field with `ko-invalid-server`, as Koda expects.
+  Nothing changes.
+- **`answer`**, after the change:
+  - **`redirect`** gives a 303 to a page (post-redirect-get), which Koda follows into
+    the right region;
+  - **`view` + `data`** gives a fragment, rendered from the changed data, which lands
+    wherever the form aimed it (`ko-target="self"` for a row that saves itself);
+  - **`also`** adds out-of-band updates: `{ into, view, data }` refreshes another
+    region; `{ into }` alone is the empty envelope that closes it (the drawer the form
+    was in). Table parts travel in `<template ko-into>`, as Koda requires;
+  - **`event`** raises a named event (`ko-event`) for anything listening;
+  - an answer of `{}` is `204`-like: nothing to show.
+- **Every answer** carries `x-koda: 1` and `Vary`, like GET.
+
+**Where the changes live: a working copy of the state, per design, in memory.** Posting
+changes a copy of the current state's dataset, never the file. Every route reads the
+copy, so after "Save" the list, the detail and the drawer all show the new value.
+- **The copy is server state,** like the current screen and state: every window sees
+  it.
+- **Picking a state, or "Reset data"** in the design bar (shown once something has
+  changed), throws the copy away and starts again from the file.
+- **A change isn't announced** to the preview, so it doesn't reload the frame that made
+  it and lose Koda's in-page state, such as the drawer closing as it should.
+- **Restarting Prelude resets every copy.** The state files the agent writes stay the
+  design's truth.
+
+**Why verbs and not code, for now:** update, add and remove cover most forms, read as a
+sentence ("saving updates the package, closes the drawer and refreshes the row"), and
+port directly to a controller action:
+- bind the model;
+- save;
+- return the row partial, plus the out-of-band partials;
+- refuse with a 422 and the form.
+
+When a form needs real logic (totals, workflows, a status that moves on), the next
+step is a small handler per POST route, written in JavaScript and run in the same
+sandboxed renderer process. That's deferred until a design needs it, as decided for
+loaders.
+
+**The rest:**
+- **The agent is told** the POST format, to open forms from overlays when the app would,
+  and to aim each form's answer as the real app should (`ko-target="self"` for a row,
+  the drawer's form answering the row and closing the drawer).
+- **The after-turn check** posts a sample of each POST route against a throwaway copy:
+  - one valid post, which must answer as described;
+  - one empty post, which must refuse with a 422 when the route has `require`.
+- **Porting:** each POST route becomes a controller action. Its `require` list becomes
+  validation, and its answer becomes what the action returns. In 6d, the same routes
+  generate a contract test, as KodaDesign's export did, against the design and then
+  against the app.
+
+**Not in this step:**
+- GET forms (search and filter, `?q=`). They need the query in the model; that's next.
+- Uploads.
+- Business logic beyond the three verbs.
+- Undo.
+
+Open questions:
+1. Should POST routes use three verbs (`update`, `add`, `remove`) plus `require` and
+   `answer` (proposed), or JavaScript handlers from the start?
+2. Should changes live in a design-wide working copy, in memory, reset by picking a
+   state or "Reset data" (proposed)?
+3. Are refusals as `require` plus a 422 re-render of `form` enough for now, with richer
+   rules later?
+4. Can GET forms (search and filter) wait for the step after this one?
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
