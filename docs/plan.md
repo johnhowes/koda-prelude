@@ -895,6 +895,132 @@ GET forms work like any link: Koda routes them, and the URL carries the query.
   caught a Prelude bug: `it.$query` was non-enumerable, so it didn't survive
   `include()`. It's now an ordinary property.
 
+#### Other stacks, then Spark (6c) — proposal, not yet decided
+
+Step 6 set out to make a design's views the app's real views. For an Eta or Koda
+app, the built-in host already does that. For any other stack, such as Spark's Razor,
+the views have to be rendered by that stack's own engine, with its real components.
+
+**What the built-in host already separates:** Prelude's side of serving a design is
+almost all stack-agnostic:
+- matching routes;
+- finding data in the state;
+- search and filters;
+- POST verbs and refusals;
+- the working copy;
+- composing overlays over their page;
+- choosing the layout;
+- the after-turn check.
+
+Only one piece knows Eta: the sandboxed renderer, given "render this view with this
+model, inside this layout with this data and these regions".
+
+**The proposal: the contract is the renderer, spoken over HTTP.** A repository whose
+app isn't Eta provides a design host that does that one job with its own engine.
+Prelude keeps everything else, so every stack gets routes, states, overlays, forms,
+search, the preview and the check without reimplementing any of it.
+
+```json
+// prelude/prelude.json, committed with the designs
+{
+  "host": {
+    "start": "dotnet run --project App/DesignHost --urls http://localhost:5199",
+    "url": "http://localhost:5199",
+    "views": ".cshtml",
+    "guide": "prelude/HOST.md"
+  }
+}
+```
+
+**The contract a host implements** (Prelude ships a conformance test for it):
+- `GET /__prelude/health`: 200 once it's ready.
+- `POST /__prelude/render`, with a JSON body:
+  `{ folder, design, page: { view, data }, layout?: { name or path, data }, regions?, query, errors? }`.
+  Views are looked up exactly as the Eta host does:
+  - the design's `views/`;
+  - layouts from the design, then the shell, then `@app/…` in the repo.
+
+  The host answers `200 text/html`, or `500` with the engine's error, which reaches the
+  after-turn check and the agent like any render error.
+- **Any other GET** serves the app's own static assets (its CSS, scripts and images)
+  at their real paths. Prelude proxies them from the design's origin, so the design's
+  pages link the app's real files.
+
+**What Prelude does around it:**
+- **Process:** starts the host with `start` in the folder the first time a design there
+  is rendered, waits for health, restarts it if it dies, and stops it with Prelude.
+  Its output goes to a log the design surface can show when something fails.
+- **Rendering:** the host replaces the sandboxed Eta renderer for that folder. The
+  design's origin, routes, data, forms and overlays stay Prelude's.
+- **Teaching the agent the stack:** `guide` is a file in the repo, read by the agent at
+  the start of every session on a design of views, covering how to write views in this
+  stack. For Spark that's Razor with the real tag helpers, `design-name` for bound
+  fields, the porting rules, and the components. The repo teaches the agent its own
+  conventions; Prelude names no stack.
+- **The format:** routes, states and POST routes are unchanged. Views use the stack's
+  extension (`views/packages/list.cshtml`).
+
+**Trust: a stack's views run as code, unsandboxed.**
+- Razor views are C#, and a design host runs them with the developer's own privileges.
+- The Eta host renders agent-written views inside Node's permission model; an external
+  host can't be fenced the same way from Prelude's side.
+- So a host runs only after the person approves it, once per folder, in Prelude's own
+  dialog: "This repository's design host runs agent-written views as code on this
+  machine". The approval is machine-local, in `~/.prelude/`, and is asked again if
+  `prelude.json` changes.
+- Sandboxing a host (a container, a restricted account) is deferred, and the risk is
+  stated where it applies.
+
+**Spark (6c.3):** DesignHost (`App/DesignHost`) already has most of what the contract
+needs:
+- runtime Razor compilation over the repo;
+- the real tag helpers, with `design-name` standing in for `asp-for` and rendering
+  byte-for-byte what production emits;
+- stubs for services, authorization and the current user;
+- Spark's CSS and scripts.
+
+It gains:
+- **A `/__prelude/render` endpoint:**
+  - compiles views from the folder's `prelude/` directory (and the shell's layouts,
+    and `@app/` paths);
+  - gives the view an untyped model, as decided: the JSON as a dynamic object, so
+    views read `Model.packages` and loop over it;
+  - flattens the same JSON into DesignHost's sandbox state, so `design-name="Borrower.Name"`
+    finds its value;
+  - turns `errors` into `ModelState` errors, so the real `<field-validation>` shows them.
+- **`/__prelude/health`,** and serving App/Web's static files at their real paths.
+- **In Spark:** a `prelude/prelude.json`, and a `prelude/HOST.md` written from
+  DesignHost's own guidance (the porting checklist, `ui-patterns`, the faking ladder for
+  view components).
+
+It's a change to the Spark repository, shared with OrchestratR's design sessions. The
+existing `features/…/design/` folders keep working, because the new endpoint is beside
+them. It ships as a Spark PR.
+
+**Sub-steps:**
+1. **6c.1:** The contract in Prelude, as described above.
+2. **6c.2:** A conformance test (`npm run host-check <url>`), proven against a small
+   reference host: the Eta renderer served over HTTP, which a new stack can start from.
+3. **6c.3:** Spark's DesignHost implementing the contract, plus `prelude.json` and
+   `HOST.md` in Spark. Verified by a real agent designing a Spark screen in Razor, with
+   states, an overlay and a form, rendered by DesignHost through Prelude.
+
+**Not in this step:**
+- sandboxing an external host;
+- hosts on another machine;
+- typed models (port time, 6d);
+- converting existing OrchestratR designs.
+
+Open questions:
+1. Should hosts only render, with Prelude keeping routes, data, forms and overlays
+   (proposed), or implement the whole design contract themselves?
+2. Is it acceptable for a host to run only after the person approves it per folder,
+   with sandboxing deferred and the risk stated?
+3. For Spark, should DesignHost be extended (proposed, since it holds the tag-helper
+   and stub work), or should there be a separate small Prelude host project in Spark?
+4. For Razor, should the model be the JSON as a dynamic object, with `design-name`
+   for bound fields (proposed, reusing DesignHost)?
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
