@@ -12,8 +12,10 @@ import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
-import { PRELUDE_DIR, createDesign, findDesign, findSystem, groupByArea, listDesigns } from './designs.js';
-import { cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
+import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
+import { checkDesign, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pagesOf, readRoutes } from './host.js';
+import { createRenderers } from './renderers.js';
+import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
@@ -23,6 +25,9 @@ import { presentEntry, render, shaped } from './views.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const kodaDir = dirname(fileURLToPath(import.meta.resolve('@kodalang/core')));
+// The Koda package itself (its docs and skills), canonical so the agent's
+// --add-dir matches the paths its tools use.
+const kodaPackage = canonical(dirname(kodaDir));
 
 const STATIC = [
   { prefix: '/koda/', dir: kodaDir },
@@ -51,6 +56,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner() 
     live,
     turns: createTurns({ runner, live }),
     watches: createWatches(),
+    renderers: createRenderers({ appRoot: dirname(here) }),
     designs: createDesignState({ live }),
   };
 
@@ -63,6 +69,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner() 
       else res.end();
     }
   });
+  // Renderer processes would outlive the server; stop them with it.
+  server.on('close', () => app.renderers.closeAll());
   return server;
 }
 
@@ -83,6 +91,12 @@ async function handle(req, res, app) {
   // so its URLs mirror the folders: a screen's relative link to another
   // design (the folder's design system, say) resolves the same here as on any
   // static host the folder is shared on.
+  // A design's own origin: the Eta host (host.js).
+  const designHost = designHostOf(req);
+  if (designHost) {
+    return handleDesignHost(req, res, { folders, designs: app.designs, renderers: app.renderers, kodaDir, designKey }, designHost);
+  }
+
   if (isPreviewHost(req)) {
     const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/p\/(.+)$/);
     const folder = match && folders.get(match[1]);
@@ -145,6 +159,7 @@ async function handle(req, res, app) {
       folder,
       groups: groupByArea(listDesigns(folder.path)),
       system: findSystem(folder.path),
+      shell: findShell(folder.path),
       form,
       references: app.references.of(folder.id),
       reference,
@@ -170,7 +185,7 @@ async function handle(req, res, app) {
 
     if (rest === '/designs' && req.method === 'POST') {
       const form = await readForm(req);
-      const input = { title: form.get('title') ?? '', area: form.get('area') ?? '', kind: form.get('kind') === 'system' ? 'system' : 'design' };
+      const input = { title: form.get('title') ?? '', area: form.get('area') ?? '', kind: ['system', 'shell'].includes(form.get('kind')) ? form.get('kind') : 'design' };
       const result = createDesign(folder.path, input);
       if (result.errors) return view(422, { ...input, errors: result.errors });
       return redirect(res, `/f/${folder.id}/d/${result.design.id}`);
@@ -221,23 +236,53 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     };
   };
 
+  // The folder's app shell, as this design renders in it: null for the shell
+  // itself, or when the folder has none (designs then get the built-in layout).
+  const shellFor = () => {
+    const shell = design.kind === 'shell' ? null : findShell(folder.path);
+    return shell && { id: shell.id, title: shell.title, path: `${PRELUDE_DIR}/${shell.id}` };
+  };
+
+  // A design served by the Eta host (it has routes.json), or made of plain
+  // screens/*.html. New designs, and the shell, are hosted; the design
+  // system's gallery stays plain HTML, to render anywhere.
+  const hosted = isHosted(dir);
+  const format = () => {
+    if (design.kind === 'system') return 'screens';
+    if (hosted || design.kind === 'shell') return 'views';
+    return listScreens(dir).length > 0 ? 'screens' : 'views';
+  };
+
   // The design surface, as one window shows it: 'inline' beside the chat, or
-  // 'window' when it has a window of its own.
+  // 'window' when it has a window of its own. For a hosted design the
+  // "screens" are its titled pages (routes.json), the frame is on the design's
+  // own origin, and there is a state picker for its fake datasets.
   const viewOf = value => (value === 'window' ? 'window' : 'inline');
   const surface = view => {
-    const screens = listScreens(dir);
-    const wanted = designs.current(dKey);
-    const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
-    return {
+    const common = {
       base,
       view,
-      files: `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`,
-      screens,
-      current,
       version: designs.version(dKey),
       popped: view === 'inline' && designs.windows(dKey) > 0,
       windowName: `prelude-${folder.id}-${design.id.replace(/[^a-z0-9]+/gi, '-')}`,
     };
+    if (hosted) {
+      const routes = readRoutes(dir);
+      const screens = pagesOf(routes).map(route => ({ id: route.pattern, title: route.title, file: route.pattern }));
+      const path = designs.current(dKey) ?? screens[0]?.id ?? null;
+      const matched = path && matchRoute(routes, path);
+      const current = matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null;
+      const states = listStates(dir);
+      const state = states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
+      const origin = designOrigin(req, folder, design);
+      return { ...common, hosted: true, screens, current, states, state, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
+    }
+    const screens = listScreens(dir);
+    const wanted = designs.current(dKey);
+    const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
+    const files = `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`;
+    const at = current && `${files}/screens/${encodeURIComponent(current.file)}`;
+    return { ...common, hosted: false, screens, current, states: [], state: null, frame: at, open: at };
   };
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
@@ -248,8 +293,18 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const form = await readForm(req);
     const view = viewOf(form.get('view'));
     const wanted = String(form.get('screen') ?? '');
-    if (listScreens(dir).some(screen => screen.id === wanted)) designs.show(dKey, wanted);
+    const known = hosted
+      ? pagesOf(readRoutes(dir)).some(route => route.pattern === wanted)
+      : listScreens(dir).some(screen => screen.id === wanted);
+    if (known) designs.show(dKey, wanted);
     return send(res, 200, render('./_design', surface(view)));
+  }
+
+  if (req.method === 'POST' && rest[0] === 'state' && rest.length === 1) {
+    const form = await readForm(req);
+    const wanted = String(form.get('state') ?? '');
+    if (listStates(dir).some(state => state.id === wanted)) designs.showState(dKey, wanted);
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')))));
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
@@ -267,10 +322,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const releaseSystem = system
       ? watches.acquire(`${dKey}>system`, join(folder.path, PRELUDE_DIR, ...system.id.split('/'), 'system'), () => designs.filesChanged(dKey))
       : () => {};
+    // ...and its pages render in the shell's layouts, so watch the shell too.
+    const shell = shellFor();
+    const releaseShell = shell
+      ? watches.acquire(`${dKey}>shell`, join(folder.path, PRELUDE_DIR, ...shell.id.split('/')), () => designs.filesChanged(dKey))
+      : () => {};
     // A pop-out window says so by how it connects, and the inline surface
     // shrinks while one is open - and grows back when its channel closes.
     const closed = url.searchParams.get('view') === 'window' ? designs.windowOpened(dKey) : () => {};
-    return live.open(designChannel(dKey), req, res, [], { onClose: () => { closed(); release(); releaseSystem(); } });
+    return live.open(designChannel(dKey), req, res, [], { onClose: () => { closed(); release(); releaseSystem(); releaseShell(); } });
   }
 
   const sessionView = (status, session, composer) => {
@@ -288,12 +348,28 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       surface: surface('inline'),
       designLive: `${base}/live`,
       system: systemFor(),
+      shell: shellFor(),
     }, title);
   };
 
-  // What the agent is told besides the design: what else it may read, and
-  // the folder's design system.
-  const agentContext = () => ({ references: app.references.of(folder.id), system: systemFor() });
+  // What the agent is told besides the design: what else it may read, the
+  // folder's design system and shell, and which format the design is in. A
+  // design made of views may also read Koda's own guidance.
+  const agentContext = () => {
+    const views = format() === 'views';
+    const references = app.references.of(folder.id);
+    return {
+      references: views ? [...references, { name: 'Koda', path: kodaPackage }] : references,
+      system: systemFor(),
+      shell: shellFor(),
+      format: format(),
+      kodaPath: views ? kodaPackage : null,
+      // After each turn, render every route of a design of views, and say what fails.
+      check: views
+        ? () => (isHosted(dir) ? checkDesign({ renderers: app.renderers }, { folder, design, designDir: dir }) : Promise.resolve([]))
+        : null,
+    };
+  };
 
   const [section, sessionId, action, ...extra] = rest;
   if (extra.length > 0) return notFound();

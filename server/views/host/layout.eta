@@ -1,0 +1,26 @@
+<%/* The built-in layout, for a design whose folder has no shell yet: the design
+     system's styles if there is one, Koda, and a main region that owns the
+     page. Rendered in the sandboxed renderer, like every design's views. */%>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.title %></title>
+<% if (it.hasSystem) { %>
+<link rel="stylesheet" href="/_prelude/system/tokens.css">
+<link rel="stylesheet" href="/_prelude/system/components.css">
+<% } %>
+<link rel="stylesheet" href="/_prelude/design/styles.css">
+<script type="importmap">{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }</script>
+</head>
+<body>
+<main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history>
+<%~ it.body %>
+</main>
+<script type="module">
+  import { start } from '@kodalang/core';
+  start(document);
+</script>
+</body>
+</html>

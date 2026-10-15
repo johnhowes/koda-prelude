@@ -11,6 +11,11 @@
 <li class="entry tool failed">
   <details><summary><%= e.name ?? 'Tool' %> was refused or failed</summary><pre><%= e.text %></pre></details>
 </li>
+<% } else if (e.type === 'check') { %>
+<li class="entry note failed">
+  <details open><summary><%= e.failures.length === 1 ? '1 page doesn’t' : `${e.failures.length} pages don’t` %> render. The agent is told with your next message.</summary>
+  <ul class="check-list"><% for (const f of e.failures) { %><li><code><%= f.path %></code><% if (f.state) { %> · <%= f.state %><% } %>: <%= f.error %></li><% } %></ul></details>
+</li>
 <% } else if (e.type === 'turn' && e.stopped) { %>
 <li class="entry note">Stopped.</li>
 <% } else if (e.type === 'turn' && !e.ok) { %>

@@ -39,7 +39,8 @@ const get = path => fetch(base + path, { headers: { 'x-koda-fragment': '1' }, re
 
 test('before there is a system, a design is told it has none', async () => {
   const page = await (await get(`/f/${fid}`)).text();
-  assert.match(page, /This is the folder’s design system/);
+  assert.match(page, /value="system"/);
+  assert.match(page, /value="shell"/);
   runner.turns.length = 0;
   await post(`/f/${fid}/d/onboarding/sign-up/sessions`, { message: 'Hello' });
   assert.match(runner.turns[0].systemPrompt, /no design system yet/);
@@ -52,8 +53,9 @@ test('the folder’s design system is made from New design, and only one', async
 
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, /Acme<span class="pill">Design system<\/span>/);
-  assert.doesNotMatch(page, /This is the folder’s design system/, 'no second system offered');
-  assert.match(page, /Designs here use the folder’s design system/);
+  assert.doesNotMatch(page, /value="system"/, 'no second system offered');
+  assert.match(page, /value="shell"/, 'the shell is still offered');
+  assert.match(page, /Designs here use the design system/);
 
   const second = await post(`/f/${fid}/designs`, { title: 'Other', area: '', kind: 'system' });
   assert.equal(second.status, 422);
@@ -74,10 +76,24 @@ test('a session on the system is told to keep system/ and its gallery', async ()
   assert.match(page, /The folder’s design system/);
 });
 
+test('a design of views uses it too, through the layout', async () => {
+  createDesign(repo, { title: 'Orders' });
+  runner.turns.length = 0;
+  await post(`/f/${fid}/d/orders/sessions`, { message: 'Design the list' });
+  const prompt = runner.turns[0].systemPrompt;
+  assert.match(prompt, /routes\.json/);
+  assert.match(prompt, /Use the folder's design system, "Acme"/);
+  assert.match(prompt, /koda-app-authoring\/SKILL\.md/);
+});
+
 test('every other design uses it: told where it is and how to link it', async () => {
+  // A design that already has plain screens keeps that format.
+  mkdirSync(join(repo, 'prelude', 'onboarding', 'sign-up', 'screens'), { recursive: true });
+  writeFileSync(join(repo, 'prelude', 'onboarding', 'sign-up', 'screens', '01-sign-up.html'), '<title>Sign up</title>');
   runner.turns.length = 0;
   await post(`/f/${fid}/d/onboarding/sign-up/sessions`, { message: 'Design the screen' });
   const prompt = runner.turns[0].systemPrompt;
+  assert.doesNotMatch(prompt, /routes\.json/);
   assert.match(prompt, /design system, "Acme", in prelude\/acme\/system/);
   // From prelude/onboarding/sign-up/screens/ to prelude/acme/system/
   assert.match(prompt, /\.\.\/\.\.\/\.\.\/acme\/system\/tokens\.css, \.\.\/\.\.\/\.\.\/acme\/system\/components\.css/);

@@ -12,8 +12,14 @@
       <h1><%= it.design.title %></h1>
       <% if (it.design.kind === 'system') { %>
       <p class="muted">The folder’s design system. Every other design here uses it.</p>
-      <% } else if (it.system) { %>
-      <p class="muted">Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a></p>
+      <% } else if (it.design.kind === 'shell') { %>
+      <p class="muted">The app’s shell: its layouts. Every other design here renders in it.<% if (it.system) { %> Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a>.<% } %></p>
+      <% } else if (it.system || it.shell) { %>
+      <p class="muted">
+        <% if (it.system) { %>Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a><% } %>
+        <% if (it.system && it.shell) { %>·<% } %>
+        <% if (it.shell) { %>Renders in <a href="/f/<%= it.folder.id %>/d/<%= it.shell.id %>"><%= it.shell.title %></a><% } %>
+      </p>
       <% } %>
     </div>
     <nav class="sessions" aria-label="Sessions">

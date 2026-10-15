@@ -78,7 +78,8 @@ test('a turn gets the folder’s reference folders', async () => {
   runner.turns.length = 0;
   await post(`/f/${fid}/d/checkout/sessions`, { message: 'Start from the other app’s CSS' });
   const [turn] = runner.turns;
-  assert.deepEqual(turn.references, [canonical(other)]);
+  assert.equal(turn.references[0], canonical(other));
+  assert.match(turn.references.at(-1), /@kodalang[\\/]core$/, 'a design made of views may also read Koda’s own guidance');
   assert.ok(turn.systemPrompt.includes(canonical(other)));
 
   assert.equal((await post(`/f/${fid}/references/remove`, { path: canonical(other) })).status, 303);

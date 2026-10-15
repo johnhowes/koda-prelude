@@ -16,7 +16,7 @@
         <a class="item" href="/f/<%= it.folder.id %>/d/<%= design.id %>">
           <span class="icon icon-screen" aria-hidden="true"></span>
           <span class="item-text">
-            <span class="item-title"><%= design.title %><% if (design.kind === 'system') { %><span class="pill">Design system</span><% } %></span>
+            <span class="item-title"><%= design.title %><% if (design.kind === 'system') { %><span class="pill">Design system</span><% } else if (design.kind === 'shell') { %><span class="pill">App shell</span><% } %></span>
             <span class="muted">prelude/<%= design.id %></span>
           </span>
         </a>
@@ -46,13 +46,25 @@
           </datalist>
         </label>
       </div>
-      <% if (it.system) { %>
-      <p class="muted">Designs here use the folder’s design system, <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a>.</p>
-      <% } else { %>
-      <label class="check">
-        <input type="checkbox" name="kind" value="system" <% if (it.form.kind === 'system') { %>checked<% } %>>
-        <span>This is the folder’s design system <span class="muted">· every other design here will use it</span></span>
-      </label>
+      <%/* Two kinds of design are the folder's, one each: the design system (the
+           app's vocabulary) and the shell (its layouts). Each is offered until
+           the folder has one. */%>
+      <% const kind = it.form.kind ?? 'design'; %>
+      <fieldset class="kinds">
+        <legend class="sr-only">Kind</legend>
+        <label class="check"><input type="radio" name="kind" value="design" <% if (kind === 'design') { %>checked<% } %>> <span>A design <span class="muted">· usually one feature</span></span></label>
+        <% if (!it.system) { %>
+        <label class="check"><input type="radio" name="kind" value="system" <% if (kind === 'system') { %>checked<% } %>> <span>The folder’s design system <span class="muted">· its tokens and components; every other design uses it</span></span></label>
+        <% } %>
+        <% if (!it.shell) { %>
+        <label class="check"><input type="radio" name="kind" value="shell" <% if (kind === 'shell') { %>checked<% } %>> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
+        <% } %>
+      </fieldset>
+      <% if (it.system || it.shell) { %>
+      <p class="muted">
+        <% if (it.system) { %>Designs here use the design system <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a>.<% } %>
+        <% if (it.shell) { %>They render in the shell <a href="/f/<%= it.folder.id %>/d/<%= it.shell.id %>"><%= it.shell.title %></a>.<% } %>
+      </p>
       <% } %>
       <% if (it.form.errors.kind) { %><span class="err"><%= it.form.errors.kind %></span><% } %>
       <div class="rowbtns">

@@ -607,6 +607,40 @@ prelude/shell/                  a design, "kind": "shell"
 The layout renders around it with `it.layout`, and `ko-location` is set to the request
 path. A fragment request skips the layout entirely, as the real server would.
 
+As built (6a):
+- **Views render sandboxed.** Eta templates are JavaScript, and a design's views are
+  written by the agent. Rendering them in Prelude's process would undo the fences on
+  what the agent may read and write. They render in a separate Node process under
+  Node's permission model (`--permission`, or `--experimental-permission` before
+  23.5). That process may read the folder and Prelude's own files; it may not write,
+  start processes, or load native code, and a render that runs over 5 s is killed.
+  **Known gap:** Node's permission model doesn't yet cover the network.
+- **The host composes pages itself,** as Prelude's own server does: the view renders,
+  and the layout gets it as `it.body`, with `it.title`, `it.location` and
+  `it.layout`. No Eta `layout()` call is needed in views.
+- **A route's model is whatever its `data` path finds,** an object or a list, passed
+  as `it`.
+- **Designs choose their format by what they have:**
+  - a design with `routes.json`, the shell, and any new design are views;
+  - an existing design of plain screens stays plain;
+  - the design system's gallery stays plain HTML.
+- **Designs of views may also read Koda's package** (its skills and reference),
+  added as a read-only folder.
+- **A check after every turn.** The agent can't see the preview, so after each turn on
+  a design of views, Prelude renders every route in every state, filling each
+  `:param` with the first matching record's id. Failures appear as a note in the chat
+  and are prepended to the agent's next message.
+- **Verified with the real agent:**
+  - A shell drafted from Spark's real `Host.cshtml`, with Spark's header, navigation,
+    and alerts and inbox fragments at Spark's own URLs. Its drawer loaded a
+    fragment over HTTP with Koda live.
+  - A Packages design: a list, a detail page whose collateral loads as its own
+    region, a row fragment, and typical, empty and long-names states. It rendered
+    in the shell and switched state across the whole design.
+  - The agent's first list used an include path relative to the wrong folder.
+    Eta resolves includes from the including view's folder, so the agent's
+    instructions now say so.
+
 Decided 2026-10-15:
 - Layouts are the app's, in a shell design (`"kind": "shell"`, one per folder), not in
   the design system. That keeps the system shareable at the organisation level later.

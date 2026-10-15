@@ -5,7 +5,11 @@
      every window showing it stays in step with no script.
 
      `view` is 'inline' (beside the chat) or 'window' (a pop-out). While a
-     window is open, the inline surface shrinks to a strip. */%>
+     window is open, the inline surface shrinks to a strip.
+
+     A hosted design (views, routes.json, states/) offers its titled pages as
+     the screens and its fake datasets as states; the frame is on the design's
+     own origin. `frame` and `open` are worked out by the server. */%>
 <% const cur = it.current; const url = `${it.base}/preview?view=${it.view}`; %>
 <div id="design" class="design <%= it.popped ? 'popped' : '' %>" ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
   <div class="design-bar">
@@ -23,14 +27,28 @@
       </form>
     </details>
     <% } %>
-    <span class="muted"><%= it.screens.length %> <%= it.screens.length === 1 ? 'screen' : 'screens' %></span>
+    <% if (it.states.length > 1) { %>
+    <details class="menu screens-menu">
+      <summary class="btn small ghost">State: <%= it.state.title %></summary>
+      <form class="menu-list" action="<%= it.base %>/state" method="post" ko-target="design">
+        <input type="hidden" name="view" value="<%= it.view %>">
+        <% for (const state of it.states) { %>
+        <button type="submit" name="state" value="<%= state.id %>" <% if (state.id === it.state.id) { %>aria-current="true"<% } %>>
+          <span class="item-title"><%= state.title %></span>
+          <span class="muted"><%= state.file %></span>
+        </button>
+        <% } %>
+      </form>
+    </details>
+    <% } %>
+    <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %></span>
     <span class="spacer"></span>
     <% if (it.popped) { %>
     <span class="muted">Showing in its own window</span>
     <a class="btn small ghost" href="<%= it.base %>/window" target="<%= it.windowName %>" data-pop-out>Show window</a>
     <% } else if (cur) { %>
     <a class="btn small ghost" href="<%= url %>" ko-target="design">Refresh</a>
-    <a class="btn small ghost" href="<%= it.files %>/screens/<%= encodeURIComponent(cur.file) %>" target="_blank">
+    <a class="btn small ghost" href="<%= it.open %>" target="_blank">
       <span class="icon icon-external" aria-hidden="true"></span>Open in browser
     </a>
     <% } %>
@@ -47,9 +65,9 @@
   <div class="design-frame">
     <% if (cur) { %>
     <%/* Served from the preview origin, so the screen can't reach Prelude. */%>
-    <iframe title="<%= cur.title %>" src="<%= it.files %>/screens/<%= encodeURIComponent(cur.file) %>?v=<%= it.version %>"></iframe>
+    <iframe title="<%= cur.title %>" src="<%= it.frame %><%= it.frame.includes('?') ? '&' : '?' %>v=<%= it.version %>"></iframe>
     <% } else { %>
-    <p class="design-empty muted">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
+    <p class="design-empty muted"><%= it.hosted ? 'No pages yet: give a route in routes.json a title, and it appears here.' : 'No screens yet. Ask the agent to design one, and it appears here as it’s written.' %></p>
     <% } %>
   </div>
   <% } %>

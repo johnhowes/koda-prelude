@@ -169,25 +169,36 @@ export function createStreamReader(onEvent) {
  *
  *   title, designPath   the design ("Sign up", "prelude/onboarding/sign-up")
  *   references          folders the agent may also read: [{ name, path }]
- *   kind                'design', or 'system' for the folder's design system
- *   system              for a design, the folder's design system if it has one:
- *                       { title, path, href } - href is system/ relative to
- *                       the design's screens/, as a screen links it
+ *   kind                'design', 'system' (the folder's design system) or
+ *                       'shell' (the app's shell: its layouts)
+ *   format              'views' - the app's views, routes.json and states/,
+ *                       served by Prelude's Eta host (the default); or
+ *                       'screens' - plain screens/*.html (older designs, and
+ *                       the design system's gallery)
+ *   system              the folder's design system, if it has one and this
+ *                       isn't it: { title, path, href, hasIcons } - href is
+ *                       system/ relative to screens/, for plain screens
+ *   shell               the folder's shell, if it has one and this isn't it:
+ *                       { title, path }
+ *   kodaPath            where Koda's own guidance is, for a design of views
  */
-export function designPrompt({ title, designPath, references = [], kind = 'design', system = null }) {
+export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null }) {
+  const what = { system: 'design system', shell: 'app shell' }[kind] ?? 'design';
   const parts = [`You are working in Prelude, a tool where a person designs an application with you.
 
-You are working on the ${kind === 'system' ? 'design system' : 'design'} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
+You are working on the ${what} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
 
 - Write only inside ${designPath}/, and never inside ${designPath}/sessions/. Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
 - You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
-- A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what is in ${designPath}/screens/.
+- A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what the design already has.
 - Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
-- Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.
 - When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];
 
+  if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath }));
+  else parts.push(`Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.`);
+
   if (kind === 'system') {
-    parts.push(`This is the folder's design system. Every other design in the folder uses it, by linking its files. It lives in ${designPath}/system/:
+    parts.push(`This is the folder's design system: the app's vocabulary, which every other design uses. It holds no layouts; those are the app shell's. It lives in ${designPath}/system/:
 
 - system/tokens.css - the tokens: custom properties on :root named for their role, never their look (--bg, --surface, --surface-sunken, --border, --fg, --fg-muted, --fg-subtle, --accent, --accent-hover, --accent-fg, --accent-soft, --good, --warn, --danger, --space-1…, --radius-sm…, --text-xs…, --font-sans, --shadow-md, --ring). Write each colour once with light-dark(). Literal colours belong here and nowhere else.
 - system/components.css - the components: classes built from the tokens and nothing else (no literal colours, spaces or radii), with a base section for bare elements, including [hidden] { display: none !important; }. Lay out with container queries, never @media.
@@ -199,17 +210,51 @@ You are working on the ${kind === 'system' ? 'design system' : 'design'} "${titl
 The screens are the system's gallery: a tokens screen, a components screen showing each component and its variants, and a guidelines screen. They link ../system/tokens.css, ../system/components.css (and ../system/icons.css), and use the system exactly as a design would. Whenever you change system/, bring the gallery up to date in the same turn.
 
 If the person points you at existing CSS (this repository's, or a reference folder's), draft the system from what is really there: its colours, spacing, type and components, renamed by role, rather than inventing a new look.`);
-  } else if (system) {
+  } else if (system && format === 'screens') {
     parts.push(`This folder has a design system, "${system.title}", in ${system.path}/system/. Use it:
 
 - Before designing, read ${system.path}/system/guidelines.md and the components in ${system.path}/system/components/.
 - Every screen links the system's styles, in this order, before its own: ${system.href}/tokens.css, ${system.href}/components.css${system.hasIcons ? `, ${system.href}/icons.css` : ''}. Then ../styles.css for this design's own rules, if it needs any.
 - Build screens from the system's components, copying their markup and classes. Write no literal colours, spaces or radii; use the tokens.
 - Don't change the design system from here. If it lacks something this design needs, design around it, and note in ${designPath}/NOTES.md what the system is missing, so it can be added in a session on the system itself.`);
-  } else {
+  } else if (format === 'screens') {
     parts.push(`Styles shared by screens go in ${designPath}/styles.css, linked from a screen as ../styles.css. This folder has no design system yet; when it gets one, its designs will use it.`);
   }
   return parts.join('\n\n');
+}
+
+/** How a design of views is made: the app's own views, a route table and fake data. */
+function viewsSection({ designPath, kind, system, shell, kodaPath }) {
+  const lines = [`This design is the app's views, decomposed the way the app decomposes them, and Prelude serves it the way the app's server would, with Koda running for real. It is made of:
+
+- ${designPath}/views/ - Eta views (<%= value %> escapes, <%~ html %> doesn't, <% code %> runs). include() renders a partial, and its path is relative to the including view's own folder, as in any Eta app: from views/orders/list.eta, include('./_row', row) renders views/orders/_row.eta; a path starting with / is from views/, as in include('/orders/_row', row). A page is a view a route renders; a fragment is a view named with a leading underscore (orders/_row.eta) that pages include and that also answers alone at a route of its own, so a region can load or replace it.
+- ${designPath}/routes.json - the URLs the design answers, as the app's router would: { "/orders": { "view": "orders/list", "title": "Orders", "data": "" }, "/orders/:id": { "view": "orders/detail", "title": "Order", "data": "orders/:id" }, "/orders/:id/row": { "view": "orders/_row", "data": "orders/:id" } }. "data" is a path into the state's dataset: a property, or, in a list, the record whose id matches the route's :param; "" is the whole dataset. The view receives what it finds as it. A route with a title, and no :params, is a page the person can pick in the preview. "layout" names the layout (default "app").
+- ${designPath}/states/NN-name.json - fake data for the whole design, one dataset per state: 01-typical.json first (the default), then states such as 02-empty.json or 03-long-names.json. Every route reads from the state on show, so the list, the detail and every fragment agree. Make the data realistic: real-looking names, amounts and dates, lists of a believable length. Put conditions in the views (an empty list shows the empty state because the view says so), never flags in the data.
+- ${designPath}/styles.css - this design's own rules, if it needs any, unlayered. Pages get it at /_prelude/design/styles.css.
+
+One URL answers in two shapes, and Prelude does it for you, as the real server does: a request from a Koda region (a fragment request) gets the view alone; any other request gets it inside its layout. So write each view as the region's content, never a whole page, and decompose with Koda the way the real app would: ko-scope for a section that owns a URL space, ko-source for a region that loads its own URL, ko-target for an answer aimed at one region, ko-item and ko-as instead of numbered ids. Routes are root-relative, the app's real URLs.`];
+
+  if (kodaPath) lines.push(`Before writing views, read Koda's own guidance: ${kodaPath}/.claude/skills/koda-app-authoring/SKILL.md, and the koda-styling skill beside it. Look attributes up in ${kodaPath}/docs/reference.md rather than from memory.`);
+
+  if (kind === 'shell') {
+    lines.push(`This is the app's shell: the layouts every design in the folder renders in. They live in ${designPath}/layouts/:
+
+- layouts/<name>.eta - a whole HTML page around a design's view. It receives it.body (the rendered view, written with <%~ it.body %>), it.title, it.location (the request path), and it.layout (the shell's data: who's signed in, the navigation, counts). It links the design system's styles (/_prelude/system/tokens.css, /_prelude/system/components.css${system?.hasIcons ? ', /_prelude/system/icons.css' : ''}) and each design's own (/_prelude/design/styles.css), starts Koda (<script type="importmap">{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }</script> and a module script that imports start and calls start(document)), and wraps the body in the region that owns the page: <main id="main" ko-scope="/" ko-location="<%= it.location %>" ko-history><%~ it.body %></main>. It also offers the regions pages may ask for, such as a drawer (<aside id="drawer" ko-region></aside>) or a notice area.
+- layouts/<name>.json - sample data for that layout, which every design gets unless its state overrides it under "layout".
+- "app" is the layout every design uses unless a route names another (for example "bare", for sign-in or a full-screen wizard).
+
+The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers.`);
+  } else {
+    lines.push(shell
+      ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`
+      : `This folder has no app shell yet, so pages render in a minimal built-in layout that loads the design system (if there is one), this design's styles.css, and Koda.`);
+  }
+  if (kind !== 'system' && system) {
+    lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. Don't change it from here; note in NOTES.md what it lacks.`);
+  } else if (kind !== 'system') {
+    lines.push(`This folder has no design system yet; when it gets one, its designs will use it.`);
+  }
+  return lines.join('\n\n');
 }
 
 /** A one-line description of a tool use, with paths shown relative to the folder. */

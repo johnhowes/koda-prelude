@@ -14,7 +14,7 @@ export function createDesignState({ live }) {
   const designs = new Map();   // designKey -> { version, current, windows }
 
   const of = key => {
-    if (!designs.has(key)) designs.set(key, { version: 0, current: null, windows: 0 });
+    if (!designs.has(key)) designs.set(key, { version: 0, current: null, state: null, windows: 0 });
     return designs.get(key);
   };
 
@@ -43,6 +43,17 @@ export function createDesignState({ live }) {
         return false;
       }
       of(key).current = screenId;
+      announce(key);
+      return true;
+    },
+
+    /** The design-wide state on show (a hosted design's fake dataset), or null for its default. */
+    state: key => of(key).state,
+
+    /** Someone picked a state. Says whether that was news. */
+    showState(key, stateId) {
+      if (of(key).state === stateId) return false;
+      of(key).state = stateId;
       announce(key);
       return true;
     },

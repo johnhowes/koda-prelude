@@ -6,9 +6,11 @@
 // design.json on each path. A design's id is its path relative to prelude/,
 // with forward slashes (plan: "Designs, features and areas").
 //
-// A design whose design.json says "kind": "system" is the folder's design
-// system (plan: step 5). It is a design in every other way; what it adds is a
-// system/ folder that the folder's other designs link. One per folder.
+// Two kinds of design are special, one of each per folder, and designs in
+// every other way (plan: steps 5 and 6):
+//   "kind": "system" - the folder's design system: a system/ folder of
+//                      tokens, components and guidelines the others link;
+//   "kind": "shell"  - the app's shell: the layouts the others render in.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -31,12 +33,16 @@ export function areaSegments(area) {
   return String(area ?? '').split(/[\\/]+/).map(slugify).filter(Boolean);
 }
 
-const kindOf = meta => (meta.kind === 'system' ? 'system' : 'design');
+export const SPECIAL_KINDS = { system: 'a design system', shell: 'an app shell' };
+const kindOf = meta => (Object.hasOwn(SPECIAL_KINDS, meta.kind) ? meta.kind : 'design');
 
-/** The folder's design system, if it has one (the first, should there be two). */
-export function findSystem(folderPath) {
-  return listDesigns(folderPath).find(design => design.kind === 'system') ?? null;
+/** The folder's design of a special kind, if it has one (the first, should there be two). */
+export function findKind(folderPath, kind) {
+  return listDesigns(folderPath).find(design => design.kind === kind) ?? null;
 }
+
+export const findSystem = folderPath => findKind(folderPath, 'system');
+export const findShell = folderPath => findKind(folderPath, 'shell');
 
 function readDesign(dir) {
   try { return JSON.parse(readFileSync(join(dir, 'design.json'), 'utf8')); } catch { return {}; }
@@ -130,8 +136,9 @@ export function createDesign(folderPath, { title, area, kind = 'design' }) {
   const reservedArea = segments.find(segment => RESERVED.has(segment));
   if (reservedArea) errors.area = `"${reservedArea}" is reserved. Choose another area.`;
 
-  const system = kind === 'system' && findSystem(folderPath);
-  if (system) errors.kind = `This folder already has a design system: "${system.title}".`;
+  const special = Object.hasOwn(SPECIAL_KINDS, kind) ? kind : null;
+  const existing = special && findKind(folderPath, special);
+  if (existing) errors.kind = `This folder already has ${SPECIAL_KINDS[special]}: "${existing.title}".`;
 
   if (Object.keys(errors).length > 0) return { errors };
 
@@ -147,7 +154,7 @@ export function createDesign(folderPath, { title, area, kind = 'design' }) {
   if (existsSync(dir)) return { errors: { title: `prelude/${id} already exists.` } };
 
   mkdirSync(dir, { recursive: true });
-  const meta = { title: cleanTitle, ...(kind === 'system' ? { kind: 'system' } : {}), createdAt: new Date().toISOString() };
+  const meta = { title: cleanTitle, ...(special ? { kind: special } : {}), createdAt: new Date().toISOString() };
   writeFileSync(join(dir, 'design.json'), JSON.stringify(meta, null, 2) + '\n');
   return { design: { id, slug, area: segments.join('/'), kind: kindOf(meta), ...meta } };
 }

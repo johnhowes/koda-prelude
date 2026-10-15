@@ -45,13 +45,29 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     folders. The folder's whole `prelude/` directory is served at
     `/f/<folder>/p/<path>`, only on `preview.localhost:<port>` and never a
     `sessions/` folder, so relative links between designs work.
-  - `server/designs.js` finds designs, and the folder's design system: a design
-    with `"kind": "system"`, one per folder. The agent's prompt for each kind,
+  - `server/designs.js` finds designs, and the folder's two special designs, one
+    of each per folder: the design system (`"kind": "system"`) and the app shell
+    (`"kind": "shell"`, its layouts). The agent's prompt for each kind,
     and for a design that uses the system, is `designPrompt` in `server/agent.js`.
   - The agent reads the folder, plus the reference folders added on the folder
     page (`createReferences` in `server/folders.js`, passed as `--add-dir`).
     Never add a bare `Read`, `Glob` or `Grep` to its `--allowedTools`: that
     opens the whole machine.
+  - `server/host.js` is the built-in Eta host. A design with `routes.json` is
+    served on its own origin, `<design>.<folder>.preview.localhost:<port>`: it
+    finds each route's data in the current state's dataset (`states/`), wraps
+    pages in a layout (the design's own, then the shell's, then `@app/…` in the
+    repo, then `server/views/host/layout.eta`), and answers each URL in two
+    shapes. `/_prelude/` on that origin serves Koda, the system, the shell and
+    the design's files.
+  - Views are agent-written code, so they render only in `server/renderer.js`:
+    a separate process under Node's permission model (`server/renderers.js`)
+    that may read the folder and Prelude, and nothing else. Never render a
+    design's views in the server's own process.
+  - After each turn on a design of views, `checkDesign` (host.js) renders every
+    route in every state; failures show in the chat and are prepended to the
+    agent's next message (`withFindings` in turns.js). The agent can't see the
+    preview, so this is how it learns a view doesn't render.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

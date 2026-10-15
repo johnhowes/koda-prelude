@@ -36,8 +36,18 @@ export function statusMessage(state) {
 
 let liveCount = 0;
 
+/** The person's message, preceded by what Prelude's last check of the design found. */
+export function withFindings(failures, message) {
+  if (!failures?.length) return message;
+  const list = failures.map(f => `- ${f.path}${f.state ? ` (state "${f.state}")` : ''}: ${f.error}`).join('\n');
+  return `(From Prelude, not the person: after your last turn, these didn't render. Fix them along with what's asked below.)\n${list}\n\n${message}`;
+}
+
 export function createTurns({ runner, live }) {
   const running = new Map();   // designKey -> { sessionId, stop, stopUrl, ctx }
+  // What the last check found wrong with a design, told to the agent with the
+  // next message on that design (the agent can't see the preview itself).
+  const findings = new Map();  // designKey -> [{ state, path, error }]
 
   const record = (ctx, entry) => {
     appendEntry(ctx.designDir, ctx.session.id, entry);
@@ -85,7 +95,7 @@ export function createTurns({ runner, live }) {
      * `references` are the folders the agent may also read ([{ name, path }]),
      * and `system` the folder's design system, as designPrompt takes it.
      */
-    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null }) {
+    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, check = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -101,8 +111,8 @@ export function createTurns({ runner, live }) {
         cwd: folder.path,
         sessionId: session.claudeSessionId,
         resume: session.started === true,
-        prompt: message,
-        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, system }),
+        prompt: withFindings(findings.get(dKey), message),
+        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath }),
         designPath,
         references: references.map(reference => reference.path),
         onEvent: event => {
@@ -131,9 +141,22 @@ export function createTurns({ runner, live }) {
       running.set(dKey, { sessionId, stop: turn.stop, stopUrl, ctx });
       live.publish(ctx.key, statusMessage({ kind: 'working', stopUrl }));
 
-      const finish = result => {
+      findings.delete(dKey);
+
+      const finish = async result => {
         // A message cut off by Stop or an error is kept as far as it got.
         if (ctx.block) endText(ctx, ctx.block.text);
+        // Render what the agent made, and say what doesn't: to the person now,
+        // and to the agent with the next message.
+        if (check && result.ok) {
+          try {
+            const failures = await check();
+            if (failures.length) {
+              findings.set(dKey, failures);
+              record(ctx, { type: 'check', failures });
+            }
+          } catch { /* a failed check is no reason to lose the turn */ }
+        }
         record(ctx, {
           type: 'turn',
           ok: result.ok === true,
