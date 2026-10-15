@@ -10,11 +10,13 @@
 //
 // Messages, over the IPC channel:
 //   in:  { id, page: { views, template, data }, layout?: { views, template, data },
-//          regions?: { <name>: { views, template, data, location } } }
+//          regions?: { <name>: { views, template, data, location } }, query? }
 //   out: { id, html } or { id, error }
 // The layout, when there is one, gets the rendered page as `it.body`, and each
 // rendered region (an overlay presented over the page) as
 // `it.regions.<name> = { html, location }`, to print inside the region it offers.
+// The page (and every region) sees the request's query string as `it.$query`,
+// so a search or filter form can show what was asked.
 
 import { Eta } from 'eta';
 
@@ -29,12 +31,19 @@ function engine(views) {
   return engines.get(views);
 }
 
-function render({ page, layout, regions = {} }) {
-  const body = engine(page.views).render(page.template, page.data ?? {});
+// An ordinary property, so it survives Eta's include(), which copies a
+// partial's data: a partial rendered inside the page sees the query too.
+function withQuery(data, query) {
+  if (data && typeof data === 'object') data.$query = query;
+  return data ?? { $query: query };
+}
+
+function render({ page, layout, regions = {}, query = {} }) {
+  const body = engine(page.views).render(page.template, withQuery(page.data, query));
   if (!layout) return body;
   const rendered = {};
   for (const [name, region] of Object.entries(regions)) {
-    rendered[name] = { html: engine(region.views).render(region.template, region.data ?? {}), location: region.location };
+    rendered[name] = { html: engine(region.views).render(region.template, withQuery(region.data, query)), location: region.location };
   }
   return engine(layout.views).render(layout.template, { ...layout.data, body, regions: rendered });
 }

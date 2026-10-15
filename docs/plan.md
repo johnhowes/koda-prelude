@@ -869,6 +869,32 @@ As built (6b):
   - a valid save closed the drawer and updated the heading without leaving the page,
     and the list showed the change too.
 
+#### Search and filter (after 6b)
+
+GET forms work like any link: Koda routes them, and the URL carries the query.
+- **Every view sees the query string** as `it.$query`, so a form shows what was asked.
+- **The route filters, as the app's controller would,** so views never do:
+  - `"search": { "q": ["borrower.name", "id"] }`: any of the fields contains `?q=`,
+    ignoring case;
+  - `"match": { "status": "status" }`: the field equals `?status=`;
+  - an empty parameter filters nothing;
+  - filters apply to the route's data when it's a list, or to the list at `"list"`
+    inside it.
+- **Search as you type** is Koda's own pattern: the results get a fragment route with
+  the same filters, loaded by a region whose `calc-ko-source` follows the box.
+- **The check** asks every filtering route for something nothing matches, so a view
+  that can't cope with no results is caught after the turn.
+- **Learned along the way:** Eta copies a partial's data into a plain object, so a
+  bare list passed to `include()` stops being a list. Partials take objects, and a
+  fragment route gives them the same shape (a data path to the object, with `list`).
+  The agent is told so.
+- **Verified with the real agent,** in a new session on Packages: it added a search box
+  and a status select, using Koda's search-as-you-type pattern (one results region
+  following both). Searching by name or package number, filtering by status, and a
+  search with no matches all worked in the browser. The after-turn check first
+  caught a Prelude bug: `it.$query` was non-enumerable, so it didn't survive
+  `include()`. It's now an ordinary property.
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

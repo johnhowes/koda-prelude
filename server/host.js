@@ -98,7 +98,50 @@ export function readRoutes(designDir) {
       layout: typeof route.layout === 'string' ? route.layout : 'app',
       over: typeof route.over === 'string' && route.over.startsWith('/') ? route.over : null,
       in: typeof route.in === 'string' && /^[a-z][a-z0-9-]*$/i.test(route.in) ? route.in : null,
+      search: fieldMap(route.search, value => (Array.isArray(value) ? value.filter(f => typeof f === 'string') : typeof value === 'string' ? [value] : [])),
+      match: fieldMap(route.match, value => (typeof value === 'string' ? value : null)),
+      list: typeof route.list === 'string' ? route.list : null,
     }));
+}
+
+/** { param: fields } from routes.json, keeping only well-formed entries. */
+function fieldMap(value, read) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const out = {};
+  for (const [param, fields] of Object.entries(value)) {
+    const read_ = read(fields);
+    if (read_ && (!Array.isArray(read_) || read_.length)) out[param] = read_;
+  }
+  return out;
+}
+
+/** A field of a record by dotted path: "borrower.name". */
+const fieldOf = (record, path) => path.split('.').reduce((here, step) => (here && typeof here === 'object' ? here[step] : undefined), record);
+
+/**
+ * A GET route's search and filters, applied to its model as the app's
+ * controller would apply them to its query:
+ *   "search": { "q": ["borrower.name", "id"] }   any of the fields contains ?q=, ignoring case
+ *   "match":  { "status": "status" }             the field equals ?status=
+ * An empty or absent parameter filters nothing. They apply to the model when
+ * it is a list, or to the list at "list" inside it.
+ */
+export function filterModel(model, route, query) {
+  const searches = Object.entries(route.search ?? {}).filter(([param]) => String(query[param] ?? '').trim());
+  const matches = Object.entries(route.match ?? {}).filter(([param]) => String(query[param] ?? '').trim());
+  if (!searches.length && !matches.length) return model;
+  const keep = item => searches.every(([param, fields]) => {
+    const wanted = String(query[param]).trim().toLowerCase();
+    return fields.some(field => String(fieldOf(item, field) ?? '').toLowerCase().includes(wanted));
+  }) && matches.every(([param, field]) => String(fieldOf(item, field) ?? '') === String(query[param]).trim());
+
+  if (!route.list) return Array.isArray(model) ? model.filter(keep) : model;
+  const copy = structuredClone(model);
+  const steps = route.list.split('/').filter(Boolean);
+  const holder = steps.length > 1 ? lookup(copy, steps.slice(0, -1).join('/'), {}) : copy;
+  const last = steps.at(-1);
+  if (holder && typeof holder === 'object' && Array.isArray(holder[last])) holder[last] = holder[last].filter(keep);
+  return copy;
 }
 
 /** The pages the screen picker offers: titled routes that need no parameters. */
@@ -327,7 +370,8 @@ export async function handleDesignHost(req, res, app, host) {
     app.designs.show(key, path, { shown: pickable(readRoutes(designDir), dataset)[0]?.id });
   }
 
-  const answer = await renderPath(app, { folder, design, designDir, path, fragment, stateId: state?.id ?? null, dataset });
+  const query = Object.fromEntries(url.searchParams.entries());
+  const answer = await renderPath(app, { folder, design, designDir, path, query, fragment, stateId: state?.id ?? null, dataset });
   return sendHtml(res, answer.status, answer.html);
 }
 
@@ -337,7 +381,7 @@ export async function handleDesignHost(req, res, app, host) {
  * 500 carrying the renderer's error. Used for requests, and for checking every
  * route after the agent's turn.
  */
-export async function renderPath(app, { folder, design, designDir, path, fragment = false, stateId = null, dataset: given = null }) {
+export async function renderPath(app, { folder, design, designDir, path, query = {}, fragment = false, stateId = null, dataset: given = null }) {
   const escape = text => String(text).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   const dirOf = kind => {
     const found = findKind(folder.path, kind);
@@ -358,8 +402,8 @@ export async function renderPath(app, { folder, design, designDir, path, fragmen
   }
 
   const views = join(designDir, 'views');
-  const overlay = { views, template: `./${route.view}`, data: model };
-  if (fragment) return render(app, folder, { page: overlay });
+  const overlay = { views, template: `./${route.view}`, data: filterModel(model, route, query) };
+  if (fragment) return render(app, folder, { page: overlay, query });
 
   // A cold load of an overlay: the page beneath, with the overlay in its
   // region. The page beneath must be a page, not another overlay.
@@ -374,6 +418,7 @@ export async function renderPath(app, { folder, design, designDir, path, fragmen
       return { status: 404, html: `<p>The page beneath this overlay, ${escape(pagePath)}, isn't a page of this design.</p>` };
     }
     pageModel = lookup(dataset, beneath.route.data, beneath.params);
+    if (pageModel !== undefined) pageModel = filterModel(pageModel, beneath.route, query);
     if (pageModel === undefined) {
       return { status: 404, html: `<p>There's nothing at "${escape(beneath.route.data)}" for the page beneath, in this state.</p>` };
     }
@@ -385,7 +430,8 @@ export async function renderPath(app, { folder, design, designDir, path, fragmen
     ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {} };
   const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
   return render(app, folder, {
-    page: { views, template: `./${pageRoute.view}`, data: pageModel },
+    query,
+    page: { views, template: `./${pageRoute.view}`, data: pageRoute === route ? overlay.data : pageModel },
     layout: {
       views: found.views,
       template: found.template,
@@ -478,6 +524,14 @@ export async function checkDesign(app, { folder, design, designDir }) {
       for (const alone of route.over ? [true, false] : [fragment]) {
         const answer = await renderPath(app, { folder, design, designDir, path, fragment: alone, stateId: state?.id });
         if (answer.status === 500) failures.push({ state: state?.title ?? null, path: route.over && alone ? `${path} (alone)` : path, error: answer.error });
+      }
+      // A route that searches or filters, asked for something nothing matches:
+      // its view has to cope with an empty result.
+      const params = [...Object.keys(route.search ?? {}), ...Object.keys(route.match ?? {})];
+      if (params.length) {
+        const query = Object.fromEntries(params.map(param => [param, 'no-such-thing-xyzzy']));
+        const answer = await renderPath(app, { folder, design, designDir, path, query, fragment, stateId: state?.id });
+        if (answer.status === 500) failures.push({ state: state?.title ?? null, path: `${path}?${new URLSearchParams(query)}`, error: answer.error });
       }
     }
   }
