@@ -312,7 +312,7 @@ As built:
 - **No versions yet**: one system, linked directly (Koda's `/ds/v1` versioning is
   deferred).
 
-### Step 6: Screens in the app's own stack, with states as fake data — proposal, not yet decided
+### Step 6: Screens in the app's own stack, with states as fake data
 
 Real screens have states: empty, loading, an error, a refusal, a long list, someone
 without permission. A state isn't only which parts show. **It is fake data**: these
@@ -421,27 +421,51 @@ contrast, is a rewrite.
   host running, or Prelude saves each rendered (screen, state) as static HTML for a
   share. Plain HTML screens keep it.
 
-**Sub-steps:**
-1. **6a:** `states.json` and the state picker. The current state becomes server state
-   like the current screen; `?state=` links in screens are followed; the agent is told
-   the format.
-2. **6b:** The host contract (`prelude/prelude.json`, start, render URL, reload),
-   proven with the cheapest real stack, Eta, the template engine Prelude itself uses.
-   That lets Prelude be designed in Prelude.
-3. **6c:** Spark: DesignHost as Spark's host, reading `prelude/` and taking structured
-   states.
-4. **6d:** The contract check (states against real model types), and render snapshots
-   for drift.
+**Decided 2026-10-15:**
+- **A state is the view model, rendered by the real view, through the repo's design
+  host.** The aim is that a design's view is the real view, so drift can't go unnoticed.
+- **After porting, the design stops keeping its own copy.** Its screen points at the
+  production view, and its states become that view's test fixtures, rendered in CI.
+  From then on there is one view.
+- **Eta is Prelude's built-in host, and the default for every repo.** A screen is an
+  Eta template: `screens/03-orders.eta`, rendered with each state's model as `it`.
+  - Plain HTML is valid Eta, so existing `.html` screens still work, served as they
+    are.
+  - For Eta and Koda repos, Prelude itself included, the screens are the real views.
+  - For other stacks without a host of their own, screens still get states and fake
+    data, and porting translates the markup.
+- **Models are untyped while designing,** typed at port time, Spark included.
 
-Open questions:
-1. Does "a state is the view model, rendered by the real view, through a per-repo
-   design host" match what you want from real components plus fake data?
-2. Which first host: Eta, to prove the contract cheaply and let Prelude design itself,
-   or go straight to Spark's DesignHost?
-3. For Spark's compiled models: dynamic while designing (typed at port), generated
-   from `states.json`, or keep `design-name`?
-4. Are plain HTML screens kept for repos without a host, and for design systems
-   (proposed)?
+**How the built-in host fits what's already built:**
+- **URLs stay `.html`.** A request for `screens/03-orders.html?state=empty` renders
+  `03-orders.eta` with that state when there's no `.html` file. Links between screens
+  stay ordinary `.html` links. A static share can therefore write each rendered
+  (screen, state) as an `.html` file, and the links keep working.
+- **Rendering happens on the preview host,** so screens stay on their own origin.
+  Includes resolve inside `prelude/`, for example a design-system component as an Eta
+  partial, which is a possibility for later.
+- **States:**
+  - `03-orders.states.json` holds `{ "<state>": { "model": {…}, "errors": {…} } }`,
+    the first entry being the default;
+  - the template sees `it` (the model) and `it.$errors`;
+  - a screen with no states file renders with an empty model.
+
+**Sub-steps:**
+1. **6a:** Eta screens and `states.json`, rendered on the preview host.
+   - The state picker is shown only for screens with more than one state.
+   - The current state is server state, like the current screen.
+   - `?state=` links inside screens are followed in every window, and Open in browser
+     carries the state.
+   - The agent is told the format: real data, lists and errors in the model, and
+     conditions in the template.
+2. **6b:** The host contract for other stacks: `prelude/prelude.json` (start, render
+   URL, reload), with the built-in Eta host as its reference implementation.
+3. **6c:** Spark: DesignHost as Spark's host, reading `prelude/` and taking structured,
+   untyped states.
+4. **6d:** Drift:
+   - porting points a design at the production view;
+   - states become fixtures, rendered in CI with snapshots;
+   - for typed stacks, a contract check of states against the model types.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
