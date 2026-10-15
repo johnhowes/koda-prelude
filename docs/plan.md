@@ -726,7 +726,7 @@ As built (6a.2):
   - The Edit button (a link with `ko-target="drawer?"`) opened the same view in the
     drawer through Koda, staying on the page.
 
-#### Forms and changes (6b) — proposal, not yet decided
+#### Forms and changes (6b)
 
 A design that can't save isn't a prototype. 6b lets forms post, changes the state's
 fake data, and answers the way the app will: in place, out of band, closing the
@@ -838,14 +838,13 @@ loaders.
 - Business logic beyond the three verbs.
 - Undo.
 
-Open questions:
-1. Should POST routes use three verbs (`update`, `add`, `remove`) plus `require` and
-   `answer` (proposed), or JavaScript handlers from the start?
-2. Should changes live in a design-wide working copy, in memory, reset by picking a
-   state or "Reset data" (proposed)?
-3. Are refusals as `require` plus a 422 re-render of `form` enough for now, with richer
-   rules later?
-4. Can GET forms (search and filter) wait for the step after this one?
+Decided 2026-10-15:
+- POST routes in `routes.json`: `update`, `add` or `remove` at a data path, plus
+  `require`, `form` and `answer`. JavaScript handlers only when a design needs logic.
+- Changes go to a design-wide working copy in memory, reset by picking a state or
+  "Reset data".
+- Refusals: `require`, answered with a 422 that re-renders `form`. Richer rules later.
+- GET forms (search and filter) come in the step after this one.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
