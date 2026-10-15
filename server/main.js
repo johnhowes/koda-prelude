@@ -417,6 +417,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       designLive: `${base}/live`,
       system: systemFor(),
       shell: shellFor(),
+      references: app.references.of(folder.build?.parentId ?? folder.id),
       buildUrl: hosted && design.kind === 'design' ? `${base}/build` : null,
       build: folder.build ? { branch: folder.build.branch, path: folder.path, back: `/f/${folder.build.parentId}/d/${design.id}/build` } : null,
     }, title);
@@ -427,7 +428,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // design made of views may also read Koda's own guidance.
   const agentContext = () => {
     const views = format() === 'views';
-    const references = app.references.of(folder.id);
+    const references = app.references.of(folder.build?.parentId ?? folder.id);   // a build reads what its folder reads
     return {
       references: views ? [...references, { name: 'Koda', path: kodaPackage }] : references,
       system: systemFor(),

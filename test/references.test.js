@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { after, before, test } from 'node:test';
 
 import { designPrompt, permissionArgs } from '../server/agent.js';
@@ -51,6 +51,8 @@ test('the prompt names the reference folders, read-only', () => {
   assert.match(prompt, /You may also read these folders.*Spark \(C:\\Projects\\Spark\)/);
   assert.match(prompt, /never write to them/);
   assert.doesNotMatch(designPrompt({ title: 'X', designPath: 'prelude/x' }), /You may also read/);
+  // Without one, the agent sends the person to where reading is set, not to copying files.
+  assert.match(designPrompt({ title: 'X', designPath: 'prelude/x' }), /ask the person to add it under "What the agent can read" on this folder's page in Prelude/);
 });
 
 test('reference folders are added on the folder page, kept on this machine, and removable', async () => {
@@ -81,6 +83,8 @@ test('a turn gets the folder’s reference folders', async () => {
   assert.equal(turn.references[0], canonical(other));
   assert.match(turn.references.at(-1), /@kodalang[\\/]core$/, 'a design made of views may also read Koda’s own guidance');
   assert.ok(turn.systemPrompt.includes(canonical(other)));
+  const design = await (await get(`/f/${fid}/d/checkout/sessions/new`)).text();
+  assert.match(design, new RegExp(`The agent reads this repository, <span title="[^"]+">${basename(other)}</span>\\. <a href="/f/${fid}#reading">Change what it can read</a>`));
 
   assert.equal((await post(`/f/${fid}/references/remove`, { path: canonical(other) })).status, 303);
   const page = await (await get(`/f/${fid}`)).text();

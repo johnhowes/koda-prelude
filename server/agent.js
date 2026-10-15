@@ -197,6 +197,7 @@ You are working on the ${what} "${title}". Its folder is ${designPath}/, relativ
 
 - Write only inside ${designPath}/, and never inside ${designPath}/sessions/ or ${designPath}/snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
 - You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
+- What you may read is set in Prelude, not in this conversation. If you need a folder outside the repository (another app's code or CSS, say) and can't read it, ask the person to add it under "What the agent can read" on this folder's page in Prelude; you can read it from their next message. Don't ask them to copy files into the repository or paste them instead.
 - A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what the design already has.
 - Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
 - When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];

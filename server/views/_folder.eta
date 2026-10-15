@@ -73,7 +73,7 @@
     </form>
   </div>
 
-  <div class="card">
+  <div class="card" id="reading">
     <h2>What the agent can read</h2>
     <p class="sec">This folder, and any folders you add here, such as another repository whose CSS a design system should start from. Nothing else on this machine. The agent writes only inside the design it’s working on.</p>
     <ul class="list">

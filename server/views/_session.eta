@@ -23,6 +23,7 @@
         <% if (it.shell) { %>Renders in <a href="/f/<%= it.folder.id %>/d/<%= it.shell.id %>"><%= it.shell.title %></a><% } %>
       </p>
       <% } %>
+      <p class="muted">The agent reads this repository<% for (const reference of it.references) { %>, <span title="<%= reference.path %>"><%= reference.name %></span><% } %>. <a href="/f/<%= it.folder.build?.parentId ?? it.folder.id %>#reading">Change what it can read</a></p>
     </div>
     <nav class="sessions" aria-label="Sessions">
       <% if (it.sessions.length > 0) { %>
