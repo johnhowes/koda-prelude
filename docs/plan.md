@@ -532,6 +532,8 @@ How it improves on KodaDesign:
 1. **6a:** The built-in Eta host, GET only:
    - `views/`, `routes.json` and `states/` on a per-design preview origin, with one URL
      in two shapes and Koda live;
+   - layouts from the design system (or the design's own `views/layouts/`), with shell
+     data from the layout's sample data and the state;
    - the screen picker built from routes, plus a design-wide state picker. The state is
      server state, and a frame loading a route moves every window to it.
    - Plain `.html` screens keep working for designs without `routes.json`.
@@ -542,15 +544,64 @@ How it improves on KodaDesign:
 4. **6d:** Drift: porting points a design at the production views, and states render
    as CI fixtures.
 
+Decided 2026-10-15:
+- A design is the app's views plus a route table, with design-wide fake data as its
+  states.
+- Each design gets an origin of its own, so routes are the app's real URLs.
+- 6a is GET only; forms and their effects are 6b.
+- One `data` path per route to start, evolving into loaders only if that runs out.
+
+#### Layouts: the app's shell, designed once and shared
+
+A layout isn't one design's: it's the app's shell, the page every feature lives in. It
+holds the header and navigation, the main region that owns `ko-scope="/"` and
+history, and the places a page may ask for (a drawer, a notice area: `drawer?`,
+`notice?`). If each design kept its own copy, the designs would drift from each other
+and from the app, the same problem the design system solves for components.
+
+**Layouts live in the design system.** In Koda's terms the layout is the *host*: it
+owns the page and offers affordances, and features render into it. That makes it
+shared foundation, like the tokens and components, so it's designed where they are:
+
+```
+prelude/<system>/system/
+  layouts/app.eta          the shell: header, nav, <main ko-scope="/" ko-location ko-history>,
+                           and the regions it offers (<aside id="drawer" ko-region>, a notice area)
+  layouts/app.json         sample data for the shell: who's signed in, the nav items, counts
+  layouts/bare.eta         e.g. sign-in or a full-screen wizard: no nav
+```
+
+- **Designed in the system's sessions,** like components ("add a notifications bell
+  to the header"), and shown in its gallery: one screen per layout, holding sample
+  content and showing each region it offers.
+- **Designs use it by name:** a route says `"layout": "app"`, the default, or `"bare"`.
+  A design never copies a layout.
+- **A design that needs a new kind of page** (a wizard, a print view) can draft a
+  layout in its own `views/layouts/`. The host looks there first, then in the system.
+  Its `NOTES.md` says it should move to the system once agreed, the same rule as a
+  component the system lacks.
+- **The shell's data is part of the state:**
+  - by default the layout gets its sample data from `layouts/<name>.json`;
+  - a design's state can override any of it under a `layout` key, such as an
+    administrator's nav, 99+ notifications, or a long company name;
+  - the layout sees it as `it.layout`, and the page's model as `it`.
+- **For a repo whose app already has a layout,** the system's first session harvests
+  it, as it harvests CSS. For an Eta or Koda app it goes one better: a route can name
+  the real layout file (`"layout": "@app/views/layout"`). The host reads it from the
+  repo, read-only, and the design is inside the real shell from day one, with nothing
+  to drift.
+
+**How the host composes a cold load:** the route's view renders with the state's model.
+The layout renders around it with `it.layout`, and `ko-location` is set to the request
+path. A fragment request skips the layout entirely, as the real server would.
+
 Open questions:
-1. Should a design be the app's views plus a route table, with design-wide fake data
-   as its states (proposed), rather than per-screen states?
-2. Is an origin per design (`<design>.<folder>.preview.localhost`) acceptable, so
-   routes are the app's real URLs?
-3. Should 6a be GET only, with forms and their effects as their own decision (6b)?
-4. Is one `data` path per route (proposed) enough, or would you rather routes had
-   small JS loaders? Loaders are closer to a real controller, but mean running
-   agent-written code, so they'd need sandboxing.
+1. Should layouts live in the design system (proposed), rather than in a design of their
+   own or per design?
+2. For an Eta or Koda app that already has a layout, should designs reference the real
+   layout file directly (proposed), or a harvested copy in the system?
+3. Shell data: sample data beside the layout, overridable per state under `layout`
+   (proposed)?
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
