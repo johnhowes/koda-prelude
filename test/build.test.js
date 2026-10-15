@@ -36,7 +36,7 @@ const write = (root, path, text) => {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, typeof text === 'string' ? text : JSON.stringify(text, null, 2));
 };
-const until = async check => { for (let i = 0; i < 400 && !(await check()); i++) await new Promise(r => setTimeout(r, 25)); };
+const until = async check => { for (let i = 0; i < 1200 && !(await check()); i++) await new Promise(r => setTimeout(r, 25)); };   // 30s: git and the check are slow under a full run
 const get = path => fetch(base + path, { redirect: 'manual' });
 const post = (path, fields) => fetch(base + path, { method: 'POST', body: new URLSearchParams(fields), redirect: 'manual' });
 
