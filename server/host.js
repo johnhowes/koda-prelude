@@ -41,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { readHostConfig } from './hosts.js';
+import { readRules, ruleWarnings } from './rules.js';
 import { compareSnapshots, snapshotName } from './snapshots.js';
 
 export const HOST_SUFFIX = 'preview.localhost';
@@ -487,7 +488,10 @@ export async function renderPath(app, { folder, design, designDir, path, query =
 async function render(app, folder, job) {
   try {
     const config = app.hosts && readHostConfig(folder.path);
-    if (config) return { status: 200, html: await app.hosts.render(folder, config, job) };
+    if (config) {
+      const { html, ahead } = await app.hosts.render(folder, config, job);
+      return { status: 200, html, ahead };
+    }
     return { status: 200, html: await app.renderers.render(folder.path, job) };
   } catch (error) {
     return renderError(String(error.message));
@@ -543,25 +547,34 @@ export function samplePaths(routes, dataset) {
  * overlay over its page) and each refused form; null for one that failed,
  * which isn't compared with its snapshot (the failure already says it).
  */
-export async function checkDesign(app, { folder, design, designDir }, { renders = null } = {}) {
+export async function checkDesign(app, { folder, design, designDir }, { renders = null, ahead = null } = {}) {
   const routes = readRoutes(designDir);
   const states = listStates(designDir);
   const failures = [];
   for (const state of states.length ? states : [null]) {
     const keep = (name, html) => renders?.set(`${state?.id ?? '_'}/${name}`, html);
+    const heard = answer => { for (const member of answer.ahead ?? []) ahead?.add(member); return answer; };
     // Each POST route, against a throwaway copy: a valid post must answer as
     // described, and an empty one must be refused when fields are required.
     for (const { route, path } of samplePaths(readPostRoutes(designDir), readState(designDir, state))) {
       const label = `POST ${path}`;
-      const record = route.verb === 'update' ? lookup(readState(designDir, state), route.at, matchRoute([route], path)?.params ?? {}) : null;
+      // A valid post sends what a record has: the one updated, or, for an add,
+      // one already in the list (a new one is like its siblings).
+      const at = (dataset) => lookup(dataset, route.at, matchRoute([route], path)?.params ?? {});
+      const sibling = list => (Array.isArray(list) ? list.find(item => item && typeof item === 'object') : null);
+      const found = route.verb === 'remove' ? null : at(readState(designDir, state));
+      // An empty list (a "no notes" state) borrows a sibling from another state.
+      const record = route.verb === 'add'
+        ? sibling(found) ?? states.map(other => sibling(at(readState(designDir, other)))).find(Boolean) ?? null
+        : found;
       const valid = Object.fromEntries([
-        ...Object.entries(record && typeof record === 'object' ? record : {}).filter(([, v]) => ['string', 'number', 'boolean'].includes(typeof v)).map(([k, v]) => [k, String(v)]),
+        ...Object.entries(record && typeof record === 'object' ? record : {}).filter(([k, v]) => !(route.verb === 'add' && k === 'id') && ['string', 'number', 'boolean'].includes(typeof v)).map(([k, v]) => [k, String(v)]),
         ...route.require.map(name => [name, String(record?.[name] ?? 'Sample')]),
       ]);
-      const ok = await postPath(app, { folder, design, designDir, path, fields: valid, dataset: structuredClone(readState(designDir, state)) });
+      const ok = heard(await postPath(app, { folder, design, designDir, path, fields: valid, dataset: structuredClone(readState(designDir, state)) }));
       if (ok.status >= 400) failures.push({ state: state?.title ?? null, path: label, error: ok.error ?? `answered ${ok.status}: ${ok.html.replace(/<[^>]+>/g, '').slice(0, 200)}` });
       if (route.require.length) {
-        const refused = await postPath(app, { folder, design, designDir, path, fields: {}, dataset: structuredClone(readState(designDir, state)) });
+        const refused = heard(await postPath(app, { folder, design, designDir, path, fields: {}, dataset: structuredClone(readState(designDir, state)) }));
         if (refused.status !== 422) failures.push({ state: state?.title ?? null, path: `${label} (empty)`, error: refused.error ?? `should refuse with 422, answered ${refused.status}` });
         keep(snapshotName(path, { post: true }), refused.status === 422 ? refused.html : null);
       }
@@ -569,7 +582,7 @@ export async function checkDesign(app, { folder, design, designDir }, { renders 
     for (const { route, path, fragment } of samplePaths(routes, readState(designDir, state))) {
       // An overlay is rendered both ways: alone, and over the page beneath.
       for (const alone of route.over ? [true, false] : [fragment]) {
-        const answer = await renderPath(app, { folder, design, designDir, path, fragment: alone, stateId: state?.id });
+        const answer = heard(await renderPath(app, { folder, design, designDir, path, fragment: alone, stateId: state?.id }));
         if (answer.status === 500) failures.push({ state: state?.title ?? null, path: route.over && alone ? `${path} (alone)` : path, error: answer.error });
         if (!(route.over && alone)) keep(snapshotName(path), answer.status === 200 ? answer.html : null);
       }
@@ -588,13 +601,17 @@ export async function checkDesign(app, { folder, design, designDir }, { renders 
 
 /**
  * The whole check of a design: what doesn't render, and what renders
- * differently from its approved snapshots.
- * { failures, renders, approved, differ: [{ name, diff }] }
+ * differently from its approved snapshots, and which rules point at nothing.
+ * { failures, renders, approved, differ: [{ name, diff }], warnings: [text],
+ *   ahead: ["Model.member"]: state members a ported view's model doesn't have yet }
  */
 export async function reviewDesign(app, ctx) {
   const renders = new Map();
-  const failures = await checkDesign(app, ctx, { renders });
-  return { failures, renders, ...compareSnapshots(ctx.designDir, renders) };
+  const ahead = new Set();
+  const failures = await checkDesign(app, ctx, { renders, ahead });
+  const routes = [...readRoutes(ctx.designDir).map(r => r.pattern), ...readPostRoutes(ctx.designDir).map(r => `POST ${r.pattern}`)];
+  const warnings = ruleWarnings(readRules(ctx.designDir), { routes, states: listStates(ctx.designDir) }).map(w => w.warning);
+  return { failures, renders, warnings, ahead: [...ahead].sort(), ...compareSnapshots(ctx.designDir, renders) };
 }
 
 // --- forms: POST routes ----------------------------------------------------
@@ -666,10 +683,11 @@ function mergeFields(record, fields) {
   return record;
 }
 
-/** The next id for a list: one more than the largest number, or a short random one. */
+/** The next id for a list: one more than the largest number (1 for an empty list), or a short random one. */
 function nextId(list) {
   const ids = list.map(item => item?.id);
-  if (ids.length && ids.every(id => Number.isFinite(Number(id)))) return Math.max(...ids.map(Number)) + 1;
+  if (ids.length === 0) return 1;
+  if (ids.every(id => Number.isFinite(Number(id)))) return Math.max(...ids.map(Number)) + 1;
   return Math.random().toString(36).slice(2, 8);
 }
 
@@ -742,7 +760,7 @@ export async function postPath(app, { folder, design, designDir, path, fields, d
     const record = route.verb === 'update' ? lookup(dataset, route.at, params) : null;
     const model = mergeFields(structuredClone(record && typeof record === 'object' ? record : {}), fields);
     const answer = await renderView(route.form, { ...model, $errors });
-    return { status: answer.status === 200 ? 422 : answer.status, html: answer.html, error: answer.error, changed: false };
+    return { status: answer.status === 200 ? 422 : answer.status, html: answer.html, error: answer.error, ahead: answer.ahead, changed: false };
   }
 
   const applied = applyChange(dataset, route, params, fields);

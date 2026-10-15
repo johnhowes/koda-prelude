@@ -16,7 +16,10 @@
 //                              layout: { views, template, data } | { default: true, data } | null,
 //                              regions: { <name>: { views, template, data, location } },
 //                              query }
-//                            -> 200 text/html, or 500 with the engine's error as text
+//                            -> 200 text/html, or 500 with the engine's error as text.
+//                               A 200 may say x-prelude-ahead: <members>: state members
+//                               a typed view's model doesn't have yet (the design is
+//                               ahead of the app). Reported, never failed (step 7).
 //   GET  <anything else>     the app's own static assets, at their real paths
 //
 // Paths in a render are relative to the repository (`root`), with forward
@@ -95,7 +98,7 @@ function call(url, { method = 'GET', body = null, timeout = RENDER_TIMEOUT_MS } 
       let text = '';
       res.setEncoding('utf8');
       res.on('data', chunk => { text += chunk; });
-      res.on('end', () => resolve({ status: res.statusCode, body: text }));
+      res.on('end', () => resolve({ status: res.statusCode, body: text, headers: res.headers }));
     }, reject);
   });
 }
@@ -109,7 +112,10 @@ export function createHosts({ home }) {
   };
 
   const start = (folder, config) => {
-    const entry = { log: '', fingerprint: config.fingerprint, child: null, ready: null };
+    // One host per address: the folder's and a build's share a port, so
+    // starting one stops the other.
+    for (const [path, other] of running) if (other.url === config.url) stop(path);
+    const entry = { log: '', fingerprint: config.fingerprint, url: config.url, child: null, ready: null };
     const append = chunk => { entry.log = (entry.log + chunk).slice(-LOG_LIMIT); };
     append(`$ ${config.start}\n`);
     // The command is the repository's own, run in the repository, as `npm start` would be.
@@ -156,8 +162,11 @@ export function createHosts({ home }) {
   };
 
   return {
+    // A build's worktree is the folder's own branch: approving the folder's
+    // host approves the same host there.
     approved(folder, config) {
-      return readApprovals()[folder.id] === config.fingerprint;
+      const approvals = readApprovals();
+      return [folder.id, folder.build?.parentId].some(id => id && approvals[id] === config.fingerprint);
     },
 
     approve(folder, config) {
@@ -167,7 +176,7 @@ export function createHosts({ home }) {
       writeFileSync(approvalsFile, JSON.stringify(all, null, 2) + '\n');
     },
 
-    /** Render through the folder's host, starting it if need be. Throws with the host's error. */
+    /** Render through the folder's host, starting it if need be: { html, ahead }. Throws with the host's error. */
     async render(folder, config, job) {
       if (!this.approved(folder, config)) {
         throw new Error('This repository’s design host hasn’t been approved yet. It runs the design’s views as code on this machine; approve it in the design bar to start it.');
@@ -175,7 +184,8 @@ export function createHosts({ home }) {
       await ensure(folder, config);
       const answer = await call(`${config.url}/__prelude/render`, { method: 'POST', body: JSON.stringify(forHost(folder.path, job)) });
       if (answer.status !== 200) throw new Error(answer.body.trim() || `The design host answered ${answer.status}.`);
-      return answer.body;
+      const ahead = String(answer.headers['x-prelude-ahead'] ?? '').split(',').map(member => member.trim()).filter(Boolean);
+      return { html: answer.body, ahead };
     },
 
     /** Pass a GET for the app's own assets through to the host, once it's running. */
@@ -198,6 +208,11 @@ export function createHosts({ home }) {
     status(folder, config) {
       const entry = running.get(folder.path);
       return { approved: this.approved(folder, config), running: Boolean(entry), log: entry?.log ?? '' };
+    },
+
+    /** Stop a folder's host; the next render starts it again, rebuilding the app. */
+    stop(folder) {
+      stop(folder.path);
     },
 
     closeAll() {

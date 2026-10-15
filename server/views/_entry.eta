@@ -18,6 +18,8 @@
 </li>
 <% } else if (e.type === 'check') { %>
 <li class="entry note">Prelude rendered every page and form in every state<%= e.rendered ? ` (${e.rendered})` : '' %>, and they all render.</li>
+<% } else if (e.type === 'note') { %>
+<li class="entry note<%= e.failed ? ' failed' : '' %>"><%= e.text %></li>
 <% } else if (e.type === 'turn' && e.stopped) { %>
 <li class="entry note">Stopped.</li>
 <% } else if (e.type === 'turn' && !e.ok) { %>
@@ -25,6 +27,18 @@
 <% } %>
 <%/* Shown to the person, not told to the agent: a page that renders
      differently from its approved snapshot was probably asked for. */%>
+<% if (e.type === 'check' && e.warnings?.length) { %>
+<li class="entry note failed">
+  <details open><summary><%= e.warnings.length === 1 ? '1 rule points' : `${e.warnings.length} rules point` %> at nothing in the design. The agent is told with your next message.</summary>
+  <ul class="check-list"><% for (const warning of e.warnings) { %><li><%= warning %></li><% } %></ul></details>
+</li>
+<% } %>
+<% if (e.type === 'check' && e.ahead?.length) { %>
+<li class="entry note">
+  <details><summary>The design is ahead of the app: the states have <%= e.ahead.length === 1 ? 'a field' : `${e.ahead.length} fields` %> the app’s models don’t yet. Building it adds them.</summary>
+  <ul class="check-list"><% for (const member of e.ahead) { %><li><code><%= member %></code></li><% } %></ul></details>
+</li>
+<% } %>
 <% if (e.type === 'check' && e.differ?.length) { %>
 <li class="entry note">
   <details><summary><%= e.differ.length === 1 ? '1 page differs' : `${e.differ.length} pages differ` %> from the approved screens. If that’s what you asked for, approve them again in the design bar.</summary>

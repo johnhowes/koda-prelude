@@ -90,6 +90,14 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     (to the person, not the agent). `npm run check <folder>` runs the whole
     check for CI, exiting 1 on a failure or a difference; `-- --approve`
     approves instead.
+  - Build (plan, step 7): `server/rules.js` reads a design's `RULES.md`;
+    `server/backlog.js` derives what's left to build, by page, and the story
+    text (the Build view, `_build.eta`); `server/builds.js` makes a build
+    session's git worktree and branch. A worktree is a folder (`app.folders.get`
+    finds it), so its sessions, host and check are a folder's; in it, sessions
+    run in `mode: 'build'` (`buildPrompt`, `permissionArgs`), and each turn is
+    committed to the branch. A host's `x-prelude-ahead` header (state members a
+    typed model lacks) is reported, never failed.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

@@ -136,6 +136,8 @@ test('snapshots compare normalised HTML: whitespace and attribute order don’t 
   const later = compareSnapshots(dir, new Map([['typical/x', '<p>y</p>'], ['typical/new', '<p>n</p>']]));
   assert.deepEqual(later.differ.map(d => d.name), ['typical/x', 'typical/new']);
   assert.equal(compareSnapshots(dir, new Map()).differ[0].diff, 'approved, but no longer rendered');
+  writeFileSync(join(dir, 'snapshots', 'typical', 'x.html'), normalise('<p>x</p>').replace(/\n/g, '\r\n'));
+  assert.deepEqual(compareSnapshots(dir, new Map([['typical/x', '<p>x</p>']])).differ, [], 'a CRLF checkout still matches');
 });
 
 test('the design bar marks ported routes and approves screens; the check then notices a change', async () => {

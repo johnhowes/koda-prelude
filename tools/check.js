@@ -69,6 +69,8 @@ try {
     const review = await reviewDesign(app, { folder, design, designDir });
     report(review.failures.length === 0, `${design.id}: every page renders in every state (${[...review.renders.values()].filter(Boolean).length} pages and forms)`,
       review.failures.map(f => `${f.path}${f.state ? ` (${f.state})` : ''}: ${f.error.split('\n').slice(0, 4).join('\n  ')}`).join('\n'));
+    for (const warning of review.warnings) console.log(`warn ${design.id}: ${warning}`);
+    if (review.ahead.length) console.log(`     ${design.id}: the design is ahead of the app: ${review.ahead.join(', ')}`);
     if (approve && review.failures.length) {
       console.log(`     ${design.id}: not approved, as some pages don't render`);
     } else if (approve) {

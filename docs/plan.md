@@ -1332,6 +1332,98 @@ Decided 2026-10-15:
 - A build session may write everything outside the design's own files.
 - Executable tests that run against both the design and the real app: wanted in
   principle, undecided for this step.
+- Unit tests in build sessions (a `test` command in `prelude.json`, run by Prelude after
+  a build turn, approved like the host): undecided, so left out. The build agent has no
+  shell; Prelude's check, which builds the app through its host, is its feedback.
+
+**As built (7):**
+- **`server/rules.js`** parses `RULES.md` into ids, text, the proposed and retired markers,
+  and `shown-on` places (`route @ state`). `ruleWarnings` reports duplicate ids, and places
+  naming a route or state the design doesn't have.
+  - The check reports these warnings, and they're told to the design agent. They never
+    fail anything.
+  - The design agent's instructions (`rulesSection` in agent.js) apply to designs, not
+    to the system or the shell.
+- **`server/backlog.js`** groups a design's work by page:
+  - an overlay goes with the page it's `over`;
+  - fragments and POST routes go with the page whose URL is the longest prefix of theirs;
+  - rules go with the group whose routes they're shown on, or are design-wide.
+
+  A group is built when its routes are `@app/`, every view its POST routes name is
+  `@app/`, and none of its rules is proposed. `storyMarkdown` writes the story:
+  - **Delivers:** each route with its view as a repository path;
+  - **Acceptance criteria:** each form's refusal and answer, each rule, the approved
+    screens, and `npm run check`;
+  - **Test cases:** one per state.
+- **The Build view** (`…/d/<design>/build`, linked from the design's header) lists the
+  groups and the design-wide rules. Each group has "Copy as story" (a read-only textarea
+  and a Copy button) and, in a git repository, "Start a build session". It also lists the
+  design's build sessions.
+- **`server/builds.js`** creates a build. It refuses unless the folder is the top of a git
+  repository and `prelude/<design>/` has no uncommitted changes, then runs
+  `git worktree add -b build/<design>-<group>` from HEAD into
+  `~/.prelude/worktrees/<folder>/`. Builds are recorded in `~/.prelude/builds.json`.
+  - **A build is a folder.** `app.folders.get` finds it by id, so the worktree has its own
+    design origin, host and check, and the session, transcript included, lives on the
+    branch.
+  - **Its host** inherits the parent folder's approval. Starting a host stops any other
+    host on the same address. In a build, Prelude restarts the host before each check,
+    so the check builds the turn's C#, not just its views.
+- **A build session** runs in the worktree with `mode: 'build'`:
+  - **Permissions:** `Edit(**)` and `Write(**)`, except the design's views, states,
+    snapshots and sessions, and `.git/`.
+  - **Instructions:** `buildPrompt` lists the group's routes, forms and proposed rules,
+    plus the design-wide proposed rules.
+  - **After each turn,** Prelude runs the check. It then deletes the design's `views/` if
+    no route names one any more, and commits everything to the branch, with a "Committed
+    to … (sha)" note in the chat.
+  - **What the agent is told:** besides failures, the members the app's models still
+    lack, and how each page differs from its approved screen (labelled as information,
+    since expected porting differences are the person's to approve).
+- **A design ahead of the app.**
+  - **The problem:** a ported view's model read every state strictly. Designing the next
+    feature, which needs new data, then broke every ported page.
+  - **Now:** a host leaves out members a typed model doesn't have and says so in an
+    `x-prelude-ahead` response header. Prelude shows them as "the design is ahead of the
+    app", which never fails. A missing member or a wrong type still fails.
+  - **Merging:** design merges continuously, so a state can legitimately be ahead of the
+    code.
+- **Smaller fixes found on the way:**
+  - The check's sample post for an "add" form copies a sibling from the list, or from
+    another state when the list is empty.
+  - A new item in an empty list gets id 1.
+  - Snapshots compare regardless of CRLF checkouts (`core.autocrlf`).
+- **Proven in the Razor demo** (now a git repository):
+  1. **Design.** A design session asked for a borrower detail page with notes that only
+     underwriters can add.
+     - It stopped and asked first: new data would break the ported models. That led to
+       the "ahead" change above.
+     - It then designed the page and three proposed rules, and recorded in `NOTES.md`
+       what it couldn't change (the app's row view).
+  2. **Approve and commit.** The new screens were approved and the design committed.
+  3. **Build view.** It showed the Borrowers page as built and the new Borrower page as
+     to build.
+  4. **Build session.** It started on `build/borrowers-borrowers-id`. The agent, in one
+     turn:
+     - extended the models;
+     - wrote the controller, with a 403 for non-underwriters and a 422 for an empty note;
+     - ported the views with `asp-for` and moved the styles into the app;
+     - pointed the routes at `@app/` and made all three rules true.
+
+     Prelude deleted the design's views and committed. A second turn only corrected
+     `NOTES.md`.
+  5. **Result.** The check passed with 25 pages and forms. The only differences from the
+     approved screens were the stylesheet link, and approving them committed exactly
+     those four lines.
+  6. **Real app.** It serves `/borrowers/1041` in both shapes and refuses a note from a
+     non-underwriter with 403.
+- **Found, not yet fixed:**
+  - **One data path per route** made the agent read the signed-in user through a second
+    route. A page that needs its record *and* who's signed in is common.
+  - **Grouping by URL prefix** puts `/borrowers/:id/row` and `POST /borrowers/:id`, which
+    belong to the list, with the detail page. They're built, so it's noise.
+  - **This machine refuses to launch a freshly built `App.exe`** from a temp folder, so
+    the demo runs through `dotnet App.dll` (`UseAppHost=false`).
 
 ### Step 8 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static

@@ -39,8 +39,13 @@ let liveCount = 0;
 /** The person's message, preceded by what Prelude's last check of the design found. */
 export function withFindings(failures, message) {
   if (!failures?.length) return message;
-  const list = failures.map(f => `- ${f.path}${f.state ? ` (state "${f.state}")` : ''}: ${f.error}`).join('\n');
-  return `(From Prelude, not the person: after your last turn, these didn't render. Fix them along with what's asked below.)\n${list}\n\n${message}`;
+  const line = f => `- ${f.path}${f.state ? ` (state "${f.state}")` : ''}: ${f.error}`;
+  const fix = failures.filter(f => !f.info);
+  const info = failures.filter(f => f.info);
+  const parts = [];
+  if (fix.length) parts.push(`(From Prelude, not the person: after your last turn, these didn't render, or point at nothing. Fix them along with what's asked below.)\n${fix.map(line).join('\n')}`);
+  if (info.length) parts.push(`(From Prelude, for your information: how pages now differ from the screens the person approved. Expected porting differences are theirs to approve; anything else means the port isn't faithful.)\n${info.map(line).join('\n')}`);
+  return `${parts.join('\n\n')}\n\n${message}`;
 }
 
 export function createTurns({ runner, live }) {
@@ -95,7 +100,7 @@ export function createTurns({ runner, live }) {
      * `references` are the folders the agent may also read ([{ name, path }]),
      * and `system` the folder's design system, as designPrompt takes it.
      */
-    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null }) {
+    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -112,8 +117,10 @@ export function createTurns({ runner, live }) {
         sessionId: session.claudeSessionId,
         resume: session.started === true,
         prompt: withFindings(findings.get(dKey), message),
-        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack }),
+        // A build session (step 7) brings its own instructions and permissions.
+        systemPrompt: systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack }),
         designPath,
+        mode,
         references: references.map(reference => reference.path),
         onEvent: event => {
           if (event.type === 'init') {
@@ -155,9 +162,18 @@ export function createTurns({ runner, live }) {
             // (the agent was probably asked to change it), so it's only shown.
             const result = await check();
             if (result) {
-              const { failures, rendered = 0, differ = [] } = result;
-              if (failures.length) findings.set(dKey, failures);
-              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name) });
+              const { failures, rendered = 0, differ = [], warnings = [], ahead = [] } = result;
+              // Rules that point at nothing are the agent's to fix too.
+              // A build session is also told what the app's models still lack.
+              const told = [
+                ...failures,
+                ...warnings.map(warning => ({ state: null, path: 'RULES.md', error: warning })),
+                ...(mode === 'build' ? ahead.map(member => ({ state: null, path: 'models', error: `the states have ${member}, which the app's model doesn't have yet` })) : []),
+                // ...and how its port differs from the approved screens.
+                ...(mode === 'build' ? differ.slice(0, 8).map(d => ({ info: true, state: null, path: d.name, error: `\n${d.diff.split('\n').slice(0, 14).join('\n')}` })) : []),
+              ];
+              if (told.length) findings.set(dKey, told);
+              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name), warnings, ahead });
             }
           } catch { /* a failed check is no reason to lose the turn */ }
         }
@@ -169,6 +185,16 @@ export function createTurns({ runner, live }) {
           costUsd: result.costUsd ?? null,
         });
         updateSession(designDir, sessionId, {});
+        // A build session commits the turn to its branch, transcript included.
+        // (The entry saying so is committed with the next turn.)
+        if (afterTurn) {
+          try {
+            const note = await afterTurn({ message, result });
+            if (note) record(ctx, note);
+          } catch (error) {
+            record(ctx, { type: 'note', failed: true, text: `Prelude couldn’t commit this turn: ${String(error.stderr || error.message).trim().split('\n').slice(-2).join(' ')}` });
+          }
+        }
         running.delete(dKey);
         live.publish(ctx.key, statusMessage({ kind: 'idle' }));
       };

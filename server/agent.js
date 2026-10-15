@@ -1,6 +1,6 @@
 // The agent: the Claude Code CLI, run once per turn in the chosen folder.
 //
-//   runner.turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references, onEvent })
+//   runner.turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references, mode, onEvent })
 //     -> { done: Promise<{ ok, stopped?, error?, costUsd? }>, stop() }
 //
 // onEvent gets a few plain events:
@@ -30,10 +30,16 @@ const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
  * machine; it was there until step 5.) Reference folders must be canonical
  * paths, or a Windows short name stops them matching.
  */
-export function permissionArgs(designPath, references = []) {
-  const scope = `${designPath}/**`;
+export function permissionArgs(designPath, references = [], mode = 'design') {
+  // A design session writes its design. A build session (step 7) writes the
+  // app - anything in its worktree - but not the design it builds from: its
+  // views, states and approved screens are the specification. It may still
+  // edit routes.json (to point routes at the app's views), RULES.md (to remove
+  // a rule's *proposed* marker) and NOTES.md.
+  const scope = mode === 'build' ? '**' : `${designPath}/**`;
   // Its sessions are Prelude's record, and its snapshots are what the person approved.
-  const kept = [`${designPath}/sessions/**`, `${designPath}/snapshots/**`];
+  const kept = [`${designPath}/sessions/**`, `${designPath}/snapshots/**`,
+    ...(mode === 'build' ? [`${designPath}/views/**`, `${designPath}/states/**`, '.git/**'] : [])];
   return [
     '--tools', TOOLS.join(','),
     '--allowedTools', [`Edit(${scope})`, `Write(${scope})`].join(','),
@@ -45,11 +51,11 @@ export function permissionArgs(designPath, references = []) {
 
 export function createCliRunner({ command = 'claude', model = null } = {}) {
   return {
-    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references = [], onEvent = () => {} }) {
+    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references = [], mode = 'design', onEvent = () => {} }) {
       const args = [
         '-p',
         '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
-        ...permissionArgs(designPath, references),
+        ...permissionArgs(designPath, references, mode),
         '--strict-mcp-config',
         '--setting-sources', '',
         '--disable-slash-commands',
@@ -264,12 +270,57 @@ The shell's own routes.json, views and states are its gallery: a page per layout
       ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`
       : `This folder has no app shell yet, so pages render in a minimal built-in layout that loads the design system (if there is one), this design's styles.css, and Koda.`);
   }
+  if (kind === 'design') lines.push(rulesSection(designPath));
   if (kind !== 'system' && system) {
     lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. Don't change it from here; note in NOTES.md what it lacks.`);
   } else if (kind !== 'system') {
     lines.push(`This folder has no design system yet; when it gets one, its designs will use it.`);
   }
   return lines.join('\n\n');
+}
+
+/**
+ * The instructions for a build session (plan: step 7): implement one group of
+ * a design - a page, its overlays, fragments and forms - in the app's real
+ * code, on a branch of its own. `group` is a backlog group (backlog.js).
+ */
+export function buildPrompt({ title, designPath, group, designWide = [], branch, references = [], stack = null, kodaPath = null }) {
+  const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}`);
+  const routes = group.routes.map(route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`).join('\n');
+  const posts = group.posts.map(post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`).join('\n');
+  const rules = group.rules.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
+  const wide = designWide.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
+  return `You are building part of a design into this repository's app: "${group.title}" of the design "${title}", in ${designPath}/. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and opens the pull request.
+
+The design is the specification, and it is already the app's views: ${designPath}/routes.json says what each URL shows (its view, and "data", the path into a state that becomes the view's model) and what each form does (POST routes: update, add or remove at a data path; "require", refused with a 422 that re-renders "form" with the messages; "answer", what comes back). ${designPath}/states/ are the cases, and become the tests' fixtures. ${designPath}/RULES.md says what else must be true, and ${designPath}/NOTES.md why, including any porting spec.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here, and how ported views differ.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}
+
+This session builds:
+${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes these proposed rules true:\n${rules}` : ''}${wide ? `\nThese proposed rules aren't tied to a page. Make true the ones what you build touches, and leave the rest:\n${wide}` : ''}
+
+For each of them:
+- Port the view into the app, where the app keeps its views, following its conventions: the markup stays as designed, element for element. Change only what real code requires: a typed model instead of the untyped one, the stack's real field helpers instead of design stand-ins (as ${stack?.guide ?? 'the guide'} says), real URLs. Move a design view's partials with it, and the design's styles into the app's stylesheets.
+- Write the model from the states' shape, so every state still fits it, and the handler or controller that answers each route as routes.json says: the model from the app's data, a fragment for a fragment request and the page in its layout otherwise, an overlay's cold load with the page beneath, and each form exactly as its POST route says, refusal included.
+- Point the route at the app's view in routes.json: its "view" (and a POST route's "form" and answer views) becomes "@app/<path to the view, without its extension>".
+- Make each proposed rule true, then remove its *proposed* line from RULES.md. Change nothing else in RULES.md.
+
+Never change the design's views, states, approved screens (${designPath}/snapshots/) or sessions; Prelude refuses those writes. If the design is wrong, incomplete or can't be built as it is, don't redesign it: say what and why in ${designPath}/NOTES.md, build the rest, and tell the person.
+
+You can't run commands. After each turn Prelude renders every route of the design in every state through the app's own views, which builds the app, and tells you with the next message what fails, a state that no longer fits a model included. It also shows the person how each page differs from its approved screen. When the group is built, say what you changed, and what the person should look at before approving the screens and opening the pull request.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/** How a design's RULES.md is written (plan: step 7). */
+function rulesSection(designPath) {
+  return `${designPath}/RULES.md holds the design's rules: behaviour worth stating as a rule, in one plain present-tense sentence about what a person observes, with no code names. The views, routes and states already say most of what the design does, so a rule is for what they leave open: that something seen in a state is intended and general, not an accident of the data (what a person without a permission sees, a limit, an ordering), and what nothing on screen can show (an email sent, a record locked). Don't restate what a view or a form's "require" already says plainly.
+
+# Rules: <design title>
+
+- **R-k3f.** Only an underwriter sees Edit on a funded loan's borrower.
+  *shown-on: /borrowers/:id/edit @ underwriter*
+  *proposed*
+- **R-q8m.** Changing a borrower's email sends them a confirmation.
+  *proposed*
+
+Give each rule an id of R- and three random lowercase letters and digits, never a sequence, so two branches never both add the same one. "shown-on" names where to see it: a route of this design as routes.json writes it, and optionally "@ <state>"; leave it out when nothing on screen shows the rule. Write every new rule as *proposed*: it isn't built until the app's code makes it true, and whoever builds it removes the marker. Never renumber or delete a rule: to change one that's no longer proposed, strike it through (~~**R-2wd.** ...~~), add *retired: <why>* under it, and add a new rule. Prelude tells you when a shown-on names a route or state that doesn't exist.`;
 }
 
 /** A one-line description of a tool use, with paths shown relative to the folder. */

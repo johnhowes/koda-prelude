@@ -1,0 +1,83 @@
+<%/* A design's Build view (plan: step 7): what's left to build, grouped by
+     page as a team would slice it into stories, derived from routes.json and
+     RULES.md each time. Each group copies as a story for the team's tracker,
+     and starts a build session on a branch of its own. Nothing here is stored. */%>
+<section class="page build">
+  <p class="crumbs">
+    <a href="/">Folders</a> ›
+    <a href="/f/<%= it.folder.id %>"><%= it.folder.name %></a> ›
+    <a href="<%= it.base %>"><%= it.design.title %></a>
+  </p>
+  <h1>Build</h1>
+  <p class="muted">What’s left to build in <code><%= it.designPath %>/</code>, by page. A route is built once its view is the app’s own (<code>@app/</code>), and a rule once it isn’t marked proposed. Copy a group into your tracker as a story, or start a build session for it.</p>
+
+  <% if (it.builds.length) { %>
+  <div class="card">
+    <h2>Build sessions</h2>
+    <ul class="list">
+      <% for (const build of it.builds) { %>
+      <li><a class="item" href="/f/<%= build.id %>/d/<%= it.design.id %>">
+        <span class="icon icon-conversation" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= build.title %></span>
+          <span class="muted">branch <code><%= build.branch %></code></span>
+        </span>
+      </a></li>
+      <% } %>
+    </ul>
+  </div>
+  <% } %>
+
+  <% if (it.error) { %><p class="err" role="alert"><%= it.error %></p><% } %>
+
+  <% for (const group of it.groups) { %>
+  <div class="card build-group" ko-item>
+    <h2><%= group.title %> <span class="pill"><%= group.built ? 'Built' : 'To build' %></span></h2>
+    <ul class="build-routes">
+      <% for (const route of group.routes) { %>
+      <li><code><%= route.pattern %></code><% if (route.title && route !== group.page) { %> <%= route.title %><% } %> <span class="muted">· <%= route.ported ? 'the app’s own view' : 'the design’s view' %></span></li>
+      <% } %>
+      <% for (const post of group.posts) { %>
+      <li><code>POST <%= post.pattern %></code> <span class="muted">· <%= post.verb %> <%= post.at %></span></li>
+      <% } %>
+    </ul>
+    <% if (group.rules.length) { %>
+    <ul class="build-rules">
+      <% for (const rule of group.rules) { %>
+      <li><strong><%= rule.id %>.</strong> <%= rule.text %> <span class="muted">· <%= rule.proposed ? 'proposed' : 'built' %></span></li>
+      <% } %>
+    </ul>
+    <% } %>
+    <details>
+      <summary class="btn small ghost">Copy as story</summary>
+      <textarea class="story" ko-as="story" rows="14" readonly><%= group.story %></textarea>
+      <button class="btn small" type="button" ko-as="copy">Copy</button>
+      <script type="koda">
+        // Copying to the clipboard is an action on the platform, not a value.
+        const { story, copy } = koda.scope();
+        copy.element.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(story.element.value);
+          copy.element.textContent = 'Copied';
+        });
+      </script>
+    </details>
+    <% if (!group.built && it.canBuild) { %>
+    <form action="<%= it.base %>/builds" method="post">
+      <input type="hidden" name="group" value="<%= group.key %>">
+      <button class="btn small primary" type="submit">Start a build session</button>
+    </form>
+    <% } %>
+  </div>
+  <% } %>
+
+  <% if (it.designWide.length) { %>
+  <div class="card">
+    <h2>Design-wide rules</h2>
+    <ul class="build-rules">
+      <% for (const rule of it.designWide) { %>
+      <li><strong><%= rule.id %>.</strong> <%= rule.text %> <span class="muted">· <%= rule.proposed ? 'proposed' : 'built' %></span></li>
+      <% } %>
+    </ul>
+  </div>
+  <% } %>
+</section>

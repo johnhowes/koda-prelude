@@ -109,7 +109,8 @@ export function readSnapshots(designDir) {
   const snapshots = new Map();
   for (const state of states) {
     for (const file of readdirSync(join(root, state.name))) {
-      if (file.endsWith('.html')) snapshots.set(`${state.name}/${file.slice(0, -5)}`, readFileSync(join(root, state.name, file), 'utf8'));
+      // A checkout may have turned the line endings into CRLF (core.autocrlf).
+      if (file.endsWith('.html')) snapshots.set(`${state.name}/${file.slice(0, -5)}`, readFileSync(join(root, state.name, file), 'utf8').replace(/\r\n/g, '\n'));
     }
   }
   return snapshots;

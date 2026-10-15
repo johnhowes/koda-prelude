@@ -4,17 +4,20 @@
 // two shapes, and put `Vary: x-koda-fragment` and `x-koda: 1` on every
 // response the application produces, including its own refusals.
 
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, rmSync, statSync } from 'node:fs';
 import { posix } from 'node:path';
 import { createServer as createHttpServer } from 'node:http';
 import { homedir } from 'node:os';
+import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createCliRunner } from './agent.js';
+import { buildPrompt, createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes, reviewDesign } from './host.js';
+import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
+import { backlogOf, storyMarkdown } from './backlog.js';
+import { createBuilds, isRepository } from './builds.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
@@ -52,8 +55,13 @@ export function defaultHome() {
 
 export function createServer({ home = defaultHome(), runner = createCliRunner() } = {}) {
   const live = createLive();
+  // A build's worktree is a folder too (step 7): found by its id like any
+  // other, though it isn't in the recent list.
+  const opened = createFolders(home);
+  const builds = createBuilds({ home });
   const app = {
-    folders: createFolders(home),
+    folders: { ...opened, get: id => opened.get(id) ?? builds.folderOf(id) },
+    builds,
     references: createReferences(home),
     live,
     turns: createTurns({ runner, live }),
@@ -402,6 +410,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       designLive: `${base}/live`,
       system: systemFor(),
       shell: shellFor(),
+      buildUrl: hosted && design.kind === 'design' ? `${base}/build` : null,
+      build: folder.build ? { branch: folder.build.branch, path: folder.path, back: `/f/${folder.build.parentId}/d/${design.id}/build` } : null,
     }, title);
   };
 
@@ -423,12 +433,78 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       check: views
         ? async () => {
           if (!isHosted(dir)) return null;
+          // A build turn may have changed the app's code, not just its views:
+          // start its host afresh, so the check builds and renders what's there now.
+          if (folder.build) app.hosts.stop(folder);
           const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
-          return { failures: review.failures, rendered: [...review.renders.values()].filter(Boolean).length, differ: review.differ };
+          return { failures: review.failures, rendered: [...review.renders.values()].filter(Boolean).length, differ: review.differ, warnings: review.warnings, ahead: review.ahead };
         }
         : null,
+      ...buildContext(references),
     };
   };
+
+  // In a build's worktree (step 7), every session is a build session: it
+  // writes the app, with its own instructions, and each turn is committed to
+  // the branch. When every route has moved to the app, the design's own
+  // copies of the views go.
+  const buildContext = references => {
+    const build = folder.build;
+    if (!build || build.design !== design.id) return {};
+    const backlog = backlogOf(dir);
+    const group = backlog.groups.find(g => g.key === build.group) ?? { title: build.title, routes: [], posts: [], rules: [] };
+    const config = readHostConfig(folder.path);
+    return {
+      mode: 'build',
+      systemPrompt: buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, designWide: backlog.designWide, branch: build.branch, references, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaPackage }),
+      afterTurn: ({ message }) => {
+        const designViews = join(dir, 'views');
+        const stillDesigned = [...readRoutes(dir).map(route => route.view), ...readPostRoutes(dir).flatMap(post => [post.form, post.answer.view, ...post.answer.also.map(also => also.view)])]
+          .some(view => view && !view.startsWith('@app/'));
+        if (!stillDesigned && existsSync(designViews)) rmSync(designViews, { recursive: true, force: true });
+        const commit = app.builds.commit(build, `${group.title}: ${message.split('\n')[0].slice(0, 60)}`);
+        return commit && { type: 'note', text: `Committed to ${build.branch} (${commit}).` };
+      },
+    };
+  };
+
+  // The Build view: what's left to build, as groups to copy as stories or build.
+  const buildView = (extra = {}) => {
+    const designPath = `${PRELUDE_DIR}/${design.id}`;
+    const { groups, designWide } = backlogOf(dir);
+    const states = listStates(dir);
+    const approved = Boolean(readSnapshots(dir));
+    const parentId = folder.build?.parentId ?? folder.id;
+    return {
+      folder, design, base, designPath, designWide,
+      groups: groups.map(group => ({ ...group, story: storyMarkdown({ design, designPath, group, designWide, states, approved }) })),
+      builds: app.builds.of(parentId, design.id),
+      canBuild: !folder.build && isRepository(folder.path),
+      error: null,
+      ...extra,
+    };
+  };
+  if (req.method === 'GET' && rest[0] === 'build' && rest.length === 1 && hosted && design.kind === 'design') {
+    return page(200, 'build', buildView(), `Build · ${title}`);
+  }
+
+  // Start a build session for a group: a branch and worktree, a session in
+  // it, and the first turn, briefed from the group.
+  if (req.method === 'POST' && rest[0] === 'builds' && rest.length === 1 && hosted && design.kind === 'design' && !folder.build) {
+    const key = String((await readForm(req)).get('group') ?? '');
+    const group = backlogOf(dir).groups.find(g => g.key === key);
+    if (!group) return page(422, 'build', buildView({ error: 'That group is no longer in the design.' }), `Build · ${title}`);
+    const started = app.builds.start({ folder, design, group });
+    if (started.error) return page(409, 'build', buildView({ error: started.error }), `Build · ${title}`);
+    // The first message goes to the worktree's own sessions, as if typed there,
+    // so the first turn is set up exactly as every later one.
+    const worktree = app.folders.get(started.build.id);
+    const found = findDesign(worktree.path, design.id.split('/'));
+    const sessionsUrl = `/f/${worktree.id}/d/${design.id}/sessions`;
+    const body = Readable.from([Buffer.from(new URLSearchParams({ message: `Build ${group.title}.` }).toString())]);
+    const first = Object.assign(body, { method: 'POST', url: sessionsUrl, headers: { ...req.headers, 'content-type': 'application/x-www-form-urlencoded' } });
+    return handleDesign({ req: first, res, url: new URL(sessionsUrl, 'http://localhost'), page, app, folder: worktree, ...found, rest: ['sessions'] });
+  }
 
   const [section, sessionId, action, ...extra] = rest;
   if (extra.length > 0) return notFound();
