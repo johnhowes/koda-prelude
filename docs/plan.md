@@ -532,8 +532,9 @@ How it improves on KodaDesign:
 1. **6a:** The built-in Eta host, GET only:
    - `views/`, `routes.json` and `states/` on a per-design preview origin, with one URL
      in two shapes and Koda live;
-   - layouts from the design system (or the design's own `views/layouts/`), with shell
-     data from the layout's sample data and the state;
+   - the shell design (`"kind": "shell"`): layouts from it (or the design's own
+     `views/layouts/`, or a minimal built-in one), with shell data from the layout's
+     sample data and the state;
    - the screen picker built from routes, plus a design-wide state picker. The state is
      server state, and a frame loading a route moves every window to it.
    - Plain `.html` screens keep working for designs without `routes.json`.
@@ -557,51 +558,60 @@ A layout isn't one design's: it's the app's shell, the page every feature lives 
 holds the header and navigation, the main region that owns `ko-scope="/"` and
 history, and the places a page may ask for (a drawer, a notice area: `drawer?`,
 `notice?`). If each design kept its own copy, the designs would drift from each other
-and from the app, the same problem the design system solves for components.
+and from the app.
 
-**Layouts live in the design system.** In Koda's terms the layout is the *host*: it
-owns the page and offers affordances, and features render into it. That makes it
-shared foundation, like the tokens and components, so it's designed where they are:
+**Layouts belong to the app, not the design system.** The design system is a
+vocabulary (tokens, components, guidelines, icons) that an organisation may one day
+share across apps. Each app has its own shell. In Koda's terms the layout is the
+*host*: it owns the page and offers affordances, and features render into it.
+
+So the folder gets a second kind of special design, **the shell**: `"kind": "shell"`,
+one per folder, made the way the system is (New design → "This is the app's shell"):
 
 ```
-prelude/<system>/system/
-  layouts/app.eta          the shell: header, nav, <main ko-scope="/" ko-location ko-history>,
-                           and the regions it offers (<aside id="drawer" ko-region>, a notice area)
-  layouts/app.json         sample data for the shell: who's signed in, the nav items, counts
-  layouts/bare.eta         e.g. sign-in or a full-screen wizard: no nav
+prelude/shell/                  a design, "kind": "shell"
+  design.json  NOTES.md  sessions/  screens/   (its gallery: each layout with sample content)
+  layouts/
+    app.eta                     header, nav, <main ko-scope="/" ko-location ko-history>,
+                                and the regions it offers (<aside id="drawer" ko-region>, a notice area)
+    app.json                    sample data for the shell: who's signed in, the nav items, counts
+    bare.eta                    e.g. sign-in or a full-screen wizard: no nav
+  views/                        partials the shell's layouts share (the nav, the user menu)
 ```
 
-- **Designed in the system's sessions,** like components ("add a notifications bell
-  to the header"), and shown in its gallery: one screen per layout, holding sample
-  content and showing each region it offers.
-- **Designs use it by name:** a route says `"layout": "app"`, the default, or `"bare"`.
-  A design never copies a layout.
+- **The shell uses the design system** like any other design. If an organisation's
+  system arrives later, the shell and the designs move to it; their layouts don't.
+- **Designed in the shell's own sessions** ("add a notifications bell to the header"),
+  and shown in its gallery: one screen per layout, showing each region it offers.
+- **Designs use it by name:** a route says `"layout": "app"`, the default, or
+  `"bare"`. A design never copies a layout. Like the system, it's picked up
+  automatically, and the design page says which shell it uses.
 - **A design that needs a new kind of page** (a wizard, a print view) can draft a
-  layout in its own `views/layouts/`. The host looks there first, then in the system.
-  Its `NOTES.md` says it should move to the system once agreed, the same rule as a
+  layout in its own `views/layouts/`. The host looks there first, then in the shell.
+  Its `NOTES.md` says it should move to the shell once agreed, the same rule as a
   component the system lacks.
 - **The shell's data is part of the state:**
   - by default the layout gets its sample data from `layouts/<name>.json`;
   - a design's state can override any of it under a `layout` key, such as an
     administrator's nav, 99+ notifications, or a long company name;
   - the layout sees it as `it.layout`, and the page's model as `it`.
-- **For a repo whose app already has a layout,** the system's first session harvests
-  it, as it harvests CSS. For an Eta or Koda app it goes one better: a route can name
-  the real layout file (`"layout": "@app/views/layout"`). The host reads it from the
-  repo, read-only, and the design is inside the real shell from day one, with nothing
-  to drift.
+- **For a repo whose app already has a layout,** the shell's first session harvests it,
+  as the system's harvests CSS. For an Eta or Koda app, the shell's layouts name the
+  real layout files (`@app/views/layout`) instead of copying them. The host reads them
+  from the repo, read-only, and every design is inside the real shell from day one,
+  with nothing to drift.
+- **A folder with no shell** gets a minimal built-in layout: the system's styles, Koda,
+  and a main region. Designs still render, just without the app's chrome.
 
 **How the host composes a cold load:** the route's view renders with the state's model.
 The layout renders around it with `it.layout`, and `ko-location` is set to the request
 path. A fragment request skips the layout entirely, as the real server would.
 
-Open questions:
-1. Should layouts live in the design system (proposed), rather than in a design of their
-   own or per design?
-2. For an Eta or Koda app that already has a layout, should designs reference the real
-   layout file directly (proposed), or a harvested copy in the system?
-3. Shell data: sample data beside the layout, overridable per state under `layout`
-   (proposed)?
+Decided 2026-10-15:
+- Layouts are the app's, in a shell design (`"kind": "shell"`, one per folder), not in
+  the design system. That keeps the system shareable at the organisation level later.
+- For an Eta or Koda app with a layout, the shell points at the real layout files.
+- Shell data: sample data beside each layout, overridable per state under `layout`.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
