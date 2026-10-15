@@ -1219,21 +1219,134 @@ Decided 2026-10-15:
     - it changed nothing outside the design;
     - the check passed, and the new state's pages showed as not yet approved.
 
-### Step 7 and later: candidates, each to be fitted into the model first
+### Step 7: Build, within a team's lifecycle
+
+Step 6 made a design the app's real views, and 6d made porting a route a one-line change.
+Step 7 adds a session kind that does the porting, and fits Prelude into how a team
+plans, builds, tests and ships, without owning any of it.
+
+**What OrchestratR and KodaDesign taught** (studied 2026-10-15):
+- **One durable spec, small.** OrchestratR's `behavior.md` used numbered, one-sentence
+  rules about what a person observes, append-only, with a `*proposed*` marker until the
+  code makes the rule true. The backlog was every rule still marked proposed.
+- **Generate what can be derived.** Hand-written inventories and per-story specs and
+  plans went stale ("stale the moment it's executed"), and status kept on a document
+  rather than on items drifted.
+- **The tracker owns scheduling.** KodaDesign's agent-generated breakdowns ran far ahead
+  of building (63 stories accepted, 12 done), and its tracker push was never used for
+  real.
+- **Agents propose; people decide.** Ids must not collide across branches, and nothing
+  should block a merge on missing annotations.
+
+**What Prelude already has, so needn't write down:** the views (what it looks like),
+`routes.json` (what each URL shows, and what each form changes, requires and answers),
+the states (the cases, including what a role without a permission sees), the snapshots
+(what was approved), and `NOTES.md` (why). Since 6d, a route is built when its view is
+`@app/`, so "what's left to build" follows from `routes.json`.
+
+**The split: the repo owns *what*; the tracker owns *when* and *who*.** Prelude stores
+no stories, sprints, releases or links to them.
+
+| Stage | In Prelude | In the team's tools |
+|---|---|---|
+| Design | design sessions: views, states, rules (proposed) | |
+| Refinement | the Build view: what's left, grouped | |
+| Stories | "Copy as story" for a group | pasted into ADO or Jira; sized, scheduled, assigned there |
+| Build | a build session per story, on its own branch | the PR |
+| Review | the PR shows routes ported, rules made true, snapshot diffs | review; CI runs `npm run check` |
+| QA | the route × state matrix as the test plan, approved screens as expected results | defects |
+| Release | nothing new: git versions the design | releases |
+| After | the design stays as the app's fixtures; CI catches drift | |
+
+QA triages each difference between the design and the app as exactly one of: the code
+is wrong (a defect), the design changed on purpose (approve again), or the design is
+stale (fix the design).
+
+**Rules: `prelude/<design>/RULES.md`.** Behaviour worth saying as a rule:
+
+```markdown
+# Rules: Borrowers
+
+- **R-k3f.** Only an underwriter sees Edit on a funded loan's borrower.
+  *shown-on: /borrowers/:id/edit @ underwriter*
+- **R-q8m.** Changing a borrower's email sends them a confirmation.
+  *proposed*
+- ~~**R-2wd.** A borrower's status can't be changed once a loan is funded.~~
+  *retired: replaced by R-k3f*
+```
+
+- One plain present-tense sentence per rule, about what a person observes, with no code
+  names. Ids are `R-` plus three random characters, so branches merge cleanly.
+- A state can *show* a rule: the underwriter state shows what an underwriter sees. The
+  rule says it's intended and general, not an accident of the data. `shown-on: <route> @
+  <state>` points at where to see it; a rule may have none (an email sent).
+- `*proposed*` means not built yet. The commit that makes a rule true removes the
+  marker. A retired rule is struck through and keeps its id.
+- The design agent writes rules as it designs, always as proposed. Only a person decides
+  a rule is right (in review); there's no workflow for it.
+- The check warns about a `shown-on` naming a route or state that doesn't exist. It never
+  fails because a rule is missing.
+
+**The Build view.** Per design, what's left to build, derived each time:
+- unported routes, grouped by page: each page with its overlays, fragments and the forms
+  they post;
+- proposed rules, under the group whose routes they cite (or "Design-wide").
+
+**"Copy as story"** gives a group as Markdown, for the tracker: what it delivers (the
+pages and forms), acceptance criteria (each form's `require` and `answer`, and each
+rule), and its states as test cases, with paths into the repo. Nothing is stored.
+
+**Build sessions.** A session kind on a design, started from a group (or the whole
+design):
+- **A branch of its own:** Prelude creates a git worktree and branch
+  (`build/<design>-<group>`). The session, its transcript included, lives on that branch,
+  so it merges with the PR.
+- **What it may write:** everything in the repository, except the design's views,
+  states, rules, snapshots and sessions. In `prelude/` it may only point routes at
+  `@app/` and remove `*proposed*` markers. If the design is wrong, it says so in
+  `NOTES.md` or proposes a rule; it doesn't change the design.
+- **What it does:** ports the group's views into the app, writes the controllers from the
+  porting spec and the rules, points the routes at `@app/`, deletes the design's copies,
+  and removes the markers of rules it makes true.
+- **How it knows it works:** after each turn, Prelude runs the check through the repo's
+  host, which builds the app, and tells the agent what fails, as for a design session.
+- **Done:** every route in the group is ported, the check passes, and the snapshot diffs
+  are the expected porting differences, which the person approves. The person opens the
+  PR.
+
+**Sub-steps:**
+1. **7.1:** `RULES.md`: the format, the design agent's instructions, and the check's
+   warnings.
+2. **7.2:** The Build view and "Copy as story".
+3. **7.3:** Build sessions: the worktree and branch, the permissions, the prompt, and the
+   check after each turn.
+4. **7.4:** Proven in the Razor demo: a new piece designed with rules, copied as a story,
+   and built by a build session to a branch whose check passes.
+
+**Not in this step:** tracker integration, stored stories, sprints or releases;
+harvesting rules from existing code; executable walks (below).
+
+Decided 2026-10-15:
+- A rules file per design, to see what it looks like in use.
+- Stories start as copied text only; nothing is stored or synced.
+- A build session may write everything outside the design's own files.
+- Executable tests that run against both the design and the real app: wanted in
+  principle, undecided for this step.
+
+### Step 8 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
   read-only viewer routes, which step 2 already shapes.
 - Flow map, captures/annotations.
 - Hand-editing a screen in place.
 - Ending a session with a summary appended to `NOTES.md`, optionally committing.
-- **Build:** a session kind that implements the design in the folder's real code. This is
-  the "design → build" evolution.
+- **Walks:** executable steps on a rule (given a route in a state, click, fill, expect),
+  run against the design and against the real app.
 
 ## Explicitly not now
 
-Accounts and sign-in, a database, git worktrees and branches per session, multi-user
-presence, comments, the custom dialect, target-stack rendering, MCP tools, specs, rules,
-epics, tracker integration, test generation.
+Accounts and sign-in, a database, branches per design session, multi-user presence,
+comments, the custom dialect, MCP tools, epics, tracker integration.
 
 ## Decisions made
 
