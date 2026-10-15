@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
 import { checkDesign, datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes } from './host.js';
+import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
@@ -57,6 +58,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner() 
     turns: createTurns({ runner, live }),
     watches: createWatches(),
     renderers: createRenderers({ appRoot: dirname(here) }),
+    hosts: createHosts({ home }),
     designs: createDesignState({ live }),
   };
 
@@ -70,7 +72,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner() 
     }
   });
   // Renderer processes would outlive the server; stop them with it.
-  server.on('close', () => app.renderers.closeAll());
+  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); });
   return server;
 }
 
@@ -94,7 +96,7 @@ async function handle(req, res, app) {
   // A design's own origin: the Eta host (host.js).
   const designHost = designHostOf(req);
   if (designHost) {
-    return handleDesignHost(req, res, { folders, designs: app.designs, renderers: app.renderers, kodaDir, designKey }, designHost);
+    return handleDesignHost(req, res, { folders, designs: app.designs, renderers: app.renderers, hosts: app.hosts, kodaDir, designKey }, designHost);
   }
 
   if (isPreviewHost(req)) {
@@ -171,6 +173,16 @@ async function handle(req, res, app) {
     }
 
     // Reference folders: what else the agent may read while working here.
+    // Approving the repository's design host: it runs the design's views as
+    // code on this machine, so it starts only once the person says so.
+    if (rest === '/host/approve' && req.method === 'POST') {
+      const config = readHostConfig(folder.path);
+      const form = await readForm(req);
+      if (config) app.hosts.approve(folder, config);
+      const back = String(form.get('back') ?? '');
+      return redirect(res, back.startsWith(`/f/${folder.id}`) ? back : `/f/${folder.id}`);
+    }
+
     if (rest === '/references' && req.method === 'POST') {
       const value = cleanPath((await readForm(req)).get('path'));
       const added = app.references.add(folder, value);
@@ -243,6 +255,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return shell && { id: shell.id, title: shell.title, path: `${PRELUDE_DIR}/${shell.id}` };
   };
 
+  // The repository's own design host, when its app isn't Eta: what the design
+  // bar says about it (approval, a log when it fails).
+  const hostFor = () => {
+    const config = readHostConfig(folder.path);
+    if (!config) return null;
+    const status = app.hosts.status(folder, config);
+    return { start: config.start, approved: status.approved, running: status.running, log: status.log.slice(-4000), approve: `/f/${folder.id}/host/approve`, back: base };
+  };
+
   // A design served by the Eta host (it has routes.json), or made of plain
   // screens/*.html. New designs, and the shell, are hosted; the design
   // system's gallery stays plain HTML, to render anywhere.
@@ -265,6 +286,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       version: designs.version(dKey),
       popped: view === 'inline' && designs.windows(dKey) > 0,
       windowName: `prelude-${folder.id}-${design.id.replace(/[^a-z0-9]+/gi, '-')}`,
+      host: hostFor(),
     };
     if (hosted) {
       const routes = readRoutes(dir);
@@ -376,9 +398,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       shell: shellFor(),
       format: format(),
       kodaPath: views ? kodaPackage : null,
+      stack: (() => { const config = readHostConfig(folder.path); return config && { ext: config.views, guide: config.guide }; })(),
       // After each turn, render every route of a design of views, and say what fails.
       check: views
-        ? () => (isHosted(dir) ? checkDesign({ renderers: app.renderers }, { folder, design, designDir: dir }) : Promise.resolve([]))
+        ? () => (isHosted(dir) ? checkDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir }) : Promise.resolve([]))
         : null,
     };
   };

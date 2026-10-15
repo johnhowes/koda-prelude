@@ -95,7 +95,7 @@ export function createTurns({ runner, live }) {
      * `references` are the folders the agent may also read ([{ name, path }]),
      * and `system` the folder's design system, as designPrompt takes it.
      */
-    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, check = null }) {
+    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -112,7 +112,7 @@ export function createTurns({ runner, live }) {
         sessionId: session.claudeSessionId,
         resume: session.started === true,
         prompt: withFindings(findings.get(dKey), message),
-        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath }),
+        systemPrompt: designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack }),
         designPath,
         references: references.map(reference => reference.path),
         onEvent: event => {

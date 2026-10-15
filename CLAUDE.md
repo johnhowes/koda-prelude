@@ -75,6 +75,14 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     route in every state; failures show in the chat and are prepended to the
     agent's next message (`withFindings` in turns.js). The agent can't see the
     preview, so this is how it learns a view doesn't render.
+  - `server/hosts.js` is the host contract for other stacks (plan, 6c). A
+    folder whose `prelude/prelude.json` names a `host` renders through it, over
+    HTTP, instead of through the Eta renderer; host.js does everything else as
+    before and proxies the app's assets to it. A host runs views unsandboxed, so
+    it starts only once the person approves it for that folder
+    (`~/.prelude/approvals.json`, tied to the host settings) and is stopped with
+    Prelude. `tools/reference-host.js` is the contract in a page of Node (and
+    what the tests start); `npm run host-check <folder>` checks a host.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

@@ -40,6 +40,7 @@ import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
+import { readHostConfig } from './hosts.js';
 
 export const HOST_SUFFIX = 'preview.localhost';
 
@@ -262,11 +263,12 @@ export function lookup(data, path, params) {
  * Where a route's layout comes from: { views, template, sample } or null.
  * "@app/<path>" is a real layout in the repository, read in place.
  */
-export function findLayout({ folderPath, designDir, shellDir, name }) {
+export function findLayout({ folderPath, designDir, shellDir, name, ext = '.eta' }) {
   if (name.startsWith('@app/')) {
-    const file = normalize(join(folderPath, `${name.slice(5)}${extname(name) ? '' : '.eta'}`));
+    const file = normalize(join(folderPath, `${name.slice(5)}${extname(name) ? '' : ext}`));
     if (!file.startsWith(folderPath + sep) || !existsSync(file)) return null;
-    return { views: dirname(file), template: `./${file.slice(dirname(file).length + 1)}`, sample: {} };
+    const base = file.slice(dirname(file).length + 1);
+    return { views: dirname(file), template: `./${base.slice(0, base.length - extname(base).length)}`, sample: {} };
   }
   if (!/^[a-z0-9][a-z0-9-]*$/i.test(name)) return null;
   const candidates = [
@@ -274,7 +276,7 @@ export function findLayout({ folderPath, designDir, shellDir, name }) {
     shellDir && join(shellDir, 'layouts'),
   ].filter(Boolean);
   for (const views of candidates) {
-    if (existsSync(join(views, `${name}.eta`))) {
+    if (existsSync(join(views, `${name}${ext}`))) {
       let sample = {};
       try { sample = JSON.parse(readFileSync(join(views, `${name}.json`), 'utf8')) ?? {}; } catch { /* no sample */ }
       return { views, template: `./${name}`, sample };
@@ -370,6 +372,13 @@ export async function handleDesignHost(req, res, app, host) {
     app.designs.show(key, path, { shown: pickable(readRoutes(designDir), dataset)[0]?.id });
   }
 
+  // Another stack's host serves the app's own assets at their real paths;
+  // anything the design has no route for goes to it.
+  const external = app.hosts && readHostConfig(folder.path);
+  if (external && !matchRoute(readRoutes(designDir), path)) {
+    if (await app.hosts.proxy(folder, external, req.url, res)) return;
+  }
+
   const query = Object.fromEntries(url.searchParams.entries());
   const answer = await renderPath(app, { folder, design, designDir, path, query, fragment, stateId: state?.id ?? null, dataset });
   return sendHtml(res, answer.status, answer.html);
@@ -426,8 +435,9 @@ export async function renderPath(app, { folder, design, designDir, path, query =
     regions[route.in] = { ...overlay, location: path };
   }
 
-  const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: pageRoute.layout })
-    ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {} };
+  const ext = readHostConfig(folder.path)?.views ?? '.eta';
+  const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: pageRoute.layout, ext })
+    ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {}, builtIn: true };
   const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
   return render(app, folder, {
     query,
@@ -435,6 +445,7 @@ export async function renderPath(app, { folder, design, designDir, path, query =
     layout: {
       views: found.views,
       template: found.template,
+      builtIn: Boolean(found.builtIn),
       data: {
         ...shellData,
         layout: shellData,
@@ -448,9 +459,14 @@ export async function renderPath(app, { folder, design, designDir, path, query =
   });
 }
 
-/** Ask the folder's sandboxed renderer for a page: { status, html, error? }. */
+/**
+ * Render a page: through the folder's own design host when prelude.json names
+ * one (another stack), else in the sandboxed Eta renderer. { status, html, error? }
+ */
 async function render(app, folder, job) {
   try {
+    const config = app.hosts && readHostConfig(folder.path);
+    if (config) return { status: 200, html: await app.hosts.render(folder, config, job) };
     return { status: 200, html: await app.renderers.render(folder.path, job) };
   } catch (error) {
     const message = String(error.message);

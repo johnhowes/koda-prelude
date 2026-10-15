@@ -67,6 +67,15 @@
     </a>
     <% } %>
   </div>
+  <% if (it.host && !it.host.approved) { %>
+  <form class="host-approval" action="<%= it.host.approve %>" method="post">
+    <input type="hidden" name="back" value="<%= it.host.back %>">
+    <p><strong>This repository has its own design host.</strong> It renders the design’s views with the app’s real components, by running <code><%= it.host.start %></code> here. The views are written by the agent and run as code on this machine, with your permissions, outside Prelude’s sandbox.</p>
+    <button class="btn small primary" type="submit">Approve and start it</button>
+  </form>
+  <% } else if (it.host && it.host.log) { %>
+  <details class="host-log"><summary class="muted">Design host log<%= it.host.running ? '' : ' (stopped)' %></summary><pre><%= it.host.log %></pre></details>
+  <% } %>
   <% if (!it.popped) { %>
   <div class="design-frame">
     <% if (cur) { %>

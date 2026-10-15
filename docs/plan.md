@@ -1037,9 +1037,52 @@ Decided 2026-10-15:
   - plain `<input name value>`, which is simple but loses the tag helpers' fidelity to
     production.
 
-Open question:
-- For the Razor demo, which: a small `design-name` equivalent (as DesignHost does);
-  plain inputs while designing; or typed models generated from `states.json`?
+- The Razor demo uses a small `design-name` equivalent, as DesignHost does, so fields
+  render exactly as `asp-for` would (decided 2026-10-15).
+
+**As built (6c):**
+- **The contract** is `server/hosts.js`, documented at its top. The render job is the
+  Eta renderer's own job made repository-relative:
+  `{ root, page: { views, template, data }, layout: { views, template, data } | { default: true, data } | null, regions, query }`.
+  This replaces the `{ folder, design, page: { view } … }` sketch above, so a host
+  needn't know how Prelude finds views. A refused form's messages travel in the data as
+  `$errors`, as they do for Eta.
+- **Process.** `readHostConfig` accepts hosts on this machine only (`localhost`,
+  `127.0.0.1`, `[::1]`). A host starts on first render, in the folder, with
+  `PRELUDE_HOST=1`. Prelude waits up to 180s for health (a first `dotnet run` builds),
+  keeps the last 20 KB of its output for the design bar, and kills the whole process
+  tree when Prelude stops. A localhost host is tried on IPv4, then IPv6: Node asks for
+  only one.
+- **Approval** is per folder, tied to a fingerprint of the host settings, and stored in
+  `~/.prelude/approvals.json`. Until it's given, the design bar explains the risk and
+  offers "Approve and start it", and nothing starts.
+- **The agent** is told its views end in the host's extension and to read `guide`
+  before writing any. The after-turn check runs through the host unchanged.
+- **`tools/reference-host.js`** is the contract in a page of Node, rendering Eta. It's
+  the starting point for a new stack, and it's what `test/hosts.test.js` starts.
+  `npm run host-check <folder>` approves the host in a temporary home, checks health
+  and that a missing view errors, then runs every hosted design's check.
+- **The Razor demo** (a `dotnet new mvc` app, .NET 10, kept outside this repo):
+  - `App/Prelude/DesignHost.cs` renders with runtime Razor compilation and a virtual
+    `_ViewImports`. The model is a `DynamicObject` over the JSON; a missing member is
+    null.
+  - `$errors` becomes `ModelState`. Helpers: `Html.Body()`, `Html.Region()`,
+    `Html.Query()`.
+  - `App/Prelude/DesignTagHelpers.cs` subclasses `InputTagHelper`, `TextAreaTagHelper`,
+    `SelectTagHelper`, `ValidationMessageTagHelper` and `LabelTagHelper`, building the
+    `ModelExpression` from a path. Fields, the selected option, the error class and the
+    message are the production tag helpers' own markup.
+  - `prelude/HOST.md` teaches the agent Razor, `design-name` and the layout's regions.
+- **Verified** (2026-10-15) with a real agent session in the demo, asked for a borrowers
+  list with typical and empty states, an edit drawer and a required-field form:
+  - The agent read `HOST.md` first, then wrote `.cshtml` views using `design-name`,
+    `design-for` and `design-validation-for`.
+  - It wrote an overlay route (`over`, `in: drawer`) and a POST answering with the row
+    plus a drawer-closing envelope.
+  - The after-turn check passed through the host.
+  - The drawer renders the production tag helpers' fields with the status pre-selected.
+    A refused save answers 422, with `input-validation-error` and the message on both
+    required fields.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static

@@ -182,7 +182,7 @@ export function createStreamReader(onEvent) {
  *                       { title, path }
  *   kodaPath            where Koda's own guidance is, for a design of views
  */
-export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null }) {
+export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null, stack = null }) {
   const what = { system: 'design system', shell: 'app shell' }[kind] ?? 'design';
   const parts = [`You are working in Prelude, a tool where a person designs an application with you.
 
@@ -194,7 +194,7 @@ You are working on the ${what} "${title}". Its folder is ${designPath}/, relativ
 - Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
 - When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];
 
-  if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath }));
+  if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath, stack }));
   else parts.push(`Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.`);
 
   if (kind === 'system') {
@@ -224,8 +224,14 @@ If the person points you at existing CSS (this repository's, or a reference fold
 }
 
 /** How a design of views is made: the app's own views, a route table and fake data. */
-function viewsSection({ designPath, kind, system, shell, kodaPath }) {
-  const lines = [`This design is the app's views, decomposed the way the app decomposes them, and Prelude serves it the way the app's server would, with Koda running for real. It is made of:
+function viewsSection({ designPath, kind, system, shell, kodaPath, stack }) {
+  const lines = [];
+  // Another stack: its views are its own template language, rendered by the
+  // repository's design host; its guide says how they're written.
+  if (stack) {
+    lines.push(`This repository's app isn't written in Eta. Its views are its own templates, files ending ${stack.ext}, rendered by the repository's design host with the app's real components and helpers. Wherever these instructions show Eta, write the same thing in ${stack.ext} instead.${stack.guide ? ` Read ${stack.guide} before writing any view: it says how views, partials, layouts and form fields are written here, and how a view reads its model, the query ($query) and a refused form's messages ($errors).` : ''} Name views with that extension (views/orders/list${stack.ext}); routes name them without it, as before.`);
+  }
+  lines.push(`This design is the app's views, decomposed the way the app decomposes them, and Prelude serves it the way the app's server would, with Koda running for real. It is made of:
 
 - ${designPath}/views/ - Eta views (<%= value %> escapes, <%~ html %> doesn't, <% code %> runs). include() renders a partial, and its path is relative to the including view's own folder, as in any Eta app: from views/orders/list.eta, include('./_row', row) renders views/orders/_row.eta; a path starting with / is from views/, as in include('/orders/_row', row). Eta copies a partial's data into a plain object, so pass partials objects (include('./_results', { orders }) or it), never a bare list, and give a fragment's own route the same shape (a data path to the object, with "list" for the list it filters). A page is a view a route renders; a fragment is a view named with a leading underscore (orders/_row.eta) that pages include and that also answers alone at a route of its own, so a region can load or replace it.
 - ${designPath}/routes.json - the URLs the design answers, as the app's router would: { "/orders": { "view": "orders/list", "title": "Orders", "data": "" }, "/orders/:id": { "view": "orders/detail", "title": "Order", "data": "orders/:id" }, "/orders/:id/row": { "view": "orders/_row", "data": "orders/:id" } }. "data" is a path into the state's dataset: a property, or, in a list, the record whose id matches the route's :param; "" is the whole dataset. The view receives what it finds as it. A route with a title, and no :params, is a page the person can pick in the preview. "layout" names the layout (default "app").
@@ -238,7 +244,7 @@ Forms post to POST routes in the same routes.json, keyed "POST <url>". Each does
 
 Search and filter forms use GET: <form method="get" action="/orders"> with inputs named for the query parameters. Every view sees the query string as it.$query, so the form shows what was asked (value="<%= it.$query.q ?? '' %>"). The route filters, as the app's controller would, so views never filter: "search": { "q": ["borrower", "id"] } keeps the records where any of those fields contains ?q= (ignoring case); "match": { "status": "status" } keeps those whose field equals ?status=; an empty parameter filters nothing. They apply to the route's data when it is a list, or to the list at "list" inside it ("list": "orders"). For search as you type, give the results their own fragment route with the same filters and load it as a region that follows the box: <input type="search" id="q" name="q"> and <div id="results" ko-region calc-ko-source="'/orders/results?q=' + encode(q.value)" ko-invoke="input:q" ko-debounce="250">. Make sure a search that matches nothing shows a clear empty result.
 
-One URL answers in two shapes, and Prelude does it for you, as the real server does: a request from a Koda region (a fragment request) gets the view alone; any other request gets it inside its layout. So write each view as the region's content, never a whole page, and decompose with Koda the way the real app would: ko-scope for a section that owns a URL space, ko-source for a region that loads its own URL, ko-target for an answer aimed at one region, ko-item and ko-as instead of numbered ids. Routes are root-relative, the app's real URLs.`];
+One URL answers in two shapes, and Prelude does it for you, as the real server does: a request from a Koda region (a fragment request) gets the view alone; any other request gets it inside its layout. So write each view as the region's content, never a whole page, and decompose with Koda the way the real app would: ko-scope for a section that owns a URL space, ko-source for a region that loads its own URL, ko-target for an answer aimed at one region, ko-item and ko-as instead of numbered ids. Routes are root-relative, the app's real URLs.`);
 
   if (kodaPath) lines.push(`Before writing views, read Koda's own guidance: ${kodaPath}/.claude/skills/koda-app-authoring/SKILL.md, and the koda-styling skill beside it. Look attributes up in ${kodaPath}/docs/reference.md rather than from memory.`);
 
