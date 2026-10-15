@@ -895,7 +895,7 @@ GET forms work like any link: Koda routes them, and the URL carries the query.
   caught a Prelude bug: `it.$query` was non-enumerable, so it didn't survive
   `include()`. It's now an ordinary property.
 
-#### Other stacks, then Spark (6c) — proposal, not yet decided
+#### Other stacks, proven in a demo repo (6c)
 
 Step 6 set out to make a design's views the app's real views. For an Eta or Koda
 app, the built-in host already does that. For any other stack, such as Spark's Razor,
@@ -1001,9 +1001,10 @@ them. It ships as a Spark PR.
 1. **6c.1:** The contract in Prelude, as described above.
 2. **6c.2:** A conformance test (`npm run host-check <url>`), proven against a small
    reference host: the Eta renderer served over HTTP, which a new stack can start from.
-3. **6c.3:** Spark's DesignHost implementing the contract, plus `prelude.json` and
-   `HOST.md` in Spark. Verified by a real agent designing a Spark screen in Razor, with
-   states, an overlay and a form, rendered by DesignHost through Prelude.
+3. **6c.3:** A Razor demo repository whose small ASP.NET design host implements the
+   contract, plus its `prelude.json` and `HOST.md`. Verified by a real agent designing
+   a screen in Razor, with states, an overlay and a form, rendered by that host through
+   Prelude. (Spark is not touched.)
 
 **Not in this step:**
 - sandboxing an external host;
@@ -1011,15 +1012,34 @@ them. It ships as a Spark PR.
 - typed models (port time, 6d);
 - converting existing OrchestratR designs.
 
-Open questions:
-1. Should hosts only render, with Prelude keeping routes, data, forms and overlays
-   (proposed), or implement the whole design contract themselves?
-2. Is it acceptable for a host to run only after the person approves it per folder,
-   with sandboxing deferred and the risk stated?
-3. For Spark, should DesignHost be extended (proposed, since it holds the tag-helper
-   and stub work), or should there be a separate small Prelude host project in Spark?
-4. For Razor, should the model be the JSON as a dynamic object, with `design-name`
-   for bound fields (proposed, reusing DesignHost)?
+Decided 2026-10-15:
+- Hosts only render; Prelude keeps routes, data, forms, overlays and the rest.
+- A host runs only after the person approves it, per folder; sandboxing deferred.
+- **Spark isn't touched.** The contract is proven in a demo repository instead: a small
+  ASP.NET Razor app (the .NET 10 SDK is installed here), the nearest stand-in for
+  Spark. 6c.3 becomes "a Razor demo host"; Spark's DesignHost can adopt the contract
+  later, if wanted.
+
+**Why `design-name`** (asked 2026-10-15):
+- In Razor, a form field is normally `<input asp-for="Borrower.Name">`. `asp-for` isn't a
+  string: it's a C# expression the compiler checks against the view's typed model
+  (`@model PackageViewModel`). From that type the tag helper writes the field's
+  `name`, `id`, `value`, validation attributes, label text and error state.
+- With an untyped model while designing (the JSON, as decided), there's no type for
+  that expression, so `asp-for` can't compile.
+- DesignHost's `design-name="Borrower.Name"` is a plain string path. Its tag helpers
+  subclass the real ones, resolve the path against stand-in metadata, and call the
+  production code, so the markup is identical. At port time, when the real model type
+  exists, `design-name` becomes `asp-for` mechanically.
+- The alternatives:
+  - typed models while designing, with classes generated from `states.json` and a
+    recompile in the loop whenever the data's shape changes;
+  - plain `<input name value>`, which is simple but loses the tag helpers' fidelity to
+    production.
+
+Open question:
+- For the Razor demo, which: a small `design-name` equivalent (as DesignHost does);
+  plain inputs while designing; or typed models generated from `states.json`?
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
