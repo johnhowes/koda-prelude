@@ -569,10 +569,12 @@ export async function checkDesign(app, { folder, design, designDir }, { renders 
         : found;
       const valid = Object.fromEntries([
         ...Object.entries(record && typeof record === 'object' ? record : {}).filter(([k, v]) => !(route.verb === 'add' && k === 'id') && ['string', 'number', 'boolean'].includes(typeof v)).map(([k, v]) => [k, String(v)]),
-        ...route.require.map(name => [name, String(record?.[name] ?? 'Sample')]),
+        // A required field is filled in, whatever the record has: a state where
+        // it's empty (settings not set up yet) mustn't make the valid post invalid.
+        ...route.require.map(name => [name, String(record?.[name] ?? '').trim() ? String(record[name]) : 'Sample']),
       ]);
       const ok = heard(await postPath(app, { folder, design, designDir, path, fields: valid, dataset: structuredClone(readState(designDir, state)) }));
-      if (ok.status >= 400) failures.push({ state: state?.title ?? null, path: label, error: ok.error ?? `answered ${ok.status}: ${ok.html.replace(/<[^>]+>/g, '').slice(0, 200)}` });
+      if (ok.status >= 400) failures.push({ state: state?.title ?? null, path: label, error: ok.error ?? `a filled-in post should be accepted, but it answered ${ok.status}: ${ok.html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)}` });
       if (route.require.length) {
         const refused = heard(await postPath(app, { folder, design, designDir, path, fields: {}, dataset: structuredClone(readState(designDir, state)) }));
         if (refused.status !== 422) failures.push({ state: state?.title ?? null, path: `${label} (empty)`, error: refused.error ?? `should refuse with 422, answered ${refused.status}` });

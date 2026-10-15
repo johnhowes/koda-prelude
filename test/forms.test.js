@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -175,5 +175,19 @@ test('the after-turn check posts each POST route: valid answers, empty refusals'
   } finally {
     renderers.closeAll();
     write('orders/views/orders/_total.eta', '<b><%= it.orders.reduce((sum, o) => sum + o.amount, 0) %></b>');
+  }
+});
+
+test('the check’s filled-in post fills required fields a state leaves empty', async () => {
+  // A first-run state: the record is there, its required field empty.
+  const renderers = createRenderers({ appRoot: fileURLToPath(new URL('..', import.meta.url)) });
+  const designDir = join(repo, 'prelude', 'orders');
+  write('orders/states/03-not-set-up.json', { orders: [{ id: 1, borrower: '', amount: 0, urgent: false }] });
+  try {
+    const failures = await checkDesign({ renderers }, { folder: { path: repo }, design: { id: 'orders' }, designDir });
+    assert.deepEqual(failures.filter(f => f.state === 'Not set up'), []);
+  } finally {
+    renderers.closeAll();
+    rmSync(join(designDir, 'states', '03-not-set-up.json'));
   }
 });
