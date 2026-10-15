@@ -200,8 +200,9 @@ async function handle(req, res, app) {
     // if there isn't one yet. Starting it settles the stack if nobody had.
     if (rest === '/app/build' && req.method === 'POST' && !folder.build) {
       const blank = { title: '', area: '', errors: {} };
+      const form = await readForm(req);
       let state = appOf(folder.path);
-      if (!state.stack) state = chooseStack(folder.path, DEFAULT_STACK);
+      if (!state.stack) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
       if (state.built) return redirect(res, `/f/${folder.id}#app`);
       let shell = findShell(folder.path);
       if (!shell) {

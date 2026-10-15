@@ -27,17 +27,30 @@
   </div>
 
   <%/* The app (step 8): its stack once chosen, and, until it exists, the build
-       that creates it. Features are built into it, so it comes first. */%>
-  <% if (it.app.stack) { %>
+       that creates it. Features are built into it, so it comes first. Shown
+       too when designs of views exist but no stack was recorded (designs made
+       before Prelude asked): starting the build settles it. */%>
+  <% const designsOfViews = it.groups.some(group => group.designs.some(design => design.kind !== 'system')); %>
+  <% if (it.app.stack || designsOfViews) { %>
   <div class="card" id="app">
     <h2>The app</h2>
     <% if (it.app.built) { %>
     <p class="sec"><%= it.app.stack %><% if (it.app.path) { %>, in <code><%= it.app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
     <% } else { %>
-    <p class="sec">It will be <%= it.app.stack %>. There’s no app yet: the app build creates it on a branch of its own, with the shell’s layouts and the design system, so features can be built on top of it.<% if (it.app.custom) { %> Designs here wait for it, since they’re written in its language.<% } %></p>
+    <p class="sec">It will be <%= it.app.stack ?? it.defaultStack %>. There’s no app yet: the app build creates it on a branch of its own, with the shell’s layouts and the design system, so features can be built on top of it.<% if (it.app.custom) { %> Designs here wait for it, since they’re written in its language.<% } %></p>
     <% if (it.appError) { %><p class="err" role="alert"><%= it.appError %></p><% } %>
     <% if (it.canBuild) { %>
     <form action="/f/<%= it.folder.id %>/app/build" method="post">
+      <% if (!it.app.stack) { %>
+      <details>
+        <summary class="muted">Choose another stack</summary>
+        <label class="field">
+          <span class="f">The app’s stack</span>
+          <input name="stack" placeholder="ASP.NET Core MVC with Razor" autocomplete="off">
+        </label>
+        <p class="muted">The designs here are Eta views; with another stack, the app build also gives the app a design host, and they’re rewritten in its language as they’re built.</p>
+      </details>
+      <% } %>
       <button class="btn small primary" type="submit">Start the app build</button>
     </form>
     <% } else { %>

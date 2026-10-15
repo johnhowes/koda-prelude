@@ -170,3 +170,18 @@ test('features wait for the app; the default app build ports the shell and serve
   write(worktree, 'prelude/loans/views/layouts/app.eta', '<html><%~ it.body %></html>');
   assert.equal(findLayout({ folderPath: worktree, designDir: join(worktree, 'prelude', 'loans'), shellDir: workDir, name: 'app' }).views, join(worktree, 'prelude', 'loans', 'views', 'layouts'), 'a design’s own draft still comes first');
 });
+
+test('designs made before Prelude asked: the app card offers the default, and the build settles the stack', async () => {
+  const { repo, fid } = await bareRepo();
+  createDesign(repo, { title: 'Shell', kind: 'shell' });
+  createDesign(repo, { title: 'Landing', kind: 'design' });
+  assert.equal(appOf(repo).stack, null);
+
+  const page = await (await get(`/f/${fid}`)).text();
+  assert.match(page, /<div class="card" id="app">[\s\S]*It will be Node, Express, Eta and Koda\. There’s no app yet/, 'the Build page’s link to #app lands on it');
+  assert.match(page, /<form action="\/f\/[0-9a-f]+\/app\/build" method="post">\s*<details>\s*<summary class="muted">Choose another stack<\/summary>/);
+
+  const started = await post(`/f/${fid}/app/build`, { stack: 'ASP.NET Core MVC with Razor' });
+  assert.equal(started.status, 409, 'prelude/ isn’t committed yet');
+  assert.equal(appOf(repo).stack, 'ASP.NET Core MVC with Razor');
+});
