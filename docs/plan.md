@@ -1441,7 +1441,76 @@ Decided 2026-10-15:
   - **This machine refuses to launch a freshly built `App.exe`** from a temp folder, so
     the demo runs through `dotnet App.dll` (`UseAppHost=false`).
 
-### Step 8 and later: candidates, each to be fitted into the model first
+### Step 8: The app - how a first build creates it
+
+Step 7 assumed a repository with an app in it, whose conventions a build follows. A
+folder that's only `prelude/` (Apiary, when it was first tested) has nothing to build into:
+a build agent would have to choose a stack and set up a project by itself. Step 8 decides
+how the app comes to exist.
+
+**The design's views already imply the stack.** Without a design host, a folder's views are
+Eta rendered with Koda, and after porting they are the app's views, element for element.
+So the default app is **Node, Express, Eta and Koda**. Any other stack needs a design host
+(step 6c), so its views are written in that stack's language from the start. That is a
+choice to make before designing, not at build time.
+
+**Choosing the stack: once, at the first moment it matters.**
+- **When Prelude asks:** a folder with no app and no design host asks the first time
+  someone creates a design there, or starts a build.
+- **The default:** "The app will be Node, Express, Eta and Koda", with Continue.
+- **Customising:** a muted "Choose another stack" link opens a field to describe it, such
+  as "ASP.NET Core MVC with Razor".
+- **Where the choice goes:** `prelude/prelude.json`, as `"app": { "stack": … }`,
+  committed, so the whole team sees it.
+- **The default** writes the choice and carries straight on to the design: nothing waits
+  on the app.
+- **A customised stack** must have its app built first, since the app build also writes
+  the design host, its `prelude.json` entry and its `HOST.md`. Until then, designing waits.
+
+**The app build: a group of its own, first.** When `prelude.json` names a stack but no app
+yet, the Build view shows one extra group before the features, "The app". Feature groups
+say "Build the app first", because their branches would start from a repository with
+nothing to build into. It's a build session like any other: its own branch, the check after
+each turn, a commit per turn, and the person opens the PR. Its job is the foundation:
+- **The server:** each URL answers in Koda's two shapes, with the headers, `Vary`
+  and 422 conventions from the `koda-server-setup` skill. Plus Eta views, Koda, static
+  files, `npm start` and a README.
+- **The shell, ported:** its layouts move into the app's views, and the shell's layouts
+  name them (`@app/…`), so every design renders inside the real layout.
+- **The design system, served:** the app serves `prelude/<system>/system/` as its
+  stylesheets. One source, no copy to drift.
+- **Data, from the states:** each area's data comes through one module. It starts as an
+  in-memory store seeded from the typical state, so the app runs as soon as it's built.
+  Real sources (Apiary's Spark API) are ordinary feature stories behind that seam.
+- **For a customised stack:** the same in that stack, plus its design host (the contract in
+  `server/hosts.js`, `tools/reference-host.js` as the example) and `HOST.md`.
+- **The record:** the build sets `prelude.json`'s `app` to where the app lives and how to
+  start it. That is how Prelude knows the app exists, and the feature groups unlock once
+  it's merged.
+
+**Kept simple:** tests, CI, auth, a database and the rest are the agent's to propose as
+features are built, not part of the app build.
+
+**Sub-steps:**
+1. **8.1:** The stack choice: asked when designing or building in a folder with no app and
+   no host; Continue for the default, "Choose another stack" to describe one; written to
+   `prelude.json`.
+2. **8.2:** The app group in the Build view, its build prompt, and feature groups held
+   until the app exists.
+3. **8.3:** Proven on a folder that's only `prelude/` (a copy of Apiary's designs): the
+   default stack chosen, the app built on a branch, its check passing, then a feature
+   built on top.
+
+Decided 2026-10-15:
+- The default app is Express, with Eta and Koda.
+- The stack is asked once, quickly: the default as the obvious choice, a muted option to
+  customise before proceeding.
+- The app serves the design system's CSS from `prelude/`, rather than a copy.
+- The first build uses fake data (the typical state); real data comes later, feature by
+  feature.
+- The app build stays minimal; everything else is decided with the agent while building.
+
+### Step 9 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
   read-only viewer routes, which step 2 already shapes.
