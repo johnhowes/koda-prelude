@@ -546,7 +546,7 @@ How it improves on KodaDesign:
 4. **6c:** The host contract for other stacks (`prelude/prelude.json`), then Spark's
    DesignHost.
 5. **6d:** Drift: porting points a design at the production views, and states render
-   as CI fixtures.
+   as CI fixtures (below, decided 2026-10-15).
 
 Decided 2026-10-15:
 - A design is the app's views plus a route table, with design-wide fake data as its
@@ -1083,6 +1083,88 @@ Decided 2026-10-15:
   - The drawer renders the production tag helpers' fields with the status pre-selected.
     A refused save answers 422, with `input-validation-error` and the message on both
     required fields.
+
+#### Drift: porting, and states as fixtures (6d)
+
+Step 6 decided the end state: after porting there's one view, and the design's states
+are its test fixtures, rendered in CI. Most of the machinery exists. The check already
+renders every route in every state, and layouts can already be real files in the repo
+(`@app/`). 6d adds what's missing.
+
+**Porting points a route at the app's view.** A route's `view` may be `@app/<path>`, a
+file in the repository read in place, as layouts already are:
+
+```json
+"/borrowers": { "view": "@app/App/Views/Borrowers/Index", "data": "" }
+```
+
+- Porting a route means moving its view (and partials) into the app, changing `view`,
+  and deleting the design's copy. The routes, states and notes stay in
+  `prelude/<design>/`: they describe the screen and its cases, and they're now the
+  fixtures.
+- It's per route, so a design can be half ported. The design bar marks which routes
+  are ported.
+- The developer (or their own tools) does the move, not Prelude's agent. The agent
+  still edits only `prelude/<design>/**`, so a ported view is the app's: Prelude shows
+  it, and changes to it go through the developer, or through Build later.
+
+**Model drift: a typed view must accept its states.** At port time a Razor view gets
+`@model BorrowerListViewModel`, and `design-name` becomes `asp-for`. The contract gains
+one rule: when a view is typed, the host deserializes the data into that type strictly,
+so an unknown or missing member is an error, answered as a 500 naming the member, like
+any render error. Prelude doesn't change: the check reports it. An untyped view keeps
+the dynamic model.
+
+**The check, runnable in CI.** `host-check` becomes `prelude check <folder>` (for now
+`node tools/check.js <folder>`, from a Prelude checkout):
+- it renders every route in every state, each overlay, each filter, and each POST
+  route's valid and refused posts, through the built-in host or the repo's own;
+- it compares snapshots (below);
+- it exits non-zero on any failure.
+
+The demo repos get an example CI workflow.
+
+**Snapshots: catching a page that changes.** Rendering without errors doesn't catch a
+view that renders the wrong thing.
+- Each (route, state) renders to `prelude/<design>/snapshots/<route>.<state>.html`,
+  committed.
+- They're compared as normalised HTML, with whitespace and attribute order ignored. No
+  pixels and no headless browser, so it runs in any CI.
+- "Approve these screens" in the design bar writes them. After that, the check fails
+  with a diff when a render differs, and approving again accepts the change.
+
+**POST routes after porting.** The design half stays checked: the refused form renders
+through the real view, with the real validation markup. The controller half isn't.
+Testing a real action needs the app's data layer seeded from a state, which is per-app
+work. For each POST route, `NOTES.md` records what the action must do (`require` and
+`answer`) as the porting spec.
+
+**Also:** a passing after-turn check adds a one-line entry to the chat. Today a pass is
+silent, and the agent says it hasn't rendered anything.
+
+**Proven in both demo repos:** the Razor demo ports `/borrowers` and its drawer, with
+typed models and a real controller; the Eta demo ports `servicing/packages`. Spark
+isn't touched.
+
+**Sub-steps:**
+1. **6d.1:** `@app/` route views, the ported marker, and the check-passed entry.
+2. **6d.2:** `prelude check`, with exit codes and an example CI workflow.
+3. **6d.3:** Strict typed models in the Razor demo host.
+4. **6d.4:** Snapshots and approval.
+
+**Not in this step:**
+- Prelude's agent porting or writing app code (Build);
+- contract tests against real controller actions (Build);
+- visual diffs;
+- publishing Prelude as an npm package.
+
+Decided 2026-10-15:
+- A route is ported by pointing it at an `@app/` view, and the move is done outside
+  Prelude, until Prelude handles building.
+- Snapshots are in 6d, compared as HTML.
+- POST routes get a porting spec in `NOTES.md`; controller contract tests wait for
+  Build.
+- Publishing Prelude can wait; the check runs from a Prelude checkout.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
