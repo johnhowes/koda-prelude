@@ -436,36 +436,121 @@ contrast, is a rewrite.
     data, and porting translates the markup.
 - **Models are untyped while designing,** typed at port time, Spark included.
 
-**How the built-in host fits what's already built:**
-- **URLs stay `.html`.** A request for `screens/03-orders.html?state=empty` renders
-  `03-orders.eta` with that state when there's no `.html` file. Links between screens
-  stay ordinary `.html` links. A static share can therefore write each rendered
-  (screen, state) as an `.html` file, and the links keep working.
-- **Rendering happens on the preview host,** so screens stay on their own origin.
-  Includes resolve inside `prelude/`, for example a design-system component as an Eta
-  partial, which is a possibility for later.
-- **States:**
-  - `03-orders.states.json` holds `{ "<state>": { "model": {…}, "errors": {…} } }`,
-    the first entry being the default;
-  - the template sees `it` (the model) and `it.$errors`;
-  - a screen with no states file renders with an empty model.
+#### View decomposition: a design is the app's views, served the way the app serves them
 
-**Sub-steps:**
-1. **6a:** Eta screens and `states.json`, rendered on the preview host.
-   - The state picker is shown only for screens with more than one state.
-   - The current state is server state, like the current screen.
-   - `?state=` links inside screens are followed in every window, and Open in browser
-     carries the state.
-   - The agent is told the format: real data, lists and errors in the model, and
-     conditions in the template.
-2. **6b:** The host contract for other stacks: `prelude/prelude.json` (start, render
-   URL, reload), with the built-in Eta host as its reference implementation.
-3. **6c:** Spark: DesignHost as Spark's host, reading `prelude/` and taking structured,
-   untyped states.
-4. **6d:** Drift:
-   - porting points a design at the production view;
-   - states become fixtures, rendered in CI with snapshots;
-   - for typed stacks, a contract check of states against the model types.
+A real screen is not one file. It's a layout around a page, partials repeated in a
+list, and, in Koda, regions that load their own URL (`ko-source`), answer in place
+(`ko-target`) and arrive in two shapes: the bare fragment for a region, the whole page
+for a cold load. A design that flattens this into one file per screen drifts from the
+first port. So a design **is** the app's views, decomposed the way the app decomposes
+them, and **served the way the app serves them**, with Koda running for real in the
+preview.
+
+**What KodaDesign showed** (`docs/view-composition.md`, VC-1 to VC-4):
+- **Right:**
+  - a live Koda prototype with real routes;
+  - one URL answering in two shapes;
+  - fragments with routes of their own;
+  - the same file included in a list and answering alone.
+- **Heavy:** a custom template dialect; per-fragment `slice.json` and
+  `examples.json` files; an `exchanges.json` with an effects language; per-viewer
+  in-memory sessions; data kept per screen, so the list and the detail page could
+  disagree; and an authored composition diagram on top of the markup.
+
+**The proposal: the real view structure, a route table, and design-wide fake data.**
+
+```
+prelude/<design>/
+  views/
+    layout.eta               the app's layout: loads the system's CSS and Koda, owns
+                             ko-scope="/" and ko-history, as the real one does
+    orders/list.eta          a page
+    orders/_row.eta          a fragment: included in the list, and answers alone
+    orders/detail.eta
+    orders/_lines.eta        a region the detail page loads by ko-source
+  routes.json                the URLs the design answers, as the real app's router would
+  states/
+    typical.json             the default: a small fake dataset for the whole design
+    empty.json               no orders at all
+    long-names.json          the same shape, with the awkward data
+```
+
+```json
+{
+  "/orders":                  { "view": "orders/list",   "title": "Orders",  "data": "" },
+  "/orders/:id":              { "view": "orders/detail", "title": "Order",   "data": "orders/:id" },
+  "/orders/:id/row":          { "view": "orders/_row",                       "data": "orders/:id" },
+  "/orders/:id/lines":        { "view": "orders/_lines",                     "data": "orders/:id/lines" }
+}
+```
+
+How it improves on KodaDesign:
+- **No dialect.** Views are Eta: `include` for partials, `layout` for layouts.
+  They're the real views of an Eta or Koda app, and the closest translation for any
+  other stack.
+- **Fake data is design-wide.** A state is one dataset (`states/<name>.json`) that
+  every route reads. The list, the detail page and every fragment agree, and flipping
+  to `empty` changes the whole flow at once. There is one state picker for the
+  design, not one per screen.
+- **One line of mapping per route instead of slices:** `"data": "orders/:id"` walks
+  the dataset, matching `:id` against each record's `id`. That's all a fragment needs
+  to answer on its own.
+- **One URL, two shapes, done by the host as the real server does it:**
+  - a request with `x-koda-fragment: 1` gets the view alone;
+  - anything else gets it inside `views/layout.eta`, with `ko-location` set;
+  - every answer sends `x-koda: 1` and `Vary: x-koda-fragment`.
+
+  So regions, `ko-source`, `ko-target` and history behave in the preview exactly as
+  in the app.
+- **Real URLs, on an origin per design:** each design is served at
+  `<design>.<folder>.preview.localhost:<port>`, so its routes are root-relative,
+  exactly the app's (`/orders/1041`). `ko-scope="/"` owns the page as it will in
+  production. The design system's CSS and Koda are served under one reserved prefix
+  (`/_prelude/…`) on that origin.
+- **Nothing is authored twice.** Pages for the screen picker come from `routes.json`
+  (routes with a `title`). Which regions a page has, and what they load, can be read
+  from the markup (`ko-source`, `ko-scope`, ids) when an outline is wanted, rather than
+  kept in a second file.
+
+**Not in this step:**
+- **Forms and POSTs that change the data,** and the answers that follow (refusals,
+  out-of-band updates, closing a drawer). They're the next step: they need a decision
+  about effects, and GET-only already gives real navigation, regions and states.
+- **A drawn composition diagram.**
+
+**How it carries into the real app:**
+- For an Eta or Koda app, `views/` moves into the app's views as it is, and
+  `routes.json` becomes the router.
+- Each `data` path becomes the controller's query.
+- The states become fixtures. Rendering each route under each state in CI is the
+  drift check.
+- After porting, the design points at the production views (decided above).
+- For Spark, DesignHost renders `views/` as Razor with the same `routes.json` and
+  states (6c).
+
+**Sub-steps (revised):**
+1. **6a:** The built-in Eta host, GET only:
+   - `views/`, `routes.json` and `states/` on a per-design preview origin, with one URL
+     in two shapes and Koda live;
+   - the screen picker built from routes, plus a design-wide state picker. The state is
+     server state, and a frame loading a route moves every window to it.
+   - Plain `.html` screens keep working for designs without `routes.json`.
+2. **6b:** Forms and changes: POST routes, what they change in the state's data, and
+   their answers. Decided before it's built.
+3. **6c:** The host contract for other stacks (`prelude/prelude.json`), then Spark's
+   DesignHost.
+4. **6d:** Drift: porting points a design at the production views, and states render
+   as CI fixtures.
+
+Open questions:
+1. Should a design be the app's views plus a route table, with design-wide fake data
+   as its states (proposed), rather than per-screen states?
+2. Is an origin per design (`<design>.<folder>.preview.localhost`) acceptable, so
+   routes are the app's real URLs?
+3. Should 6a be GET only, with forms and their effects as their own decision (6b)?
+4. Is one `data` path per route (proposed) enough, or would you rather routes had
+   small JS loaders? Loaders are closer to a real controller, but mean running
+   agent-written code, so they'd need sandboxing.
 
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
