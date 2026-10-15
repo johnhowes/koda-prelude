@@ -1166,6 +1166,59 @@ Decided 2026-10-15:
   Build.
 - Publishing Prelude can wait; the check runs from a Prelude checkout.
 
+**As built (6d):**
+- **Ported routes.** `viewOf` in host.js resolves a route's view, its form, and its
+  answer's views, either in the design or at `@app/<path>` in the repository.
+  - A path outside the repository, or a file that isn't there, is a render error
+    naming the view.
+  - `readRoutes` marks each route `ported`. The picker shows "the app’s own view",
+    and the bar shows "N of M routes ported", or "ported" when they all are.
+- **Posted names.** A ported form posts what the model binder reads (`Name`,
+  `Borrower.Name`). Prelude merges each field into the state's own spelling of it,
+  ignoring case, and `require` matches the same way.
+- **The after-turn check** always adds an entry. A pass says "Prelude rendered every
+  page and form in every state (N)". Pages that differ from their approved snapshots
+  are listed to the person and never told to the agent, because the agent was
+  probably asked to change them.
+- **Snapshots** (`server/snapshots.js`) live in `snapshots/<state>/<page>.html`.
+  - What's kept: each page or fragment as it's shown (an overlay over its page), and
+    each refused form (`POST_…`). They're stored normalised: one tag or text run
+    per line, attributes sorted, whitespace collapsed.
+  - The diff is a line diff (longest common subsequence) with separate hunks.
+  - A page that failed to render is reported as a failure, not as a difference.
+  - Approval (the design bar, or `--approve`) is refused while any page fails, so
+    approved versions are never thrown away.
+  - The agent may not write `snapshots/`, as with `sessions/`.
+- **`npm run check <folder> [-- --approve]`** (`tools/check.js`) replaces `host-check`.
+  - It runs the built-in renderer, or the repository's host after checking its
+    contract.
+  - When the host doesn't start, it stops instead of trying every page.
+  - It prints each failure and diff, and exits 1 if anything fails.
+  - Each demo repo has an example GitHub workflow, `.github/workflows/prelude.yml`.
+- **The Razor demo's host** renders an app view as its controller would:
+  - It doesn't run `_ViewStart`, so Prelude still picks the layout.
+  - The route's `controller` comes from `Views/<Name>/`, so `<partial name="_Row">`
+    resolves.
+  - A typed view's state is read with `System.Text.Json`, strictly: unmapped
+    members, required constructor parameters, and nullable annotations. The error
+    names the member and the model.
+- **Proven:**
+  - **Razor demo.** Its screens were approved first, then `/borrowers`, its drawer
+    and its form were ported to `App/Views/Borrowers/` with `Borrower` and
+    `BorrowerList` records and a real `BorrowersController`.
+    - The check showed exactly what porting changed: the stylesheet link, the
+      `Name`/`name` casing, and the `data-val` attributes the typed model adds.
+    - After re-approving, three deliberate breakages were each caught by name: a
+      state field the model lacks (`phone`), a missing one (`business`), and a
+      changed row view (a diff showing `<strong>`).
+    - The running app answers the same 422 refusal and the same save.
+  - **Eta demo.** `servicing/packages` moved to `app/views/packages/`, and all 20
+    pages matched the screens approved before the move.
+  - **A real agent turn** on the ported Razor design ("add a state with long names"):
+    - the agent read `App/Models/Borrowers.cs` to keep the state valid;
+    - it changed nothing outside the design;
+    - the check passed, and the new state's pages showed as not yet approved.
+
 ### Step 7 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

@@ -21,7 +21,7 @@
         <% for (const screen of it.screens) { %>
         <button type="submit" name="screen" value="<%= screen.id %>" <% if (screen.id === cur.id) { %>aria-current="true"<% } %>>
           <span class="item-title"><%= screen.title %></span>
-          <span class="muted"><%= screen.file %></span>
+          <span class="muted"><%= screen.file %><% if (screen.ported) { %> · the app’s own view<% } %></span>
         </button>
         <% } %>
       </form>
@@ -47,7 +47,16 @@
       <button class="btn small ghost" type="submit" title="Forms have changed this state's data. Start again from its file.">Reset data</button>
     </form>
     <% } %>
-    <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %></span>
+    <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %><% if (it.ported?.count) { %> · <%= it.ported.count === it.ported.of ? 'ported' : `${it.ported.count} of ${it.ported.of} routes ported` %><% } %></span>
+    <% if (it.hosted && it.screens.length) { %>
+    <%/* Saves every page in every state as it renders now; the check, and
+         `prelude check` in CI, then fail when one renders differently. */%>
+    <form action="<%= it.base %>/approve" method="post" ko-target="design">
+      <input type="hidden" name="view" value="<%= it.view %>">
+      <button class="btn small ghost" type="submit" title="Save every page in every state as it renders now. The check then says when one renders differently."><%= it.approved ? 'Approve again' : 'Approve these screens' %></button>
+    </form>
+    <% } %>
+    <% if (it.notice) { %><span class="muted" role="status"><%= it.notice %></span><% } %>
     <span class="spacer"></span>
     <% if (it.popped) { %>
     <span class="muted">Showing in its own window</span>

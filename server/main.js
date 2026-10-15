@@ -13,7 +13,8 @@ import { fileURLToPath } from 'node:url';
 
 import { createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { checkDesign, datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes } from './host.js';
+import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readRoutes, reviewDesign } from './host.js';
+import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
@@ -279,8 +280,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // "screens" are its titled pages (routes.json), the frame is on the design's
   // own origin, and there is a state picker for its fake datasets.
   const viewOf = value => (value === 'window' ? 'window' : 'inline');
-  const surface = view => {
+  const surface = (view, extra = {}) => {
     const common = {
+      ...extra,
       base,
       view,
       version: designs.version(dKey),
@@ -302,7 +304,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         ?? (matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null);
       const origin = designOrigin(req, folder, design);
       const changed = designs.copy(dKey)?.stateId === (state?.id ?? null);
-      return { ...common, hosted: true, screens, current, states, state, changed, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
+      // Ported routes render the app's own views; the rest are the design's.
+      const ported = { count: routes.filter(route => route.ported).length, of: routes.length };
+      const approved = readSnapshots(dir)?.size ?? 0;
+      return { ...common, hosted: true, screens, current, states, state, changed, ported, approved, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
     }
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
@@ -339,6 +344,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const wanted = String(form.get('state') ?? '');
     if (listStates(dir).some(state => state.id === wanted)) designs.showState(dKey, wanted);
     return send(res, 200, render('./_design', surface(viewOf(form.get('view')))));
+  }
+
+  // "Approve these screens": every page in every state, as it renders now,
+  // becomes the design's snapshots, which the check then compares against.
+  if (req.method === 'POST' && rest[0] === 'approve' && rest.length === 1 && hosted) {
+    const form = await readForm(req);
+    const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
+    // Approving over pages that don't render would throw their approved versions away.
+    const states = Math.max(1, listStates(dir).length);
+    const count = review.failures.length ? 0 : writeSnapshots(dir, review.renders);
+    const notice = review.failures.length
+      ? `Not approved: ${review.failures.length === 1 ? '1 page doesn’t' : `${review.failures.length} pages don’t`} render. Fix ${review.failures.length === 1 ? 'it' : 'them'} first.`
+      : `Approved ${count} ${count === 1 ? 'page' : 'pages'} in ${states} ${states === 1 ? 'state' : 'states'}.`;
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { notice })));
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
@@ -400,8 +419,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       kodaPath: views ? kodaPackage : null,
       stack: (() => { const config = readHostConfig(folder.path); return config && { ext: config.views, guide: config.guide }; })(),
       // After each turn, render every route of a design of views, and say what fails.
+      // Pages that differ from their approved snapshots are shown, not told.
       check: views
-        ? () => (isHosted(dir) ? checkDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir }) : Promise.resolve([]))
+        ? async () => {
+          if (!isHosted(dir)) return null;
+          const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
+          return { failures: review.failures, rendered: [...review.renders.values()].filter(Boolean).length, differ: review.differ };
+        }
         : null,
     };
   };

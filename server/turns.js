@@ -150,10 +150,14 @@ export function createTurns({ runner, live }) {
         // and to the agent with the next message.
         if (check && result.ok) {
           try {
-            const failures = await check();
-            if (failures.length) {
-              findings.set(dKey, failures);
-              record(ctx, { type: 'check', failures });
+            // A page that doesn't render is the agent's to fix. One that renders
+            // differently from its approved snapshot is the person's to judge
+            // (the agent was probably asked to change it), so it's only shown.
+            const result = await check();
+            if (result) {
+              const { failures, rendered = 0, differ = [] } = result;
+              if (failures.length) findings.set(dKey, failures);
+              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name) });
             }
           } catch { /* a failed check is no reason to lose the turn */ }
         }

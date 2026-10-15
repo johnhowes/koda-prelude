@@ -143,7 +143,7 @@ test('the agent is told to write views in the repo’s own language, after readi
 
 test('the host check runs a folder’s designs through its host', async () => {
   const { execFile } = await import('node:child_process');
-  const tool = fileURLToPath(new URL('../tools/host-check.js', import.meta.url));
+  const tool = fileURLToPath(new URL('../tools/check.js', import.meta.url));
   // A host of its own for the check, on another port, so it doesn't meet the server's.
   const checkPort = await freePort();
   write('prelude/prelude.json', { host: { start: `node "${reference}" ${checkPort}`, url: `http://localhost:${checkPort}`, views: '.eta' } });
@@ -153,7 +153,7 @@ test('the host check runs a folder’s designs through its host', async () => {
     });
     assert.equal(output.code, 0, output.stdout);
     assert.match(output.stdout, /ok {3}the host starts and answers \/__prelude\/health/);
-    assert.match(output.stdout, /ok {3}design loans: every route, state and POST route/);
+    assert.match(output.stdout, /ok {3}loans: every page renders in every state/);
   } finally {
     write('prelude/prelude.json', { host: { start: `node "${reference}" ${hostPort}`, url: `http://localhost:${hostPort}`, views: '.eta', guide: 'prelude/HOST.md' } });
   }

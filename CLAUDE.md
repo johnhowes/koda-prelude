@@ -71,7 +71,7 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     a separate process under Node's permission model (`server/renderers.js`)
     that may read the folder and Prelude, and nothing else. Never render a
     design's views in the server's own process.
-  - After each turn on a design of views, `checkDesign` (host.js) renders every
+  - After each turn on a design of views, `reviewDesign` (host.js) renders every
     route in every state; failures show in the chat and are prepended to the
     agent's next message (`withFindings` in turns.js). The agent can't see the
     preview, so this is how it learns a view doesn't render.
@@ -82,7 +82,14 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     it starts only once the person approves it for that folder
     (`~/.prelude/approvals.json`, tied to the host settings) and is stopped with
     Prelude. `tools/reference-host.js` is the contract in a page of Node (and
-    what the tests start); `npm run host-check <folder>` checks a host.
+    what the tests start).
+  - Porting (plan, 6d): a route's view may be `@app/<path>`, the app's own file
+    (`viewOf` in host.js), and the design's states become its fixtures.
+    `server/snapshots.js` keeps a design's approved screens in `snapshots/`,
+    compared as normalised HTML; the after-turn check lists pages that differ
+    (to the person, not the agent). `npm run check <folder>` runs the whole
+    check for CI, exiting 1 on a failure or a difference; `-- --approve`
+    approves instead.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

@@ -41,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { readHostConfig } from './hosts.js';
+import { compareSnapshots, snapshotName } from './snapshots.js';
 
 export const HOST_SUFFIX = 'preview.localhost';
 
@@ -94,6 +95,7 @@ export function readRoutes(designDir) {
     .map(([pattern, route]) => ({
       pattern,
       view: route.view,
+      ported: route.view.startsWith('@app/'),
       title: typeof route.title === 'string' ? route.title : null,
       data: typeof route.data === 'string' ? route.data : '',
       layout: typeof route.layout === 'string' ? route.layout : 'app',
@@ -151,7 +153,7 @@ export const pagesOf = routes => routes.filter(route => route.title && !route.pa
 /**
  * What the preview's picker offers: every titled route, its :params filled
  * with sample ids from the dataset, each overlay listed after the page it is
- * presented over ("Order › Edit order"). [{ id: path, title, overlay? }]
+ * presented over ("Order › Edit order"). [{ id: path, title, overlay?, ported }]
  */
 export function pickable(routes, dataset) {
   const samples = samplePaths(routes, dataset).filter(sample => sample.route.title);
@@ -159,10 +161,10 @@ export function pickable(routes, dataset) {
   const overlays = samples.filter(sample => sample.route.over);
   const picks = [];
   for (const page of pages) {
-    picks.push({ id: page.path, title: page.route.title });
+    picks.push({ id: page.path, title: page.route.title, ported: page.route.ported });
     for (const overlay of overlays) {
       if (fillParams(overlay.route.over, overlay.params) === page.path) {
-        picks.push({ id: overlay.path, title: `${page.route.title} › ${overlay.route.title}`, overlay: true });
+        picks.push({ id: overlay.path, title: `${page.route.title} › ${overlay.route.title}`, overlay: true, ported: overlay.route.ported });
       }
     }
   }
@@ -255,6 +257,22 @@ export function lookup(data, path, params) {
       : here[key];
   }
   return here;
+}
+
+// --- views -----------------------------------------------------------------
+
+/**
+ * Where a route's view is: { views, template }, or { error }.
+ * "orders/list" is the design's own (views/orders/list); "@app/<path>" is a
+ * ported route's, the app's own file in the repository, read in place.
+ */
+export function viewOf({ folderPath, designDir, view, ext = '.eta' }) {
+  if (!view.startsWith('@app/')) return { views: join(designDir, 'views'), template: `./${view}` };
+  const file = normalize(join(folderPath, `${view.slice(5)}${extname(view) ? '' : ext}`));
+  if (!file.startsWith(folderPath + sep)) return { error: `The view ${view} is outside the repository.` };
+  if (!existsSync(file)) return { error: `There's no view at ${view} (looked for ${file.slice(folderPath.length + 1).split(sep).join('/')}).` };
+  const base = file.slice(dirname(file).length + 1);
+  return { views: dirname(file), template: `./${base.slice(0, base.length - extname(base).length)}` };
 }
 
 // --- layouts ---------------------------------------------------------------
@@ -410,8 +428,10 @@ export async function renderPath(app, { folder, design, designDir, path, query =
     return { status: 404, html: `<p>There's nothing at "${escape(route.data)}" in the ${state ? `"${escape(state.title)}"` : 'empty'} state.</p>` };
   }
 
-  const views = join(designDir, 'views');
-  const overlay = { views, template: `./${route.view}`, data: filterModel(model, route, query) };
+  const ext = readHostConfig(folder.path)?.views ?? '.eta';
+  const where = viewOf({ folderPath: folder.path, designDir, view: route.view, ext });
+  if (where.error) return renderError(where.error);
+  const overlay = { views: where.views, template: where.template, data: filterModel(model, route, query) };
   if (fragment) return render(app, folder, { page: overlay, query });
 
   // A cold load of an overlay: the page beneath, with the overlay in its
@@ -435,13 +455,14 @@ export async function renderPath(app, { folder, design, designDir, path, query =
     regions[route.in] = { ...overlay, location: path };
   }
 
-  const ext = readHostConfig(folder.path)?.views ?? '.eta';
+  const page = pageRoute === route ? where : viewOf({ folderPath: folder.path, designDir, view: pageRoute.view, ext });
+  if (page.error) return renderError(page.error);
   const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: pageRoute.layout, ext })
     ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {}, builtIn: true };
   const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
   return render(app, folder, {
     query,
-    page: { views, template: `./${pageRoute.view}`, data: pageRoute === route ? overlay.data : pageModel },
+    page: { views: page.views, template: page.template, data: pageRoute === route ? overlay.data : pageModel },
     layout: {
       views: found.views,
       template: found.template,
@@ -469,9 +490,12 @@ async function render(app, folder, job) {
     if (config) return { status: 200, html: await app.hosts.render(folder, config, job) };
     return { status: 200, html: await app.renderers.render(folder.path, job) };
   } catch (error) {
-    const message = String(error.message);
-    return { status: 500, html: `<pre class="prelude-render-error">${message.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</pre>`, error: message };
+    return renderError(String(error.message));
   }
+}
+
+function renderError(message) {
+  return { status: 500, html: `<pre class="prelude-render-error">${message.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</pre>`, error: message };
 }
 
 /** "/orders/:id" with { id: "7" } -> "/orders/7". */
@@ -513,12 +537,18 @@ export function samplePaths(routes, dataset) {
  * Render every route of a hosted design in each of its states, and report
  * what fails: [{ state, path, error }]. Pages render in their layout, routes
  * without a title as fragments.
+ *
+ * `renders`, when given, is filled with what a snapshot keeps (snapshots.js):
+ * "<state>/<page>" -> html, for each page or fragment as it's shown (an
+ * overlay over its page) and each refused form; null for one that failed,
+ * which isn't compared with its snapshot (the failure already says it).
  */
-export async function checkDesign(app, { folder, design, designDir }) {
+export async function checkDesign(app, { folder, design, designDir }, { renders = null } = {}) {
   const routes = readRoutes(designDir);
   const states = listStates(designDir);
   const failures = [];
   for (const state of states.length ? states : [null]) {
+    const keep = (name, html) => renders?.set(`${state?.id ?? '_'}/${name}`, html);
     // Each POST route, against a throwaway copy: a valid post must answer as
     // described, and an empty one must be refused when fields are required.
     for (const { route, path } of samplePaths(readPostRoutes(designDir), readState(designDir, state))) {
@@ -533,6 +563,7 @@ export async function checkDesign(app, { folder, design, designDir }) {
       if (route.require.length) {
         const refused = await postPath(app, { folder, design, designDir, path, fields: {}, dataset: structuredClone(readState(designDir, state)) });
         if (refused.status !== 422) failures.push({ state: state?.title ?? null, path: `${label} (empty)`, error: refused.error ?? `should refuse with 422, answered ${refused.status}` });
+        keep(snapshotName(path, { post: true }), refused.status === 422 ? refused.html : null);
       }
     }
     for (const { route, path, fragment } of samplePaths(routes, readState(designDir, state))) {
@@ -540,6 +571,7 @@ export async function checkDesign(app, { folder, design, designDir }) {
       for (const alone of route.over ? [true, false] : [fragment]) {
         const answer = await renderPath(app, { folder, design, designDir, path, fragment: alone, stateId: state?.id });
         if (answer.status === 500) failures.push({ state: state?.title ?? null, path: route.over && alone ? `${path} (alone)` : path, error: answer.error });
+        if (!(route.over && alone)) keep(snapshotName(path), answer.status === 200 ? answer.html : null);
       }
       // A route that searches or filters, asked for something nothing matches:
       // its view has to cope with an empty result.
@@ -552,6 +584,17 @@ export async function checkDesign(app, { folder, design, designDir }) {
     }
   }
   return failures;
+}
+
+/**
+ * The whole check of a design: what doesn't render, and what renders
+ * differently from its approved snapshots.
+ * { failures, renders, approved, differ: [{ name, diff }] }
+ */
+export async function reviewDesign(app, ctx) {
+  const renders = new Map();
+  const failures = await checkDesign(app, ctx, { renders });
+  return { failures, renders, ...compareSnapshots(ctx.designDir, renders) };
 }
 
 // --- forms: POST routes ----------------------------------------------------
@@ -593,6 +636,19 @@ function typed(value, like) {
   return value;
 }
 
+/**
+ * A record's own spelling of a field name. A ported form posts what the app's
+ * model binder reads ("Borrower.Name"), while the state, written as JSON, has
+ * "borrower.name": they're the same field, as they are to the binder.
+ */
+function keyIn(record, name) {
+  if (name in record) return name;
+  return Object.keys(record).find(key => key.toLowerCase() === name.toLowerCase()) ?? name;
+}
+
+/** A posted field, by name, ignoring case as the app's model binder does. */
+const fieldValue = (fields, name) => fields[keyIn(fields, name)];
+
 /** Set each field on a record; "address.city" reaches inside. */
 function mergeFields(record, fields) {
   for (const [name, value] of Object.entries(fields)) {
@@ -600,10 +656,11 @@ function mergeFields(record, fields) {
     if (steps.length === 0 || steps.some(step => step === '__proto__' || step === 'constructor' || step === 'prototype')) continue;
     let here = record;
     for (const step of steps.slice(0, -1)) {
-      if (!here[step] || typeof here[step] !== 'object') here[step] = {};
-      here = here[step];
+      const key = keyIn(here, step);
+      if (!here[key] || typeof here[key] !== 'object') here[key] = {};
+      here = here[key];
     }
-    const last = steps.at(-1);
+    const last = keyIn(here, steps.at(-1));
     here[last] = typed(value, here[last]);
   }
   return record;
@@ -670,12 +727,15 @@ export async function postPath(app, { folder, design, designDir, path, fields, d
   const matched = matchRoute(posts, path);
   if (!matched) return { status: 404, html: `<p>This design has no POST route for ${escapeHtml(path)}.</p>`, changed: false };
   const { route, params } = matched;
-  const views = join(designDir, 'views');
-  const renderView = (view, data) => render(app, folder, { page: { views, template: `./${view}`, data } });
+  const ext = readHostConfig(folder.path)?.views ?? '.eta';
+  const renderView = (view, data) => {
+    const where = viewOf({ folderPath: folder.path, designDir, view, ext });
+    return where.error ? renderError(where.error) : render(app, folder, { page: { views: where.views, template: where.template, data } });
+  };
 
   // Refused: a required field is empty. Nothing changes; the form comes back
   // with what was typed, and each refused field's message.
-  const missing = route.require.filter(name => !String(fields[name] ?? '').trim());
+  const missing = route.require.filter(name => !String(fieldValue(fields, name) ?? '').trim());
   if (missing.length) {
     const $errors = Object.fromEntries(missing.map(name => [name, 'This is required.']));
     if (!route.form) return { status: 422, html: `<p>Required: ${missing.map(escapeHtml).join(', ')}.</p>`, changed: false };

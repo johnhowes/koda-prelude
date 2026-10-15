@@ -14,7 +14,7 @@
     "icons": "tauri icon server/public/icon.svg --output tauri/src-tauri/icons",
     "build:shell": "cd tauri/src-tauri && cargo build --release && node -e \"require('fs').mkdirSync('../../dist-shell',{recursive:true});require('fs').copyFileSync('target/release/prelude-shell.exe','../../dist-shell/Prelude.exe')\"",
     "test:shell": "cd tauri/src-tauri && cargo test",
-    "host-check": "node tools/host-check.js"
+    "check": "node tools/check.js"
   },
   "dependencies": {
     "@kodalang/core": "0.1.2",

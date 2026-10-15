@@ -15,7 +15,7 @@
 // The agent gets ordinary file tools and nothing else (plan: ground rule 3).
 // It may read the folder and the folder's reference folders, and nothing else
 // on the machine; it may write only inside its design's folder, never in that
-// design's sessions/. Anything else is refused without asking. No MCP servers,
+// design's sessions/ and snapshots/. Anything else is refused without asking. No MCP servers,
 // no skills, and none of this machine's settings, so a broad "allow" in
 // someone's user settings can't widen what the agent may read or write.
 
@@ -32,11 +32,12 @@ const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
  */
 export function permissionArgs(designPath, references = []) {
   const scope = `${designPath}/**`;
-  const sessions = `${designPath}/sessions/**`;
+  // Its sessions are Prelude's record, and its snapshots are what the person approved.
+  const kept = [`${designPath}/sessions/**`, `${designPath}/snapshots/**`];
   return [
     '--tools', TOOLS.join(','),
     '--allowedTools', [`Edit(${scope})`, `Write(${scope})`].join(','),
-    '--disallowedTools', [`Edit(${sessions})`, `Write(${sessions})`].join(','),
+    '--disallowedTools', kept.flatMap(path => [`Edit(${path})`, `Write(${path})`]).join(','),
     ...references.flatMap(path => ['--add-dir', path]),
     '--permission-mode', 'dontAsk',
   ];
@@ -188,7 +189,7 @@ export function designPrompt({ title, designPath, references = [], kind = 'desig
 
 You are working on the ${what} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
 
-- Write only inside ${designPath}/, and never inside ${designPath}/sessions/. Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
+- Write only inside ${designPath}/, and never inside ${designPath}/sessions/ or ${designPath}/snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
 - You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
 - A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what the design already has.
 - Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
@@ -241,6 +242,8 @@ function viewsSection({ designPath, kind, system, shell, kodaPath, stack }) {
 Drawers, modals and side panels are overlays: a fragment presented in a region the layout offers, over the page the person was on. Give an overlay a route of its own with "over" (the page beneath, using the overlay's :params) and "in" (the region): "/orders/:id/edit": { "view": "orders/_edit", "title": "Edit order", "data": "orders/:id", "over": "/orders/:id", "in": "drawer" }. Open it from the page with a link to its URL and ko-target="drawer?" (or "modal?"). Prelude shows it in the preview over a real page beneath, as the app's server should answer a deep link to it.
 
 Forms post to POST routes in the same routes.json, keyed "POST <url>". Each does one thing to the state's data at a path, the same paths GET routes use: "update" merges the posted fields into that record (a field keeps the type its value has; dotted names such as address.city reach inside; give a checkbox a hidden input with value "false" before it, so unchecking it is posted), "add" appends a record with the fields and a new id (the answer can use :new), "remove" takes the record out. "require" lists fields that may not be empty: an empty one is refused with a 422 that re-renders "form" with what was typed, the messages in it.$errors (mark the field with ko-invalid-server="<%= it.$errors?.name %>" when there is one, and show the message), and nothing changes. "answer" is what comes back after the change: { "redirect": "/orders/:id" } for a 303 to a page; or { "view": "orders/_row", "data": "orders/:id" } for a fragment, rendered from the changed data, landing wherever the form aimed it; plus "also": [{ "into": "summary", "view": "orders/_summary", "data": "" }] to refresh other regions out of band, and { "into": "drawer?" } alone to close the region the form was in; "event" raises a named event. For example: "POST /orders/:id": { "update": "orders/:id", "require": ["borrower"], "form": "orders/_edit", "answer": { "view": "orders/_row", "data": "orders/:id", "also": [{ "into": "drawer?" }] } }. Aim each form as the real app would: a drawer's form at the row it changes, with the drawer closed by the answer; a row that saves itself with ko-target="self" and ko-attach="replace". Changes go to a working copy of the state, never the files; the person can reset it.
+
+A route whose view is "@app/<path>" has been ported: its view is now the app's own file in the repository (such as "@app/views/orders/list"), and the design's states are that view's test fixtures. Read it to see what the page really is, but don't change it, copy it back into the design, or point the route elsewhere; if it should change, say so in NOTES.md. Keep the states valid for it: the same shape, and every field it reads. A form's "require" names what the app's form posts.
 
 Search and filter forms use GET: <form method="get" action="/orders"> with inputs named for the query parameters. Every view sees the query string as it.$query, so the form shows what was asked (value="<%= it.$query.q ?? '' %>"). The route filters, as the app's controller would, so views never filter: "search": { "q": ["borrower", "id"] } keeps the records where any of those fields contains ?q= (ignoring case); "match": { "status": "status" } keeps those whose field equals ?status=; an empty parameter filters nothing. They apply to the route's data when it is a list, or to the list at "list" inside it ("list": "orders"). For search as you type, give the results their own fragment route with the same filters and load it as a region that follows the box: <input type="search" id="q" name="q"> and <div id="results" ko-region calc-ko-source="'/orders/results?q=' + encode(q.value)" ko-invoke="input:q" ko-debounce="250">. Make sure a search that matches nothing shows a clear empty result.
 

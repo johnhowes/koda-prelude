@@ -11,13 +11,23 @@
 <li class="entry tool failed">
   <details><summary><%= e.name ?? 'Tool' %> was refused or failed</summary><pre><%= e.text %></pre></details>
 </li>
-<% } else if (e.type === 'check') { %>
+<% } else if (e.type === 'check' && e.failures.length) { %>
 <li class="entry note failed">
   <details open><summary><%= e.failures.length === 1 ? '1 page doesn’t' : `${e.failures.length} pages don’t` %> render. The agent is told with your next message.</summary>
   <ul class="check-list"><% for (const f of e.failures) { %><li><code><%= f.path %></code><% if (f.state) { %> · <%= f.state %><% } %>: <%= f.error %></li><% } %></ul></details>
 </li>
+<% } else if (e.type === 'check') { %>
+<li class="entry note">Prelude rendered every page and form in every state<%= e.rendered ? ` (${e.rendered})` : '' %>, and they all render.</li>
 <% } else if (e.type === 'turn' && e.stopped) { %>
 <li class="entry note">Stopped.</li>
 <% } else if (e.type === 'turn' && !e.ok) { %>
 <li class="entry note failed"><%= e.error ?? 'The agent stopped with an error.' %></li>
+<% } %>
+<%/* Shown to the person, not told to the agent: a page that renders
+     differently from its approved snapshot was probably asked for. */%>
+<% if (e.type === 'check' && e.differ?.length) { %>
+<li class="entry note">
+  <details><summary><%= e.differ.length === 1 ? '1 page differs' : `${e.differ.length} pages differ` %> from the approved screens. If that’s what you asked for, approve them again in the design bar.</summary>
+  <ul class="check-list"><% for (const name of e.differ) { %><li><code><%= name %></code></li><% } %></ul></details>
+</li>
 <% } %>
