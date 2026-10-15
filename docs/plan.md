@@ -189,6 +189,22 @@ Each step ends with something usable, and stops there for a look before the next
   and step 3 behavior otherwise.
 - **Done when:** the same pages run in the browser and in the shell, and the shell's
   pop-out is the nicer one.
+- **Later (2026-10-15): the shell starts the server.** With no `--server` or
+  `PRELUDE_URL`, the shell uses a Prelude already answering `GET /health` on
+  localhost:4200 (`npm start` while developing).
+  - **If none answers,** it opens on its own "Starting Prelude…" page
+    (`tauri/dist/index.html`), runs `node start.js` in Prelude's folder, and moves the
+    window to the server once it answers.
+  - **Finding Prelude's folder:** the nearest folder above the exe with `start.js`, or
+    `--root` or `PRELUDE_ROOT`. Node comes from the PATH, or `PRELUDE_NODE`. The server's
+    output goes to `~/.prelude/server.log`.
+  - **Failures** show on the starting page, carried in its URL fragment: Prelude's
+    folder not found, the port taken by something else, Node missing, or the server
+    stopping or not answering within 60 seconds.
+  - **On quit,** the shell stops the server it started, and its process tree with it
+    (renderers, design hosts). The server also stops by itself within about two seconds
+    if the shell dies (`PRELUDE_PARENT_PID`). A server the shell didn't start is left
+    running.
 
 ### Step 5: Design systems (first cut)
 

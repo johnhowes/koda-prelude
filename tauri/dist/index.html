@@ -1,4 +1,32 @@
 <!doctype html>
-<!-- Never shown: the shell opens its window on the server's URL. Tauri wants
-     a frontend folder all the same. -->
+<!-- What the window shows while the shell starts Prelude's server, and what
+     went wrong if it can't: the shell puts that in the address's fragment.
+     When the server answers, the window goes to it. -->
+<html lang="en">
+<meta charset="utf-8">
 <title>Prelude</title>
+<style>
+  :root { color-scheme: light dark; --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #fafaf9; --muted: #a8a29e; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 36rem; padding: 2rem; text-align: center; }
+  h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+  #status { color: var(--muted); white-space: pre-wrap; }
+  #status.failed { color: var(--fg); text-align: left; }
+</style>
+<main>
+  <h1>Prelude</h1>
+  <p id="status" role="status">Starting Prelude…</p>
+</main>
+<script>
+  const show = () => {
+    const message = decodeURIComponent(location.hash.slice(1));
+    if (!message) return;
+    const status = document.getElementById('status');
+    status.textContent = message;
+    status.className = 'failed';
+  };
+  show();
+  addEventListener('hashchange', show);
+</script>
+</html>

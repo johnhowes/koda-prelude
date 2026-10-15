@@ -28,8 +28,12 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
 - `npm test` runs the tests (node --test). Add tests for what you build.
 - The desktop app: `npm run build:shell` builds `tauri/src-tauri` (about 10
   minutes from cold) into `dist-shell/Prelude.exe`. `npm run test:shell` runs its
-  Rust tests. Run `npm start` first: the app is a window on the server, and
-  `--server <url>` or `PRELUDE_URL` points it elsewhere. To inspect its windows,
+  Rust tests. The app is a window on the server: it uses one already answering
+  `/health` on localhost:4200 (`npm start`), or else starts `node start.js`
+  itself (Prelude's folder is found above the exe, or `--root`/`PRELUDE_ROOT`;
+  its output goes to `~/.prelude/server.log`) and stops it on quit. `--server
+  <url>` or `PRELUDE_URL` points it elsewhere and starts nothing. If the
+  machine is short of memory, build with `cargo build --release -j 1`. To inspect its windows,
   launch it with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`
   and use the DevTools protocol at `http://127.0.0.1:9333/json`.
 - The folder is the database. Everything Prelude produces goes in the chosen

@@ -137,6 +137,13 @@ async function handle(req, res, app) {
   }
 
   // Home: open a folder, or pick a recent one.
+  // How the desktop app knows a Prelude server, not something else, is on its port.
+  // A length, not chunks, so the shell's few lines of HTTP can read it.
+  if (path === '/health' && req.method === 'GET') {
+    res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'content-length': 7, 'cache-control': 'no-store' });
+    return res.end('prelude');
+  }
+
   if (path === '/' && req.method === 'GET') {
     return page(200, 'home', { recent: folders.recent(), value: '', error: null }, 'Prelude');
   }

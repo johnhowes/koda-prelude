@@ -1,7 +1,7 @@
 [package]
 name = "prelude-shell"
 version = "0.1.0"
-description = "Prelude as a desktop app: a window on a Prelude server, with a native folder picker and real pop-out windows. It starts no servers."
+description = "Prelude as a desktop app: a window on a Prelude server - started for you when none is running - with a native folder picker and real pop-out windows."
 edition = "2021"
 
 [build-dependencies]
