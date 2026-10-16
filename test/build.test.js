@@ -242,6 +242,10 @@ test('a build ports the views; the design’s copies go, and the build is done',
 test('a merge git refuses changes nothing, and says why beside the branch’s buttons', async () => {
   // An untracked file in the checkout where the branch adds one: git won't overwrite it.
   write(repo, 'app/views/reports.eta', 'mine');
+  // The worktree opened as a plain folder too (as a step 8 build's was): it's still the branch.
+  const body = new FormData();
+  body.append('path', worktree);
+  await fetch(`${base}/folders`, { method: 'POST', body, redirect: 'manual' });
   const main = git(repo, 'rev-parse', 'main');
   const refused = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
   assert.equal(refused.status, 409);

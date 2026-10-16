@@ -59,11 +59,13 @@ export function defaultHome() {
 export function createServer({ home = defaultHome(), runner = createCliRunner(), tidyEvery = 30000 } = {}) {
   const live = createLive();
   // A design's worktree is a folder too (step 9): found by its id like any
-  // other, though it isn't in the recent list.
+  // other, though it isn't in the recent list. The branch is looked up first:
+  // a worktree may also have been opened as a plain folder (a step 8 build
+  // was), and that record doesn't know it's a branch.
   const opened = createFolders(home);
   const branches = createBranches({ home });
   const app = {
-    folders: { ...opened, get: id => opened.get(id) ?? branches.folderOf(id) },
+    folders: { ...opened, get: id => branches.folderOf(id) ?? opened.get(id) },
     branches,
     tidied: new Map(),   // folder id -> when its merged branches were last tidied
     tidyEvery,           // how often, at most: tidying fetches from the remote
