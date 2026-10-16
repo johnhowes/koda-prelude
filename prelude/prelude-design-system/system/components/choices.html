@@ -1,0 +1,9 @@
+<!-- Choices: radios (one of) or checkboxes (any of), each beside its words. The
+     words lead with the choice; a .muted tail says what it means. Wrap a set in a
+     fieldset with a legend (sr-only if the card already says it). -->
+<fieldset class="choices">
+  <legend class="sr-only">Kind</legend>
+  <label class="choice"><input type="radio" name="kind" value="design" checked> <span>A design <span class="muted">· usually one feature</span></span></label>
+  <label class="choice"><input type="radio" name="kind" value="system"> <span>The folder’s design system <span class="muted">· its tokens and components; every other design uses it</span></span></label>
+  <label class="choice"><input type="radio" name="kind" value="shell"> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
+</fieldset>

@@ -1,0 +1,18 @@
+<!-- Notice: something the person should know about this page now - a result, a
+     question before an outward step, something that failed. Plain for news;
+     .good when something they asked for worked; .warn when they must decide or
+     approve; .danger when something failed. role="status" for news, role="alert"
+     for a failure. A bold first line, then what to do, then its .actions. In a
+     .panel, it runs edge to edge under the toolbar. -->
+<div class="notice" role="status">Pushed <code>prelude/sign-up</code>. Once it’s merged, Prelude tidies up the branch here.</div>
+
+<div class="notice warn" role="alertdialog" aria-labelledby="push-title">
+  <strong id="push-title">Push Sign up?</strong>
+  This pushes <code>prelude/sign-up</code> to <code>origin</code>, where others can see it, and opens a pull request for it.
+  <div class="actions">
+    <button class="btn small primary" type="submit">Push and open the pull request</button>
+    <a class="btn small ghost" href="#">Not now</a>
+  </div>
+</div>
+
+<div class="notice danger" role="alert"><strong>main is half brought in.</strong> These files clash: <code>views/sign-up.eta</code>. Send the agent a message and it resolves them first.</div>

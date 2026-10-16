@@ -1,0 +1,98 @@
+# Prelude: guidelines
+
+Prelude is a calm workbench: a person and an agent design an app together, and
+the design is the thing on show. The interface steps back so the work can stand
+forward. Every rule here comes from that.
+
+## Rules
+
+**1. One accent, for "this" and "next".** The sienna accent marks the primary
+action, the current choice and links. Nothing decorative is accent-coloured.
+*Why:* the person should always be able to find the next step at a glance.
+- Do: one `.btn.primary` per view (Send, Create design, Start the app build).
+- Don't: two primary buttons side by side, or accent-coloured headings.
+
+**2. Name roles, never looks.** Use tokens (`--fg-muted`, `--surface-sunken`), never
+literal colours, spaces or radii, and never write a colour outside tokens.css.
+*Why:* both themes, and a host's own palette, come from the tokens alone.
+- Do: `color: var(--fg-subtle)`.
+- Don't: `color: #888` or `padding: 13px`.
+
+**3. Quiet by default; colour means something.** Text steps back in two grades:
+`.secondary` explains, `.muted` annotates. `--good`, `--warn` and `--danger` appear
+only when there is something to act on, and never alone: the words say it too.
+*Why:* if everything is loud, the one failing check isn't.
+- Do: `<span class="pill warn">Behind main</span>`.
+- Don't: a red dot with no words, or green for "nothing happened".
+
+**4. Say what happened, then what to do.** Messages are plain sentences addressed
+to the person: the fact, then the next step. No blame, no jargon the person didn't
+choose, no exclamation marks.
+*Why:* the person is often waiting on the agent; every line should move them on.
+- Do: "1 page doesn’t render. The agent is told with your next message."
+- Don't: "Error: render failed (exit 1)!"
+
+**5. Ask before anything outward or hard to undo.** Pushing, merging, running a
+design host: say exactly what will happen and where, in a `.notice.warn`, with the
+action in words and a way out ("Not now").
+*Why:* the folder is the person's; Prelude never surprises them with it.
+- Do: "This pushes `prelude/sign-up` to `origin`, where others can see it."
+- Don't: a "Publish" button that pushes straight away.
+
+**6. Buttons say what they do.** A verb and its object, in sentence case:
+"Create design", "Push and open the pull request", "Start it". "Choose…" ends in
+an ellipsis because it asks for more. Icons go first and are never the only label
+unless the glyph is universal (close, zoom), and then with an `aria-label`.
+*Why:* the label is the promise; "OK" promises nothing.
+- Do: "Merge into main".
+- Don't: "Submit", "OK", "Go".
+
+**7. Components answer to their container.** Lay out with flex-wrap, grid and
+container queries, never `@media` widths. Page layout belongs to the app shell.
+*Why:* the same component lives in a page, a chat column and a pop-out window.
+- Do: `.fields` goes to one column when its own box is narrow.
+- Don't: `@media (max-width: 600px)` in a component.
+
+**8. Work without script.** Menus are `details`, the transcript keeps to the
+bottom with a reversed column, filters use `:has()`. Script only for what the
+platform can't express (Enter to send, copying to the clipboard).
+*Why:* views are server-rendered and swapped in place; script is the part that breaks.
+- Do: `<details class="menu">`.
+- Don't: a click handler that toggles a class.
+
+**9. Keyboard and screen reader first.** Every control is a real `button`, `a`
+or form control; focus shows the ring; icons are `aria-hidden`; a status line is
+`role="status"`, a failure `role="alert"`.
+*Why:* the person may never touch the mouse while talking to the agent.
+- Do: `<button class="icon-btn" aria-label="Close">`.
+- Don't: `<div onclick>`, or removing the focus ring.
+
+**10. Both themes, always.** Every colour is `light-dark()`, and the host sets
+`color-scheme`. Check every screen in light and dark.
+*Why:* Prelude follows the person's system, and the desktop app does too.
+
+## Words
+
+Prelude's words, with the ones to avoid. Sentence case everywhere; curly
+apostrophes (’); "…" for something in progress or that asks for more.
+
+| Say | Not | Because |
+| --- | --- | --- |
+| folder | project, workspace, repo (in the UI) | It's a folder on disk; "usually a repo" explains it once. |
+| design | project, mockup, prototype | A design describes one feature and grows over sessions. |
+| session | chat, conversation, thread | One sitting with the agent on a design. |
+| screen (a static design), page (a route of a hosted design) | mockup, artboard, frame, view | What the person sees; "view" is the code that renders it. |
+| state | fixture, mock data, scenario | The data a design's pages are shown with. |
+| design system | theme, style guide, UI kit | The app's vocabulary, which every design uses. |
+| app shell, layout | template, chrome, frame | The shell holds the layouts every design renders in. |
+| the agent | AI, assistant, bot, Claude | It's a role in Prelude, not a brand. |
+| build, the app build | generate, compile, deploy | Turning a design into the app's code. |
+| story | ticket, task, issue | What's left to build, as text to copy. |
+| check, render | test, validate | Prelude renders every page in every state. |
+| approve, approve again | snapshot, baseline, accept | Approving saves the screens as they render now. |
+| branch, merge, push, pull request | publish, ship, sync | Git's own words, for people who use git. |
+| update from main | rebase, sync, pull | It merges main into the branch. |
+| finish the branch | close, complete, done | Merge it, or push it for a pull request. |
+| what the agent can read | permissions, access, scope | Says exactly what it is. |
+| Not now | Cancel, Dismiss | It leaves the door open. |
+| Stop | Abort, Kill, Cancel | Stops the agent's turn. |

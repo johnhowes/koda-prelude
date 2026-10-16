@@ -1,0 +1,16 @@
+<!-- Transcript: a session, oldest first. The person's messages are bubbles on the
+     right (.entry.user); the agent's words are .prose (.entry.agent); what it did
+     is one mono line per tool (.entry.tool); what Prelude says is a .note. .failed
+     marks what went wrong, with the detail in a disclosure. The scroller is a
+     reversed column so it keeps to the bottom with no script. -->
+<div class="transcript-scroll">
+  <ol class="transcript" aria-live="polite">
+    <li class="entry user"><div class="bubble">Let’s add an error state to the sign-up form.</div></li>
+    <li class="entry agent"><div class="prose"><p>I’ll add a <code>states/taken.json</code> where the email is already in use.</p></div></li>
+    <li class="entry tool"><span class="tool-name">Write</span> states/taken.json</li>
+    <li class="entry tool failed"><details><summary>Bash was refused or failed</summary><pre>Permission denied</pre></details></li>
+    <li class="entry note">Prelude rendered every page and form in every state (6), and they all render.</li>
+    <li class="entry note failed"><details open><summary>1 page doesn’t render. The agent is told with your next message.</summary>
+      <ul><li><code>/sign-up</code> · taken: it.form is undefined</li></ul></details></li>
+  </ol>
+</div>

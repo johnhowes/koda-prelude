@@ -1,0 +1,25 @@
+<!-- Menu: a button that opens a short list to pick from (sessions, screens, states).
+     details/summary, so it needs no script. The summary shows the current choice;
+     each row is a link or a submit button, with a title and a .muted line; the
+     current one has aria-current. Opens to the right edge; .start opens from the left. -->
+<details class="menu start">
+  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</summary>
+  <form class="menu-list" action="#" method="post">
+    <button type="submit" name="screen" value="01-sign-in" aria-current="true">
+      <span class="item-title">Sign in</span>
+      <span class="muted">01-sign-in.html</span>
+    </button>
+    <button type="submit" name="screen" value="02-sign-up">
+      <span class="item-title">Sign up</span>
+      <span class="muted">02-sign-up.html</span>
+    </button>
+  </form>
+</details>
+
+<details class="menu">
+  <summary class="btn small ghost"><span class="icon icon-session" aria-hidden="true"></span>Sessions (3)</summary>
+  <ul class="menu-list">
+    <li><a href="#" aria-current="page"><span class="item-title">The sign-up form</span><span class="muted">16/10/2026, 14:11</span></a></li>
+    <li><a href="#"><span class="item-title">Error states</span><span class="muted">15/10/2026, 09:40</span></a></li>
+  </ul>
+</details>
