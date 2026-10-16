@@ -87,6 +87,11 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
       else res.end();
     }
   });
+  // Keep idle connections well past a client's own idle timeout (Node's default
+  // is 5s): git runs synchronously here, and a request sent on a connection the
+  // server is just closing is reset - a form post included, which no browser retries.
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
   // Renderer processes would outlive the server; stop them with it.
   server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); });
   return server;
@@ -669,8 +674,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // "screens" are its titled pages (routes.json), the frame is on the design's
   // own origin, and there is a state picker for its fake datasets.
   const viewOf = value => (value === 'window' ? 'window' : 'inline');
+  // 'design' (the design's views and states) or 'app' (the built app, 10.8).
+  const modeOf = value => (value === 'app' ? 'app' : 'design');
+  // The app built here, as the design surface shows it: its url, and whether
+  // it's running from this folder (one url serves one branch at a time). Null
+  // until the app exists here.
+  const appHere = () => {
+    const config = readHostConfig(folder.path);
+    if (!config || !appOf(folder.path).built) return null;
+    const status = app.hosts.status(folder, config);
+    return { url: config.url, running: status.running, approved: status.approved, start: `/f/${folder.id}/host/start` };
+  };
   const surface = (view, extra = {}) => {
     const common = {
+      mode: 'design',
       ...extra,
       base,
       view,
@@ -696,18 +713,22 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       // Ported routes render the app's own views; the rest are the design's.
       const ported = { count: routes.filter(route => route.ported).length, of: routes.length };
       const approved = readSnapshots(dir)?.size ?? 0;
-      return { ...common, hosted: true, screens, current, states, state, changed, ported, approved, frame: current && `${origin}${current.id}`, open: current && `${origin}${current.id}` };
+      const built = appHere();
+      const mode = built ? common.mode : 'design';
+      // In App mode the frame is the app itself, at the same path, with its own data.
+      const at = current && (mode === 'app' ? `${built.url}${current.id}` : `${origin}${current.id}`);
+      return { ...common, mode, app: built, hosted: true, screens, current, states, state, changed, ported, approved, frame: at, open: at };
     }
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
     const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
     const files = `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`;
     const at = current && `${files}/screens/${encodeURIComponent(current.file)}`;
-    return { ...common, hosted: false, screens, current, states: [], state: null, changed: false, frame: at, open: at };
+    return { ...common, mode: 'design', app: null, hosted: false, screens, current, states: [], state: null, changed: false, frame: at, open: at };
   };
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
-    return page(200, 'design', surface(viewOf(url.searchParams.get('view'))), title);
+    return page(200, 'design', surface(viewOf(url.searchParams.get('view')), { mode: modeOf(url.searchParams.get('mode')) }), title);
   }
 
   if (req.method === 'POST' && rest[0] === 'screen' && rest.length === 1) {
@@ -718,21 +739,21 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       ? Boolean(matchRoute(readRoutes(dir), wanted))
       : listScreens(dir).some(screen => screen.id === wanted);
     if (known) designs.show(dKey, wanted);
-    return send(res, 200, render('./_design', surface(view)));
+    return send(res, 200, render('./_design', surface(view, { mode: modeOf(form.get('mode')) })));
   }
 
   // "Reset data": throw away what forms changed, back to the state's file.
   if (req.method === 'POST' && rest[0] === 'reset' && rest.length === 1) {
     const form = await readForm(req);
     designs.resetCopy(dKey);
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')))));
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { mode: modeOf(form.get('mode')) })));
   }
 
   if (req.method === 'POST' && rest[0] === 'state' && rest.length === 1) {
     const form = await readForm(req);
     const wanted = String(form.get('state') ?? '');
     if (listStates(dir).some(state => state.id === wanted)) designs.showState(dKey, wanted);
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')))));
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { mode: modeOf(form.get('mode')) })));
   }
 
   // "Approve these screens": every page in every state, as it renders now,
@@ -746,7 +767,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const notice = review.failures.length
       ? `Not approved: ${review.failures.length === 1 ? '1 page doesn’t' : `${review.failures.length} pages don’t`} render. Fix ${review.failures.length === 1 ? 'it' : 'them'} first.`
       : `Approved ${count} ${count === 1 ? 'page' : 'pages'} in ${states} ${states === 1 ? 'state' : 'states'}.`;
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { notice })));
+    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { notice, mode: modeOf(form.get('mode')) })));
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {

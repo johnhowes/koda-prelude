@@ -1965,6 +1965,44 @@ Decided 2026-10-16:
   started one build session, and the requests after it answered 422 "That group is no
   longer in the design" instead of "already building".
 
+#### 10.8: The real app in the design surface
+
+A built app is a Koda app, as embeddable as the design. Once a design's app exists, the
+design surface can show it, live and with its own data, beside the chat. No new idea in
+the model: it's a second mode of the design surface, the same frame showing the same
+screen.
+
+- **A "Design | App" switch** in the design bar, on a hosted design whose app is built
+  where it's shown (on the design's branch, or on main once merged). Before that there's
+  no app, and no switch.
+- **App** shows the current screen's URL on the app (the design host's url plus the
+  screen's path), as it is. A screen with an id the app's data doesn't have gets the
+  app's own answer, a 404 included. The state picker and Approve step aside, with a
+  line saying the app uses its own data. **Design** is as before, with the same screen
+  and state.
+- **When the app isn't running from here** (one url serves one branch at a time), the
+  frame says so, with 10.7's Start it, which comes back to App. Waiting for approval, it
+  says that instead.
+- **Remembered per window:** the mode is part of the surface's URL, so a pop-out can
+  stay on App while the window beside the chat shows Design.
+
+Decided 2026-10-16:
+- A frame on the app's own origin, not Koda embedding: the app runs unsandboxed, and
+  embedding it as a region would need cross-origin requests and its styles under
+  Prelude's. Composition can come when there's a reason.
+- URLs open as they are; no fallback to the page.
+- No side by side yet.
+
+**As built (10.8):** `surface()` in main.js takes a `mode` (`modeOf`, from the surface's
+URL or a form's hidden `mode`) and `appHere()` (the host's url, and whether it's running
+from this folder and approved). In App mode the frame's `src` is the host's url plus the
+screen's path, with no cache-busting. `_design.eta` draws the switch, hides the state
+picker, Reset and Approve, and shows Start it (`ko-target="design"`, back to App) when the
+app isn't running. Checked in a browser on the Apiary clone: App framed its app, and Start
+it brought it up. Found while testing it, and fixed: requests now and then reset when they
+reached a connection the server was just closing, as git blocks the server; idle
+connections are now kept for 65 seconds.
+
 ### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

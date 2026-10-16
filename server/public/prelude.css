@@ -185,6 +185,8 @@
   .spacer { flex: 1; }
   .design-bar form { margin: 0; }
   /* No background of its own: a screen paints its own canvas, whatever Prelude's theme. */
+  .mode-switch { display: inline-flex; gap: var(--space-1); }
+  .mode-switch [aria-current="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); }
   .design-frame { flex: 1; min-height: 0; display: flex; }
   .design-frame iframe { flex: 1; border: 0; width: 100%; height: 100%; }
   .design-empty { margin: auto; max-width: 22rem; text-align: center; padding: var(--space-6); }

@@ -10,14 +10,23 @@
      A hosted design (views, routes.json, states/) offers its titled pages as
      the screens and its fake datasets as states; the frame is on the design's
      own origin. `frame` and `open` are worked out by the server. */%>
-<% const cur = it.current; const url = `${it.base}/preview?view=${it.view}`; %>
+<% const cur = it.current; const surfaceUrl = mode => `${it.base}/preview?view=${it.view}${mode === 'app' ? '&mode=app' : ''}`; const url = surfaceUrl(it.mode); const appMode = it.mode === 'app'; %>
 <div id="design" class="design <%= it.popped ? 'popped' : '' %>" ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
   <div class="design-bar">
+    <%/* Design or App (10.8): the same screen, from the design's views and
+         states, or from the app built here, with its own data. The mode is
+         in the surface's URL, so each window keeps its own. */%>
+    <% if (it.app) { %>
+    <span class="mode-switch" role="group" aria-label="Show">
+      <a class="btn small ghost" href="<%= surfaceUrl('design') %>" ko-target="design" <% if (!appMode) { %>aria-current="true"<% } %> title="The design’s views, with its states.">Design</a>
+      <a class="btn small ghost" href="<%= surfaceUrl('app') %>" ko-target="design" <% if (appMode) { %>aria-current="true"<% } %> title="The app built on this branch, at <%= it.app.url %>, with its own data.">App</a>
+    </span>
+    <% } %>
     <% if (it.screens.length > 0) { %>
     <details class="menu screens-menu">
       <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span><%= cur.title %></summary>
       <form class="menu-list" action="<%= it.base %>/screen" method="post" ko-target="design">
-        <input type="hidden" name="view" value="<%= it.view %>">
+        <input type="hidden" name="view" value="<%= it.view %>"><input type="hidden" name="mode" value="<%= it.mode %>">
         <% for (const screen of it.screens) { %>
         <button type="submit" name="screen" value="<%= screen.id %>" <% if (screen.id === cur.id) { %>aria-current="true"<% } %>>
           <span class="item-title"><%= screen.title %></span>
@@ -27,11 +36,14 @@
       </form>
     </details>
     <% } %>
+    <% if (appMode) { %>
+    <span class="muted">The app, with its own data</span>
+    <% } else { %>
     <% if (it.states.length > 1) { %>
     <details class="menu screens-menu">
       <summary class="btn small ghost">State: <%= it.state.title %></summary>
       <form class="menu-list" action="<%= it.base %>/state" method="post" ko-target="design">
-        <input type="hidden" name="view" value="<%= it.view %>">
+        <input type="hidden" name="view" value="<%= it.view %>"><input type="hidden" name="mode" value="<%= it.mode %>">
         <% for (const state of it.states) { %>
         <button type="submit" name="state" value="<%= state.id %>" <% if (state.id === it.state.id) { %>aria-current="true"<% } %>>
           <span class="item-title"><%= state.title %></span>
@@ -43,7 +55,7 @@
     <% } %>
     <% if (it.changed) { %>
     <form action="<%= it.base %>/reset" method="post" ko-target="design">
-      <input type="hidden" name="view" value="<%= it.view %>">
+      <input type="hidden" name="view" value="<%= it.view %>"><input type="hidden" name="mode" value="<%= it.mode %>">
       <button class="btn small ghost" type="submit" title="Forms have changed this state's data. Start again from its file.">Reset data</button>
     </form>
     <% } %>
@@ -52,9 +64,10 @@
     <%/* Saves every page in every state as it renders now; the check, and
          `prelude check` in CI, then fail when one renders differently. */%>
     <form action="<%= it.base %>/approve" method="post" ko-target="design">
-      <input type="hidden" name="view" value="<%= it.view %>">
+      <input type="hidden" name="view" value="<%= it.view %>"><input type="hidden" name="mode" value="<%= it.mode %>">
       <button class="btn small ghost" type="submit" title="Save every page in every state as it renders now. The check then says when one renders differently."><%= it.approved ? 'Approve again' : 'Approve these screens' %></button>
     </form>
+    <% } %>
     <% } %>
     <% if (it.notice) { %><span class="muted" role="status"><%= it.notice %></span><% } %>
     <span class="spacer"></span>
@@ -87,7 +100,21 @@
   <% } %>
   <% if (!it.popped) { %>
   <div class="design-frame">
-    <% if (cur) { %>
+    <% if (cur && appMode && !it.app.running) { %>
+    <%/* One url serves one branch at a time: the app may be running from another. */%>
+    <% if (it.app.approved) { %>
+    <form class="design-empty" action="<%= it.app.start %>" method="post" ko-target="design">
+      <input type="hidden" name="back" value="<%= url %>">
+      <p class="muted">The app on this branch isn’t running.</p>
+      <button class="btn small primary" type="submit" title="Start the app from here at <%= it.app.url %>. If another branch’s app is running there, it stops.">Start it</button>
+    </form>
+    <% } else { %>
+    <p class="design-empty muted">The app on this branch isn’t running: its design host needs your approval first, above.</p>
+    <% } %>
+    <% } else if (cur && appMode) { %>
+    <%/* The app itself, on its own origin: its views run unsandboxed, outside Prelude. */%>
+    <iframe title="<%= cur.title %> (the app)" src="<%= it.frame %>"></iframe>
+    <% } else if (cur) { %>
     <%/* Served from the preview origin, so the screen can't reach Prelude. */%>
     <iframe title="<%= cur.title %>" src="<%= it.frame %><%= it.frame.includes('?') ? '&' : '?' %>v=<%= it.version %>"></iframe>
     <% } else { %>
