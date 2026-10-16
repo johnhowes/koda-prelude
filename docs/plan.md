@@ -1741,7 +1741,76 @@ Decided 2026-10-16:
   - **A half-removed worktree** made every later status check fail.
   - **A post with no body** crashed the request; it's now an empty form.
 
-### Step 10 and later: candidates, each to be fitted into the model first
+### Step 10: Stories of the increment
+
+A group's story (step 7) restates the whole page as designed, already-built parts included.
+Once a page has been built and then redesigned, that's noise: whoever builds the increment
+needs what changed, not the existing screen again. With every design on a branch (step 9),
+the increment is known: the design on its branch compared with the same design on `main`,
+where the branch left it. Derived each time, never stored.
+
+**Which groups have a story:**
+- **New:** a design (or a group) that isn't on `main` at all. The whole of it is the
+  increment, and its story is the full specification, as today.
+- **Changed:** a group that differs on the branch. Its story holds only the change.
+- **Unchanged:** no story. The Build page shows them folded away under "Unchanged (n)".
+- A folder that isn't a repository has no baseline, so every group is new.
+
+**What a changed group's story holds:**
+- **What changes:** a one-line summary, made from the sections below.
+- **New:** routes, overlays, forms and states added on the branch, fully specified, since
+  they're new to whoever builds them.
+- **Changed:** per route or form, only what differs:
+  - its view (named, not diffed);
+  - its data path or filters;
+  - its form's `require` or `answer`;
+  - its data's shape ("borrower gains `notes`", "loses `fax`");
+  - and which pages' approved screens changed, in which states.
+
+  No markup diffs: the design is where the change is seen.
+- **Removed:** routes, forms, fields and states that are gone.
+- **Rules:** new and reworded rules, and retired ones with why. Unchanged rules are left
+  out.
+- **Shared changes:** design-system or shell files the branch changed.
+- **Test cases:** only the states the change shows up in, including new ones.
+- **Context:** one line saying where the full design is, for anyone who wants it.
+
+Left out: unchanged routes and forms, already-built rules, unchanged states, and anything
+restating the existing page. A build session's instructions are made from the same
+comparison, so the agent works on the change too.
+
+**Redesigning a built page.** A ported route's view is the app's own file, which a design
+may not change (step 6d). To redesign one, a design session brings the view back into the
+design:
+- **Bringing it back:** copy the app's file into the design's views and point the route
+  at the copy, recording where it came from (`"from": "@app/…"` on the route).
+- **What happens:** the route shows as "to build" again, its story names the view as
+  changed, and the build ports it back over the app's file. The record goes once it's
+  the app's again.
+
+The design agent's instructions say when this is right: the page's markup must change, not
+just its data or rules.
+
+**Sub-steps:**
+1. **10.1:** The comparison: a design on its branch against `main`, per group (routes,
+   forms, views, data shape, states, rules, approved screens, shared files).
+2. **10.2:** Stories and the Build page from it: new, changed (only the change) and
+   unchanged (folded away).
+3. **10.3:** Build sessions briefed from the change.
+4. **10.4:** Bringing a built view back for a redesign: the agent's instructions, the
+   `from` record, and the build porting it back.
+5. **10.5:** Proven on Apiary's Landing page, now built on the clone: a redesign of its
+   Home page and a new field. Its story holds only that, and a build session builds it.
+
+Decided 2026-10-16:
+- Stories describe the increment, with nothing about the existing screen beyond what's
+  needed to build the change.
+- Redesigning a built page brings its view back into the design, recording where it came
+  from.
+- No markup diffs in a story: changed pages and states are named.
+- Unchanged groups are folded away under "Unchanged".
+
+### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
   read-only viewer routes, which step 2 already shapes.
