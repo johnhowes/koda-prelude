@@ -1,0 +1,17 @@
+/* The gallery's own rules. Its pages are placeholders, so what's real on
+   screen is the layout's: grey blocks stand where a page's content would go. */
+
+.skeleton {
+  display: block; inline-size: var(--w, 100%); block-size: var(--space-3);
+  background: var(--surface-sunken); border-radius: var(--radius-sm);
+}
+.skeleton.title { block-size: var(--space-6); }
+.skeleton.control { block-size: var(--control-md); border-radius: var(--radius-md); }
+.skeleton.block { block-size: calc(8 * var(--space-4)); border-radius: var(--radius-lg); }
+/* A heading's placeholder keeps the heading's own line, so the Close beside
+   it lines up as it would with words. */
+h2 > .skeleton { display: inline-block; vertical-align: middle; block-size: 1em; }
+
+/* workspace and window: placeholders that fill the page the layout gives them. */
+.gallery-fill { flex: 1; min-block-size: 0; }
+.skeleton.fill { block-size: auto; min-block-size: 0; border-radius: var(--radius-lg); }

@@ -1,0 +1,13 @@
+<%/* The workspace layout's gallery page: placeholders for a design's page (a
+     heading, then the chat beside the design surface), filling the window
+     under the bar. */%>
+<div class="stack gap-3 gallery-fill" aria-hidden="true">
+  <div class="stack gap-2">
+    <span class="skeleton" style="--w: 25%"></span>
+    <span class="skeleton title" style="--w: 35%"></span>
+  </div>
+  <div class="split gallery-fill">
+    <span class="skeleton fill side"></span>
+    <span class="skeleton fill"></span>
+  </div>
+</div>

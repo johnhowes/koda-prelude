@@ -1,0 +1,15 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-commercial-lending-platform", "name": "spark-commercial-lending-platform-monorepo", "path": "C:\\Users\\JohnHowes\\source\\repos\\clients\\spark\\spark-commercial-lending-platform-monorepo" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "underwriting-workbench", "name": "underwriting-workbench-and-credit-decisioning", "path": "D:\\work\\underwriting-workbench-and-credit-decisioning" },
+      { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
+    ],
+    "agents": [
+      { "design": "Sign up with business verification and beneficial owners", "project": "spark-commercial-lending-platform-monorepo", "url": "/f/spark-commercial-lending-platform/d/sign-up-with-business-verification" },
+      { "design": "Credit decision summary for the underwriter’s queue", "project": "underwriting-workbench-and-credit-decisioning", "url": "/f/underwriting-workbench/d/credit-decision-summary" },
+      { "design": "Statements", "project": "borrower-portal", "url": "/f/borrower-portal/d/statements" }
+    ]
+  }
+}

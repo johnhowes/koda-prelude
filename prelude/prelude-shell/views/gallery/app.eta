@@ -1,0 +1,17 @@
+<%/* The app layout's gallery page: placeholders where a page's content goes,
+     and a way to open each region the layout offers. */%>
+<div class="center">
+  <div class="stack gap-6">
+    <div class="stack gap-2" aria-hidden="true">
+      <span class="skeleton" style="--w: 25%"></span>
+      <span class="skeleton title" style="--w: 50%"></span>
+    </div>
+    <div class="cluster actions">
+      <a class="btn" href="/gallery/drawer" ko-target="drawer?">Open the drawer</a>
+      <a class="btn" href="/gallery/modal" ko-target="modal?">Open the modal</a>
+      <a class="btn" href="/gallery/notice" ko-target="notice?">Show a notice</a>
+    </div>
+    <span class="skeleton block" aria-hidden="true"></span>
+    <span class="skeleton block" aria-hidden="true"></span>
+  </div>
+</div>

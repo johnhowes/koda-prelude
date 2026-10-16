@@ -1,0 +1,13 @@
+<%/* Placeholder content for the modal: a heading (which names the dialog),
+   a few lines, and where its answers go. */%>
+<div class="stack gap-3">
+  <h2><span class="sr-only">Sample question</span><span class="skeleton" style="--w: 70%" aria-hidden="true"></span></h2>
+  <div class="stack gap-2" aria-hidden="true">
+    <span class="skeleton"></span>
+    <span class="skeleton" style="--w: 65%"></span>
+  </div>
+  <div class="cluster" aria-hidden="true">
+    <span class="skeleton control" style="--w: 45%"></span>
+    <span class="skeleton control" style="--w: 25%"></span>
+  </div>
+</div>

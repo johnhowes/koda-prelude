@@ -1,0 +1,11 @@
+<%/* What every layout's <head> holds: the design system, the shell's chrome,
+     the design's own rules, and Koda. */%>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.title ? `${it.title} · Prelude` : 'Prelude' %></title>
+<link rel="stylesheet" href="/_prelude/system/tokens.css">
+<link rel="stylesheet" href="/_prelude/system/components.css">
+<link rel="stylesheet" href="/_prelude/system/icons.css">
+<link rel="stylesheet" href="/_prelude/shell/layouts/shell.css">
+<link rel="stylesheet" href="/_prelude/design/styles.css">
+<script type="importmap">{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }</script>

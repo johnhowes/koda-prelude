@@ -1,0 +1,2 @@
+<%/* The window layout's gallery page: a placeholder filling the window. */%>
+<span class="skeleton fill" aria-hidden="true"></span>

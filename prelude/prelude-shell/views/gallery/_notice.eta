@@ -1,0 +1,6 @@
+<%/* Placeholder content for the notice region: a sentence or two. */%>
+<div class="stack gap-2" role="status">
+  <span class="sr-only">Sample notice</span>
+  <span class="skeleton" aria-hidden="true"></span>
+  <span class="skeleton" style="--w: 55%" aria-hidden="true"></span>
+</div>

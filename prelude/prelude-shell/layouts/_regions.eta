@@ -1,0 +1,42 @@
+<%/* The regions a page may ask for: notice?, drawer?, modal?. Each prints what
+     the server puts in it for a deep link to an overlay, marked with where it
+     came from. Each is hidden while empty (the modal is closed), and its Close
+     empties it, so the region can be filled again. No whitespace inside a
+     region: :empty hides it. */%>
+<% const notice = it.regions?.notice, drawer = it.regions?.drawer, modal = it.regions?.modal; %>
+<section class="shell-notice" aria-label="Notices">
+  <div id="notice" ko-region ko-focus="none" aria-live="polite"<% if (notice) { %> ko-location="<%= notice.location %>"<% } %>><%~ notice?.html ?? '' %></div>
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="notice" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+</section>
+<aside class="shell-drawer" aria-label="Drawer">
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="drawer" aria-label="Close the drawer"><span class="icon icon-close" aria-hidden="true"></span></button>
+  <div id="drawer" ko-region ko-focus="region" tabindex="-1"<% if (drawer) { %> ko-location="<%= drawer.location %>"<% } %>><%~ drawer?.html ?? '' %></div>
+</aside>
+<dialog id="modal-dialog" class="shell-modal" aria-label="Question">
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+  <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
+</dialog>
+<script type="module">
+  // The modal is a real dialog, open while its region holds something.
+  // Koda fills and empties the region; showModal() is the platform's, and no
+  // attribute calls it, so this follows the region. Escape closes the dialog,
+  // and then empties the region too, so it forgets what it showed. The
+  // dialog is named by the first heading of what's in it.
+  const dialog = document.getElementById('modal-dialog');
+  const region = document.getElementById('modal');
+  const close = dialog.querySelector('[commandfor="modal"]');
+  const follow = () => {
+    const filled = region.childElementCount > 0;
+    const heading = region.querySelector('h1, h2, h3');
+    if (heading) dialog.setAttribute('aria-label', heading.textContent.trim());
+    if (filled && !dialog.open) dialog.showModal();
+    if (!filled && dialog.open) dialog.close();
+  };
+  new MutationObserver(follow).observe(region, { childList: true });
+  dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); });
+  follow();
+</script>
+<script type="module">
+  import { start } from '@kodalang/core';
+  start(document);
+</script>

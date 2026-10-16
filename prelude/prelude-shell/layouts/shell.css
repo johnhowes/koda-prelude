@@ -1,0 +1,90 @@
+@layer tokens, base, components, host;
+
+/* The shell's chrome: the bar, the page's frame, and the regions pages may
+   ask for (notice, drawer, modal). All of it in the host layer, so a page's
+   own rules beat it; it styles only its own .shell-* classes, never a page's. */
+
+@layer host {
+  .shell { min-block-size: 100dvh; display: flex; flex-direction: column; }
+
+  .shell-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4);
+    padding: var(--space-2) var(--space-6);
+    border-bottom: var(--border-width) solid var(--border);
+    background: var(--surface);
+  }
+  .shell-brand { color: var(--fg); font-weight: var(--weight-heading); letter-spacing: -0.01em; text-decoration: none; }
+  .shell-brand:hover { color: var(--accent); }
+
+  /* What the agent is working on: one line, cut short with an ellipsis. */
+  .shell-agents { display: flex; min-inline-size: 0; max-inline-size: 100%; }
+  .shell-agents > .btn { min-inline-size: 0; max-inline-size: 100%; }
+  .shell-clip { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* The page's region. On app, the page scrolls with the window. */
+  .shell-main { flex: 1; container-type: inline-size; padding-block: var(--space-8); }
+
+  /* workspace and window: the page fills what's left of the window, and
+     scrolls inside its own panels. */
+  .shell.fill { block-size: 100dvh; }
+  .shell.fill > .shell-main {
+    min-block-size: 0; display: flex; flex-direction: column;
+    padding: var(--space-4) var(--space-5);
+  }
+  .shell.fill > .shell-main > * { flex: 1; min-block-size: 0; }
+  .shell.bare > .shell-main { padding: var(--space-2); }
+
+  /* What only the desktop app can do is shown only in it: its script marks
+     the root with data-desktop. */
+  [data-desktop-only] { display: none; }
+  [data-desktop] [data-desktop-only] { display: inline-flex; }
+
+  /* Notice: a sentence about what just happened, at the window's corner,
+     over the page. Gone when empty, or when the person closes it. */
+  .shell-notice {
+    position: fixed; inset: auto var(--space-5) var(--space-5) auto; z-index: 30;
+    inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5));
+    display: flex; align-items: flex-start; gap: var(--space-1);
+    padding: var(--space-1); border-radius: var(--radius-md);
+    background: var(--surface-raised); box-shadow: var(--shadow-lg);
+  }
+  .shell-notice > [ko-region] { flex: 1; min-inline-size: 0; }
+  .shell-notice:has(> [ko-region]:empty) { display: none; }
+
+  /* Drawer: a fragment beside the page, over its end edge. Its Close sits
+     beside the content's heading, as the modal's does, and its headings are
+     a dialog's size (the design system sizes dialog h2 the same way). */
+  .shell-drawer {
+    position: fixed; inset: 0 0 0 auto; z-index: 20;
+    inline-size: min(var(--measure-narrow), 100%);
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; align-content: start; column-gap: var(--space-3);
+    overflow: auto; padding: var(--space-5);
+    background: var(--surface-raised); box-shadow: var(--shadow-lg);
+    border-inline-start: var(--border-width) solid var(--border);
+  }
+  .shell-drawer > [ko-region] { grid-area: 1 / 1; }
+  .shell-drawer > .icon-btn {
+    grid-area: 1 / 2;
+    margin-block-start: calc((var(--text-lg) * var(--leading) - var(--control-sm)) / 2);
+    margin-inline-end: calc(-1 * var(--space-2));
+  }
+  .shell-drawer h2 { font-size: var(--text-lg); }
+  .shell-drawer:has(> [ko-region]:empty) { display: none; }
+
+  /* Modal: a dialog over the page (the design system draws the dialog and
+     its backdrop). Only laid out while open, or it would show closed. */
+  /* The Close sits beside the content's heading, on its line: centred on a
+     dialog heading's line (--text-lg at --leading), whatever follows below. */
+  .shell-modal { inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5)); }
+  .shell-modal[open] { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: var(--space-3); }
+  .shell-modal > [ko-region] { grid-area: 1 / 1; }
+  .shell-modal > .icon-btn {
+    grid-area: 1 / 2;
+    margin-block-start: calc((var(--text-lg) * var(--leading) - var(--control-sm)) / 2);
+    margin-inline-end: calc(-1 * var(--space-2));
+  }
+
+  /* The region itself takes focus when something opens in it; the ring
+     would only frame the whole panel. */
+  .shell-drawer > [ko-region]:focus-visible, .shell-modal > [ko-region]:focus-visible { box-shadow: none; }
+}

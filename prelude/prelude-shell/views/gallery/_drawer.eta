@@ -1,0 +1,9 @@
+<%/* Placeholder content for the drawer: a heading, then a few lines. */%>
+<div class="stack">
+  <h2><span class="sr-only">Sample drawer</span><span class="skeleton" style="--w: 60%" aria-hidden="true"></span></h2>
+  <div class="stack gap-2" aria-hidden="true">
+    <span class="skeleton"></span>
+    <span class="skeleton" style="--w: 80%"></span>
+  </div>
+  <span class="skeleton block" aria-hidden="true"></span>
+</div>
