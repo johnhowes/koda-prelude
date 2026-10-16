@@ -1587,7 +1587,98 @@ Decided 2026-10-15:
   5. **The real app** served the page and the drawer in both shapes, and gave a 404 for
      an unknown request.
 
-### Step 9 and later: candidates, each to be fitted into the model first
+### Step 9: Branches - a design and its build on one branch
+
+Steps 7 and 8 gave builds branches and left designs in the person's working copy. Testing on
+Apiary showed what that costs:
+- **A build might not have its design.** A build cut from `main` lacks a design that's
+  still on a branch.
+- **Merges went unnoticed.** Nothing noticed when a build's branch was merged, or wasn't,
+  so the app card offered "Start the app build" again after the app was built.
+- **Shared designs held up features.** A feature that needed a design-system change had
+  to wait for it to be merged separately, because a design's agent could only write its
+  own design.
+
+**One branch per design, for its design and its build.** Each design gets a branch,
+`prelude/<design>`, and one worktree (`~/.prelude/worktrees/`), made from the main branch
+the first time a session opens on it. A new design is made there.
+- **One worktree, both kinds of session.** Design sessions and build sessions both work
+  in that worktree, one turn at a time per design, as already enforced. A build has its
+  design because it's on the design's branch: views, states, rules and approved screens.
+- **One group at a time.** A group is the Build page's unit: a page with its overlays,
+  fragments and forms, one story and one build session. A design's groups are built one
+  after another on its branch.
+- **Every turn is committed** to the branch, design turns as well as build turns.
+- **Prelude never writes to the person's own checkout.** It changes only when a branch is
+  merged into it locally.
+- **The design system and the shell** each have a branch of their own for work that's
+  about them. The app build runs on the shell's branch.
+
+**Shared changes travel with the feature.** On a feature's branch, its agent may change the
+design system and the shell when the feature needs it (a token, a component variant, a slot
+in the layout). It may not change other feature designs, or anyone's sessions and approved
+screens.
+- **Changed as their owners would:** kept general, shown in their galleries and
+  guidelines, and noted in their `NOTES.md` with the feature that needed it.
+- **Visible:** the branch's card lists what it changes outside its own design ("also
+  changes the design system: `tokens.css`, `components/badge.html`").
+- **Checked:** the check renders the system's and the shell's galleries on the branch,
+  as well as the feature.
+- **Merged with the feature:** one pull request shows the feature and the shared change it
+  needed.
+
+**What the folder page shows:**
+- every design, whether it's only on `main` or has a branch;
+- for a design with a branch: what it's doing (designing, or building a group), its
+  check (passing, failing, waiting for the host's approval), whether it's behind `main`,
+  and its Finish step.
+
+**Finishing: the branch merges once, design and code together.**
+- **No remote:** "Merge into main", done without disturbing the person's checkout.
+- **A remote:** "Push and open a pull request", with `gh` for GitHub or `az` for Azure
+  DevOps, whichever matches the remote. If neither is installed, Prelude gives the link.
+  Prelude asks before each push, since it publishes.
+- **Tidying up:** when Prelude sees the branch in `main` (merged by the button or by a PR
+  on the server), it removes the worktree and the branch, and says so on the design's
+  page.
+- **Merging only the design early** (a design-review PR) is the same step. The design
+  then gets a fresh branch for its build.
+
+**Keeping up with `main`.** A branch that's behind `main` says so, with "Update from main",
+which merges `main` into it. The next turn tells the agent what came in. A conflict undoes
+the update and says what clashed, and the agent can redo its change on top of the new
+`main`. Features need the app on `main`, so their branches update from `main` once it's
+there.
+
+**Existing folders.** A design without a branch gets one the next time a session opens on
+it. Apiary's `build/apiary-shell-app` becomes the shell's branch, since it already holds
+the shell and the app build.
+
+**Sub-steps:**
+1. **9.1:** A branch and worktree per design. Sessions and new designs work there, every
+   turn is committed, and the folder page lists designs with their branches.
+2. **9.2:** Builds on the design's branch, one group at a time. The app build is on the
+   shell's branch.
+3. **9.3:** Shared changes: the permissions, the agent's instructions, the card's "also
+   changes", and the check rendering the system and shell galleries.
+4. **9.4:** Finishing: the local merge, push with a PR (`gh`, `az`), noticing merges,
+   tidying up, and "Update from main".
+5. **9.5:** Existing folders adopted: designs on `main`, and Apiary's app build branch.
+6. **9.6:** Proven on a new folder end to end (design, app, feature, merged), and on a copy
+   of Apiary.
+
+Decided 2026-10-16:
+- Prelude commits every turn, design and build.
+- Designs and builds are treated the same: one branch per design carries both, merged
+  together.
+- A design's groups are built one at a time.
+- Both GitHub and Azure DevOps.
+- After a merge, the worktree and branch are removed automatically, with a note saying so.
+- A feature may change the design system and the shell on its branch; the change merges
+  with it.
+- Apiary's existing app build branch becomes the shell's branch.
+
+### Step 10 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
   read-only viewer routes, which step 2 already shapes.
