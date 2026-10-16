@@ -37,10 +37,16 @@ first run (no projects), all caught up, long names.
 - **First run is a full-height empty page** (`.empty.page`, added to the design
   system): icon, heading, the one large primary button, and the three steps
   that follow (open, design, build), to fill the page and say what Prelude is.
+- **Finished turns expire from Needs you** after a week unopened (the person
+  agreed to expiry, 2026-10-16; the week is a first guess). Questions, stopped
+  builds, pages to build and pull requests don't expire: they're still true.
 - **Times are prepared strings** ("4 minutes ago") in the data, as the app
   prepares data before rendering.
 
 ## Open questions
 
-- Should finished turns expire from Needs you after a while, if never opened?
-- Polling or the app's live channel for the refresh, once built?
+- Refresh by events instead of polling? Proposed: one channel per page in the
+  shell's layout (the app already streams with SSE, `server/live.js`), sending
+  small events (`needs-changed`, `projects-changed`) that regions reload on,
+  plus a slow poll for what Prelude can't see happen (a pull request merged
+  on the Git server). Waiting on the person.

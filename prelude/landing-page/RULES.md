@@ -3,7 +3,7 @@
 - **R-n4v.** Needs you gathers what's waiting on the person from every recent project, newest first.
   *shown-on: /*
   *proposed*
-- **R-8hc.** A finished turn leaves Needs you once the person has opened its session.
+- **R-8hc.** A finished turn leaves Needs you once the person has opened its session, or after a week if they never do.
   *proposed*
 - **R-w2k.** A pull request stays in Needs you until it's merged.
   *proposed*
