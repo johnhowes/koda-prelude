@@ -263,7 +263,7 @@ async function handle(req, res, app) {
 
     // Finish a design's branch: merge it into main here, publish it for a pull
     // request (after the person confirms), or bring main into it.
-    const finishMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(merge|publish|update)$/);
+    const finishMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(merge|publish|update|abandon)$/);
     if (finishMatch && req.method === 'POST' && !folder.branch) {
       const form = await readForm(req);
       const entry = app.folders.get(finishMatch[1])?.branch;
@@ -289,8 +289,14 @@ async function handle(req, res, app) {
       if (action === 'update') {
         const updated = app.branches.update(entry);
         noteOnBranch(entry, updated.error
-          ? `${updated.error}${updated.conflicts?.length ? ` Clashing: ${updated.conflicts.join(', ')}.` : ''} Ask the agent to make its change again on top of the new ${mainOf(folder)}.`
+          ? updated.error
+          : updated.clashes
+          ? `${updated.from} is half brought into this branch: ${updated.clashes.length === 1 ? '1 file clashes' : `${updated.clashes.length} files clash`} (${updated.clashes.join(', ')}), left with git's conflict markers. The agent resolves them with your next message; nothing is committed until it has. Or abandon the update.`
           : updated.files.length ? `Brought ${updated.from} into this branch: ${updated.files.length} ${updated.files.length === 1 ? 'file' : 'files'} came in. The agent is told with your next message.` : `${updated.from} had nothing new for this branch.`, Boolean(updated.error));
+        return redirect(res, backTo);
+      }
+      if (action === 'abandon') {
+        noteOnBranch(entry, app.branches.abandon(entry) ? `Abandoned the update from ${mainOf(folder)}: the branch is as it was before it.` : 'git couldn’t abandon the update.');
         return redirect(res, backTo);
       }
       // Publish: push and open a pull request, once the person has said yes.
@@ -491,6 +497,7 @@ function branchState(app, entry, design = null) {
     url: `/f/${entry.id}/d/${entry.design}`,
     remote: Boolean(remoteOf(entry.path)),
     running: appRunning(app, entry),
+    merging: (() => { try { return app.branches.merging(entry); } catch { return null; } })(),
   };
 }
 
@@ -855,8 +862,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
           return result;
         }
         : null,
-      // What an update from main brought in, told once.
+      // What an update from main brought in, told once; or, while one clashed
+      // and isn't resolved yet, the files to resolve, told with every message.
       preface: entry ? (() => {
+        const merging = (() => { try { return app.branches.merging(entry); } catch { return null; } })();
+        if (merging?.unresolved.length) {
+          return `(From Prelude, not the person: ${merging.from} is half brought into this branch, and these files clash: ${merging.unresolved.join(', ')}. Each holds both versions between git's conflict markers (<<<<<<< this branch, ======= then ${merging.from}, >>>>>>>). Resolve every one before anything else: keep what ${merging.from} has, put this branch's change on top of it, drop anything ${merging.from} already does, and remove every marker. Prelude commits the merge after your turn once no marker is left.)`;
+        }
         const files = app.branches.takeCameIn(entry);
         return files ? `(From Prelude, not the person: the main branch was brought into this branch, and these files came in: ${files.slice(0, 30).join(', ')}${files.length > 30 ? ', …' : ''}. Take them into account.)` : null;
       })() : null,
@@ -895,7 +907,14 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (design.kind === 'shell') for (const name of Object.keys(shellLayoutLinks(dir))) rmSync(join(dir, 'layouts', `${name}${readHostConfig(folder.path)?.views ?? '.eta'}`), { force: true });
     const routesFile = join(dir, 'routes.json');
     const portedNow = build && existsSync(routesFile) ? ported(readFileSync(routesFile, 'utf8')) : 0;
+    const wasMerging = app.branches.merging(entry);
     const commit = app.branches.commit(entry, `${build ? build.title : design.title}: ${message.split('\n')[0].slice(0, 60)}`);
+    // An update that clashed: committed once the agent has resolved every file, else said what's left.
+    const stillMerging = wasMerging && app.branches.merging(entry);
+    if (stillMerging?.unresolved.length) {
+      return { type: 'note', failed: true, text: `${stillMerging.from} is still half brought in: ${stillMerging.unresolved.join(', ')} still ${stillMerging.unresolved.length === 1 ? 'has' : 'have'} conflict markers, so nothing was committed. Ask the agent to resolve ${stillMerging.unresolved.length === 1 ? 'it' : 'them'}, or abandon the update.` };
+    }
+    const finishedMerge = wasMerging && commit ? ` That finishes bringing ${wasMerging.from} in: every clash is resolved.` : '';
     let done = false;
     if (build) {
       done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
@@ -905,7 +924,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         app.branches.markBuilt(entry, build.group);
       }
     }
-    const committed = commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).` };
+    const committed = commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).${finishedMerge}` };
     if (!build) return committed;
     // What's next, from the turn's check: shown to the person, never told to the agent.
     let into = 'main';

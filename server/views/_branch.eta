@@ -35,6 +35,17 @@
   <p class="muted">Also changes, outside the design: <% for (const [i, path] of w.alsoChanges.slice(0, 6).entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %><%= w.alsoChanges.length > 6 ? `, and ${w.alsoChanges.length - 6} more` : '' %></p>
   <% } %>
   <% if (it.error) { %><p class="err" role="alert"><%= it.error %></p><% } %>
+  <%/* An update from main that clashed, left for the agent to resolve: it
+       holds the branch until resolved or abandoned. */%>
+  <% if (w.merging?.unresolved.length) { %>
+  <p class="err"><%= w.merging.from %> is half brought in. <%= w.merging.unresolved.length === 1 ? 'This file clashes' : 'These files clash' %>: <% for (const [i, path] of w.merging.unresolved.entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %>. Send the agent a message and it resolves <%= w.merging.unresolved.length === 1 ? 'it' : 'them' %> first; nothing is committed until it has.</p>
+  <div class="rowbtns">
+    <form action="<%= it.finish %>/abandon" method="post">
+      <input type="hidden" name="back" value="<%= it.back %>">
+      <button class="btn small ghost" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
+    </form>
+  </div>
+  <% } else { %>
   <div class="rowbtns">
     <% if (w.behind) { %>
     <form action="<%= it.finish %>/update" method="post">
@@ -50,4 +61,5 @@
     </form>
     <% } %>
   </div>
+  <% } %>
 </div>

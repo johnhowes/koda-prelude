@@ -275,6 +275,45 @@ test('a merge git refuses changes nothing, and says why beside the branch’s bu
   rmSync(join(repo, 'app'), { recursive: true });
 });
 
+test('an update from main that clashes is left for the agent to resolve, then committed; or abandoned', async () => {
+  // Main changes a file the branch also made.
+  write(repo, 'app/views/reports.eta', '<h1>Reports, from main</h1>');
+  git(repo, 'add', '-A');
+  git(repo, 'commit', '-q', '-m', 'Reports on main');
+  const branchTip = git(worktree, 'rev-parse', 'HEAD');
+  const clashed = () => post(`/f/${fid}/branches/${wid}/update`, { back: `/f/${fid}` });
+
+  // Abandoned: the branch is as it was.
+  assert.equal((await clashed()).status, 303);
+  assert.match(readFileSync(join(worktree, 'app', 'views', 'reports.eta'), 'utf8'), /^<<<<<<< /m, 'left with git’s markers');
+  const folder = await (await get(`/f/${fid}`)).text();
+  assert.match(folder, /main is half brought in\. This file clashes: <code>app\/views\/reports\.eta<\/code>\./);
+  assert.match(folder, new RegExp(`action="/f/${fid}/branches/${wid}/abandon"`));
+  assert.doesNotMatch(folder, new RegExp(`action="/f/${fid}/branches/${wid}/merge"`), 'no merging into main meanwhile');
+  const refused = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
+  assert.equal(refused.status, 409);
+  assert.equal((await post(`/f/${fid}/branches/${wid}/abandon`, { back: `/f/${fid}` })).status, 303);
+  assert.equal(git(worktree, 'rev-parse', 'HEAD'), branchTip);
+  assert.equal(readFileSync(join(worktree, 'app', 'views', 'reports.eta'), 'utf8'), '<h1>Reports</h1>');
+
+  // Resolved by the agent: told with the next message, committed once no marker is left.
+  await clashed();
+  const session = listSessions(workDir)[0];
+  const turnsBefore = readEntries(workDir, session.id).filter(e => e.type === 'turn').length;
+  runner.turns.length = 0;
+  await post(`/f/${wid}/d/borrowers/sessions/${session.id}/messages`, { message: 'Carry on' });
+  await until(() => readEntries(workDir, session.id).filter(e => e.type === 'turn').length > turnsBefore && readEntries(workDir, session.id).some(e => e.type === 'note' && /still half brought in/.test(e.text)));
+  assert.match(runner.turns.at(-1).prompt, /^\(From Prelude, not the person: main is half brought into this branch, and these files clash: app\/views\/reports\.eta\./);
+  assert.ok(git(worktree, 'rev-parse', '-q', '--verify', 'MERGE_HEAD'), 'the fake agent changed nothing, so nothing was committed');
+
+  write(worktree, 'app/views/reports.eta', '<h1>Reports, from main</h1>\n<p>And this branch’s change.</p>');
+  await post(`/f/${wid}/d/borrowers/sessions/${session.id}/messages`, { message: 'Resolved' });
+  await until(() => readEntries(workDir, session.id).some(e => e.type === 'note' && /That finishes bringing main in: every clash is resolved\./.test(e.text)));
+  assert.equal(git(worktree, 'rev-list', '--parents', '-n', '1', 'HEAD').split(' ').length, 3, 'the merge is committed');
+  assert.match(git(worktree, 'log', '-1', '--format=%s'), /^Update from main \(merged by Prelude; the clashes resolved by the agent\)$/);
+  assert.match((await (await get(`/f/${fid}`)).text()), new RegExp(`action="/f/${fid}/branches/${wid}/merge"`), 'the branch can be finished again');
+});
+
 test('with a remote, finishing pushes the branch after asking, and a merge on the server is tidied up here', async () => {
   const remote = canonical(mkdtempSync(join(tmpdir(), 'prelude-remote-')));
   git(remote, 'init', '-q', '--bare', '-b', 'main');

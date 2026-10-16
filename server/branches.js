@@ -220,6 +220,7 @@ export function createBranches({ home }) {
   // The repository a branch belongs to: recorded when it was made, or (for an
   // older record) found from the worktree.
   const parentPath = entry => entry.repo ?? canonical(join(git(entry.path, 'rev-parse', '--git-common-dir'), '..'));
+  const halfway = into => `${into} is half brought into this branch: send the agent a message to resolve the files that clash, or abandon the update, first.`;
 
   return {
     /** A design's worktree as a folder ({ id, path, name, branch }), or null. */
@@ -288,9 +289,22 @@ export function createBranches({ home }) {
       return update(entry.id, { built: { ...(current.built ?? {}), [groupKey]: sha } });
     },
 
-    /** Commit everything in the worktree to its branch, if anything changed. Returns the commit's short id, or null. */
+    /**
+     * Commit everything in the worktree to its branch, if anything changed.
+     * Returns the commit's short id, or null. While main is half brought in
+     * (an update that clashed), nothing is committed until no clashing file
+     * has a conflict marker left; then the commit finishes that merge.
+     */
     commit(entry, message) {
+      const merging = this.merging(entry);
+      if (merging?.unresolved.length) return null;
+      if (merging) message = `Update from ${merging.from} (merged by Prelude; the clashes resolved by the agent)`;
       git(entry.path, 'add', '-A');
+      if (merging) {
+        git(entry.path, 'commit', '-q', '-m', message);
+        update(entry.id, { clashes: null });
+        return git(entry.path, 'rev-parse', '--short', 'HEAD');
+      }
       if (!git(entry.path, 'status', '--porcelain')) return null;
       git(entry.path, 'commit', '-q', '-m', message);
       return git(entry.path, 'rev-parse', '--short', 'HEAD');
@@ -328,6 +342,7 @@ export function createBranches({ home }) {
     merge(entry, message) {
       const parent = parentPath(entry);
       const into = mainBranch(parent);
+      if (this.merging(entry)?.unresolved.length) return { error: halfway(into) };
       try {
         this.commit(entry, 'The last chat notes (committed by Prelude, merging)');
         const checkedOut = git(parent, 'rev-parse', '--abbrev-ref', 'HEAD') === into;
@@ -354,13 +369,40 @@ export function createBranches({ home }) {
     },
 
     /**
+     * Main half brought in: an update that clashed, left in the worktree for
+     * the agent to resolve. { from, clashes: [paths], unresolved: [paths still
+     * holding a conflict marker] }, or null when no update is under way.
+     */
+    merging(entry) {
+      if (!existsSync(entry.path) || !gitOk(entry.path, 'rev-parse', '-q', '--verify', 'MERGE_HEAD')) return null;
+      const recorded = read()[entry.id] ?? {};
+      const clashes = recorded.clashes ?? [];
+      const marked = /^(<{7}|>{7})(\s|$)/m;
+      const unresolved = clashes.filter(path => {
+        const file = join(entry.path, ...path.split('/'));
+        try { return existsSync(file) && marked.test(readFileSync(file, 'utf8')); } catch { return true; }
+      });
+      return { from: recorded.clashesFrom ?? mainBranch(parentPath(entry)), clashes, unresolved };
+    },
+
+    /** Give up a clashing update: the branch is as it was before it. */
+    abandon(entry) {
+      gitOk(entry.path, 'merge', '--abort');
+      update(entry.id, { clashes: null, clashesFrom: null });
+      return !this.merging(entry);
+    },
+
+    /**
      * Bring the main branch into a design's branch, so it builds on what's
-     * there now. A conflict is undone, and named. { files } (what came in) or
-     * { error, conflicts }.
+     * there now. Files that clash are left with git's conflict markers, for
+     * the agent to resolve with the person's next message (merging()); any
+     * other failure is undone. { files } (what came in), { clashes, from },
+     * or { error }.
      */
     update(entry) {
       const parent = parentPath(entry);
       const into = mainBranch(parent);
+      if (this.merging(entry)?.unresolved.length) return { error: halfway(into) };
       const remote = remoteOf(parent);
       if (remote) gitOk(parent, 'fetch', '--quiet', 'origin', into);
       const source = remote && gitOk(parent, 'rev-parse', '--verify', '--quiet', `refs/remotes/origin/${into}`) ? `origin/${into}` : into;
@@ -369,9 +411,13 @@ export function createBranches({ home }) {
       try {
         git(entry.path, 'merge', '--no-edit', '-m', `Update from ${into} (merged by Prelude)`, source);
       } catch (error) {
-        const conflicts = (() => { try { return git(entry.path, 'diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean); } catch { return []; } })();
+        const clashes = (() => { try { return git(entry.path, 'diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean); } catch { return []; } })();
+        if (clashes.length && gitOk(entry.path, 'rev-parse', '-q', '--verify', 'MERGE_HEAD')) {
+          update(entry.id, { clashes, clashesFrom: into });
+          return { clashes, from: into };
+        }
         gitOk(entry.path, 'merge', '--abort');
-        return { error: gitError(`git couldn’t bring ${into} into ${entry.branch}, so nothing changed`, error), conflicts };
+        return { error: gitError(`git couldn’t bring ${into} into ${entry.branch}, so nothing changed`, error) };
       }
       const files = git(entry.path, 'diff', '--name-only', before, 'HEAD').split('\n').filter(Boolean);
       if (files.length) update(entry.id, { cameIn: files });
@@ -393,6 +439,7 @@ export function createBranches({ home }) {
     publish(entry, { title, body }) {
       const parent = parentPath(entry);
       const into = mainBranch(parent);
+      if (this.merging(entry)?.unresolved.length) return { error: halfway(into) };
       const remote = remoteOf(parent);
       if (!remote) return { error: 'This repository has no remote to push to.' };
       try {

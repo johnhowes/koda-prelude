@@ -1714,9 +1714,18 @@ Decided 2026-10-16:
   - **`publish`:** asks first, then pushes, and opens the pull request with `gh` or `az`
     (title kept shell-safe, description from a file). Failing that, it gives the
     compare link.
-  - **`update`:** fetches if there's a remote, then merges main into the branch; a
-    conflict is undone and named. The files that came in are told to the agent with
-    the next message.
+  - **`update`:** fetches if there's a remote, then merges main into the branch. The
+    files that came in are told to the agent with the next message.
+  - **A clashing update** (changed 2026-10-16; it used to be undone, which left the
+    agent nothing to resolve, since it may read only its worktree). The merge is left
+    in the worktree with git's conflict markers, and the branch says which files
+    clash.
+    - Every message to the agent starts by naming them: keep main's version, put the
+      branch's change on top, remove every marker.
+    - After each turn, Prelude commits nothing while a clashing file still has a
+      marker, and says which. Once none has, the turn's commit finishes the merge.
+    - Merge, push and another update wait until then. **`abandon`** calls the update
+      off, putting the branch back as it was.
 - **Tidying up** runs when the folder page loads (at most every 30 seconds; it fetches
   from the remote).
   - It stops any design host running from a merged worktree (on Windows a running host
@@ -2022,3 +2031,6 @@ comments, the custom dialect, MCP tools, epics, tracker integration.
 - 2026-10-16: The shell may own pages that belong to no feature (Settings, say). They
   are built like a feature's, from the shell's Build page. Its gallery, the pages whose
   views are under `views/gallery/`, is never built.
+- 2026-10-16: An update from main that clashes is left for the agent to resolve, with
+  git's markers in the worktree, and committed once none is left; the person can
+  abandon it instead.
