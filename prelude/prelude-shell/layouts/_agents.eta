@@ -1,0 +1,15 @@
+<%/* What the agent is working on, across every folder: a turn running on a
+     design. One is a link to it; several are a menu. Nothing when it's idle.
+     No whitespace around it: the region it fills is :empty when idle. */%>
+<% const running = it.agents ?? []; %>
+<% if (running.length === 1) { const turn = running[0]; %><a class="btn small ghost" href="<%= turn.url %>" title="<%= turn.folder %>"><span class="pulse" aria-hidden="true"></span><span class="shell-clip">The agent is working on <%= turn.design %></span></a><% } else if (running.length > 1) { %><details class="menu" ko-as="running">
+  <summary class="btn small ghost"><span class="pulse" aria-hidden="true"></span>The agent is working on <%= running.length %> designs</summary>
+  <ul class="menu-list">
+    <% for (const turn of running) { %>
+    <li><a href="<%= turn.url %>" ko-set="running.open = false">
+      <span class="item-title"><%= turn.design %></span>
+      <span class="muted"><%= turn.folder %></span>
+    </a></li>
+    <% } %>
+  </ul>
+</details><% } %>

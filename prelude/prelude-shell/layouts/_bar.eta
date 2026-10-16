@@ -1,19 +1,23 @@
-<%/* The bar across the top: the way home, and a quick way to another folder.
-     Where the page sits (crumbs) is the page's own, under its region. */%>
-<header class="shell-bar">
+<%/* The bar across the top: the way home, what the agent is working on, and a
+     quick way to another folder. Where the page sits (crumbs) is the page's
+     own, under its region. Following a link in a menu closes the menu, since
+     the bar stays put while the page changes. */%>
+<header class="shell-bar" ko-item>
   <a class="shell-brand" href="/">Prelude</a>
   <span class="spacer"></span>
+  <%/* A region, so the app can push it afresh as turns start and end. */%>
+  <div id="agents" class="shell-agents" ko-region ko-focus="none" role="status"><%~ include('./_agents', it) %></div>
   <% if (it.folders?.length) { %>
-  <details class="menu">
+  <details class="menu" ko-as="folders">
     <summary class="btn small ghost"><span class="icon icon-folder" aria-hidden="true"></span>Folders</summary>
     <ul class="menu-list">
       <% for (const folder of it.folders) { %>
-      <li><a href="/f/<%= folder.id %>">
+      <li><a href="/f/<%= folder.id %>" ko-set="folders.open = false">
         <span class="item-title"><%= folder.name %></span>
         <span class="muted"><%= folder.path %></span>
       </a></li>
       <% } %>
-      <li><a href="/"><span class="item-title">Open a folder…</span></a></li>
+      <li><a href="/" ko-set="folders.open = false"><span class="item-title">Open a folder…</span></a></li>
     </ul>
   </details>
   <% } %>

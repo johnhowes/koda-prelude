@@ -1,5 +1,5 @@
 {
-  "layout": { "folders": [] },
+  "layout": { "folders": [], "agents": [] },
   "folder": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
   "designs": [],
   "session": {

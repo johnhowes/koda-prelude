@@ -8,13 +8,18 @@
   .shell { min-block-size: 100dvh; display: flex; flex-direction: column; }
 
   .shell-bar {
-    display: flex; align-items: center; gap: var(--space-4);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4);
     padding: var(--space-2) var(--space-6);
     border-bottom: var(--border-width) solid var(--border);
     background: var(--surface);
   }
   .shell-brand { color: var(--fg); font-weight: var(--weight-heading); letter-spacing: -0.01em; text-decoration: none; }
   .shell-brand:hover { color: var(--accent); }
+
+  /* What the agent is working on: one line, cut short with an ellipsis. */
+  .shell-agents { display: flex; min-inline-size: 0; max-inline-size: 100%; }
+  .shell-agents > .btn { min-inline-size: 0; max-inline-size: 100%; }
+  .shell-clip { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
 
   /* The page's region. On app, the page scrolls with the window. */
   .shell-main { flex: 1; container-type: inline-size; padding-block: var(--space-8); }
@@ -58,22 +63,13 @@
   .shell-drawer > .icon-btn { align-self: flex-end; margin-inline-end: calc(-1 * var(--space-2)); }
   .shell-drawer:has(> [ko-region]:empty) { display: none; }
 
-  /* Modal: a fragment over a dimmed page, in the middle of the window. */
-  .shell-modal {
-    position: fixed; inset: 0; z-index: 40;
-    display: grid; place-items: center; padding: var(--space-5);
-    background: var(--backdrop); backdrop-filter: blur(2px);
-  }
-  .shell-modal-box {
-    inline-size: min(var(--measure-narrow), 100%); max-block-size: 100%; overflow: auto;
-    display: flex; flex-direction: column; gap: var(--space-1);
-    padding: var(--space-3) var(--space-5) var(--space-5); border-radius: var(--radius-lg);
-    background: var(--surface-raised); border: var(--border-width) solid var(--border); box-shadow: var(--shadow-lg);
-  }
-  .shell-modal-box > .icon-btn { align-self: flex-end; margin-inline-end: calc(-1 * var(--space-2)); }
-  .shell-modal:has([ko-region]:empty) { display: none; }
+  /* Modal: a dialog over the page (the design system draws the dialog and
+     its backdrop). Only laid out while open, or it would show closed. */
+  .shell-modal { inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5)); padding-block-start: var(--space-3); }
+  .shell-modal[open] { display: flex; flex-direction: column; gap: var(--space-1); }
+  .shell-modal > .icon-btn { align-self: flex-end; margin-inline-end: calc(-1 * var(--space-2)); }
 
   /* The region itself takes focus when something opens in it; the ring
      would only frame the whole panel. */
-  .shell-drawer > [ko-region]:focus-visible, .shell-modal-box > [ko-region]:focus-visible { box-shadow: none; }
+  .shell-drawer > [ko-region]:focus-visible, .shell-modal > [ko-region]:focus-visible { box-shadow: none; }
 }
