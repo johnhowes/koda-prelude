@@ -17,6 +17,7 @@ import { createHosts } from '../server/hosts.js';
 import { createServer } from '../server/main.js';
 import { listSessions, readEntries, readSession } from '../server/sessions.js';
 import { parseRules, ruleWarnings } from '../server/rules.js';
+import { render } from '../server/views.js';
 import { createFakeRunner } from './fake-runner.js';
 
 // Commits made in the test need an author, whatever this machine's git config says.
@@ -183,6 +184,12 @@ test('a build works on the design’s own branch: a build session, its own instr
 
   await settled(workDir, sid);
   assert.match(git(worktree, 'log', '-1', '--format=%s'), /^Borrowers: Build Borrowers\.$/);
+  // What's next (10.7): the group isn't built yet, so carry on. No design host, so no app line.
+  await until(() => readEntries(workDir, sid).some(e => e.type === 'next'));
+  const next = readEntries(workDir, sid).find(e => e.type === 'next');
+  assert.equal(next.built, false);
+  assert.equal(next.app, null);
+  assert.equal(next.firstPorted, false);
   assert.match(git(worktree, 'show', '--stat', '--format=', 'HEAD'), /prelude\/borrowers\/sessions\//);
 
   // Groups are built one at a time.
@@ -237,6 +244,16 @@ test('a build ports the views; the design’s copies go, and the build is done',
   assert.match(git(worktree, 'show', '--stat', '--no-renames', '--format=', 'HEAD'), /app\/views\/borrowers\/list\.eta/);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
   assert.doesNotMatch(view, /Building <strong>/, 'the group is built, so the branch is free for the next');
+  // What's next (10.7): built and checked, so finish the branch; the design window shows the app's views now.
+  const next = readEntries(workDir, buildSession.id).filter(e => e.type === 'next').at(-1);
+  assert.equal(next.built, true);
+  assert.equal(next.checked, true);
+  assert.equal(next.firstPorted, true);
+  assert.deepEqual(next.finish, { url: `/f/${fid}`, label: 'Merge into main' });
+  const session = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
+  assert.match(session, /The design window now shows the app’s own views/);
+  assert.match(session, /<strong>Next:<\/strong>\s*When you’re happy with it,\s*finish the branch on <a href="\/f\/[0-9a-f]+">the folder page<\/a>: Merge into main\./);
+  assert.match(session, /the app’s own views, with the design’s states/, 'the design bar says so too');
 });
 
 test('a merge git refuses changes nothing, and says why beside the branch’s buttons', async () => {
@@ -309,4 +326,30 @@ test('a design’s worktree has the folder’s host approval', () => {
   hosts.approve({ id: 'parent' }, config);
   assert.equal(hosts.approved({ id: 'worktree', branch: { parentId: 'parent' } }, config), true);
   assert.equal(hosts.approved({ id: 'other' }, config), false);
+});
+
+test('the app on a branch (10.7): running with Open, stopped with Start it, or waiting for approval', () => {
+  const work = running => ({ branch: 'prelude/x', check: 'passing', behind: 0, worked: true, alsoChanges: [], into: 'main', remote: false, running });
+  const app = { url: 'http://localhost:5300', open: '/f/w/host/open', start: '/f/w/host/start', approved: true };
+  const on = render('./_branch', { work: work({ ...app, running: true }), finish: '/f/p/branches/w', back: '/f/p' });
+  assert.match(on, /The app on this branch, with its own data, is running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open/);
+  const off = render('./_branch', { work: work({ ...app, running: false }), finish: '/f/p/branches/w', back: '/f/p' });
+  assert.match(off, /The app on this branch isn’t running\./);
+  assert.match(off, /<form class="app-line" action="\/f\/w\/host\/start" method="post">\s*<input type="hidden" name="back" value="\/f\/p">/);
+  assert.match(off, />Start it<\/button>/);
+  const waiting = render('./_branch', { work: work({ ...app, running: false, approved: false }), finish: '/f/p/branches/w', back: '/f/p' });
+  assert.match(waiting, /needs your approval first, in the design bar/);
+  assert.doesNotMatch(waiting, /Start it/);
+  const none = render('./_branch', { work: work(null), finish: '/f/p/branches/w', back: '/f/p' });
+  assert.doesNotMatch(none, /The app on this branch/, 'no app built, or no design host: nothing to say');
+});
+
+test('after a build turn (10.7): what’s next, from the turn’s check', () => {
+  const next = extra => render('./_entry', { entry: { type: 'next', group: 'Home', built: true, checked: true, failures: 0, differ: 0, app: null, firstPorted: false, finish: { url: '/f/p', label: 'Push and open a pull request' }, ...extra } });
+  assert.match(next({ built: false }), /Home isn’t built yet\. Send the next message to carry on\./);
+  assert.match(next({ failures: 2 }), /2 pages don’t render yet\. The agent is told with your next message\./);
+  assert.match(next({ differ: 1 }), /1 page differs from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar\. Then\s*finish the branch on <a href="\/f\/p">the folder page<\/a>: Push and open a pull request\./);
+  assert.match(next({ checked: false }), /Prelude didn’t check the pages this turn/);
+  assert.match(next({ app: { url: 'http://localhost:5300', running: true, open: '/f/w/host/open' } }), /running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open/);
+  assert.doesNotMatch(next({ app: { url: 'http://localhost:5300', running: false, open: '/f/w/host/open' } }), /running at/);
 });

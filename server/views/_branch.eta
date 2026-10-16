@@ -16,6 +16,21 @@
     <% if (w.behind) { %>· <%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %><% } %>
     <% if (!w.worked) { %>· nothing done on it yet<% } %>
   </p>
+  <%/* The app on this branch (10.7): its design host is the app itself, with
+       its own data. One url serves one branch at a time, so another branch
+       may have it; Start it takes it back. Open goes through Prelude's own
+       origin, so the desktop app opens it in the system browser. */%>
+  <% if (w.running?.running) { %>
+  <p class="muted">The app on this branch, with its own data, is running at <code><%= w.running.url %></code> · <a href="<%= w.running.open %>" target="_blank">Open<span class="icon icon-external" aria-hidden="true"></span></a></p>
+  <% } else if (w.running && w.running.approved) { %>
+  <form class="app-line" action="<%= w.running.start %>" method="post">
+    <input type="hidden" name="back" value="<%= it.back %>">
+    <span class="muted">The app on this branch isn’t running.</span>
+    <button class="btn small ghost" type="submit" title="Start the app from this branch at <%= w.running.url %>. If another branch’s app is running there, it stops.">Start it</button>
+  </form>
+  <% } else if (w.running) { %>
+  <p class="muted">The app on this branch isn’t running: its design host needs your approval first, in the design bar.</p>
+  <% } %>
   <% if (w.alsoChanges.length) { %>
   <p class="muted">Also changes, outside the design: <% for (const [i, path] of w.alsoChanges.slice(0, 6).entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %><%= w.alsoChanges.length > 6 ? `, and ${w.alsoChanges.length - 6} more` : '' %></p>
   <% } %>

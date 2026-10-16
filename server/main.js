@@ -18,7 +18,7 @@ import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, list
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, incrementStory, storyMarkdown } from './backlog.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf } from './branches.js';
+import { baselineOf, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack } from './app-config.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
@@ -345,6 +345,26 @@ async function handle(req, res, app) {
       return redirect(res, back.startsWith(`/f/${folder.id}`) ? back : `/f/${folder.id}`);
     }
 
+    // The app on this branch (10.7): start its host here, stopping whichever
+    // branch had its url, and come back once it answers. A host that fails
+    // to start says why in the design bar's log.
+    if (rest === '/host/start' && req.method === 'POST') {
+      const config = readHostConfig(folder.path);
+      const form = await readForm(req);
+      if (config && app.hosts.approved(folder, config)) {
+        try { await app.hosts.start(folder, config); } catch { /* its log says why */ }
+      }
+      const back = String(form.get('back') ?? '');
+      return redirect(res, /^\/f\/[^/]/.test(back) ? back : `/f/${folder.id}`);
+    }
+
+    // Open the app: a link on Prelude's own origin, so the desktop app opens
+    // it in the system browser, which follows this to the host's url.
+    if (rest === '/host/open' && req.method === 'GET') {
+      const config = readHostConfig(folder.path);
+      return redirect(res, config ? `${config.url}/` : `/f/${folder.id}`);
+    }
+
     // Reference folders: what else the agent may read while working here.
     if (rest === '/references' && req.method === 'POST') {
       const value = cleanPath((await readForm(req)).get('path'));
@@ -470,6 +490,25 @@ function branchState(app, entry, design = null) {
     title: design?.title ?? entry.design,
     url: `/f/${entry.id}/d/${entry.design}`,
     remote: Boolean(remoteOf(entry.path)),
+    running: appRunning(app, entry),
+  };
+}
+
+/**
+ * The app on a branch (10.7), once it's built and has a design host: the
+ * host's url is the app itself, with its own data, when it's running from
+ * this branch's worktree. One url serves one branch at a time. Else null.
+ */
+function appRunning(app, entry) {
+  const config = readHostConfig(entry.path);
+  if (!config || !appOf(entry.path).built) return null;
+  const status = app.hosts.status({ id: entry.id, path: entry.path, branch: entry }, config);
+  return {
+    url: config.url,
+    running: status.running,
+    approved: status.approved,
+    open: `/f/${entry.id}/host/open`,
+    start: `/f/${entry.id}/host/start`,
   };
 }
 
@@ -813,15 +852,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         const files = app.branches.takeCameIn(entry);
         return files ? `(From Prelude, not the person: the main branch was brought into this branch, and these files came in: ${files.slice(0, 30).join(', ')}${files.length > 30 ? ', …' : ''}. Take them into account.)` : null;
       })() : null,
-      afterTurn: entry ? ({ message }) => afterBranchTurn(session, message) : null,
+      afterTurn: entry ? ({ message, check }) => afterBranchTurn(session, message, check) : null,
       ...buildContext(session, references),
     };
   };
 
   // After a turn on a design's branch: tidy what building made redundant,
-  // commit the turn, and finish the build once its group is built.
-  const afterBranchTurn = (session, message) => {
+  // commit the turn, and finish the build once its group is built. A build
+  // turn also says where the app is running and what's next (10.7).
+  const afterBranchTurn = (session, message, check = null) => {
     const build = session?.build;
+    const ported = text => {
+      try { return Object.values(JSON.parse(text)).filter(route => typeof route?.view === 'string' && route.view.startsWith('@app/')).length; } catch { return 0; }
+    };
+    const portedBefore = build ? ported(textAt(entry.path, 'HEAD', `${PRELUDE_DIR}/${design.id}/routes.json`)) : 0;
     if (build) {
       const isApp = build.group === APP_GROUP.key;
       const designViews = join(dir, 'views');
@@ -841,16 +885,37 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     }
     // A shell layout that now names the app's file (layouts.json) has no copy of its own.
     if (design.kind === 'shell') for (const name of Object.keys(shellLayoutLinks(dir))) rmSync(join(dir, 'layouts', `${name}${readHostConfig(folder.path)?.views ?? '.eta'}`), { force: true });
+    const routesFile = join(dir, 'routes.json');
+    const portedNow = build && existsSync(routesFile) ? ported(readFileSync(routesFile, 'utf8')) : 0;
     const commit = app.branches.commit(entry, `${build ? build.title : design.title}: ${message.split('\n')[0].slice(0, 60)}`);
+    let done = false;
     if (build) {
-      const done = build.group === APP_GROUP.key ? appOf(folder.path).built : backlogOf(dir).groups.find(g => g.key === build.group)?.built;
+      done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
       if (done) {
         app.branches.building(entry, null);
         // Built as of this commit: a later design change makes it due again (step 10).
         app.branches.markBuilt(entry, build.group);
       }
     }
-    return commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).` };
+    const committed = commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).` };
+    if (!build) return committed;
+    // What's next, from the turn's check: shown to the person, never told to the agent.
+    let into = 'main';
+    try { into = app.branches.status(entry).into; } catch { /* git couldn't say */ }
+    const running = appRunning(app, entry);
+    const next = {
+      type: 'next',
+      group: build.title,
+      built: done,
+      checked: Boolean(check),
+      failures: check?.failures?.length ?? 0,
+      differ: check?.differ?.length ?? 0,
+      app: running && { url: running.url, running: running.running, open: running.open },
+      // The first build turn that makes a route the app's own says what the design window shows now.
+      firstPorted: portedBefore === 0 && portedNow > 0,
+      finish: { url: `/f/${parentId}`, label: remoteOf(entry.path) ? 'Push and open a pull request' : `Merge into ${into}` },
+    };
+    return [committed, next];
   };
 
   // A build session: writes the app, with its own instructions.

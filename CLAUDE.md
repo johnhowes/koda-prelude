@@ -86,7 +86,10 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     it starts only once the person approves it for that folder
     (`~/.prelude/approvals.json`, tied to the host settings) and is stopped with
     Prelude. `tools/reference-host.js` is the contract in a page of Node (and
-    what the tests start).
+    what the tests start). Once the app is built, a branch's host is that branch's
+    running app (plan, 10.7): the branch partial shows its url with Open
+    (`/host/open`) or Start it (`/host/start`), and each build turn ends with a
+    `next` entry saying where it runs and what to do next.
   - Porting (plan, 6d): a route's view may be `@app/<path>`, the app's own file
     (`viewOf` in host.js), and the design's states become its fixtures.
     `server/snapshots.js` keeps a design's approved screens in `snapshots/`,

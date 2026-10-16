@@ -209,6 +209,12 @@ export function createHosts({ home }) {
       });
     },
 
+    /** Start a folder's host if it isn't running (stopping another on its url), and wait until it answers. */
+    async start(folder, config) {
+      if (!this.approved(folder, config)) throw new Error('This repository’s design host hasn’t been approved yet.');
+      await ensure(folder, config);
+    },
+
     status(folder, config) {
       const entry = running.get(folder.path);
       return { approved: this.approved(folder, config), running: Boolean(entry), log: entry?.log ?? '' };

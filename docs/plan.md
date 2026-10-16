@@ -1854,6 +1854,108 @@ Decided 2026-10-16:
 - **Found while proving it, and fixed:** the drawer over Home was listed as looking
   different, only because Home beneath it did.
 
+#### 10.7: After a build, where the app is and what's next
+
+Seen on Apiary: after the first feature build, the person couldn't tell where to see the
+running app, or what to do next. The design window looked the same as before, but it was
+now rendering the app's own views (routes at `@app/…`) with the design's states.
+
+Nothing new is modelled. The app is already its branch's design host: Prelude starts it from
+the worktree with `prelude.json`'s `host.start`, and `host.url` is where it answers (Apiary:
+`node app/server.js` on http://localhost:5300). This step only says so, in three places that
+already exist.
+
+**1. "The app is running at <url>", in two places:**
+- **The build session's after-turn note** (`afterBranchTurn`), once per build turn. It's the
+  moment the question comes up, and the note is already written there.
+- **The branch partial** (`_branch.eta`), as a line under "On `prelude/<design>`": "The app
+  on this branch is running at http://localhost:5300 · Open". It shows wherever the branch
+  is listed: the folder page's "In progress" and the design's page. This is where it's found
+  later.
+- **Not the Build page:** it lists what's left to build, and the branch partial is already
+  on the design's page.
+- **When it shows:** only on a branch whose app is built (`appOf(...).built`), with a host
+  configured (`readHostConfig`), and only while the host is running from this worktree
+  (`hosts.status(folder).running`). One url serves one branch at a time: starting another
+  branch's host stops this one. So when it isn't running, the line says "The app isn't
+  running from this branch" with a **Start it** button: a POST
+  (`/f/<folder>/host/start`) that starts the host from this worktree, stopping whichever
+  branch had the url, and comes back to the page it was pressed on. It needs the host
+  approved, as rendering does; if it isn't, the button is the design bar's approval.
+- **What the url shows:** the app as a person would use it, with its own data. The host
+  contract only adds `/__prelude/…` to the app (on Apiary, `PRELUDE_HOST=1` mounts
+  `prelude-host.js`; every other route is the app's, reading `app/data/`). The design's
+  states are only used in the design window. The line says so: "The app on this branch, with
+  its own data, is running at …".
+- **Open** is a plain link with `target="_blank"` to `/f/<folder>/host/open` on Prelude's
+  own origin, which redirects to the host's url. The desktop app's `open_in_browser`
+  already opens Prelude's own pages in the system browser, so it needs no change.
+
+**2. A next-steps line after each build turn,** in the same note, made from the turn's check
+(`afterTurn` already receives it):
+- **Group not built yet:** "Still to build in <group>: send the next message to carry on."
+- **Pages don't render:** "<n> pages don't render yet. The agent is told with your next
+  message."
+- **Pages differ:** "<n> pages differ from the approved screens. Check them in the design
+  window, and if they're right, Approve again in the design bar."
+- **Then:** "When you're happy, finish the branch on the folder page: Merge into main" (or
+  "Push and open a pull request" when there's a remote), linking to the folder page.
+
+Plain text in the transcript, rendered by `_entry.eta` as a note (a new `type: 'next'`, so
+the link renders), and never told to the agent.
+
+**3. Saying the design window shows the app's own views:**
+- **The design bar's "ported" count** reads "The app's own views, with the design's
+  states" when every route is `@app/` ("3 of 5 routes are the app's own" when some are),
+  with a title explaining it: what you see is the app's code, rendered by its host from this
+  branch, with each state's data as fixtures.
+- **The first build note** that leaves a route at `@app/` says it once: "The design window
+  now shows the app's own views for these pages, with the design's states."
+
+**Sub-steps:**
+1. The url line in the branch partial and the after-build note, with "isn't running" and
+   "Start it" (`/f/<folder>/host/start`).
+2. The next-steps note, from the turn's check.
+3. The design bar's wording for ported routes.
+4. Open through Prelude's origin (`/host/open`), so the desktop app opens it as it is.
+5. Tests (a build turn's note with each check outcome; the partial running, not running and
+   with no host), then proven on the Apiary clone: build a feature, open the app from the
+   note, approve, merge.
+
+Decided 2026-10-16:
+- The url line goes in both the build session's after-turn note and the branch partial.
+- When the app isn't running from this branch, the line offers "Start it".
+- Design turns don't get the url line; the branch partial covers them.
+- The host's url is the real app, with its own data, not the design's states (checked on
+  Apiary: the host contract only adds `/__prelude/…`). No separate `app.url`.
+- The next-steps note starts in the transcript only. Whether it also stays as a "Next" line
+  on the branch partial is decided after seeing it in use on the Apiary clone.
+
+**As built (10.7):**
+- **The app on a branch** is `appRunning` (main.js), part of `branchState`: the host's url,
+  whether it's running from this worktree, and whether it's approved. The branch partial
+  shows it running with Open, stopped with Start it, or waiting for approval.
+- **Start it** is `POST /f/<folder>/host/start` (`hosts.start`): it starts the host from the
+  worktree, stopping whichever branch had its url, waits until it answers, and comes back
+  to the page it was pressed on (a Prelude path only). **Open** is `GET /f/<folder>/host/open`,
+  a redirect to the host's url.
+- **After each build turn** `afterBranchTurn` gets the turn's check (`afterTurn`'s `check`)
+  and adds a `next` entry after the commit note: the group, whether it's built, the
+  check's failures and differences, the app's url if it's running, whether this turn
+  ported the design's first route (`routes.json` at `HEAD` against the worktree), and the
+  finish step (Merge into main, or Push and open a pull request). `_entry.eta` renders it.
+- **The design bar** says "the app's own views, with the design's states" when every route
+  is `@app/`, or "n of m routes are the app's own".
+- **Proven** on a copy of the Apiary clone, with its host moved to port 5310 (5300 was in
+  use). A design turn added a coverage line to Home. A build session ported it back, and
+  its note said the app was running at :5310, that 3 pages differed (approve again), then
+  Merge into main. Open reached the app with its own data, showing the new line. With the
+  host stopped, the folder page said "isn't running" and Start it brought it back. The
+  screens were approved, and the branch was merged and tidied.
+- **Seen while proving it, not changed:** posting the same group twice to `/builds`
+  started one build session, and the requests after it answered 422 "That group is no
+  longer in the design" instead of "already building".
+
 ### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

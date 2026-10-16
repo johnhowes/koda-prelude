@@ -143,7 +143,7 @@ test('snapshots compare normalised HTML: whitespace and attribute order don’t 
 test('the design bar marks ported routes and approves screens; the check then notices a change', async () => {
   const surface = await (await fetch(`${base}/f/${fid}/d/loans/preview`, { headers: { 'x-koda-fragment': '1' } })).text();
   assert.match(surface, /the app’s own view/);
-  assert.match(surface, /4 of 5 routes ported/);
+  assert.match(surface, /4 of 5 routes are the app’s own/);
   assert.match(surface, /Approve these screens/);
 
   // /gone and /escape don't render, so approving is refused until they do.

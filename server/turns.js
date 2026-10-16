@@ -161,6 +161,7 @@ ${withFindings(told, message)}` : withFindings(told, message),
       findings.delete(dKey);
 
       const finish = async result => {
+        let checked = null;   // what the check found, for afterTurn
         // A message cut off by Stop or an error is kept as far as it got.
         if (ctx.block) endText(ctx, ctx.block.text);
         // Render what the agent made, and say what doesn't: to the person now,
@@ -173,6 +174,7 @@ ${withFindings(told, message)}` : withFindings(told, message),
             const result = await check();
             if (result?.blocked) record(ctx, { type: 'note', text: result.blocked });
             else if (result) {
+              checked = result;
               const { failures, rendered = 0, differ = [], warnings = [], ahead = [] } = result;
               // Rules that point at nothing are the agent's to fix too.
               // A build session is also told what the app's models still lack.
@@ -201,8 +203,8 @@ ${withFindings(told, message)}` : withFindings(told, message),
         // (The entry saying so is committed with the next turn.)
         if (afterTurn) {
           try {
-            const note = await afterTurn({ message, result });
-            if (note) record(ctx, note);
+            const notes = await afterTurn({ message, result, check: checked });
+            for (const note of [notes].flat()) if (note) record(ctx, note);
           } catch (error) {
             record(ctx, { type: 'note', failed: true, text: `Prelude couldn’t commit this turn: ${String(error.stderr || error.message).trim().split('\n').slice(-2).join(' ')}` });
           }

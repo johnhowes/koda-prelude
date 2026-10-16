@@ -47,7 +47,7 @@
       <button class="btn small ghost" type="submit" title="Forms have changed this state's data. Start again from its file.">Reset data</button>
     </form>
     <% } %>
-    <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %><% if (it.ported?.count) { %> · <%= it.ported.count === it.ported.of ? 'ported' : `${it.ported.count} of ${it.ported.of} routes ported` %><% } %></span>
+    <span class="muted"><%= it.screens.length %> <%= it.hosted ? (it.screens.length === 1 ? 'page' : 'pages') : (it.screens.length === 1 ? 'screen' : 'screens') %><% if (it.ported?.count) { %> · <span title="Built pages are the app’s own code (@app/…), rendered from this branch, with each state’s data as their fixtures."><%= it.ported.count === it.ported.of ? 'the app’s own views, with the design’s states' : `${it.ported.count} of ${it.ported.of} routes are the app’s own` %></span><% } %></span>
     <% if (it.hosted && it.screens.length) { %>
     <%/* Saves every page in every state as it renders now; the check, and
          `prelude check` in CI, then fail when one renders differently. */%>

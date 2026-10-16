@@ -177,3 +177,33 @@ test('a host gets the port of its own url as PORT, never Prelude’s', async () 
     hosts.closeAll();
   }
 });
+
+test('the app on a branch (10.7): Open goes to the host’s url, and Start it starts the host, once approved', async () => {
+  const { createHosts } = await import('../server/hosts.js');
+  const open = await get(`/f/${fid}/host/open`);
+  assert.equal(open.status, 303);
+  assert.equal(open.headers.get('location'), `http://localhost:${hostPort}/`);
+
+  // Starting needs approval, as rendering does.
+  const port = await freePort();
+  const folder = { id: 'startcheck', path: repo };
+  const config = { start: `node "${reference}" ${port}`, url: `http://localhost:${port}`, views: '.eta', fingerprint: 's' };
+  const hosts = createHosts({ home: mkdtempSync(join(tmpdir(), 'prelude-start-')) });
+  try {
+    await assert.rejects(hosts.start(folder, config), /hasn’t been approved/);
+    assert.equal(hosts.status(folder, config).running, false);
+    hosts.approve(folder, config);
+    await hosts.start(folder, config);
+    assert.equal(hosts.status(folder, config).running, true);
+    assert.equal((await fetch(`http://127.0.0.1:${port}/__prelude/health`)).status, 200);
+  } finally {
+    hosts.closeAll();
+  }
+
+  // The route comes back where it was pressed, and never leaves Prelude.
+  const started = await fetch(`${base}/f/${fid}/host/start`, { method: 'POST', body: new URLSearchParams({ back: `/f/${fid}/d/loans` }), redirect: 'manual' });
+  assert.equal(started.status, 303);
+  assert.equal(started.headers.get('location'), `/f/${fid}/d/loans`);
+  const elsewhere = await fetch(`${base}/f/${fid}/host/start`, { method: 'POST', body: new URLSearchParams({ back: 'https://example.com/' }), redirect: 'manual' });
+  assert.equal(elsewhere.headers.get('location'), `/f/${fid}`);
+});

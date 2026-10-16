@@ -45,6 +45,7 @@
   .area:first-child { margin-top: 0; }
 
   .rowbtns form { margin: 0; }
+  .app-line { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline; margin: var(--space-1) 0; font-size: var(--text-sm); }
   .item form { margin: 0; }
   .kinds { border: 0; padding: 0; margin: var(--space-4) 0 0; display: grid; gap: var(--space-1); }
   .kinds .check { margin-top: 0; }
@@ -149,6 +150,8 @@
   .entry.tool.failed pre { white-space: pre-wrap; font-size: var(--text-xs); color: var(--fg-muted); margin: var(--space-1) 0 0; }
   .entry.note { font-size: var(--text-sm); color: var(--fg-subtle); }
   .entry.note.failed { color: var(--danger); }
+  .entry.note.next p { margin: 0 0 var(--space-1); }
+  .entry.note.next p:last-child { margin-bottom: 0; }
   .check-list { margin: var(--space-1) 0 0; padding-left: var(--space-5); color: var(--fg-muted); font-size: var(--text-sm); }
 
   #agent-status:empty { display: none; }
