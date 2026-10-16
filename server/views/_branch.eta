@@ -3,7 +3,7 @@
      its design, and its actions - bring main in, and finish (merge here, or
      push for a pull request when there's a remote). `it.work` is
      branchState()'s; `it.finish` the folder's /branches/<id> URL; `it.back`
-     where to come back to. */%>
+     where to come back to; `it.error` why finishing it just failed. */%>
 <% const w = it.work; %>
 <div class="branch">
   <p class="muted">
@@ -19,6 +19,7 @@
   <% if (w.alsoChanges.length) { %>
   <p class="muted">Also changes, outside the design: <% for (const [i, path] of w.alsoChanges.slice(0, 6).entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %><%= w.alsoChanges.length > 6 ? `, and ${w.alsoChanges.length - 6} more` : '' %></p>
   <% } %>
+  <% if (it.error) { %><p class="err" role="alert"><%= it.error %></p><% } %>
   <div class="rowbtns">
     <% if (w.behind) { %>
     <form action="<%= it.finish %>/update" method="post">

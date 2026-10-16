@@ -51,7 +51,7 @@
           <% } %>
         </ul>
         <% } %>
-        <%~ include('./_branch', { work: item.work, finish: `/f/${it.folder.id}/branches/${item.work.id}`, back: `/f/${it.folder.id}` }) %>
+        <%~ include('./_branch', { work: item.work, finish: `/f/${it.folder.id}/branches/${item.work.id}`, back: `/f/${it.folder.id}`, error: it.finishError?.id === item.work.id ? it.finishError.message : null }) %>
       </li>
       <% } %>
     </ul>
@@ -90,7 +90,7 @@
             <span class="muted">prelude/<%= design.id %></span>
           </span>
         </a>
-        <% if (design.work) { %><%~ include('./_branch', { work: design.work, finish: `/f/${it.folder.id}/branches/${design.work.id}`, back: `/f/${it.folder.id}` }) %><% } %>
+        <% if (design.work) { %><%~ include('./_branch', { work: design.work, finish: `/f/${it.folder.id}/branches/${design.work.id}`, back: `/f/${it.folder.id}`, error: it.finishError?.id === design.work.id ? it.finishError.message : null }) %><% } %>
       </li>
       <% } %>
     </ul>
@@ -118,7 +118,7 @@
     <p class="sec"><%= it.app.stack %><% if (it.app.path) { %>, in <code><%= it.app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
     <% } else if (it.appOnBranch) { %>
     <p class="sec">The app is built on the shell’s branch. Once that branch is in your main branch, features can be built on top of it: open the shell to check what the build made (and approve its design host there, if it asks), then finish the branch.</p>
-    <%~ include('./_branch', { work: it.shellWork, finish: `/f/${it.folder.id}/branches/${it.shellWork.id}`, back: `/f/${it.folder.id}#app` }) %>
+    <%~ include('./_branch', { work: it.shellWork, finish: `/f/${it.folder.id}/branches/${it.shellWork.id}`, back: `/f/${it.folder.id}#app`, error: it.finishError?.id === it.shellWork.id ? it.finishError.message : null }) %>
     <% } else if (it.shellWork?.building?.group === '@app') { %>
     <p class="sec">The app is being built on the shell’s branch. <a href="<%= it.shellWork.url %>">Open the shell</a> to follow it.</p>
     <% } else { %>

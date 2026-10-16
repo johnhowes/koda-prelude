@@ -3,7 +3,7 @@
 
 import { strict as assert } from 'node:assert';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
@@ -237,6 +237,19 @@ test('a build ports the views; the design’s copies go, and the build is done',
   assert.match(git(worktree, 'show', '--stat', '--no-renames', '--format=', 'HEAD'), /app\/views\/borrowers\/list\.eta/);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
   assert.doesNotMatch(view, /Building <strong>/, 'the group is built, so the branch is free for the next');
+});
+
+test('a merge git refuses changes nothing, and says why beside the branch’s buttons', async () => {
+  // An untracked file in the checkout where the branch adds one: git won't overwrite it.
+  write(repo, 'app/views/reports.eta', 'mine');
+  const main = git(repo, 'rev-parse', 'main');
+  const refused = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
+  assert.equal(refused.status, 409);
+  const page = await refused.text();
+  assert.match(page, /<div class="branch">[\s\S]*?<p class="err" role="alert">git couldn’t merge prelude\/borrowers into main, so nothing changed: [^<]*app\/views\/reports\.eta[^<]*<\/p>\s*<div class="rowbtns">/);
+  assert.equal(git(repo, 'rev-parse', 'main'), main, 'main is where it was');
+  assert.equal(readFileSync(join(repo, 'app', 'views', 'reports.eta'), 'utf8'), 'mine');
+  rmSync(join(repo, 'app'), { recursive: true });
 });
 
 test('with a remote, finishing pushes the branch after asking, and a merge on the server is tidied up here', async () => {

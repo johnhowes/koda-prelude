@@ -143,7 +143,9 @@ function gitError(what, error) {
   const identity = /user\.(name|email)|Please tell me who you are/i.test(detail)
     ? ' Tell git who you are first: git config --global user.name "Your Name" and git config --global user.email you@example.com.'
     : '';
-  return `${what}: ${detail.split('\n').slice(-3).join(' ')}${identity}`;
+  // All of it, as the files git names are often the part that says why.
+  const said = detail.split('\n').map(line => line.trim()).filter(line => line && !/^hint:/.test(line)).join(' ');
+  return `${what}: ${said.length > 600 ? `${said.slice(0, 600)}…` : said}${identity}`;
 }
 
 export function createBranches({ home }) {

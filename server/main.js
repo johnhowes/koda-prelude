@@ -235,6 +235,7 @@ async function handle(req, res, app) {
         git: gitState(folder.path),
         merged: folder.branch ? [] : app.branches.merged(folder.id).slice(0, 5),
         appError: null,
+        finishError: null, // { id, message }: finishing that branch failed; shown beside its buttons
         confirmPublish: null,
         published: null,
         ...extra,
@@ -270,9 +271,15 @@ async function handle(req, res, app) {
       const backTo = back.startsWith('/f/') ? back : `/f/${folder.id}`;
       const designPage = `/f/${folder.id}/d/${entry.design}`;
       const action = finishMatch[2];
+      // Shown beside the branch's buttons, where the person clicked, and
+      // logged: the top of a long page is easily out of sight.
+      const finishFailed = (entry, message) => {
+        console.error(`Finishing ${entry.branch} failed: ${message}`);
+        return view(409, blank, undefined, { finishError: { id: entry.id, message } });
+      };
       if (action === 'merge') {
         const merged = app.branches.merge(entry, `Merge ${entry.branch}: ${design.title} (merged by Prelude)`);
-        if (merged.error) return view(409, blank, undefined, { appError: merged.error });
+        if (merged.error) return finishFailed(entry, merged.error);
         app.tidied.delete(folder.id);
         tidy();
         return redirect(res, designPage);
@@ -290,7 +297,7 @@ async function handle(req, res, app) {
       }
       const body = pullRequestBody(app, entry, design);
       const published = app.branches.publish(entry, { title: `${design.title} (designed and built with Prelude)`, body });
-      if (published.error) return view(409, blank, undefined, { appError: published.error });
+      if (published.error) return finishFailed(entry, published.error);
       noteOnBranch(entry, published.pr ? `Pushed ${entry.branch} and opened a pull request: ${published.pr}` : `Pushed ${entry.branch}. Open the pull request here: ${published.compare ?? 'on your Git server'}`);
       return view(200, blank, undefined, { published: { branch: entry.branch, pr: published.pr, compare: published.compare } });
     }
