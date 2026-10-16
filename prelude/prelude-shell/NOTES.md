@@ -43,6 +43,7 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   are the platform's, and pages still just aim at `modal?`. The dialog is named
   by the first heading in it, so a modal fragment starts with an `<h2>`. The
   Close sits beside the content, centred on that heading's line, not above it.
+  The drawer does the same, and sizes its `h2` as a dialog's (`--text-lg`).
 - **Bar: brand, what the agent is working on, and a Projects menu** (recent
   projects, then "Open a project…"). Where you are stays the page's crumbs,
   since the bar isn't swapped on navigation and can't follow the page.
@@ -66,5 +67,6 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 - The state `02-first-folder.json` should be renamed `02-first-project.json`
   (the agent can't rename or delete files).
 - Design system lacks: a drawer/overlay surface token or component (the shell
-  builds it from `--surface-raised`, `--shadow-lg`, `--backdrop`), and a width
-  for a drawer (uses `--measure-narrow`).
+  builds it from `--surface-raised`, `--shadow-lg`, `--backdrop`), a width
+  for a drawer (uses `--measure-narrow`), and a drawer's heading size (the
+  shell borrows the dialog's `--text-lg`).
