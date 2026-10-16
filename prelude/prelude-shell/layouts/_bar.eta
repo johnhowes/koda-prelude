@@ -1,0 +1,20 @@
+<%/* The bar across the top: the way home, and a quick way to another folder.
+     Where the page sits (crumbs) is the page's own, under its region. */%>
+<header class="shell-bar">
+  <a class="shell-brand" href="/">Prelude</a>
+  <span class="spacer"></span>
+  <% if (it.folders?.length) { %>
+  <details class="menu">
+    <summary class="btn small ghost"><span class="icon icon-folder" aria-hidden="true"></span>Folders</summary>
+    <ul class="menu-list">
+      <% for (const folder of it.folders) { %>
+      <li><a href="/f/<%= folder.id %>">
+        <span class="item-title"><%= folder.name %></span>
+        <span class="muted"><%= folder.path %></span>
+      </a></li>
+      <% } %>
+      <li><a href="/"><span class="item-title">Open a folder…</span></a></li>
+    </ul>
+  </details>
+  <% } %>
+</header>

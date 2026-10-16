@@ -1,0 +1,12 @@
+<%/* A pop-out window: the design surface alone, filling the window, with no
+     bar. The window's own frame says what it is. */%>
+<!doctype html>
+<html lang="en">
+<head>
+<%~ include('./_head', it) %>
+</head>
+<body class="shell fill bare">
+<main id="main" class="shell-main" ko-scope="/" ko-location="<%= it.location %>" ko-history><%~ it.body %></main>
+<%~ include('./_regions', it) %>
+</body>
+</html>

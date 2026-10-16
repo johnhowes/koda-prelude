@@ -1,0 +1,48 @@
+<%/* The app layout's gallery page: a page like a folder's, and a way to open
+     each region the layout offers. */%>
+<div class="center">
+  <div class="stack gap-6">
+    <div class="stack gap-2">
+      <nav class="crumbs" aria-label="Where you are"><a href="/">Folders</a></nav>
+      <h1><%= it.folder.name %></h1>
+      <p class="muted"><%= it.folder.path %></p>
+    </div>
+
+    <div class="card">
+      <h2>What this layout offers</h2>
+      <p class="secondary">The bar, the page in the middle at a readable width, and three regions a page can ask for. Each opens over this page, and its link works on its own.</p>
+      <div class="cluster actions">
+        <a class="btn" href="/gallery/drawer" ko-target="drawer?">Open the drawer</a>
+        <a class="btn" href="/gallery/modal" ko-target="modal?">Open the modal</a>
+        <a class="btn" href="/gallery/notice" ko-target="notice?">Show a notice</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Designs</h2>
+      <% if (it.designs.length === 0) { %>
+      <p class="secondary">No designs yet. A design usually describes one feature, and grows over many sessions.</p>
+      <% } else { %>
+      <% const areas = [...new Set(it.designs.map(design => design.area))]; %>
+      <% for (const area of areas) { %>
+      <div class="stack gap-1">
+        <h3 class="group-label"><%= area %></h3>
+        <ul class="list">
+          <% for (const design of it.designs.filter(design => design.area === area)) { %>
+          <li>
+            <span class="item">
+              <span class="icon icon-screen" aria-hidden="true"></span>
+              <span class="item-text">
+                <span class="item-title"><%= design.title %></span>
+                <span class="muted">prelude/<%= design.id %></span>
+              </span>
+            </span>
+          </li>
+          <% } %>
+        </ul>
+      </div>
+      <% } %>
+      <% } %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+/* The gallery's own rules: only what its sample pages need. */
+
+/* The workspace page fills the layout's main region, and its split the rest of the page. */
+.gallery-fill { flex: 1; min-block-size: 0; }
+.gallery-title { font-size: var(--text-xl); }

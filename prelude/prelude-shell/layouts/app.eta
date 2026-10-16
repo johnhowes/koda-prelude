@@ -1,0 +1,14 @@
+<%/* Prelude's pages (Folders, a folder, Build): the bar, then the page, which
+     scrolls with the window. The page holds itself to a readable width
+     (.center); the shell gives it its room above and below. */%>
+<!doctype html>
+<html lang="en">
+<head>
+<%~ include('./_head', it) %>
+</head>
+<body class="shell">
+<%~ include('./_bar', it.layout) %>
+<main id="main" class="shell-main" ko-scope="/" ko-location="<%= it.location %>" ko-history><%~ it.body %></main>
+<%~ include('./_regions', it) %>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<%/* Sample content for the notice region: one sentence about what happened. */%>
+<div class="notice good" role="status">
+  <p>Pushed <code>prelude/<%= it.designs[0]?.id ?? 'sign-up' %></code>. Once it’s merged, Prelude tidies up the branch here.</p>
+</div>

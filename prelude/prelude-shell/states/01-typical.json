@@ -1,0 +1,21 @@
+{
+  "folder": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+  "designs": [
+    { "id": "sign-up", "title": "Sign up", "area": "Onboarding" },
+    { "id": "identity-check", "title": "Identity check", "area": "Onboarding" },
+    { "id": "loan-offers", "title": "Loan offers", "area": "Applications" },
+    { "id": "repayment-schedule", "title": "Repayment schedule", "area": "Servicing" }
+  ],
+  "session": {
+    "title": "Error states for sign-up",
+    "design": "Sign up",
+    "screens": 3,
+    "entries": [
+      { "kind": "user", "text": "Let’s add an error state to the sign-up form, for an email that’s already in use." },
+      { "kind": "agent", "text": "I’ll add a state where the email is taken, and show the message under the field." },
+      { "kind": "tool", "name": "Write", "text": "states/03-email-taken.json" },
+      { "kind": "tool", "name": "Edit", "text": "views/sign-up/_form.eta" },
+      { "kind": "note", "text": "Prelude rendered every page and form in every state (9), and they all render." }
+    ]
+  }
+}

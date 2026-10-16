@@ -1,0 +1,58 @@
+<%/* The workspace layout's gallery page: a design's page, the chat beside the
+     design surface, filling the window under the bar. Each panel scrolls on
+     its own. */%>
+<div class="stack gap-3 gallery-fill">
+  <div class="stack gap-1">
+    <nav class="crumbs" aria-label="Where you are">
+      <a href="/">Folders</a><span aria-hidden="true">›</span>
+      <a href="/gallery"><%= it.folder.name %></a>
+    </nav>
+    <h1 class="gallery-title"><%= it.session.design %></h1>
+  </div>
+
+  <div class="split gallery-fill">
+    <section class="panel side" aria-label="Session">
+      <div class="toolbar">
+        <span class="icon icon-session" aria-hidden="true"></span>
+        <span class="muted"><%= it.session.title %></span>
+      </div>
+      <div class="transcript-scroll">
+        <ol class="transcript" aria-live="polite">
+          <% if (it.session.entries.length === 0) { %>
+          <li class="empty">This design has no sessions yet. The agent starts from the design’s files and its NOTES.md, so tell it what you want to work on.</li>
+          <% } %>
+          <% for (const entry of it.session.entries) { %>
+          <% if (entry.kind === 'user') { %>
+          <li class="entry user"><div class="bubble"><%= entry.text %></div></li>
+          <% } else if (entry.kind === 'agent') { %>
+          <li class="entry agent"><div class="prose"><p><%= entry.text %></p></div></li>
+          <% } else if (entry.kind === 'tool') { %>
+          <li class="entry tool"><span class="tool-name"><%= entry.name %></span> <%= entry.text %></li>
+          <% } else { %>
+          <li class="entry note"><%= entry.text %></li>
+          <% } %>
+          <% } %>
+        </ol>
+      </div>
+      <form class="composer" action="/gallery/workspace" method="get">
+        <label class="sr-only" for="message">Message</label>
+        <textarea id="message" name="message" rows="3" placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."></textarea>
+        <div class="composer-foot">
+          <span></span>
+          <button class="btn small primary" type="submit">Send</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" aria-label="Design">
+      <div class="toolbar">
+        <span class="muted"><%= it.session.screens === 1 ? '1 screen' : `${it.session.screens} screens` %></span>
+        <span class="spacer"></span>
+        <a class="btn small ghost" href="/gallery/window" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Pop out</a>
+      </div>
+      <div class="panel-body">
+        <p class="empty">The design’s screens show here, beside the chat.</p>
+      </div>
+    </section>
+  </div>
+</div>

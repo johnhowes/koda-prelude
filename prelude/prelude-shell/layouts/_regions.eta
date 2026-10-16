@@ -1,0 +1,23 @@
+<%/* The regions a page may ask for: notice?, drawer?, modal?. Each prints what
+     the server puts in it for a deep link to an overlay, marked with where it
+     came from. Each is hidden while empty, and its Close empties it, so the
+     region can be filled again. No whitespace inside a region: :empty hides it. */%>
+<% const notice = it.regions?.notice, drawer = it.regions?.drawer, modal = it.regions?.modal; %>
+<section class="shell-notice" aria-label="Notices">
+  <div id="notice" ko-region ko-focus="none" aria-live="polite"<% if (notice) { %> ko-location="<%= notice.location %>"<% } %>><%~ notice?.html ?? '' %></div>
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="notice" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+</section>
+<aside class="shell-drawer" aria-label="Drawer">
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="drawer" aria-label="Close the drawer"><span class="icon icon-close" aria-hidden="true"></span></button>
+  <div id="drawer" ko-region ko-focus="region" tabindex="-1"<% if (drawer) { %> ko-location="<%= drawer.location %>"<% } %>><%~ drawer?.html ?? '' %></div>
+</aside>
+<div class="shell-modal">
+  <div class="shell-modal-box" role="dialog">
+    <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+    <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
+  </div>
+</div>
+<script type="module">
+  import { start } from '@kodalang/core';
+  start(document);
+</script>

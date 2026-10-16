@@ -1,0 +1,9 @@
+<%/* The window layout's gallery page: a pop-out of the design surface, alone. */%>
+<section class="panel" aria-label="Design">
+  <div class="toolbar">
+    <span class="muted"><%= it.session.design %> · <%= it.session.screens === 1 ? '1 screen' : `${it.session.screens} screens` %></span>
+  </div>
+  <div class="panel-body">
+    <p class="empty">The design’s screens show here, filling the window.</p>
+  </div>
+</section>
