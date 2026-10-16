@@ -71,30 +71,24 @@ Its views are plain Eta with no helpers of its own (data such as an entry's
 `html` is prepared before rendering), so Prelude renders them itself: no
 design host.
 
-- **app** is the app's `server/views/layout.eta` (`layouts.json`). The gallery
-  now renders in the app's real layout, with this shell's `app.json` as its
-  sample data.
-- **workspace** and **window** stay the shell's. The app has no file for
-  either: the same `layout.eta` makes the window with `it.bare`, and the
-  workspace through `:has(.session-page)` rules in `prelude.css`.
-  `layouts.json` can only name a file, not pass a flag.
+- **All three layouts stay the shell's** (the person's decision, 2026-10-16):
+  they're a redesign of the app's `server/views/layout.eta`, not the app's
+  own, so no shell layout names an app file. The app builds them later. Today
+  that one file makes all three: the window with `it.bare`, and the workspace
+  through `:has(.session-page)` rules in `prelude.css`.
 
-Where the app's layout and the design disagree (left as they are; for the
-person to decide):
+Where the app's layout differs from the redesign (what building it will
+change):
 
-- **No regions.** `layout.eta` prints no `notice?`, `drawer?` or `modal?`, so
-  `/gallery/drawer`, `/gallery/modal` and `/gallery/notice` show the page
-  beneath without the overlay.
+- **No regions.** `layout.eta` prints no `notice?`, `drawer?` or `modal?`.
 - **The bar** is the brand alone: no Projects menu and no agents status
   (`it.layout.projects`, `it.layout.agents` go unused).
 - **The main region** is `#workspace` (the design says `#main`), and its
   location comes from `it.path` (the host passes both `path` and `location`).
 - **Styles.** The layout links the app's own CSS at `/ds/v1/…` (KodaDesign's
   `packages/design/v1`, not this project's design system) and
-  `/static/prelude.css`, with Koda at `/koda/koda.js`. Those are the app's
-  routes, not the design origin's `/_prelude/`, so on the design's origin the
-  gallery may render unstyled and without Koda; and the shell's `shell.css`
-  isn't linked at all.
+  `/static/prelude.css`, with Koda at `/koda/koda.js`; the shell's
+  `shell.css` and this project's design system aren't linked at all.
 - **`desktop.js`** is loaded by the layout, as the notes above already say it
   must be.
 
