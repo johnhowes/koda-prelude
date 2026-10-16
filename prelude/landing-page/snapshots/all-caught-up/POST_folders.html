@@ -1,0 +1,25 @@
+<div class="stack gap-4">
+<h2>
+Open a project
+</h2>
+<p class="secondary">
+A project is a folder, usually a repo, new or already full of code.
+</p>
+<form action="/folders" class="stack gap-1" ko-target="self" method="post">
+<label class="label" for="open-path">
+The project’s folder
+</label>
+<div class="inline">
+<input aria-describedby="open-path-error" autocomplete="off" id="open-path" ko-invalid-server="This is required." name="path" placeholder="C:\Projects\my-app" spellcheck="false" value="">
+<button class="btn" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn primary" type="submit">
+Open
+</button>
+</div>
+<span class="error" id="open-path-error">
+This is required.
+</span>
+</form>
+</div>
