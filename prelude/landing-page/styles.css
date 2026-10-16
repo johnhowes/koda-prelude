@@ -2,4 +2,10 @@
 @scope (.home) {
   /* A folder's path is one long word; let it wrap rather than push the card. */
   .project-path { overflow-wrap: anywhere; }
+
+  /* First run: the steps after opening a project, a row across the empty
+     page, each centred under its icon. */
+  .first-run-steps { align-self: stretch; list-style: none; padding: 0; }
+  .first-run-steps > li { align-items: center; }
+  .first-run-steps strong { color: var(--fg-muted); }
 }

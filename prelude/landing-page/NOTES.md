@@ -28,13 +28,19 @@ first run (no projects), all caught up, long names.
 - **Open a project is a modal** (`/open`), from the Projects heading, or as the
   page's one primary button on first run. The real app opens the new project's
   page; the design closes the modal and refreshes home.
+- **Regions refresh every 30s** (the person, 2026-10-16) with Koda's polling,
+  which pauses in a hidden tab. A live channel push would do as well later.
+- **A project whose folder has gone** stays as a card saying so, with "Remove
+  from your projects" (`POST /folders/:id/remove`) (the person, 2026-10-16).
+- **The bar counts what needs you** (the person, 2026-10-16): a shell change,
+  `it.layout.needsYou`, a link home.
+- **First run is a full-height empty page** (`.empty.page`, added to the design
+  system): icon, heading, the one large primary button, and the three steps
+  that follow (open, design, build), to fill the page and say what Prelude is.
 - **Times are prepared strings** ("4 minutes ago") in the data, as the app
   prepares data before rendering.
 
 ## Open questions
 
-- Should Needs you count show in the bar or the tab title?
-- A recent project whose folder has gone: show it with a way to remove it?
 - Should finished turns expire from Needs you after a while, if never opened?
-- Should the regions refresh on their own (live channel or polling) while the
-  page is open?
+- Polling or the app's live channel for the refresh, once built?

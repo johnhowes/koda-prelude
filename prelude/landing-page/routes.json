@@ -9,5 +9,9 @@
     "require": ["path"],
     "form": "home/_open",
     "answer": { "into": "modal?", "also": [{ "into": "main", "view": "home/index", "data": "" }] }
+  },
+  "POST /folders/:id/remove": {
+    "remove": "projects/:id",
+    "answer": { "view": "home/_projects", "data": "" }
   }
 }

@@ -1,17 +1,36 @@
 <%/* The home page's body. Each region starts with its placeholder, and loads
-     its own content when `load` is set. With no projects yet, the page is the
+     its own content when `load` is set, then asks again every half minute
+     while the page is being looked at (Koda pauses it in a hidden tab). With no projects yet, the page is the
      way to open the first. */%>
 <% const projects = it.projects ?? []; %>
 <div class="center home">
 <% if (!projects.length) { %>
-  <div class="stack gap-5">
+  <div class="empty page">
+    <span class="icon icon-folder" aria-hidden="true"></span>
     <div class="stack gap-2">
       <h1>Open your first project</h1>
       <p class="secondary">A project is a folder, usually a repo, new or already full of code. Everything Prelude makes goes in its <code>prelude/</code> directory, committed alongside the code.</p>
     </div>
     <div class="cluster actions">
-      <a class="btn primary" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
+      <a class="btn primary large" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
     </div>
+    <ol class="grid gap-5 first-run-steps" style="--min: 10rem" aria-label="How it goes">
+      <li class="stack gap-1">
+        <span class="icon icon-folder" aria-hidden="true"></span>
+        <strong>Open a project</strong>
+        <span class="muted">A folder, new or already full of code.</span>
+      </li>
+      <li class="stack gap-1">
+        <span class="icon icon-agent" aria-hidden="true"></span>
+        <strong>Design with the agent</strong>
+        <span class="muted">Pages with real-looking data, written as your app’s own views.</span>
+      </li>
+      <li class="stack gap-1">
+        <span class="icon icon-code" aria-hidden="true"></span>
+        <strong>Build it into the app</strong>
+        <span class="muted">On a branch of its own, for you to merge.</span>
+      </li>
+    </ol>
   </div>
 <% } else { %>
   <div class="stack gap-8" ko-item>
@@ -22,7 +41,7 @@
 
     <section class="card" aria-labelledby="needs-you-title">
       <h2 id="needs-you-title">Needs you</h2>
-      <div ko-as="needsYou"<% if (it.load) { %> ko-source="/home/needs-you"<% } %>><%~ include('./_needs-you-loading', it) %></div>
+      <div ko-as="needsYou"<% if (it.load) { %> ko-source="/home/needs-you" ko-invoke="load every:30000"<% } %>><%~ include('./_needs-you-loading', it) %></div>
       <div class="notice danger" role="alert" visible-when-unreachable="needsYou">
         <p>Prelude couldn’t check what needs you. Your projects are fine; try again in a moment.</p>
         <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="needsYou">Try again</button></div>
@@ -35,7 +54,7 @@
         <span class="spacer"></span>
         <a class="btn small" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
       </div>
-      <div ko-as="projectList"<% if (it.load) { %> ko-source="/home/projects"<% } %>><%~ include('./_projects-loading', it) %></div>
+      <div ko-as="projectList"<% if (it.load) { %> ko-source="/home/projects" ko-invoke="load every:30000"<% } %>><%~ include('./_projects-loading', it) %></div>
       <div class="notice danger" role="alert" visible-when-unreachable="projectList">
         <p>Prelude couldn’t read what’s in your projects. Try again in a moment.</p>
         <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="projectList">Try again</button></div>

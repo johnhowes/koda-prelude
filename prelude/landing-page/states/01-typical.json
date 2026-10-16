@@ -98,6 +98,12 @@
       "designs": 1,
       "changed": "5 days ago",
       "inProgress": []
+    },
+    {
+      "id": "loan-calculator",
+      "name": "loan-calculator",
+      "path": "C:\\Projects\\old\\loan-calculator",
+      "missing": true
     }
   ]
 }

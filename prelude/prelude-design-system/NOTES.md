@@ -51,6 +51,9 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   for content on its way, pulsing. Added because "Landing Page"
   (prelude/landing-page) loads its regions separately; the shell's gallery drew
   its own and can now drop it.
+- **Empty page** (`.empty.page`): a first-run page's empty state, centred in
+  the page's height (60svh), with a heading and its action. Added for "Landing
+  Page" (prelude/landing-page).
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

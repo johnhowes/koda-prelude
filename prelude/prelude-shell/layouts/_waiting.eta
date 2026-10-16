@@ -1,0 +1,4 @@
+<%/* How many things are waiting on the person, across their projects: a way
+     home, where they're listed. Nothing when nothing is. */%>
+<% const waiting = it.needsYou ?? 0; %>
+<% if (waiting > 0) { %><a class="btn small ghost" href="/">Needs you<span class="pill accent"><%= waiting %></span></a><% } %>

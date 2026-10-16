@@ -4,6 +4,7 @@
     { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
     { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
   ],
+  "needsYou": 5,
   "agents": [
     { "design": "Loan offers", "project": "spark-lending", "url": "/f/spark-lending/d/loan-offers" }
   ]
