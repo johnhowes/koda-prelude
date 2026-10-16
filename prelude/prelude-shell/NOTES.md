@@ -64,6 +64,12 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   the number of things waiting on the person across their projects; nothing at
   zero. It's the `#waiting` region, pushed afresh like `#agents`. Added for
   "Landing Page" (prelude/landing-page), whose home lists them.
+- **One live channel per page** (`it.layout.live`, a URL; `_regions.eta`): a
+  hidden `ko-connect` in every layout when the app gives one. It carries named
+  events pages reload on (`needs-changed`) and markup for the bar's regions
+  (`ko-into="waiting"`, `"agents"`). Left out when there's no URL, as on a
+  design's origin. Added for "Landing Page" (prelude/landing-page). Today the
+  app opens channels only on session and window pages (`server/live.js`).
 - **`[data-desktop-only]`** moved from `prelude.css` into the shell: it's about
   the window, not a page. The app's layout still needs `desktop.js`.
 - **Main region is `#main`** (was `#workspace`); nothing targets it by id.

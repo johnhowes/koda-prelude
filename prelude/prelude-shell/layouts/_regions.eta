@@ -16,6 +16,11 @@
   <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
   <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
 </dialog>
+<%/* The page's one live channel (server-sent events), when the app gives it
+     one: small named events ("needs-changed") that a page's regions reload
+     on, and markup for the bar's regions (ko-into="waiting"). A design's
+     origin has none, so there it's left out. */%>
+<% if (it.layout?.live) { %><div hidden ko-connect="<%= it.layout.live %>"></div><% } %>
 <script type="module">
   // The modal is a real dialog, open while its region holds something.
   // Koda fills and empties the region; showModal() is the platform's, and no

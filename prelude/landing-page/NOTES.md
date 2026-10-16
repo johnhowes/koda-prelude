@@ -28,8 +28,14 @@ first run (no projects), all caught up, long names.
 - **Open a project is a modal** (`/open`), from the Projects heading, or as the
   page's one primary button on first run. The real app opens the new project's
   page; the design closes the modal and refreshes home.
-- **Regions refresh every 30s** (the person, 2026-10-16) with Koda's polling,
-  which pauses in a hidden tab. A live channel push would do as well later.
+- **Regions refresh on events, with a slow poll behind** (the person,
+  2026-10-16). The shell's layout holds one live channel per page
+  (`it.layout.live`); the server sends `needs-changed` and `projects-changed`
+  as turns, builds and pushes change things, and each region reloads on its
+  event (`ko-invoke="event:…"`). Every 5 minutes as well, for what Prelude
+  can't see (a pull request merged on the Git server). Polling every 30s was
+  dropped: each refresh reads every project's branches. A design has no
+  channel, so in the preview only the poll runs.
 - **A project whose folder has gone** stays as a card saying so, with "Remove
   from your projects" (`POST /folders/:id/remove`) (the person, 2026-10-16).
 - **The bar counts what needs you** (the person, 2026-10-16): a shell change,
@@ -45,8 +51,5 @@ first run (no projects), all caught up, long names.
 
 ## Open questions
 
-- Refresh by events instead of polling? Proposed: one channel per page in the
-  shell's layout (the app already streams with SSE, `server/live.js`), sending
-  small events (`needs-changed`, `projects-changed`) that regions reload on,
-  plus a slow poll for what Prelude can't see happen (a pull request merged
-  on the Git server). Waiting on the person.
+- Should `projects-changed` name the project, so only its card reloads?
+  Worth it only if reading all of them proves slow.
