@@ -46,6 +46,8 @@ first run (no projects), all caught up, long names.
 - **Finished turns expire from Needs you** after a week unopened (the person
   agreed to expiry, 2026-10-16; the week is a first guess). Questions, stopped
   builds, pages to build and pull requests don't expire: they're still true.
+- **States set the bar's data** (`"layout"` in a state overrides the shell's
+  `layouts/app.json`), so the bar's count and Projects menu agree with the page.
 - **Times are prepared strings** ("4 minutes ago") in the data, as the app
   prepares data before rendering.
 
