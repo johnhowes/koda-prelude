@@ -64,6 +64,40 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   the window, not a page. The app's layout still needs `desktop.js`.
 - **Main region is `#main`** (was `#workspace`); nothing targets it by id.
 
+## Connected to the app (2026-10-16)
+
+The app is Prelude's own server (`server/`: Node, node:http, Eta and Koda).
+Its views are plain Eta with no helpers of its own (data such as an entry's
+`html` is prepared before rendering), so Prelude renders them itself: no
+design host.
+
+- **app** is the app's `server/views/layout.eta` (`layouts.json`). The gallery
+  now renders in the app's real layout, with this shell's `app.json` as its
+  sample data.
+- **workspace** and **window** stay the shell's. The app has no file for
+  either: the same `layout.eta` makes the window with `it.bare`, and the
+  workspace through `:has(.session-page)` rules in `prelude.css`.
+  `layouts.json` can only name a file, not pass a flag.
+
+Where the app's layout and the design disagree (left as they are; for the
+person to decide):
+
+- **No regions.** `layout.eta` prints no `notice?`, `drawer?` or `modal?`, so
+  `/gallery/drawer`, `/gallery/modal` and `/gallery/notice` show the page
+  beneath without the overlay.
+- **The bar** is the brand alone: no Projects menu and no agents status
+  (`it.layout.projects`, `it.layout.agents` go unused).
+- **The main region** is `#workspace` (the design says `#main`), and its
+  location comes from `it.path` (the host passes both `path` and `location`).
+- **Styles.** The layout links the app's own CSS at `/ds/v1/…` (KodaDesign's
+  `packages/design/v1`, not this project's design system) and
+  `/static/prelude.css`, with Koda at `/koda/koda.js`. Those are the app's
+  routes, not the design origin's `/_prelude/`, so on the design's origin the
+  gallery may render unstyled and without Koda; and the shell's `shell.css`
+  isn't linked at all.
+- **`desktop.js`** is loaded by the layout, as the notes above already say it
+  must be.
+
 ## Open questions
 
 - A bar menu doesn't close on a click outside it (it's a `details`); a

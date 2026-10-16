@@ -1,5 +1,7 @@
 {
   "app": {
-    "existing": true
+    "existing": true,
+    "path": "server",
+    "stack": "Node, node:http, Eta and Koda"
   }
 }
