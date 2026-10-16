@@ -298,7 +298,13 @@ One URL answers in two shapes, and Prelude does it for you, as the real server d
 - layouts/<name>.json - sample data for that layout, which every design gets unless its state overrides it under "layout".
 - "app" is the layout every design uses unless a route names another (for example "bare", for sign-in or a full-screen wizard).
 
-The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers. Keep the gallery's views in ${designPath}/views/gallery/. A page the shell itself owns, one that belongs to no feature (Settings, say, or an account page the navigation links to), goes in views/ outside gallery/, with routes like any design's: it's built into the app like a feature's pages, and the gallery never is.`);
+The shell's own routes.json, views and states are its gallery: a page per layout, showing each region it offers. Make it plain which part is the layout and which isn't:
+
+- The layout's own parts (the navigation, the header, the user menu, anything a layout draws) are real, rendered from the layout's sample data as they will be in the app.
+- What a design will put in a region (the page in main, an overlay in the drawer or modal) is skeleton content: grey bars and blocks in the shape of a typical page (a heading bar, a few lines of text, a card or two), never realistic words or data, with a small muted label naming the region and what goes there ("main · a design's page"). Style it in ${designPath}/styles.css (a skeleton class from the tokens, such as --surface-sunken and --radius-sm), so it never reaches the app or the design system.
+- To show how a region behaves (a page longer than the window, a wide table), add a gallery page that says so in its title ("App layout · long page"), still in skeleton.
+
+Keep the gallery's views in ${designPath}/views/gallery/. A page the shell itself owns, one that belongs to no feature (Settings, say, or an account page the navigation links to), goes in views/ outside gallery/, with routes like any design's: it's built into the app like a feature's pages, and the gallery never is.`);
   } else {
     lines.push(shell
       ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. ${mayChange(shell.path) ? 'If this design needs something of the shell (a navigation item, a region, a new kind of page), change it as described below.' : `Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`}`

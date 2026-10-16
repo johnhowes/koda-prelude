@@ -2144,3 +2144,7 @@ comments, the custom dialect, MCP tools, epics, tracker integration.
 - 2026-10-16: An update from main that clashes is left for the agent to resolve, with
   git's markers in the worktree, and committed once none is left; the person can
   abandon it instead.
+- 2026-10-16: The shell's gallery shows which part is the layout: the layout's own parts
+  are real, from its sample data, and what a design will put in a region is skeleton
+  content (grey bars and blocks in a page's shape, labelled with the region), styled in
+  the shell's own `styles.css`.
