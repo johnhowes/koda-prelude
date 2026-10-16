@@ -14,12 +14,13 @@ import { fileURLToPath } from 'node:url';
 
 import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks } from './host.js';
+import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, incrementStory, storyMarkdown } from './backlog.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
+import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
@@ -76,6 +77,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     renderers: createRenderers({ appRoot: dirname(here) }),
     hosts: createHosts({ home }),
     designs: createDesignState({ live }),
+    channels: createChannels(),   // server events' live channels, per design (6e)
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -93,7 +95,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 66000;
   // Renderer processes would outlive the server; stop them with it.
-  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); });
+  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.channels.closeAll(); });
   return server;
 }
 
@@ -117,7 +119,7 @@ async function handle(req, res, app) {
   // A design's own origin: the Eta host (host.js).
   const designHost = designHostOf(req);
   if (designHost) {
-    return handleDesignHost(req, res, { folders, designs: app.designs, renderers: app.renderers, hosts: app.hosts, kodaDir, designKey }, designHost);
+    return handleDesignHost(req, res, { folders, designs: app.designs, renderers: app.renderers, hosts: app.hosts, channels: app.channels, kodaDir, designKey }, designHost);
   }
 
   if (isPreviewHost(req)) {
@@ -577,6 +579,7 @@ function groupsOf(app, { entry, design, dir }) {
   }
   return {
     designWide,
+    events: backlog.events,   // server events no page claims (6e)
     shared,
     groups: groups.map(group => {
       const change = increment?.groups.get(group.key) ?? null;
@@ -587,7 +590,7 @@ function groupsOf(app, { entry, design, dir }) {
       const toBuild = changed ? !(group.built && builtSince) : !group.built;
       const story = changed
         ? incrementStory({ design, designPath, group, change, states, shared })
-        : storyMarkdown({ design, designPath, group, designWide, states, approved });
+        : storyMarkdown({ design, designPath, group, designWide, designEvents: backlog.events, states, approved });
       return { ...group, kind, change, toBuild, story };
     }),
   };
@@ -723,14 +726,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       const mode = built ? common.mode : 'design';
       // In App mode the frame is the app itself, at the same path, with its own data.
       const at = current && (mode === 'app' ? `${built.url}${current.id}` : `${origin}${current.id}`);
-      return { ...common, mode, app: built, hosted: true, screens, current, states, state, changed, ported, approved, frame: at, open: at };
+      const events = readEvents(dir).map(event => ({ name: event.name, title: event.title }));
+      return { ...common, mode, app: built, hosted: true, screens, current, states, state, changed, ported, approved, events, frame: at, open: at };
     }
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
     const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
     const files = `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`;
     const at = current && `${files}/screens/${encodeURIComponent(current.file)}`;
-    return { ...common, mode: 'design', app: null, hosted: false, screens, current, states: [], state: null, changed: false, frame: at, open: at };
+    return { ...common, mode: 'design', app: null, hosted: false, screens, current, states: [], state: null, changed: false, events: [], frame: at, open: at };
   };
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
@@ -746,6 +750,26 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       : listScreens(dir).some(screen => screen.id === wanted);
     if (known) designs.show(dKey, wanted);
     return send(res, 200, render('./_design', surface(view, { mode: modeOf(form.get('mode')) })));
+  }
+
+  // "Send event" (6e): the server speaks first. Its change goes to the working
+  // copy of the state, as an accepted form's does, and its messages to every
+  // window showing the design.
+  if (req.method === 'POST' && rest[0] === 'events' && rest.length === 1 && hosted) {
+    const form = await readForm(req);
+    // The answer is a line for the bar's status region, never the surface: a
+    // new frame would reload the page the event is meant to reach.
+    const sent = (notice, failed = false) => send(res, 200, render('./_event-sent', { notice, failed }));
+    const event = readEvents(dir).find(candidate => candidate.name === String(form.get('event') ?? ''));
+    if (!event) return sent('That event is no longer in the design.', true);
+    const states = listStates(dir);
+    const state = states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
+    const working = structuredClone(datasetOf(app, dKey, dir, state));
+    const fired = await eventMessages(app, { folder, designDir: dir, event, dataset: working });
+    if (fired.changed) designs.setCopy(dKey, state?.id ?? null, working);
+    const heard = fired.messages.length ? app.channels.send(dKey, fired.messages) : 0;
+    if (fired.failures.length) return sent(`${event.title}: ${fired.failures.map(failure => failure.view ? `${failure.view} doesn’t render` : failure.error).join('; ')}.`, true);
+    return sent(heard ? `Sent: ${event.title}.` : `Sent: ${event.title}, but no page is listening. Its layout opens the channel from it.layout.live.`, !heard);
   }
 
   // "Reset data": throw away what forms changed, back to the state's file.
@@ -1010,7 +1034,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         ? connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage })
         : isApp
         ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
-        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
+        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, designEvents: backlog.events ?? [], branch: entry.branch, references, stack, kodaPath: kodaPackage }),
     };
   };
 

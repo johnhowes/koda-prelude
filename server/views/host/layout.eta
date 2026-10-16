@@ -24,6 +24,8 @@
 <% const drawer = it.regions?.drawer, modal = it.regions?.modal; %>
 <aside id="drawer" class="prelude-drawer" ko-region<% if (drawer) { %> ko-location="<%= drawer.location %>"<% } %>><%~ drawer?.html ?? '' %></aside>
 <dialog id="modal" class="prelude-modal" ko-region<% if (modal) { %> ko-location="<%= modal.location %>" open<% } %>><%~ modal?.html ?? '' %></dialog>
+<%/* The server's own channel, when the design has events to send (6e). */%>
+<% if (it.layout?.live) { %><div hidden ko-connect="<%= it.layout.live %>"></div><% } %>
 <style>
   .prelude-drawer { position: fixed; inset: 0 0 0 auto; inline-size: min(28rem, 100%); overflow: auto; background: Canvas; border-inline-start: 1px solid GrayText; padding: 1rem; }
   .prelude-drawer:empty { display: none; }

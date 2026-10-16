@@ -53,6 +53,23 @@
       </form>
     </details>
     <% } %>
+    <%/* Server events (6e): the server speaks first, down the design's live
+         channel. The answer lands in the status beside it, never on the
+         frame, so the page shows the event arrive. */%>
+    <% if (it.events?.length) { %>
+    <details class="menu screens-menu">
+      <summary class="btn small ghost">Send event</summary>
+      <form class="menu-list" action="<%= it.base %>/events" method="post" ko-target="event-status">
+        <% for (const event of it.events) { %>
+        <button type="submit" name="event" value="<%= event.name %>">
+          <span class="item-title"><%= event.title %></span>
+          <span class="muted"><%= event.name %></span>
+        </button>
+        <% } %>
+      </form>
+    </details>
+    <span id="event-status" ko-region role="status"></span>
+    <% } %>
     <% if (it.changed) { %>
     <form action="<%= it.base %>/reset" method="post" ko-target="design">
       <input type="hidden" name="view" value="<%= it.view %>"><input type="hidden" name="mode" value="<%= it.mode %>">

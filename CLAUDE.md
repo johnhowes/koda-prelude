@@ -68,6 +68,10 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     remove at a data path, refuse empty required fields with a 422, and answer
     with a redirect or a fragment plus `ko-into` envelopes. They change a
     working copy of the state (`copy` in design-state.js), never the files.
+    Server events (plan, 6e) are a design's `events.json` (`server/events.js`):
+    "Send event" in the design bar changes the working copy and sends them down
+    the design's channel, `/_prelude/live` on its origin, which a layout opens
+    from `it.layout.live`.
     GET routes may filter by the query (`search`, `match`, `list`; `filterModel`),
     and every view sees the query as `it.$query`. `/_prelude/` on that origin serves Koda, the system, the shell and
     the design's files.
