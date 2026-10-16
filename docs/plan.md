@@ -1801,6 +1801,15 @@ just its data or rules.
    `from` record, and the build porting it back.
 5. **10.5:** Proven on Apiary's Landing page, now built on the clone: a redesign of its
    Home page and a new field. Its story holds only that, and a build session builds it.
+6. **10.6:** "In progress" on the folder page: the current work, in one place. It's
+   derived from the same comparison, with nothing stored.
+   - **What it lists:** each design with a branch, its stories (each new or changed group,
+     marked to build, building or built, copyable, linking to its Build page), its state
+     (check, behind `main`, also changes), and its Finish button.
+   - **"Copy all stories"** copies every increment story across the branches, for
+     planning a sprint.
+   - **The rest:** designs without a branch stay in the plain list below; merged work
+     shows under "Merged lately".
 
 Decided 2026-10-16:
 - Stories describe the increment, with nothing about the existing screen beyond what's
@@ -1809,6 +1818,8 @@ Decided 2026-10-16:
   from.
 - No markup diffs in a story: changed pages and states are named.
 - Unchanged groups are folded away under "Unchanged".
+- The current work is shown in one place: an "In progress" section on the folder page, not
+  a page of its own.
 
 ### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
