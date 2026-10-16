@@ -16,13 +16,65 @@ import { basename, join } from 'node:path';
 
 import { canonical, folderId } from './folders.js';
 
-const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+// Never a file-system monitor: with core.fsmonitor (or the older
+// core.useBuiltinFSMonitor) on, each git command in a new repository or
+// worktree starts a daemon that outlives it - one per build, never stopped -
+// and can hold this process's pipes open.
+const NO_MONITOR = ['-c', 'core.fsmonitor=false', '-c', 'core.useBuiltinFSMonitor=false'];
+const git = (cwd, ...args) => execFileSync('git', [...NO_MONITOR, ...args], { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
 const slug = text => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'build';
 
-/** Whether a folder is the top of a git repository, as a build needs. */
-export function isRepository(folderPath) {
-  try { return canonical(git(folderPath, 'rev-parse', '--show-toplevel')).toLowerCase() === canonical(folderPath).toLowerCase(); } catch { return false; }
+/**
+ * The folder and git: 'repository' (the top of one), 'none' (not in one: a
+ * build makes it one), 'inside' (inside another repository, which a build
+ * leaves alone) or 'missing' (no git on this machine).
+ */
+export function gitState(folderPath) {
+  try {
+    const top = git(folderPath, 'rev-parse', '--show-toplevel');
+    return canonical(top).toLowerCase() === canonical(folderPath).toLowerCase() ? 'repository' : 'inside';
+  } catch (error) {
+    return error.code === 'ENOENT' ? 'missing' : 'none';
+  }
+}
+
+/** Whether a build can start here: a repository, or a folder a build can make one. */
+export const buildable = folderPath => ['repository', 'none'].includes(gitState(folderPath));
+
+/**
+ * Ready a folder for a build's branch, as part of starting it: make it a git
+ * repository if it isn't one (a new folder someone started designing in),
+ * then commit the designs the build starts from, if they have changes - the
+ * branch starts from that commit. Returns { error } when it can't.
+ */
+function prepare(folderPath, designPath, message) {
+  const state = gitState(folderPath);
+  if (state === 'missing') return { error: 'A build works on a git branch, and git isn’t installed on this machine (or isn’t on the PATH).' };
+  if (state === 'inside') {
+    return { error: `This folder is inside another git repository (${git(folderPath, 'rev-parse', '--show-toplevel')}). Open that repository in Prelude instead, so its builds get branches of their own.` };
+  }
+  try {
+    if (state === 'none') {
+      git(folderPath, 'init', '-q', '-b', 'main');
+      const ignore = join(folderPath, '.gitignore');
+      if (!existsSync(ignore)) writeFileSync(ignore, 'node_modules/\n');
+      git(folderPath, 'add', '-A');
+      git(folderPath, 'commit', '-q', '-m', 'The designs so far (committed by Prelude, starting a build)');
+      return {};
+    }
+    if (git(folderPath, 'status', '--porcelain', '--', designPath)) {
+      git(folderPath, 'add', '--', designPath);
+      git(folderPath, 'commit', '-q', '-m', message, '--', designPath);
+    }
+    return {};
+  } catch (error) {
+    const detail = String(error.stderr || error.message).trim();
+    const identity = /user\.(name|email)|Please tell me who you are/i.test(detail)
+      ? ' Tell git who you are first: git config --global user.name "Your Name" and git config --global user.email you@example.com.'
+      : '';
+    return { error: `git couldn’t commit the designs for the build: ${detail.split('\n').slice(-2).join(' ')}${identity}` };
+  }
 }
 
 export function createBuilds({ home }) {
@@ -53,21 +105,15 @@ export function createBuilds({ home }) {
     },
 
     /**
-     * Start a build: a branch and worktree from the folder's HEAD. Refused
-     * when the folder isn't a git repository, or the design has uncommitted
-     * changes (the branch would build an older design). { build } or { error }.
+     * Start a build: a branch and worktree from the folder's HEAD, once the
+     * folder is a repository and the designs the build starts from - the
+     * design, or (for the app build, `clean`) all of prelude/ - are committed.
+     * { build } or { error }.
      */
     start({ folder, design, group, clean = null }) {
-      if (!isRepository(folder.path)) return { error: 'A build session works on a git branch, and this folder isn’t the top of a git repository.' };
-      // What must be committed: the design, or (for the app build) all of prelude/.
       const designPath = clean ?? `prelude/${design.id}`;
-      try {
-        if (git(folder.path, 'status', '--porcelain', '--', designPath)) {
-          return { error: `${clean ? 'The designs have' : 'The design has'} changes that aren’t committed. Commit ${designPath}/ first: the build branch starts from the last commit.` };
-        }
-      } catch (error) {
-        return { error: `git couldn’t read the design’s status: ${error.message}` };
-      }
+      const ready = prepare(folder.path, designPath, clean ? 'The designs, before the app build (committed by Prelude)' : `${design.title}, before building ${group.title} (committed by Prelude)`);
+      if (ready.error) return ready;
       const base = `build/${slug(design.id)}-${group.slug}`;
       const taken = name => { try { git(folder.path, 'rev-parse', '--verify', '--quiet', `refs/heads/${name}`); return true; } catch { return false; } };
       let branch = base;

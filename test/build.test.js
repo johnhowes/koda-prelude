@@ -30,7 +30,8 @@ const designDir = join(repo, 'prelude', 'borrowers');
 let server;
 let base;
 
-const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', windowsHide: true }).trim();
+// No file-system monitor daemons for these throwaway repositories (see builds.js).
+const git = (cwd, ...args) => execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.useBuiltinFSMonitor=false', ...args], { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const write = (root, path, text) => {
   const file = join(root, ...path.split('/'));
   mkdirSync(dirname(file), { recursive: true });
@@ -206,13 +207,18 @@ test('a build session: a branch and worktree, its own instructions and permissio
   assert.doesNotMatch(onBranch, /Start a build session/, 'no builds from a build');
 });
 
-test('a build starts only from a committed design in a git repository', async () => {
+test('a build commits the design first, so its branch starts from it as it is now', async () => {
   write(repo, 'prelude/borrowers/NOTES.md', 'Uncommitted.');
-  const refused = await post(`/f/${fid}/d/borrowers/builds`, { group: '/reports' });
-  assert.equal(refused.status, 409);
-  assert.match(await refused.text(), /The design has changes that aren’t committed/);
-  git(repo, 'add', '-A');
-  git(repo, 'commit', '-q', '-m', 'Notes');
+  write(repo, 'scratch.txt', 'someone else’s work in progress');
+  const started = await post(`/f/${fid}/d/borrowers/builds`, { group: '/reports' });
+  assert.equal(started.status, 303, await started.text());
+  assert.equal(git(repo, 'log', '-1', '--format=%s', 'main'), 'Borrowers, before building Reports (committed by Prelude)');
+  assert.match(git(repo, 'show', '--stat', '--format=', 'main'), /prelude\/borrowers\/NOTES\.md/);
+  assert.match(git(repo, 'status', '--porcelain'), /\?\? scratch\.txt/, 'only the design is committed, nothing else');
+  // Let the build's first turn finish (its check and commit) before the server closes.
+  const [, sid] = started.headers.get('location').match(/\/sessions\/(.+)$/);
+  const worktree = canonical(git(repo, 'worktree', 'list').split('\n').find(line => line.includes('build/borrowers-reports')).split(/\s+/)[0]);
+  await until(() => readEntries(join(worktree, 'prelude', 'borrowers'), sid).some(e => e.type === 'note'));
 });
 
 test('a build agent writes the app, but not the design it builds from', () => {

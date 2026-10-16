@@ -67,7 +67,7 @@
     <% if (!group.built && it.canBuild) { %>
     <form action="<%= it.base %>/builds" method="post">
       <input type="hidden" name="group" value="<%= group.key %>">
-      <button class="btn small primary" type="submit">Start a build session</button>
+      <button class="btn small primary" type="submit" title="Prelude commits this design first, so the build's branch starts from it as it is now.">Start a build session</button>
     </form>
     <% } %>
   </div>

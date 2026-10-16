@@ -17,7 +17,7 @@ import { PRELUDE_DIR, createDesign, findDesign, findShell, findSystem, groupByAr
 import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, storyMarkdown } from './backlog.js';
-import { createBuilds, isRepository } from './builds.js';
+import { buildable, createBuilds, gitState } from './builds.js';
 import { DEFAULT_STACK, appOf, chooseStack } from './app-config.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
@@ -192,7 +192,8 @@ async function handle(req, res, app) {
       app: appOf(folder.path),
       defaultStack: DEFAULT_STACK,
       appBuilds: appBuildsOf(),
-      canBuild: !folder.build && isRepository(folder.path),
+      canBuild: !folder.build && buildable(folder.path),
+      git: gitState(folder.path),
       appError,
     }, `${folder.name} · Prelude`);
 
@@ -564,7 +565,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       folder, design, base, designPath, designWide,
       groups: groups.map(group => ({ ...group, story: storyMarkdown({ design, designPath, group, designWide, states, approved }) })),
       builds: app.builds.of(parentId, design.id),
-      canBuild: !folder.build && isRepository(folder.path) && appOf(folder.path).built,
+      canBuild: !folder.build && buildable(folder.path) && appOf(folder.path).built,
       app: appOf(folder.path),
       appUrl: `/f/${parentId}#app`,
       error: null,

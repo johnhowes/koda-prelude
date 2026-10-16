@@ -24,7 +24,8 @@ const runner = createFakeRunner();
 let server;
 let base;
 
-const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', windowsHide: true }).trim();
+// No file-system monitor daemons for these throwaway repositories (see builds.js).
+const git = (cwd, ...args) => execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.useBuiltinFSMonitor=false', ...args], { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const write = (root, path, text) => {
   const file = join(root, ...path.split('/'));
   mkdirSync(dirname(file), { recursive: true });
@@ -86,15 +87,12 @@ test('another stack is described, and its app is built before any design of view
   assert.equal(existsSync(join(repo, 'prelude', 'loans')), false);
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Tokens', kind: 'system' })).status, 303, 'the design system can be designed straight away');
 
-  // The app build makes the folder's shell, which must be committed first, like the rest of prelude/.
-  const first = await post(`/f/${fid}/app/build`, {});
-  assert.equal(first.status, 409);
-  assert.match(await first.text(), /The designs have changes that aren’t committed\. Commit prelude\/ first/);
-  assert.ok(existsSync(join(repo, 'prelude', 'app-shell', 'design.json')), 'the shell was made: it’s the app’s frame');
-
-  commitAll(repo, 'Designs so far');
+  // The app build makes the folder's shell, the app's frame, and commits prelude/ before branching.
   const started = await post(`/f/${fid}/app/build`, {});
   assert.equal(started.status, 303, await started.text());
+  assert.ok(existsSync(join(repo, 'prelude', 'app-shell', 'design.json')), 'the shell was made: it’s the app’s frame');
+  assert.equal(git(repo, 'status', '--porcelain', '--', 'prelude'), '', 'prelude/ was committed');
+  assert.equal(git(repo, 'log', '-1', '--format=%s', 'main'), 'The designs, before the app build (committed by Prelude)');
   const [, wid, sid] = started.headers.get('location').match(/^\/f\/([0-9a-f]+)\/d\/app-shell\/sessions\/(.+)$/);
   await until(() => runner.turns.length >= 1);
   const turn = runner.turns.at(-1);
@@ -171,17 +169,47 @@ test('features wait for the app; the default app build ports the shell and serve
   assert.equal(findLayout({ folderPath: worktree, designDir: join(worktree, 'prelude', 'loans'), shellDir: workDir, name: 'app' }).views, join(worktree, 'prelude', 'loans', 'views', 'layouts'), 'a design’s own draft still comes first');
 });
 
-test('designs made before Prelude asked: the app card offers the default, and the build settles the stack', async () => {
-  const { repo, fid } = await bareRepo();
-  createDesign(repo, { title: 'Shell', kind: 'shell' });
-  createDesign(repo, { title: 'Landing', kind: 'design' });
-  assert.equal(appOf(repo).stack, null);
+test('a new folder, not yet a repository, with designs made before Prelude asked: the app build sets it all up', async () => {
+  // A folder someone just started designing in: no git, no stack recorded.
+  const folderPath = canonical(mkdtempSync(join(tmpdir(), 'prelude-new-')));
+  const body = new FormData();
+  body.append('path', folderPath);
+  await fetch(`${base}/folders`, { method: 'POST', body, redirect: 'manual' });
+  const fid = folderId(folderPath);
+  createDesign(folderPath, { title: 'Shell', kind: 'shell' });
+  createDesign(folderPath, { title: 'Landing', kind: 'design' });
+  assert.equal(appOf(folderPath).stack, null);
 
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, /<div class="card" id="app">[\s\S]*It will be Node, Express, Eta and Koda\. There’s no app yet/, 'the Build page’s link to #app lands on it');
   assert.match(page, /<form action="\/f\/[0-9a-f]+\/app\/build" method="post">\s*<details>\s*<summary class="muted">Choose another stack<\/summary>/);
+  assert.match(page, /Prelude makes this folder a git repository and commits it first/);
 
   const started = await post(`/f/${fid}/app/build`, { stack: 'ASP.NET Core MVC with Razor' });
-  assert.equal(started.status, 409, 'prelude/ isn’t committed yet');
-  assert.equal(appOf(repo).stack, 'ASP.NET Core MVC with Razor');
+  assert.equal(started.status, 303, await started.text());
+  assert.equal(appOf(folderPath).stack, 'ASP.NET Core MVC with Razor');
+  assert.equal(git(folderPath, 'rev-parse', '--abbrev-ref', 'HEAD'), 'main');
+  assert.equal(git(folderPath, 'log', '-1', '--format=%s'), 'The designs so far (committed by Prelude, starting a build)');
+  assert.equal(git(folderPath, 'status', '--porcelain'), '', 'everything was committed');
+  assert.equal(readFileSync(join(folderPath, '.gitignore'), 'utf8'), 'node_modules/\n');
+  assert.match(git(folderPath, 'branch', '--list', 'build/*'), /build\/shell-app/);
+  await until(() => runner.turns.some(turn => /The app's stack is ASP\.NET Core MVC with Razor/.test(turn.systemPrompt) && turn.cwd !== folderPath));
+  // Let the build's first turn finish (its check and commit) before the server closes.
+  const [, sid] = started.headers.get('location').match(/\/sessions\/(.+)$/);
+  const worktree = canonical(git(folderPath, 'worktree', 'list').split('\n').find(line => line.includes('build/shell-app')).split(/\s+/)[0]);
+  await until(() => readEntries(join(worktree, 'prelude', 'shell'), sid).some(e => e.type === 'note'));
+});
+
+test('a folder inside another repository is left alone, and says why', async () => {
+  const { repo } = await bareRepo();
+  const inner = join(repo, 'designs');
+  mkdirSync(inner);
+  const body = new FormData();
+  body.append('path', inner);
+  await fetch(`${base}/folders`, { method: 'POST', body, redirect: 'manual' });
+  const fid = folderId(inner);
+  createDesign(inner, { title: 'Landing', kind: 'design' });
+  const page = await (await get(`/f/${fid}`)).text();
+  assert.match(page, /This folder is inside another git repository\. Open that repository in Prelude to build here/);
+  assert.doesNotMatch(page, /Start the app build/);
 });

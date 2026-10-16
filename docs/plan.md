@@ -1553,6 +1553,20 @@ Decided 2026-10-15:
   - **The build prompt's "@app/<path>" was ambiguous:** an agent wrote `@app/home/page`
     for `app/views/home/page.eta`. It now says the path is from the repository root,
     with an example.
+- **Starting a build sets up git** (asked for 2026-10-15: "a common use case will be to
+  create a new folder and start designing").
+  - **A folder that isn't a repository** is made one: `git init -b main`, a
+    `.gitignore` for `node_modules/` if it has none, and everything committed.
+  - **In a repository,** the designs the build starts from (`prelude/` for the app build,
+    the design for a feature) are committed if they've changed, and nothing else.
+  - **Left alone:** a folder inside another repository, with a message saying to open
+    that repository instead.
+  - Every git command Prelude runs turns off `core.fsmonitor` and
+    `core.useBuiltinFSMonitor`. With either on, each new repository or worktree started
+    a daemon that never exited. Over a hundred had built up from tests and builds, and
+    one hung a test run by holding its pipe open.
+- The app card shows whenever there are designs of views, even if no stack was ever
+  recorded (designs made before Prelude asked). Starting the build records it.
 - **Proven on a copy of Apiary's designs** (system, shell with Settings, Landing page), in
   a scratch repository with its own Prelude home:
   1. **The stack.** Starting the app build settled the default stack and asked for

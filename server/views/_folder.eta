@@ -52,9 +52,12 @@
       </details>
       <% } %>
       <button class="btn small primary" type="submit">Start the app build</button>
+      <p class="muted">The build works on a git branch. Prelude <%= it.git === 'none' ? 'makes this folder a git repository and commits it' : 'commits prelude/' %> first, so the branch starts from your designs as they are now.</p>
     </form>
-    <% } else { %>
-    <p class="muted">A build works on a git branch: make this folder a git repository and commit <code>prelude/</code> first.</p>
+    <% } else if (it.git === 'inside') { %>
+    <p class="muted">This folder is inside another git repository. Open that repository in Prelude to build here, so its builds get branches of their own.</p>
+    <% } else if (it.git === 'missing') { %>
+    <p class="muted">A build works on a git branch, and git isn’t installed on this machine (or isn’t on the PATH).</p>
     <% } %>
     <% } %>
     <% if (it.appBuilds.length) { %>
