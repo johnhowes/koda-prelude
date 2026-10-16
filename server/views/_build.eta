@@ -1,7 +1,8 @@
 <%/* A design's Build view (plan: step 7): what's left to build, grouped by
      page as a team would slice it into stories, derived from routes.json and
      RULES.md each time. Each group copies as a story for the team's tracker,
-     and starts a build session on a branch of its own. Nothing here is stored. */%>
+     and builds on the design's own branch (step 9), one group at a time.
+     Nothing here is stored. */%>
 <section class="page build">
   <p class="crumbs">
     <a href="/">Folders</a> ›
@@ -11,26 +12,16 @@
   <h1>Build</h1>
   <p class="muted">What’s left to build in <code><%= it.designPath %>/</code>, by page. A route is built once its view is the app’s own (<code>@app/</code>), and a rule once it isn’t marked proposed. Copy a group into your tracker as a story, or start a build session for it.</p>
 
-  <% if (it.builds.length) { %>
-  <div class="card">
-    <h2>Build sessions</h2>
-    <ul class="list">
-      <% for (const build of it.builds) { %>
-      <li><a class="item" href="/f/<%= build.id %>/d/<%= it.design.id %>">
-        <span class="icon icon-conversation" aria-hidden="true"></span>
-        <span class="item-text">
-          <span class="item-title"><%= build.title %></span>
-          <span class="muted">branch <code><%= build.branch %></code></span>
-        </span>
-      </a></li>
-      <% } %>
-    </ul>
-  </div>
-  <% } %>
-
   <% if (it.error) { %><p class="err" role="alert"><%= it.error %></p><% } %>
-  <% if (!it.app.built) { %>
+  <% if (!it.app.built && it.appOnMain) { %>
+  <div class="card">
+    <p class="sec">The app is on your main branch, but not on this design’s branch yet. Bring main in, then build these on top of it.</p>
+    <form action="<%= it.updateUrl %>" method="post"><input type="hidden" name="back" value="<%= it.base %>/build"><button class="btn small primary" type="submit">Update from main</button></form>
+  </div>
+  <% } else if (!it.app.built) { %>
   <p class="card">Features are built into the app, and there isn’t one yet. <a href="<%= it.appUrl %>">Build the app first</a><% if (it.app.stack) { %> (<%= it.app.stack %>)<% } %>; then build these on top of it. You can copy them as stories now.</p>
+  <% } else if (it.building) { %>
+  <p class="card">Building <strong><%= it.building.title %></strong> on this design’s branch. Groups are built one at a time, so the others wait until it’s built.</p>
   <% } %>
 
   <% for (const group of it.groups) { %>
@@ -67,7 +58,7 @@
     <% if (!group.built && it.canBuild) { %>
     <form action="<%= it.base %>/builds" method="post">
       <input type="hidden" name="group" value="<%= group.key %>">
-      <button class="btn small primary" type="submit" title="Prelude commits this design first, so the build's branch starts from it as it is now.">Start a build session</button>
+      <button class="btn small primary" type="submit" title="Builds this group on the design's branch, in a build session.">Start a build session</button>
     </form>
     <% } %>
   </div>

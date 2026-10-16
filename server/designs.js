@@ -33,6 +33,9 @@ export function areaSegments(area) {
   return String(area ?? '').split(/[\\/]+/).map(slugify).filter(Boolean);
 }
 
+/** The id a new design would get: its area's segments and its title's slug. */
+export const designIdOf = ({ title, area }) => [...areaSegments(area), slugify(String(title ?? '').trim())].join('/');
+
 export const SPECIAL_KINDS = { system: 'a design system', shell: 'an app shell' };
 const kindOf = meta => (Object.hasOwn(SPECIAL_KINDS, meta.kind) ? meta.kind : 'design');
 

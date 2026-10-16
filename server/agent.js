@@ -31,19 +31,22 @@ const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
  * machine; it was there until step 5.) Reference folders must be canonical
  * paths, or a Windows short name stops them matching.
  */
-export function permissionArgs(designPath, references = [], mode = 'design') {
+export function permissionArgs(designPath, references = [], mode = 'design', shared = []) {
   // A design session writes its design. A build session (step 7) writes the
   // app - anything in its worktree - but not the design it builds from: its
   // views, states and approved screens are the specification. It may still
   // edit routes.json (to point routes at the app's views), RULES.md (to remove
   // a rule's *proposed* marker) and NOTES.md.
-  const scope = mode === 'build' ? '**' : `${designPath}/**`;
+  // On its branch (step 9), a design may also change the design system and
+  // the shell (`shared`), when it needs to; never their sessions or approved screens.
+  const scopes = mode === 'build' ? ['**'] : [`${designPath}/**`, ...shared.map(path => `${path}/**`)];
   // Its sessions are Prelude's record, and its snapshots are what the person approved.
   const kept = [`${designPath}/sessions/**`, `${designPath}/snapshots/**`,
+    ...shared.flatMap(path => [`${path}/sessions/**`, `${path}/snapshots/**`]),
     ...(mode === 'build' ? [`${designPath}/views/**`, `${designPath}/states/**`, '.git/**'] : [])];
   return [
     '--tools', TOOLS.join(','),
-    '--allowedTools', [`Edit(${scope})`, `Write(${scope})`].join(','),
+    '--allowedTools', scopes.flatMap(scope => [`Edit(${scope})`, `Write(${scope})`]).join(','),
     '--disallowedTools', kept.flatMap(path => [`Edit(${path})`, `Write(${path})`]).join(','),
     ...references.flatMap(path => ['--add-dir', path]),
     '--permission-mode', 'dontAsk',
@@ -52,11 +55,11 @@ export function permissionArgs(designPath, references = [], mode = 'design') {
 
 export function createCliRunner({ command = 'claude', model = null } = {}) {
   return {
-    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references = [], mode = 'design', onEvent = () => {} }) {
+    turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references = [], mode = 'design', shared = [], onEvent = () => {} }) {
       const args = [
         '-p',
         '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
-        ...permissionArgs(designPath, references, mode),
+        ...permissionArgs(designPath, references, mode, shared),
         '--strict-mcp-config',
         '--setting-sources', '',
         '--disable-slash-commands',
@@ -190,20 +193,22 @@ export function createStreamReader(onEvent) {
  *                       { title, path }
  *   kodaPath            where Koda's own guidance is, for a design of views
  */
-export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null, stack = null }) {
+export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null, stack = null, shared = [] }) {
   const what = { system: 'design system', shell: 'app shell' }[kind] ?? 'design';
+  const where = shared.length ? `${designPath}/ (and, when this design needs it, ${shared.map(path => `${path}/`).join(' and ')}; see below)` : `${designPath}/`;
   const parts = [`You are working in Prelude, a tool where a person designs an application with you.
 
 You are working on the ${what} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
 
-- Write only inside ${designPath}/, and never inside ${designPath}/sessions/ or ${designPath}/snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
+- Write only inside ${where}, and never inside a design's sessions/ or snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
 - You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
 - What you may read is set in Prelude, not in this conversation. If you need a folder outside the repository (another app's code or CSS, say) and can't read it, ask the person to add it under "What the agent can read" on this folder's page in Prelude; you can read it from their next message. Don't ask them to copy files into the repository or paste them instead.
 - A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what the design already has.
 - Keep ${designPath}/NOTES.md current: what this is for, the decisions made (each with its reason), and the open questions. Update it before you finish any turn in which something was decided or learned. Keep it short, and edit it rather than appending a log.
 - When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];
 
-  if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath, stack }));
+  const mayChange = path => shared.includes(path);
+  if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath, stack, mayChange }));
   else parts.push(`Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.`);
 
   if (kind === 'system') {
@@ -225,15 +230,36 @@ If the person points you at existing CSS (this repository's, or a reference fold
 - Before designing, read ${system.path}/system/guidelines.md and the components in ${system.path}/system/components/.
 - Every screen links the system's styles, in this order, before its own: ${system.href}/tokens.css, ${system.href}/components.css${system.hasIcons ? `, ${system.href}/icons.css` : ''}. Then ../styles.css for this design's own rules, if it needs any.
 - Build screens from the system's components, copying their markup and classes. Write no literal colours, spaces or radii; use the tokens.
-- Don't change the design system from here. If it lacks something this design needs, design around it, and note in ${designPath}/NOTES.md what the system is missing, so it can be added in a session on the system itself.`);
+${mayChange(system.path) ? '- If the system lacks something this design needs, change it as described below.' : `- Don't change the design system from here. If it lacks something this design needs, design around it, and note in ${designPath}/NOTES.md what the system is missing, so it can be added in a session on the system itself.`}`);
   } else if (format === 'screens') {
     parts.push(`Styles shared by screens go in ${designPath}/styles.css, linked from a screen as ../styles.css. This folder has no design system yet; when it gets one, its designs will use it.`);
   }
+  if (shared.length) parts.push(sharedSection({ title, designPath, system: system && mayChange(system.path) ? system : null, shell: shell && mayChange(shell.path) ? shell : null }));
   return parts.join('\n\n');
 }
 
+/**
+ * Changing a shared design from a feature's branch (plan: step 9): the design
+ * system or the shell, when the feature needs it. The change travels with the
+ * feature and is reviewed with it.
+ */
+function sharedSection({ title, designPath, system, shell }) {
+  const which = [system && `the design system (${system.path}/)`, shell && `the app shell (${shell.path}/)`].filter(Boolean).join(' and ');
+  const show = [
+    system && `add or update the component's file in ${system.path}/system/components/, the guidelines in ${system.path}/system/guidelines.md if the change brings a rule, and the system's gallery screens`,
+    shell && `the shell's gallery (${shell.path}/routes.json, its views and states) for a layout or region`,
+  ].filter(Boolean).join('; ');
+  const notes = [system && `${system.path}/NOTES.md`, shell && `${shell.path}/NOTES.md`].filter(Boolean).join(' or ');
+  return `This design works on a branch of its own, and may change ${which} when it needs to: a token, a component or a variant of one, a navigation item, a region or a layout. The change travels with this design and is reviewed with it, so make it the way their owners would:
+
+- Keep it general: something any design could use, not shaped for this one.
+- Show it where their owners look: ${show}.
+- Add a line to ${notes} saying what changed and that "${title}" (${designPath}) needed it.
+- Change nothing else there, and never another design.`;
+}
+
 /** How a design of views is made: the app's own views, a route table and fake data. */
-function viewsSection({ designPath, kind, system, shell, kodaPath, stack }) {
+function viewsSection({ designPath, kind, system, shell, kodaPath, stack, mayChange = () => false }) {
   const lines = [];
   // Another stack: its views are its own template language, rendered by the
   // repository's design host; its guide says how they're written.
@@ -269,12 +295,12 @@ One URL answers in two shapes, and Prelude does it for you, as the real server d
 The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers.`);
   } else {
     lines.push(shell
-      ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`
+      ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. ${mayChange(shell.path) ? 'If this design needs something of the shell (a navigation item, a region, a new kind of page), change it as described below.' : `Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`}`
       : `This folder has no app shell yet, so pages render in a minimal built-in layout that loads the design system (if there is one), this design's styles.css, and Koda.`);
   }
   if (kind === 'design') lines.push(rulesSection(designPath));
   if (kind !== 'system' && system) {
-    lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. Don't change it from here; note in NOTES.md what it lacks.`);
+    lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. ${mayChange(system.path) ? 'If it lacks something this design needs, change it as described below.' : 'Don’t change it from here; note in NOTES.md what it lacks.'}`);
   } else if (kind !== 'system') {
     lines.push(`This folder has no design system yet; when it gets one, its designs will use it.`);
   }

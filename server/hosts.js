@@ -170,7 +170,7 @@ export function createHosts({ home }) {
     // host approves the same host there.
     approved(folder, config) {
       const approvals = readApprovals();
-      return [folder.id, folder.build?.parentId].some(id => id && approvals[id] === config.fingerprint);
+      return [folder.id, folder.branch?.parentId].some(id => id && approvals[id] === config.fingerprint);
     },
 
     approve(folder, config) {

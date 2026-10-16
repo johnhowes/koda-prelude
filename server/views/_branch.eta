@@ -1,0 +1,37 @@
+<%/* A design's branch (step 9), wherever it's listed: what it's doing, where
+     its check stands, how it stands against main, what it changes outside
+     its design, and its actions - bring main in, and finish (merge here, or
+     push for a pull request when there's a remote). `it.work` is
+     branchState()'s; `it.finish` the folder's /branches/<id> URL; `it.back`
+     where to come back to. */%>
+<% const w = it.work; %>
+<div class="branch">
+  <p class="muted">
+    On <code><%= w.branch %></code>
+    <% if (w.building) { %>· building <%= w.building.title %><% } %>
+    · <% if (w.check === 'passing') { %>its check passes
+    <% } else if (w.check === 'failing') { %><%= w.failures === 1 ? '1 page doesn’t' : `${w.failures} pages don’t` %> render yet
+    <% } else if (w.check === 'waiting') { %>its design host needs your approval
+    <% } else { %>not checked yet<% } %>
+    <% if (w.behind) { %>· <%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %><% } %>
+    <% if (!w.worked) { %>· nothing done on it yet<% } %>
+  </p>
+  <% if (w.alsoChanges.length) { %>
+  <p class="muted">Also changes, outside the design: <% for (const [i, path] of w.alsoChanges.slice(0, 6).entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %><%= w.alsoChanges.length > 6 ? `, and ${w.alsoChanges.length - 6} more` : '' %></p>
+  <% } %>
+  <div class="rowbtns">
+    <% if (w.behind) { %>
+    <form action="<%= it.finish %>/update" method="post">
+      <input type="hidden" name="back" value="<%= it.back %>">
+      <button class="btn small" type="submit" title="Merge <%= w.into %> into this branch, so it carries on from what’s there now.">Update from <%= w.into %></button>
+    </form>
+    <% } %>
+    <% if (w.worked) { %>
+    <form action="<%= it.finish %>/<%= w.remote ? 'publish' : 'merge' %>" method="post">
+      <input type="hidden" name="back" value="<%= it.back %>">
+      <button class="btn small<%= w.check === 'passing' ? ' primary' : '' %>" type="submit"
+              title="<%= w.remote ? `Push ${w.branch} and open a pull request into ${w.into}. Prelude asks first.` : `Merge ${w.branch} into ${w.into}: the design and anything built, together. Its worktree and branch are tidied up after.` %>"><%= w.remote ? 'Push and open a pull request' : `Merge into ${w.into}` %></button>
+    </form>
+    <% } %>
+  </div>
+</div>

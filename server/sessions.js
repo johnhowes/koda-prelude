@@ -36,12 +36,16 @@ export function sessionsDir(designDir) {
   return join(designDir, 'sessions');
 }
 
-export function createSession(designDir, { title }) {
+/**
+ * A new session. `build` ({ group, title }) makes it a build session (step
+ * 9): it builds that group of its design, on the design's branch.
+ */
+export function createSession(designDir, { title, build = null }) {
   const id = newSessionId();
   const dir = join(sessionsDir(designDir), id);
   mkdirSync(dir, { recursive: true });
   const now = new Date().toISOString();
-  const meta = { title, claudeSessionId: randomUUID(), started: false, startedAt: now, updatedAt: now };
+  const meta = { title, claudeSessionId: randomUUID(), started: false, startedAt: now, updatedAt: now, ...(build ? { build } : {}) };
   writeFileSync(join(dir, 'session.json'), JSON.stringify(meta, null, 2) + '\n');
   writeFileSync(join(dir, 'transcript.jsonl'), '');
   return { id, ...meta };

@@ -100,7 +100,7 @@ export function createTurns({ runner, live }) {
      * `references` are the folders the agent may also read ([{ name, path }]),
      * and `system` the folder's design system, as designPrompt takes it.
      */
-    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null }) {
+    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -123,11 +123,14 @@ export function createTurns({ runner, live }) {
         cwd: folder.path,
         sessionId: session.claudeSessionId,
         resume: session.started === true,
-        prompt: withFindings(told, message),
+        prompt: preface ? `${preface}
+
+${withFindings(told, message)}` : withFindings(told, message),
         // A build session (step 7) brings its own instructions and permissions.
-        systemPrompt: systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack }),
+        systemPrompt: systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack, shared }),
         designPath,
         mode,
+        shared,
         references: references.map(reference => reference.path),
         onEvent: event => {
           if (event.type === 'init') {

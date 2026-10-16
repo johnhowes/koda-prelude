@@ -96,12 +96,21 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     approves instead.
   - Build (plan, step 7): `server/rules.js` reads a design's `RULES.md`;
     `server/backlog.js` derives what's left to build, by page, and the story
-    text (the Build view, `_build.eta`); `server/builds.js` makes a build
-    session's git worktree and branch. A worktree is a folder (`app.folders.get`
-    finds it), so its sessions, host and check are a folder's; in it, sessions
-    run in `mode: 'build'` (`buildPrompt`, `permissionArgs`), and each turn is
-    committed to the branch. A host's `x-prelude-ahead` header (state members a
-    typed model lacks) is reported, never failed.
+    text (the Build view, `_build.eta`). A build session is a session whose
+    `session.json` has `build: { group, title }`; it runs in `mode: 'build'`
+    (`buildPrompt`, `permissionArgs`). A host's `x-prelude-ahead` header (state
+    members a typed model lacks) is reported, never failed.
+  - Branches (plan, step 9): in a git repository every design works on its
+    own branch, `prelude/<design>`, in a worktree (`server/branches.js`, kept in
+    `~/.prelude/builds.json`). A worktree is a folder (`app.folders.get` finds
+    it; `folder.branch` is set), so its sessions, host and check are a folder's.
+    Design and build sessions both work there and every turn is committed;
+    Prelude never writes to the person's checkout. A design's page on the main
+    folder moves to its worktree, and anything posted makes the branch first.
+    A design's agent may also change the design system and the shell on its
+    branch (`shared`). Finishing (`/f/<id>/branches/<branch>/merge|publish|update`)
+    merges into main without touching the checkout, or pushes for a pull
+    request (`gh`, `az`) after asking; merged branches are tidied up.
   - The app (plan, step 8): `server/app-config.js` reads `prelude.json`'s
     `app` (the stack chosen with the first design, and the app's path once
     built). The folder page's "The app" card starts the app build: a build

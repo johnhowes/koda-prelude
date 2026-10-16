@@ -1678,6 +1678,69 @@ Decided 2026-10-16:
   with it.
 - Apiary's existing app build branch becomes the shell's branch.
 
+**As built (9):**
+- **`server/branches.js`** replaces `builds.js`. It keeps one entry per design: branch,
+  worktree, the commit it started from (`base`), its repository, and the group it's
+  building.
+  - **Making a branch** (`ensure`) cuts `prelude/<design>` from the main branch: the
+    remote's default, else `main`, else `master`. First it commits anything designed in
+    the checkout before branches, and `prelude/prelude.json`. A repository with no
+    commits gets its first commit then.
+  - **Where it stands** (`status`) is read from the repository by branch name: behind,
+    ahead, merged (into local `main` or `origin/main`), and what it changes outside its
+    design. A branch counts as merged only once it has work of its own.
+- **Folders that aren't repositories yet.** Every design works on a branch only in a git
+  repository. A folder that isn't one is edited in place until its first build makes it
+  one, so Prelude never runs `git init` just because someone opened a design.
+- **Routing.** In a repository, a design's page on the main folder moves to its worktree.
+  Anything posted there is answered in the worktree, its branch made first if need be. A
+  new design is made on its branch.
+  - Designs that so far exist only on their branches are listed with the rest. A design
+    system or shell on any branch counts towards "one per folder".
+  - Host approval is the folder's, so every branch has it.
+- **Sessions.** A build session is marked in its `session.json` (`build: { group, title
+  }`), so one worktree holds design and build sessions both.
+  - Every turn on a branch is committed. Groups are built one at a time
+    (`entry.building`, cleared once the group is built).
+  - A design session's agent may also write the design system and the shell
+    (`shared`), never their sessions or approved screens. Its instructions say to keep
+    such a change general, put it in their gallery and guidelines, and note it in their
+    `NOTES.md`.
+  - When a feature's branch changes the shell, the check renders the shell's gallery too.
+- **Finishing** (`/f/<folder>/branches/<branch>/…`):
+  - **`merge`:** when the main branch is checked out, the merge happens there.
+    Otherwise it's made with `merge-tree`, `commit-tree` and `update-ref`, without
+    touching the checkout. A conflict changes nothing.
+  - **`publish`:** asks first, then pushes, and opens the pull request with `gh` or `az`
+    (title kept shell-safe, description from a file). Failing that, it gives the
+    compare link.
+  - **`update`:** fetches if there's a remote, then merges main into the branch; a
+    conflict is undone and named. The files that came in are told to the agent with
+    the next message.
+- **Tidying up** runs when the folder page loads (at most every 30 seconds; it fetches
+  from the remote).
+  - It stops any design host running from a merged worktree (on Windows a running host
+    locks its files), removes the worktree, deletes the branch, and records "merged
+    lately", shown on the folder page and the design's page.
+  - A worktree git has let go of but whose folder is still locked is finished later.
+- **Adopting earlier builds:** a step 7 or 8 build becomes its design's branch, keeping
+  its name. Its sessions are marked as build sessions, and its starting point is
+  recorded from git.
+- **Proven** on a clone of Apiary, with its remote removed and its own Prelude home:
+  1. **Landing page, design.** A design turn on its new branch. Asked for a copy button,
+     its agent added `copy.svg` and its token to the design system, documented it in the
+     component file and the gallery, and noted it in the system's `NOTES.md`. The folder
+     listed those files under "also changes".
+  2. **The app.** It was built on the shell's branch. Approved once (for the folder), the
+     check rendered 22 pages through the app. It was merged into `main` and tidied up.
+  3. **Landing page, build.** It updated from `main`, built its Home page on the same
+     branch (check passing), and was merged: its design, code and design-system change
+     together. Both branches and worktrees were gone, and the folder listed both merges.
+- **Found while proving it, and fixed:**
+  - **A merged worktree wasn't removed** while its design host was running.
+  - **A half-removed worktree** made every later status check fail.
+  - **A post with no body** crashed the request; it's now an empty form.
+
 ### Step 10 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

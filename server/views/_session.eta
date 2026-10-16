@@ -10,20 +10,25 @@
         <% if (it.design.area) { %>› <span><%= it.design.area %></span><% } %>
       </p>
       <h1><%= it.design.title %></h1>
-      <% if (it.build) { %>
-      <p class="muted">A build session, on the branch <code><%= it.build.branch %></code> (<code><%= it.build.path %></code>). Each turn is committed there; open the pull request when it’s ready. <a href="<%= it.build.back %>">Back to Build</a></p>
-      <% } else if (it.design.kind === 'system') { %>
+      <% const home = it.folder.branch?.parentId ?? it.folder.id; %>
+      <% if (it.branch?.building && it.session?.build) { %>
+      <p class="muted">A build session: it builds <%= it.session.build.title %> into the app, on this design’s branch. <% if (it.buildUrl) { %><a href="<%= it.buildUrl %>">Back to Build</a><% } %></p>
+      <% } %>
+      <% if (it.design.kind === 'system') { %>
       <p class="muted">The folder’s design system. Every other design here uses it.</p>
       <% } else if (it.design.kind === 'shell') { %>
-      <p class="muted">The app’s shell: its layouts. Every other design here renders in it.<% if (it.system) { %> Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a>.<% } %></p>
+      <p class="muted">The app’s shell: its layouts. Every other design here renders in it.<% if (it.system) { %> Uses <a href="/f/<%= home %>/d/<%= it.system.id %>"><%= it.system.title %></a>.<% } %></p>
       <% } else if (it.system || it.shell) { %>
       <p class="muted">
-        <% if (it.system) { %>Uses <a href="/f/<%= it.folder.id %>/d/<%= it.system.id %>"><%= it.system.title %></a><% } %>
+        <% if (it.system) { %>Uses <a href="/f/<%= home %>/d/<%= it.system.id %>"><%= it.system.title %></a><% } %>
         <% if (it.system && it.shell) { %>·<% } %>
-        <% if (it.shell) { %>Renders in <a href="/f/<%= it.folder.id %>/d/<%= it.shell.id %>"><%= it.shell.title %></a><% } %>
+        <% if (it.shell) { %>Renders in <a href="/f/<%= home %>/d/<%= it.shell.id %>"><%= it.shell.title %></a><% } %>
       </p>
       <% } %>
-      <p class="muted">The agent reads this repository<% for (const reference of it.references) { %>, <span title="<%= reference.path %>"><%= reference.name %></span><% } %>. <a href="/f/<%= it.folder.build?.parentId ?? it.folder.id %>#reading">Change what it can read</a></p>
+      <p class="muted">The agent reads this repository<% for (const reference of it.references) { %>, <span title="<%= reference.path %>"><%= reference.name %></span><% } %>. <a href="/f/<%= home %>#reading">Change what it can read</a></p>
+      <%/* Its branch (step 9): where it stands, and finishing it. */%>
+      <% if (it.branch) { %><%~ include('./_branch', { work: it.branch, finish: it.branch.finish, back: it.branch.back }) %><% } %>
+      <% if (it.merged && !it.branch) { %><p class="muted">Its branch, <code><%= it.merged.branch %></code>, was merged into <%= it.merged.into %> on <%= new Date(it.merged.at).toLocaleString() %>; its worktree and branch were tidied up.</p><% } %>
     </div>
     <nav class="sessions" aria-label="Sessions">
       <% if (it.sessions.length > 0) { %>
@@ -42,7 +47,7 @@
         </ul>
       </details>
       <% } %>
-      <% if (it.buildUrl && !it.build) { %><a class="btn small ghost" href="<%= it.buildUrl %>">Build</a><% } %>
+      <% if (it.buildUrl) { %><a class="btn small ghost" href="<%= it.buildUrl %>">Build</a><% } %>
       <a class="btn small" href="<%= it.urls.design %>/sessions/new"><span class="icon icon-add" aria-hidden="true"></span>New session</a>
     </nav>
   </header>

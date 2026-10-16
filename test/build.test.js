@@ -15,7 +15,7 @@ import { canonical, folderId } from '../server/folders.js';
 import { listStates } from '../server/host.js';
 import { createHosts } from '../server/hosts.js';
 import { createServer } from '../server/main.js';
-import { readEntries } from '../server/sessions.js';
+import { listSessions, readEntries, readSession } from '../server/sessions.js';
 import { parseRules, ruleWarnings } from '../server/rules.js';
 import { createFakeRunner } from './fake-runner.js';
 
@@ -30,7 +30,7 @@ const designDir = join(repo, 'prelude', 'borrowers');
 let server;
 let base;
 
-// No file-system monitor daemons for these throwaway repositories (see builds.js).
+// No file-system monitor daemons for these throwaway repositories (see branches.js).
 const git = (cwd, ...args) => execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.useBuiltinFSMonitor=false', ...args], { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const write = (root, path, text) => {
   const file = join(root, ...path.split('/'));
@@ -73,12 +73,15 @@ before(async () => {
   write(repo, 'prelude/borrowers/states/01-typical.json', { borrowers: [{ id: 1, name: 'Maria Delgado', email: 'maria@example.com' }] });
   write(repo, 'prelude/borrowers/states/02-underwriter.json', { borrowers: [{ id: 1, name: 'Maria Delgado', email: 'maria@example.com' }] });
   write(repo, 'prelude/borrowers/RULES.md', RULES);
+  // A design system, which a feature may change on its branch (step 9).
+  createDesign(repo, { title: 'Tokens', kind: 'system' });
+  write(repo, 'prelude/tokens/system/tokens.css', ':root { --accent: teal; }');
   // The app exists (step 8): features are built into app/.
   write(repo, 'prelude/prelude.json', { app: { stack: 'Node, Express, Eta and Koda', path: 'app' } });
   git(repo, 'add', '-A');
   git(repo, 'commit', '-q', '-m', 'Design borrowers');
 
-  server = createServer({ home, runner });
+  server = createServer({ home, runner, tidyEvery: 0 });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${server.address().port}`;
   const body = new FormData();
@@ -133,54 +136,87 @@ test('what’s left to build, by page: overlays, fragments and forms with their 
   assert.match(story, /## Test cases[\s\S]*- \*\*Typical\*\* \(`01-typical\.json`\)\n- \*\*Underwriter\*\* \(`02-underwriter\.json`\)/);
 });
 
+const worktreeOf = branch => canonical(git(repo, 'worktree', 'list').split('\n').find(line => line.includes(`[${branch}]`)).split(/\s+/)[0]);
+const settled = (designDir, sid, count = 1) => until(() => readEntries(designDir, sid).filter(e => e.type === 'turn').length >= count
+  && readEntries(designDir, sid).filter(e => e.type === 'note' && /^Committed to/.test(e.text)).length >= count);
+
 test('the Build view lists the groups, each copied as a story, with a build session to start', async () => {
   const page = await (await get(`/f/${fid}/d/borrowers/build`)).text();
   assert.match(page, /<h2>Borrowers <span class="pill">To build<\/span><\/h2>/);
   assert.match(page, /<h2>Reports <span class="pill">To build<\/span><\/h2>/);
   assert.match(page, /<textarea class="story"[^>]*># Borrowers: Borrowers/);
-  assert.match(page, /Start a build session/);
+  assert.match(page, /Start a build session/, 'a design with no branch yet can start one: starting makes its branch');
   assert.match(page, /Design-wide rules/);
   const session = await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text();
   assert.match(session, /href="\/f\/[0-9a-f]+\/d\/borrowers\/build">Build<\/a>/);
 });
 
-test('a build session: a branch and worktree, its own instructions and permissions, each turn committed', async () => {
+let wid;
+let workDir;
+let worktree;
+
+test('a build works on the design’s own branch: a build session, its own instructions, each turn committed', async () => {
+  // Anything designed in the checkout before branches is committed on main first.
+  write(repo, 'prelude/borrowers/NOTES.md', 'Designed before branches.');
   const started = await post(`/f/${fid}/d/borrowers/builds`, { group: '/borrowers' });
   assert.equal(started.status, 303, await started.text());
   const location = started.headers.get('location');
-  const [, wid, sid] = location.match(/^\/f\/([0-9a-f]+)\/d\/borrowers\/sessions\/(.+)$/);
+  const match = location.match(/^\/f\/([0-9a-f]+)\/d\/borrowers\/sessions\/(.+)$/);
+  wid = match[1];
+  const sid = match[2];
   assert.notEqual(wid, fid, 'the worktree is a folder of its own');
-
-  const branches = git(repo, 'branch', '--list', 'build/*');
-  assert.match(branches, /build\/borrowers-borrowers/);
-  const worktree = git(repo, 'worktree', 'list').split('\n').find(line => line.includes('build/borrowers-borrowers')).split(/\s+/)[0];
-  const workDir = join(worktree, 'prelude', 'borrowers');
+  assert.equal(git(repo, 'log', '-1', '--format=%s', 'main'), 'Borrowers, as designed so far (committed by Prelude)');
+  worktree = worktreeOf('prelude/borrowers');
+  workDir = join(worktree, 'prelude', 'borrowers');
+  assert.deepEqual(readSession(workDir, sid).build, { group: '/borrowers', title: 'Borrowers' });
 
   await until(() => runner.turns.length >= 1);
   const turn = runner.turns.at(-1);
-  assert.equal(canonical(turn.cwd), canonical(worktree));
+  assert.equal(canonical(turn.cwd), worktree);
   assert.equal(turn.mode, 'build');
   assert.match(turn.systemPrompt, /You are building part of a design into this repository's app: "Borrowers" of the design "Borrowers"/);
-  assert.match(turn.systemPrompt, /on the branch build\/borrowers-borrowers/);
-  assert.match(turn.systemPrompt, /- \/borrowers\/:id\/edit \(Edit borrower\), an overlay in "drawer" over \/borrowers: prelude\/borrowers\/views\/borrowers\/_edit/);
+  assert.match(turn.systemPrompt, /on the branch prelude\/borrowers/);
   assert.match(turn.systemPrompt, /- POST \/borrowers\/:id: update borrowers\/:id, requiring name, email/);
   assert.match(turn.systemPrompt, /- R-k3f: Only an underwriter sees/);
   assert.doesNotMatch(turn.systemPrompt, /R-z1x/, 'only proposed rules are to be made true');
   assert.equal(turn.prompt, 'Build Borrowers.');
 
-  // The first turn is committed to the branch, transcript and all.
-  await until(() => readEntries(workDir, sid).some(e => e.type === 'note'));
-  const note = readEntries(workDir, sid).find(e => e.type === 'note');
-  assert.match(note.text, /^Committed to build\/borrowers-borrowers \([0-9a-f]+\)\.$/);
+  await settled(workDir, sid);
   assert.match(git(worktree, 'log', '-1', '--format=%s'), /^Borrowers: Build Borrowers\.$/);
   assert.match(git(worktree, 'show', '--stat', '--format=', 'HEAD'), /prelude\/borrowers\/sessions\//);
-  assert.equal(git(repo, 'log', '-1', '--format=%s', 'main'), 'Design borrowers', 'main is untouched');
+
+  // Groups are built one at a time.
+  const second = await post(`/f/${wid}/d/borrowers/builds`, { group: '/reports' });
+  assert.equal(second.status, 409);
+  assert.match(await second.text(), /This design is building Borrowers now\. Groups are built one at a time\./);
+  const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
+  assert.match(view, /Building <strong>Borrowers<\/strong> on this design’s branch/);
 
   const session = await (await get(location)).text();
-  assert.match(session, /A build session, on the branch <code>build\/borrowers-borrowers<\/code>/);
-  assert.match(session, /Committed to build\/borrowers-borrowers/);
+  assert.match(session, /A build session: it builds Borrowers into the app, on this design’s branch/);
+  assert.match(session, /On <code>prelude\/borrowers<\/code>\s*· building Borrowers/);
+  assert.match(session, /Merge into main/, 'no remote: finished by merging here');
+});
 
-  // The agent ports everything (here, by hand): the design's copies of the views go.
+test('a design session on the branch may change the design system; the change travels with the design, and shows', async () => {
+  runner.turns.length = 0;
+  const started = await post(`/f/${wid}/d/borrowers/sessions`, { message: 'Add a badge colour to the system' });
+  assert.equal(started.status, 303);
+  const [, sid] = started.headers.get('location').match(/\/sessions\/(.+)$/);
+  await until(() => runner.turns.length >= 1);
+  const turn = runner.turns.at(-1);
+  assert.equal(turn.mode, 'design');
+  assert.deepEqual(turn.shared, ['prelude/tokens'], 'it may write the design system');
+  assert.match(turn.systemPrompt, /This design works on a branch of its own, and may change the design system \(prelude\/tokens\/\)/);
+  // The agent's change (by hand), committed with the turn.
+  write(worktree, 'prelude/tokens/system/tokens.css', ':root { --accent: teal; --badge: gold; }');
+  await settled(workDir, sid);
+  const folder = await (await get(`/f/${fid}`)).text();
+  assert.match(folder, /Also changes, outside the design: <code>prelude\/tokens\/system\/tokens\.css<\/code>/);
+});
+
+test('a build ports the views; the design’s copies go, and the build is done', async () => {
+  // The build agent's work (by hand): the views move into the app.
   write(worktree, 'app/views/borrowers/list.eta', '<ul><% for (const b of it.borrowers) { %><%~ include("./_row", b) %><% } %></ul>');
   write(worktree, 'app/views/borrowers/_row.eta', '<li><%= it.name %></li>');
   write(worktree, 'app/views/borrowers/_edit.eta', '<form><input name="name" value="<%= it.name %>"></form>');
@@ -191,34 +227,46 @@ test('a build session: a branch and worktree, its own instructions and permissio
     if (route.answer?.view) route.answer.view = `@app/app/views/${route.answer.view}`;
   }
   write(worktree, 'prelude/borrowers/routes.json', table);
-  await post(`/f/${wid}/d/borrowers/sessions/${sid}/messages`, { message: 'Ported' });
-  await until(() => readEntries(workDir, sid).filter(e => e.type === 'note').length === 2);
-  const check = readEntries(workDir, sid).filter(e => e.type === 'check').at(-1);
+  write(worktree, 'prelude/borrowers/RULES.md', readFileSync(join(workDir, 'RULES.md'), 'utf8').replace(/\n  \*proposed\*/g, ''));
+  const buildSession = listSessions(workDir).find(session => session.build);
+  await post(`/f/${wid}/d/borrowers/sessions/${buildSession.id}/messages`, { message: 'Ported' });
+  await settled(workDir, buildSession.id, 2);
+  const check = readEntries(workDir, buildSession.id).filter(e => e.type === 'check').at(-1);
   assert.deepEqual(check.failures, []);
-  assert.deepEqual(check.warnings, ['R-p0p is shown on /nowhere, which isn\'t a route of this design.', 'R-p0p is shown in the "nobody" state, which this design doesn\'t have.']);
   assert.equal(existsSync(join(workDir, 'views')), false, 'every route is the app’s now, so the design’s copies are gone');
   assert.match(git(worktree, 'show', '--stat', '--no-renames', '--format=', 'HEAD'), /app\/views\/borrowers\/list\.eta/);
-  assert.match(git(worktree, 'status', '--porcelain'), /^M prelude\/borrowers\/sessions\/[^\n]+\/transcript\.jsonl$/, 'only the last note is left to commit');
-
-  // The Build view shows the build, and the group as built on its branch.
-  const view = await (await get(`/f/${fid}/d/borrowers/build`)).text();
-  assert.match(view, /Build sessions[\s\S]*branch <code>build\/borrowers-borrowers<\/code>/);
-  const onBranch = await (await get(`/f/${wid}/d/borrowers/build`)).text();
-  assert.doesNotMatch(onBranch, /Start a build session/, 'no builds from a build');
+  const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
+  assert.doesNotMatch(view, /Building <strong>/, 'the group is built, so the branch is free for the next');
 });
 
-test('a build commits the design first, so its branch starts from it as it is now', async () => {
-  write(repo, 'prelude/borrowers/NOTES.md', 'Uncommitted.');
-  write(repo, 'scratch.txt', 'someone else’s work in progress');
-  const started = await post(`/f/${fid}/d/borrowers/builds`, { group: '/reports' });
-  assert.equal(started.status, 303, await started.text());
-  assert.equal(git(repo, 'log', '-1', '--format=%s', 'main'), 'Borrowers, before building Reports (committed by Prelude)');
-  assert.match(git(repo, 'show', '--stat', '--format=', 'main'), /prelude\/borrowers\/NOTES\.md/);
-  assert.match(git(repo, 'status', '--porcelain'), /\?\? scratch\.txt/, 'only the design is committed, nothing else');
-  // Let the build's first turn finish (its check and commit) before the server closes.
-  const [, sid] = started.headers.get('location').match(/\/sessions\/(.+)$/);
-  const worktree = canonical(git(repo, 'worktree', 'list').split('\n').find(line => line.includes('build/borrowers-reports')).split(/\s+/)[0]);
-  await until(() => readEntries(join(worktree, 'prelude', 'borrowers'), sid).some(e => e.type === 'note'));
+test('with a remote, finishing pushes the branch after asking, and a merge on the server is tidied up here', async () => {
+  const remote = canonical(mkdtempSync(join(tmpdir(), 'prelude-remote-')));
+  git(remote, 'init', '-q', '--bare', '-b', 'main');
+  git(repo, 'remote', 'add', 'origin', remote);
+  git(repo, 'push', '-q', 'origin', 'main');
+
+  const asked = await post(`/f/${fid}/branches/${wid}/publish`, { back: `/f/${fid}` });
+  assert.equal(asked.status, 200);
+  const question = await asked.text();
+  assert.match(question, /Push Borrowers\?/);
+  assert.match(question, new RegExp(`pushes <code>prelude/borrowers</code> to <code>${remote.replace(/\\/g, '\\\\')}</code>`));
+  assert.equal(git(remote, 'branch', '--list', 'prelude/borrowers'), '', 'nothing pushed before the person says yes');
+
+  const pushed = await post(`/f/${fid}/branches/${wid}/publish`, { back: `/f/${fid}`, confirm: 'yes' });
+  assert.equal(pushed.status, 200);
+  assert.match(await pushed.text(), /Pushed <code>prelude\/borrowers<\/code>\.[\s\S]*Open the pull request on your Git server/);
+  assert.match(git(remote, 'branch', '--list', 'prelude/borrowers'), /prelude\/borrowers/);
+
+  // The pull request is merged on the server (here, by hand, in a clone).
+  const clone = canonical(mkdtempSync(join(tmpdir(), 'prelude-clone-')));
+  git(clone, 'clone', '-q', remote, '.');
+  git(clone, 'merge', '-q', '--no-ff', '-m', 'Merge pull request', 'origin/prelude/borrowers');
+  git(clone, 'push', '-q', 'origin', 'main');
+
+  const after = await (await get(`/f/${fid}`)).text();
+  assert.match(after, /Merged lately[\s\S]*<code>prelude\/borrowers<\/code> was merged into main/);
+  assert.equal(existsSync(worktree), false, 'its worktree is gone');
+  assert.equal(git(repo, 'branch', '--list', 'prelude/borrowers'), '', 'and its branch');
 });
 
 test('a build agent writes the app, but not the design it builds from', () => {
@@ -229,16 +277,19 @@ test('a build agent writes the app, but not the design it builds from', () => {
   for (const kept of ['prelude/borrowers/views/**', 'prelude/borrowers/states/**', 'prelude/borrowers/snapshots/**', 'prelude/borrowers/sessions/**', '.git/**']) {
     assert.ok(denied.includes(`Edit(${kept})`) && denied.includes(`Write(${kept})`), kept);
   }
-  assert.equal(permissionArgs('prelude/borrowers')[permissionArgs('prelude/borrowers').indexOf('--allowedTools') + 1], 'Edit(prelude/borrowers/**),Write(prelude/borrowers/**)');
-  const prompt = buildPrompt({ title: 'X', designPath: 'prelude/x', group: { title: 'X', routes: [], posts: [], rules: [] }, branch: 'build/x', stack: { ext: '.cshtml', guide: 'prelude/HOST.md' } });
+  const design = permissionArgs('prelude/borrowers', [], 'design', ['prelude/tokens']);
+  assert.equal(design[design.indexOf('--allowedTools') + 1], 'Edit(prelude/borrowers/**),Write(prelude/borrowers/**),Edit(prelude/tokens/**),Write(prelude/tokens/**)');
+  assert.ok(design[design.indexOf('--disallowedTools') + 1].split(',').includes('Write(prelude/tokens/snapshots/**)'), 'never a shared design’s approved screens');
+  const prompt = buildPrompt({ title: 'X', designPath: 'prelude/x', group: { title: 'X', routes: [], posts: [], rules: [] }, branch: 'prelude/x', stack: { ext: '.cshtml', guide: 'prelude/HOST.md' } });
   assert.match(prompt, /Read prelude\/HOST\.md/);
   assert.match(prompt, /Never change the design's views, states, approved screens/);
+  assert.match(prompt, /a view at app\/views\/orders\/list\.cshtml is "@app\/app\/views\/orders\/list"/);
 });
 
-test('a build’s worktree has the folder’s host approval', () => {
+test('a design’s worktree has the folder’s host approval', () => {
   const hosts = createHosts({ home: mkdtempSync(join(tmpdir(), 'prelude-approvals-')) });
   const config = { fingerprint: 'abc' };
   hosts.approve({ id: 'parent' }, config);
-  assert.equal(hosts.approved({ id: 'worktree', build: { parentId: 'parent' } }, config), true);
+  assert.equal(hosts.approved({ id: 'worktree', branch: { parentId: 'parent' } }, config), true);
   assert.equal(hosts.approved({ id: 'other' }, config), false);
 });
