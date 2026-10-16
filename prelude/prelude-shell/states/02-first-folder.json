@@ -1,6 +1,6 @@
 {
-  "layout": { "folders": [], "agents": [] },
-  "folder": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+  "layout": { "projects": [], "agents": [] },
+  "project": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
   "designs": [],
   "session": {
     "title": "A new session",

@@ -9,8 +9,8 @@ Prelude Design System. Gallery: `/gallery` (with `/drawer`, `/modal`,
 ## Layouts
 
 - **app** - the bar, then the page scrolling with the window. Pages hold their
-  own width (`.center`); the shell gives the room above and below. Folders, a
-  folder, Build.
+  own width (`.center`); the shell gives the room above and below. Projects, a
+  project, Build.
 - **workspace** - the bar, then the page filling the rest of the window; the
   window doesn't scroll, the page's panels do. A design's page (chat + surface).
 - **window** - no bar; the page fills the window. The pop-out design surface.
@@ -21,6 +21,12 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 
 ## Decisions
 
+- **"Project", not "folder"** (the person's decision, 2026-10-16), in every
+  word the shell shows and in its data (`it.layout.projects`, `agents[].project`).
+  URLs keep `/f/<id>`: they're the app's routes, not words. A folder the agent
+  may read (not the project) is still a folder. The design system's
+  guidelines.md still says "folder, not project" in its Words table: it needs
+  changing there.
 - **Three layouts instead of one with flags.** Today `layout.eta` takes `bare`,
   and the session page makes itself full-height with `:has(.session-page)`
   rules. Naming the layout per route says it once, and drops those rules.
@@ -34,17 +40,18 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   something.** The region sits inside the dialog; a small script in the layout
   follows the region (`showModal()` when filled, `close()` when emptied), and
   Escape empties the region too. So the backdrop, inert page, focus and Escape
-  are the platform's, and pages still just aim at `modal?`.
-- **Bar: brand, what the agent is working on, and a Folders menu** (recent
-  folders, then "Open a folder…"). Where you are stays the page's crumbs, since
-  the bar isn't swapped on navigation and can't follow the page. Following a
-  link in a bar menu closes it (`ko-set="….open = false"`).
-- **What the agent is working on** (`it.layout.agents`: design, folder, url):
+  are the platform's, and pages still just aim at `modal?`. The dialog is named
+  by the first heading in it, so a modal fragment starts with an `<h2>`.
+- **Bar: brand, what the agent is working on, and a Projects menu** (recent
+  projects, then "Open a project…"). Where you are stays the page's crumbs,
+  since the bar isn't swapped on navigation and can't follow the page.
+  Following a link in a bar menu closes it (`ko-set="….open = false"`).
+- **What the agent is working on** (`it.layout.agents`: design, project, url):
   the turns running anywhere, as one link, or a menu when several. Nothing when
   the agent is idle. It's the `#agents` region, so the app can push it afresh
   on its live channel (`<div ko-into="agents">`) as turns start and end; the
   design shows it from the layout's data, since a design's origin has no such
-  channel.
+  channel. The person is trying it as it is before deciding more.
 - **`[data-desktop-only]`** moved from `prelude.css` into the shell: it's about
   the window, not a page. The app's layout still needs `desktop.js`.
 - **Main region is `#main`** (was `#workspace`); nothing targets it by id.
@@ -54,9 +61,9 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 - A bar menu doesn't close on a click outside it (it's a `details`); a
   `popover` would, but isn't the system's menu.
 - Should the agent's status also show a turn that finished while the person
-  was elsewhere (or one waiting on an approval)? Today it's only running turns.
-- The modal's accessible name is a generic "Question"; the fragment can't name
-  it without an id the shell knows.
+  was elsewhere (or one waiting on an approval)? Waiting to see how it feels.
+- The state `02-first-folder.json` should be renamed `02-first-project.json`
+  (the agent can't rename or delete files).
 - Design system lacks: a drawer/overlay surface token or component (the shell
   builds it from `--surface-raised`, `--shadow-lg`, `--backdrop`), and a width
   for a drawer (uses `--measure-narrow`).

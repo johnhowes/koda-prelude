@@ -20,12 +20,15 @@
   // The modal is a real dialog, open while its region holds something.
   // Koda fills and empties the region; showModal() is the platform's, and no
   // attribute calls it, so this follows the region. Escape closes the dialog,
-  // and then empties the region too, so it forgets what it showed.
+  // and then empties the region too, so it forgets what it showed. The
+  // dialog is named by the first heading of what's in it.
   const dialog = document.getElementById('modal-dialog');
   const region = document.getElementById('modal');
   const close = dialog.querySelector('[commandfor="modal"]');
   const follow = () => {
     const filled = region.childElementCount > 0;
+    const heading = region.querySelector('h1, h2, h3');
+    if (heading) dialog.setAttribute('aria-label', heading.textContent.trim());
     if (filled && !dialog.open) dialog.showModal();
     if (!filled && dialog.open) dialog.close();
   };

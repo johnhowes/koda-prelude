@@ -1,11 +1,11 @@
-<%/* The app layout's gallery page: a page like a folder's, and a way to open
+<%/* The app layout's gallery page: a page like a project's, and a way to open
      each region the layout offers. */%>
 <div class="center">
   <div class="stack gap-6">
     <div class="stack gap-2">
-      <nav class="crumbs" aria-label="Where you are"><a href="/">Folders</a></nav>
-      <h1><%= it.folder.name %></h1>
-      <p class="muted"><%= it.folder.path %></p>
+      <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a></nav>
+      <h1><%= it.project.name %></h1>
+      <p class="muted"><%= it.project.path %></p>
     </div>
 
     <div class="card">

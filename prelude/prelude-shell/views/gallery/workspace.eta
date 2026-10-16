@@ -4,8 +4,8 @@
 <div class="stack gap-3 gallery-fill">
   <div class="stack gap-1">
     <nav class="crumbs" aria-label="Where you are">
-      <a href="/">Folders</a><span aria-hidden="true">›</span>
-      <a href="/gallery"><%= it.folder.name %></a>
+      <a href="/">Projects</a><span aria-hidden="true">›</span>
+      <a href="/gallery"><%= it.project.name %></a>
     </nav>
     <h1 class="gallery-title"><%= it.session.design %></h1>
   </div>

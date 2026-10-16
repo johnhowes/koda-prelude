@@ -1,5 +1,5 @@
 {
-  "folder": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+  "project": { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
   "designs": [
     { "id": "sign-up", "title": "Sign up", "area": "Onboarding" },
     { "id": "identity-check", "title": "Identity check", "area": "Onboarding" },

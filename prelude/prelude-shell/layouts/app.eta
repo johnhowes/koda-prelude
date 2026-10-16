@@ -1,4 +1,4 @@
-<%/* Prelude's pages (Folders, a folder, Build): the bar, then the page, which
+<%/* Prelude's pages (Projects, a project, Build): the bar, then the page, which
      scrolls with the window. The page holds itself to a readable width
      (.center); the shell gives it its room above and below. */%>
 <!doctype html>
