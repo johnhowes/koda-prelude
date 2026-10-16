@@ -1,0 +1,3 @@
+<%/* Home as it first arrives, before its regions have loaded: the design's way
+     to show the loading state. The app needs no such URL. */%>
+<%~ include('./_home', { ...it, load: false }) %>

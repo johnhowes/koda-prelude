@@ -1,0 +1,13 @@
+{
+  "/": { "view": "home/index", "title": "Home", "data": "" },
+  "/loading": { "view": "home/loading", "title": "Home, while it loads", "data": "" },
+  "/home/needs-you": { "view": "home/_needs-you", "data": "" },
+  "/home/projects": { "view": "home/_projects", "data": "" },
+  "/open": { "view": "home/_open", "title": "Open a project", "data": "", "over": "/", "in": "modal" },
+  "POST /folders": {
+    "add": "projects",
+    "require": ["path"],
+    "form": "home/_open",
+    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "home/index", "data": "" }] }
+  }
+}

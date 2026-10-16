@@ -1,0 +1,12 @@
+<!-- Skeleton: what stands where content is on its way, the shape of what will
+     land: a line (--w is its share of the row), a .title, a .control or a .block.
+     Show what's already known for real (a project's name) and a skeleton only for
+     the rest. The bars are aria-hidden; the region holding them is aria-busy, with
+     words for a screen reader. They pulse, unless motion is reduced. -->
+<div class="stack gap-2" aria-busy="true">
+  <span class="sr-only">Loading…</span>
+  <span class="skeleton title" style="--w: 40%" aria-hidden="true"></span>
+  <span class="skeleton" aria-hidden="true"></span>
+  <span class="skeleton" style="--w: 65%" aria-hidden="true"></span>
+  <span class="skeleton control" style="--w: 30%" aria-hidden="true"></span>
+</div>

@@ -1,0 +1,34 @@
+{
+  "needs": [],
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "stack": "Node with Eta",
+      "designs": 9,
+      "changed": "1 minute ago",
+      "inProgress": [
+        { "title": "Loan offers", "where": "The agent is working on it", "url": "/f/spark-lending/d/loan-offers" }
+      ]
+    },
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "path": "C:\\Projects\\borrower-portal",
+      "stack": "ASP.NET Core MVC with Razor",
+      "designs": 6,
+      "changed": "yesterday",
+      "inProgress": []
+    },
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "stack": "Node with Eta",
+      "designs": 3,
+      "changed": "3 days ago",
+      "inProgress": []
+    }
+  ]
+}

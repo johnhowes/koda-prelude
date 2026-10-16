@@ -1,0 +1,37 @@
+{
+  "needs": [
+    {
+      "id": "n-r4w",
+      "kind": "question",
+      "projectId": "commercial-real-estate-origination",
+      "project": "commercial-real-estate-origination-platform",
+      "design": "Multi-borrower guarantor attestation and co-signer verification",
+      "says": "The agent asked whether a guarantor who is also a borrower signs once or twice, and whether the attestation should name both roles on the same page.",
+      "when": "just now",
+      "url": "/f/commercial-real-estate-origination/d/guarantor-attestation"
+    }
+  ],
+  "projects": [
+    {
+      "id": "commercial-real-estate-origination",
+      "name": "commercial-real-estate-origination-platform",
+      "path": "C:\\Users\\Shared\\Repositories\\lendwithspark\\commercial-real-estate-origination-platform",
+      "stack": "ASP.NET Core MVC with Razor",
+      "designs": 27,
+      "changed": "just now",
+      "inProgress": [
+        { "title": "Multi-borrower guarantor attestation and co-signer verification", "where": "The agent is asking you", "url": "/f/commercial-real-estate-origination/d/guarantor-attestation" },
+        { "title": "Construction draw schedule", "where": "6 of 11 pages approved", "url": "/f/commercial-real-estate-origination/d/draw-schedule" }
+      ]
+    },
+    {
+      "id": "x",
+      "name": "x",
+      "path": "D:\\x",
+      "stack": null,
+      "designs": 0,
+      "changed": "2 months ago",
+      "inProgress": []
+    }
+  ]
+}

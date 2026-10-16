@@ -47,6 +47,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **Icons**: 32 of ds/v1's Material Symbols, the ones Prelude's domain needs;
   `conversation`→`session`, `activity`→`history`. Pop out should use `external`,
   not `expand` (expand means "show more below").
+- **Skeleton** (`.skeleton`, `.title`/`.control`/`.block`, `--w`): placeholders
+  for content on its way, pulsing. Added because "Landing Page"
+  (prelude/landing-page) loads its regions separately; the shell's gallery drew
+  its own and can now drop it.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

@@ -1,0 +1,5 @@
+/* Home's own rules: what the design system can't say. */
+@scope (.home) {
+  /* A folder's path is one long word; let it wrap rather than push the card. */
+  .project-path { overflow-wrap: anywhere; }
+}

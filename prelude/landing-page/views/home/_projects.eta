@@ -1,0 +1,39 @@
+<%/* The recent projects, the most recently changed first: what's in progress
+     in each, and how many things in it are waiting on the person. */%>
+<% const projects = it.projects ?? [], needs = it.needs ?? []; %>
+<div class="grid" style="--min: 18rem">
+  <% for (const project of projects) {
+       const name = project.name ?? project.path.split(/[\\/]/).pop();
+       const inProgress = project.inProgress ?? [];
+       const waiting = needs.filter(need => need.projectId === project.id).length;
+       const designs = project.designs ?? 0;
+       const facts = [`${designs} ${designs === 1 ? 'design' : 'designs'}`, project.stack ?? 'No app yet', `changed ${project.changed ?? 'just now'}`]; %>
+  <article class="card gap-3">
+    <div class="stack gap-1">
+      <div class="cluster">
+        <h3><a href="/f/<%= project.id %>"><%= name %></a></h3>
+        <% if (waiting) { %><span class="pill accent"><%= waiting %> waiting on you</span><% } %>
+      </div>
+      <span class="muted project-path"><%= project.path %></span>
+    </div>
+    <% if (inProgress.length) { %>
+    <ul class="list">
+      <% for (const design of inProgress) { %>
+      <li>
+        <a class="item" href="<%= design.url %>">
+          <span class="icon icon-screen" aria-hidden="true"></span>
+          <span class="item-text">
+            <span class="item-title"><%= design.title %></span>
+            <span class="muted"><%= design.where %></span>
+          </span>
+        </a>
+      </li>
+      <% } %>
+    </ul>
+    <% } else { %>
+    <p class="secondary">Nothing in progress.</p>
+    <% } %>
+    <p class="muted"><%= facts.join(' · ') %></p>
+  </article>
+  <% } %>
+</div>

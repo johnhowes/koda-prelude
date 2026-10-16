@@ -1,0 +1,46 @@
+<%/* The home page's body. Each region starts with its placeholder, and loads
+     its own content when `load` is set. With no projects yet, the page is the
+     way to open the first. */%>
+<% const projects = it.projects ?? []; %>
+<div class="center home">
+<% if (!projects.length) { %>
+  <div class="stack gap-5">
+    <div class="stack gap-2">
+      <h1>Open your first project</h1>
+      <p class="secondary">A project is a folder, usually a repo, new or already full of code. Everything Prelude makes goes in its <code>prelude/</code> directory, committed alongside the code.</p>
+    </div>
+    <div class="cluster actions">
+      <a class="btn primary" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
+    </div>
+  </div>
+<% } else { %>
+  <div class="stack gap-8" ko-item>
+    <div class="stack gap-2">
+      <h1>Home</h1>
+      <p class="secondary">What needs you across your projects, and where you left off.</p>
+    </div>
+
+    <section class="card" aria-labelledby="needs-you-title">
+      <h2 id="needs-you-title">Needs you</h2>
+      <div ko-as="needsYou"<% if (it.load) { %> ko-source="/home/needs-you"<% } %>><%~ include('./_needs-you-loading', it) %></div>
+      <div class="notice danger" role="alert" visible-when-unreachable="needsYou">
+        <p>Prelude couldn’t check what needs you. Your projects are fine; try again in a moment.</p>
+        <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="needsYou">Try again</button></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3" aria-labelledby="projects-title">
+      <div class="cluster">
+        <h2 class="group-label" id="projects-title">Projects</h2>
+        <span class="spacer"></span>
+        <a class="btn small" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
+      </div>
+      <div ko-as="projectList"<% if (it.load) { %> ko-source="/home/projects"<% } %>><%~ include('./_projects-loading', it) %></div>
+      <div class="notice danger" role="alert" visible-when-unreachable="projectList">
+        <p>Prelude couldn’t read what’s in your projects. Try again in a moment.</p>
+        <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="projectList">Try again</button></div>
+      </div>
+    </section>
+  </div>
+<% } %>
+</div>
