@@ -1,7 +1,16 @@
 {
   "needs-changed": {
-    "title": "Repayment schedule is built (it leaves Needs you)",
-    "remove": "needs/n-m0c",
+    "title": "The agent asks you something",
+    "add": "needs",
+    "with": {
+      "kind": "question",
+      "projectId": "spark-lending",
+      "project": "spark-lending",
+      "design": "Loan offers",
+      "says": "The agent asked whether an expired offer stays visible to the borrower, or disappears.",
+      "when": "just now",
+      "url": "/f/spark-lending/d/loan-offers"
+    },
     "send": "needs-changed"
   },
   "projects-changed": {

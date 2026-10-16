@@ -36,8 +36,13 @@ first run (no projects), all caught up, long names.
   can't see (a pull request merged on the Git server). Polling every 30s was
   dropped: each refresh reads every project's branches. The projects also
   reload on `needs-changed`, since each card counts what's waiting in it.
-  `events.json` declares both for the preview's design bar, written against
-  the typical state (they name its records).
+  `events.json` declares both for the preview's design bar. `needs-changed`
+  adds a question (it works in every state, any number of times);
+  `projects-changed` names borrower-portal, so it works where that project
+  exists (typical, all caught up).
+- **Needs are kept oldest first, shown newest first**: the data keeps them in
+  the order they arrived, as an added one lands at the end, and the view
+  shows them from the end.
 - **A project whose folder has gone** stays as a card saying so, with "Remove
   from your projects" (`POST /folders/:id/remove`) (the person, 2026-10-16).
 - **The bar counts what needs you** (the person, 2026-10-16): a shell change,
