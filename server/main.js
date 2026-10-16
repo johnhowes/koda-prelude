@@ -211,7 +211,7 @@ async function handle(req, res, app) {
       // its new and changed groups, or those still to build.
       const inProgress = designs.filter(design => design.work).map(design => {
         const dir = join(design.work.path, PRELUDE_DIR, ...design.id.split('/'));
-        const stories = isHosted(dir) && design.kind === 'design'
+        const stories = isHosted(dir) && buildsPages(design)
           ? groupsOf(app, { entry: design.work, design, dir }).groups.filter(group => group.kind !== 'unchanged')
             .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: group.story }))
           : [];
@@ -521,6 +521,12 @@ function noteOnBranch(entry, text, failed = false) {
 
 const mainOf = folder => mainBranch(folder.path);
 
+/** Whether a design has pages to build: a feature, or the shell's own (its Settings, say). */
+const buildsPages = design => design.kind === 'design' || design.kind === 'shell';
+
+/** A shell's gallery: the pages under its views' gallery/, showing its layouts. Never built. */
+const isGallery = (design, group) => design.kind === 'shell' && (!group.page || group.page.view.startsWith('gallery/'));
+
 /**
  * A design's groups as its Build page and the folder's "In progress" show
  * them (steps 7 and 10), each with:
@@ -534,7 +540,9 @@ const mainOf = folder => mainBranch(folder.path);
  */
 function groupsOf(app, { entry, design, dir }) {
   const designPath = `${PRELUDE_DIR}/${design.id}`;
-  const { groups, designWide } = backlogOf(dir);
+  const backlog = backlogOf(dir);
+  const groups = backlog.groups.filter(group => !isGallery(design, group));
+  const { designWide } = backlog;
   const states = listStates(dir);
   const approved = Boolean(readSnapshots(dir));
   let increment = null;
@@ -792,7 +800,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       system: systemFor(),
       shell: shellFor(),
       references: app.references.of(parentId),
-      buildUrl: hosted && design.kind === 'design' ? `${base}/build` : null,
+      buildUrl: hosted && buildsPages(design) ? `${base}/build` : null,
       branch,
       merged: app.branches.merged(parentId).find(note => note.design === design.id) ?? null,
     }, title);
@@ -960,7 +968,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       ...extra,
     };
   };
-  if (req.method === 'GET' && rest[0] === 'build' && rest.length === 1 && hosted && design.kind === 'design') {
+  if (req.method === 'GET' && rest[0] === 'build' && rest.length === 1 && hosted && buildsPages(design)) {
     return page(200, 'build', buildView(), `Build · ${title}`);
   }
 
@@ -969,7 +977,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'POST' && rest[0] === 'builds' && rest.length === 1 && entry) {
     const key = String((await readForm(req)).get('group') ?? '');
     const isApp = key === APP_GROUP.key && design.kind === 'shell';
-    const work = design.kind === 'design' && hosted ? groupsOf(app, { entry, design, dir }).groups : [];
+    const work = buildsPages(design) && hosted ? groupsOf(app, { entry, design, dir }).groups : [];
     const group = isApp ? APP_GROUP : work.find(g => g.key === key) ?? null;
     const refuse = error => page(409, 'build', buildView({ error }), `Build · ${title}`);
     if (!group) return page(422, 'build', buildView({ error: 'That group is no longer in the design.' }), `Build · ${title}`);

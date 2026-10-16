@@ -115,7 +115,9 @@ test('the design agent is told how to write rules; the system and shell aren’t
   assert.match(prompt, /prelude\/borrowers\/RULES\.md holds the design's rules/);
   assert.match(prompt, /R- and three random lowercase letters and digits, never a sequence/);
   assert.match(prompt, /Write every new rule as \*proposed\*/);
-  assert.doesNotMatch(designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell' }), /RULES\.md/);
+  const shell = designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell' });
+  assert.doesNotMatch(shell, /RULES\.md/);
+  assert.match(shell, /Keep the gallery's views in prelude\/shell\/views\/gallery\/\. A page the shell itself owns[^.]*\(Settings, say/, 'a shell’s own pages are built; its gallery isn’t');
 });
 
 test('what’s left to build, by page: overlays, fragments and forms with their page, rules where they’re shown', () => {

@@ -2019,3 +2019,6 @@ comments, the custom dialect, MCP tools, epics, tracker integration.
   work as links.
 - 2026-10-14: Screens start as plain HTML. The move beyond it is deferred to step 6
   (states).
+- 2026-10-16: The shell may own pages that belong to no feature (Settings, say). They
+  are built like a feature's, from the shell's Build page. Its gallery, the pages whose
+  views are under `views/gallery/`, is never built.

@@ -132,8 +132,10 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   const { repo, fid } = await bareRepo();
   createDesign(repo, { title: 'Tokens', kind: 'system' });
   createDesign(repo, { title: 'Shell', kind: 'shell' });
-  write(repo, 'prelude/shell/routes.json', { '/': { view: 'home', title: 'Home', data: '' } });
-  write(repo, 'prelude/shell/views/home.eta', '<p>Gallery</p>');
+  // Its gallery, and a page of its own, Settings, which is built like a feature's.
+  write(repo, 'prelude/shell/routes.json', { '/': { view: 'gallery/home', title: 'Home', data: '' }, '/settings': { view: 'settings/page', title: 'Settings', data: '' } });
+  write(repo, 'prelude/shell/views/gallery/home.eta', '<p>Gallery</p>');
+  write(repo, 'prelude/shell/views/settings/page.eta', '<h1>Settings</h1>');
   write(repo, 'prelude/shell/layouts/app.eta', '<html><body class="designed"><%~ it.body %></body></html>');
   write(repo, 'prelude/shell/layouts/app.json', { user: 'Dana' });
   createDesign(repo, { title: 'Loans', kind: 'design' });
@@ -197,6 +199,20 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   assert.match(afterMerge, /Merged lately[\s\S]*<code>prelude\/shell<\/code> was merged into main/);
   assert.match(afterMerge, /Node, Express, Eta and Koda, in <code>app\/<\/code>/);
   assert.match(await (await fetch(`${base}/f/${fid}/d/shell`)).text(), /Its branch, <code>prelude\/shell<\/code>, was merged into main/, 'the design’s page says so too');
+
+  // The shell's own page is built like a feature's; its gallery never is.
+  const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
+  assert.match(shellBuild, /<h2>Settings <span class="pill">/);
+  assert.doesNotMatch(shellBuild, /<h2>Home /, 'the gallery isn’t built');
+  const settings = await post(`/f/${fid}/d/shell/builds`, { group: '/settings' });
+  assert.equal(settings.status, 303, await settings.text());
+  const [, swid, ssid] = location(settings).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
+  const settingsDir = join(worktreeOf(repo, 'prelude/shell'), 'prelude', 'shell');
+  assert.deepEqual(readSession(settingsDir, ssid).build, { group: '/settings', title: 'Settings' });
+  await until(() => runner.turns.some(turn => turn.prompt.includes('Build Settings.')));
+  assert.equal(runner.turns.find(turn => turn.prompt.includes('Build Settings.')).mode, 'build');
+  assert.ok(swid);
+  await settled(settingsDir, ssid);
 
   // The feature's branch started before the app: it updates from main, then builds.
   const loans = worktreeOf(repo, 'prelude/loans');

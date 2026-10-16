@@ -292,7 +292,7 @@ One URL answers in two shapes, and Prelude does it for you, as the real server d
 - layouts/<name>.json - sample data for that layout, which every design gets unless its state overrides it under "layout".
 - "app" is the layout every design uses unless a route names another (for example "bare", for sign-in or a full-screen wizard).
 
-The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers.`);
+The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers. Keep the gallery's views in ${designPath}/views/gallery/. A page the shell itself owns, one that belongs to no feature (Settings, say, or an account page the navigation links to), goes in views/ outside gallery/, with routes like any design's: it's built into the app like a feature's pages, and the gallery never is.`);
   } else {
     lines.push(shell
       ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. ${mayChange(shell.path) ? 'If this design needs something of the shell (a navigation item, a region, a new kind of page), change it as described below.' : `Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`}`
