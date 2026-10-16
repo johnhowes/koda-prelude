@@ -1,0 +1,15 @@
+<!-- Stack: children one under another, with the space between them owned by the
+     stack. A page is a stack of blocks; a form is a stack of fields and its actions;
+     a label and the thing it heads are a tight stack (.gap-1). Default gap is
+     --space-4; choose another with .gap-1 … .gap-10, or style="--gap: var(--space-…)".
+     Never put a margin on a child to space it: nest another stack instead. -->
+<div class="stack">
+  <h1>Sign up</h1>
+  <p class="secondary">The first thing a new person sees.</p>
+  <div class="card">…</div>
+</div>
+
+<div class="stack gap-1">
+  <h3 class="group-label">Onboarding</h3>
+  <ul class="list">…</ul>
+</div>

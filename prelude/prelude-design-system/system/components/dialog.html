@@ -1,0 +1,14 @@
+<!-- Dialog: a question that must be answered before anything else - rare. Prefer a
+     .notice in the page (it can be linked to and needs no script). The title asks
+     the question; the buttons answer it in words ("Push", "Not now"), primary first.
+     Its contents are a .stack. -->
+<dialog open aria-labelledby="dialog-title">
+  <div class="stack gap-3">
+    <h2 id="dialog-title">Approve this design host?</h2>
+    <p class="secondary">It runs <code>npm run host</code> here, with your permissions, outside Prelude’s sandbox.</p>
+    <form method="dialog" class="cluster actions">
+      <button class="btn primary" value="approve">Approve and start it</button>
+      <button class="btn ghost" value="cancel">Not now</button>
+    </form>
+  </div>
+</dialog>

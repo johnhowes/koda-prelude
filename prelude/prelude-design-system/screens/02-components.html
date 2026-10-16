@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Components</title>
+<link rel="stylesheet" href="../system/tokens.css">
+<link rel="stylesheet" href="../system/components.css">
+<link rel="stylesheet" href="../system/icons.css">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<main class="center gallery">
+<div class="stack gap-6">
+  <header class="cluster gap-4">
+    <nav class="segmented" aria-label="Gallery">
+      <a class="btn small" href="01-tokens.html">Tokens</a>
+      <a class="btn small" href="02-components.html" aria-current="page">Components</a>
+      <a class="btn small" href="03-guidelines.html">Guidelines</a>
+    </nav>
+    <span class="spacer"></span>
+    <fieldset class="cluster gap-3 scheme">
+      <legend class="sr-only">Theme</legend>
+      <label><input type="radio" name="scheme" id="scheme-system" checked> System</label>
+      <label><input type="radio" name="scheme" id="scheme-light"> Light</label>
+      <label><input type="radio" name="scheme" id="scheme-dark"> Dark</label>
+    </fieldset>
+  </header>
+
+  <div class="stack gap-2">
+    <h1>Components</h1>
+    <p class="secondary gallery-intro">What every Prelude screen is made of. Each one’s markup is in <code>system/components/</code>; copy it from there. Pages are composed from the layout primitives first, and blocks sit inside them.</p>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Layout</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Stack</h3>
+      <p class="secondary">Children one under another. The stack owns the space between them: default <code>--space-4</code>, or <code>.gap-1</code> … <code>.gap-10</code>.</p>
+      <div class="stage cluster gap-6 baseline">
+        <div class="stack gap-1"><span class="muted">.gap-1</span><div class="demo">One</div><div class="demo">Two</div><div class="demo">Three</div></div>
+        <div class="stack"><span class="muted">default</span><div class="demo">One</div><div class="demo">Two</div><div class="demo">Three</div></div>
+        <div class="stack gap-8"><span class="muted">.gap-8</span><div class="demo">One</div><div class="demo">Two</div><div class="demo">Three</div></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Cluster</h3>
+      <p class="secondary">A row that wraps: buttons, pills, a label and its value. Default <code>--space-2</code>; a <code>.spacer</code> pushes what follows to the end. Drag the stage’s corner to narrow it.</p>
+      <div class="stage resizable stack">
+        <div class="cluster actions">
+          <button class="btn primary" type="submit">Merge into main</button>
+          <form action="#" method="post"><button class="btn" type="submit">Update from main</button></form>
+          <a class="btn ghost" href="#">Not now</a>
+        </div>
+        <div class="cluster baseline gap-1">
+          <span class="muted">On</span> <code>prelude/sign-up</code>
+          <span class="pill good">Check passes</span>
+          <span class="pill warn">2 commits behind main</span>
+        </div>
+        <div class="cluster"><span class="demo">Design</span><span class="demo">States</span><span class="spacer"></span><span class="demo">Refresh</span><span class="demo">Pop out</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Grid</h3>
+      <p class="secondary">Equal columns, as many as fit at <code>--min</code> wide (default 14rem). Narrow the stage and they drop to fewer.</p>
+      <div class="stage resizable">
+        <div class="grid" style="--min: 10rem">
+          <div class="demo tall">One</div><div class="demo tall">Two</div><div class="demo tall">Three</div><div class="demo tall">Four</div><div class="demo tall">Five</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Split</h3>
+      <p class="secondary">A main part and a <code>.side</code>. Side by side while the main part keeps <code>--main-min</code> of the row; then the side wraps onto its own line. Narrow the stage to see it.</p>
+      <div class="stage resizable">
+        <div class="split" style="--side: 14rem">
+          <div class="demo tall side">Side · the chat</div>
+          <div class="demo tall">Main · the design</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Center</h3>
+      <p class="secondary">Content held to a readable width in the middle of what holds it, with a gutter. <code>.narrow</code> for a sign-in or an empty state. It centres; a <code>.stack</code> inside spaces.</p>
+      <div class="stage">
+        <div class="center narrow"><div class="stack gap-2"><div class="demo">Held to --measure-narrow</div><div class="demo">A second block</div></div></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Actions</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Button</h3>
+      <p class="secondary">One primary per view. Ghost for quiet tools, danger for what can’t be undone. Small in toolbars, large only for a page’s single call to action.</p>
+      <div class="stage stack gap-3">
+        <div class="cluster actions">
+          <button class="btn primary" type="submit">Create design</button>
+          <button class="btn" type="button">Choose…</button>
+          <a class="btn ghost" href="#">Not now</a>
+          <button class="btn danger" type="button">Abandon the update</button>
+        </div>
+        <div class="cluster actions">
+          <button class="btn small" type="button"><span class="icon icon-add" aria-hidden="true"></span>New session</button>
+          <a class="btn small ghost" href="#" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
+          <button class="btn small" type="button" aria-pressed="true">Agent</button>
+          <button class="btn small" type="button" disabled>Send</button>
+        </div>
+        <div class="cluster actions">
+          <button class="btn large primary" type="submit">Start the app build</button>
+          <button class="link-btn" type="button">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Icon button</h3>
+      <p class="secondary">Only for glyphs everyone knows, always with an <code>aria-label</code>.</p>
+      <div class="stage cluster">
+        <button class="icon-btn" type="button" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+        <button class="icon-btn small" type="button" aria-label="Zoom in" title="Zoom in"><span class="icon icon-zoom-in" aria-hidden="true"></span></button>
+        <button class="icon-btn danger" type="submit" aria-label="Stop reading another-app"><span class="icon icon-close" aria-hidden="true"></span></button>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Segmented</h3>
+      <p class="secondary">Two or three views of the same thing; the one showing is current.</p>
+      <div class="stage cluster">
+        <span class="segmented" role="group" aria-label="Show">
+          <a class="btn small" href="#" aria-current="true">Design</a>
+          <a class="btn small" href="#">App</a>
+        </span>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Menu</h3>
+      <p class="secondary">Pick one of a short list. No script: it’s a <code>details</code>.</p>
+      <div class="stage cluster menu-room">
+        <details class="menu start" open>
+          <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</summary>
+          <form class="menu-list" action="#" method="post">
+            <button type="submit" name="screen" value="01-sign-in" aria-current="true">
+              <span class="item-title">Sign in</span>
+              <span class="muted">01-sign-in.html</span>
+            </button>
+            <button type="submit" name="screen" value="02-sign-up">
+              <span class="item-title">Sign up</span>
+              <span class="muted">02-sign-up.html</span>
+            </button>
+          </form>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Structure</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Crumbs and card</h3>
+      <div class="stage stack">
+        <div class="stack gap-2">
+          <nav class="crumbs" aria-label="Where you are">
+            <a href="#">Folders</a><span aria-hidden="true">›</span>
+            <a href="#">my-app</a><span aria-hidden="true">›</span>
+            <span>Onboarding</span>
+          </nav>
+          <h1>Sign up</h1>
+        </div>
+        <div class="card">
+          <h2>Designs</h2>
+          <p class="secondary">A design usually describes one feature, and grows over many sessions.</p>
+          <div class="stack gap-1">
+            <h3 class="group-label">Onboarding</h3>
+            <ul class="list">
+              <li><a class="item" href="#"><span class="icon icon-screen" aria-hidden="true"></span><span class="item-text"><span class="item-title">Sign up</span><span class="muted">prelude/sign-up</span></span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>List</h3>
+      <p class="secondary">Things to open, one per row; the whole row is the link.</p>
+      <div class="stage">
+        <ul class="list">
+          <li>
+            <a class="item" href="#">
+              <span class="icon icon-screen" aria-hidden="true"></span>
+              <span class="item-text">
+                <span class="item-title">Sign up</span>
+                <span class="muted">prelude/sign-up</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a class="item" href="#">
+              <span class="icon icon-design-system" aria-hidden="true"></span>
+              <span class="item-text">
+                <span class="item-title">Prelude Design System<span class="pill">Design system</span></span>
+                <span class="muted">prelude/prelude-design-system</span>
+              </span>
+            </a>
+          </li>
+          <li>
+            <span class="item">
+              <span class="icon icon-folder" aria-hidden="true"></span>
+              <span class="item-text">
+                <span class="item-title">another-app</span>
+                <span class="muted">C:\Projects\another-app</span>
+              </span>
+              <form action="#" method="post">
+                <button class="icon-btn small" type="submit" aria-label="Stop reading another-app"><span class="icon icon-close" aria-hidden="true"></span></button>
+              </form>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Table</h3>
+      <div class="stage">
+        <table class="table">
+          <thead><tr><th scope="col">Page</th><th scope="col">State</th><th scope="col" class="num">Forms</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#">Sign up</a></td><td>empty</td><td class="num">1</td></tr>
+            <tr><td><a href="#">Sign up</a></td><td>taken</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Panel, toolbar and empty</h3>
+      <p class="secondary">A panel fills its share of a layout; its toolbar runs across the top.</p>
+      <div class="stage tall">
+        <section class="panel" aria-label="Design">
+          <div class="toolbar">
+            <span class="segmented" role="group" aria-label="Show">
+              <a class="btn small" href="#" aria-current="true">Design</a>
+              <a class="btn small" href="#">App</a>
+            </span>
+            <span class="muted">0 screens</span>
+            <span class="spacer"></span>
+            <a class="btn small ghost" href="#">Refresh</a>
+            <a class="btn small ghost" href="#" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
+          </div>
+          <div class="notice warn" role="alert">
+            <strong>This repository has its own design host.</strong>
+            <p>It runs <code>npm run host</code> here, with your permissions.</p>
+            <div class="cluster actions"><button class="btn small primary" type="submit">Approve and start it</button></div>
+          </div>
+          <div class="panel-body">
+            <p class="empty">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Forms</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Field</h3>
+      <p class="secondary">A form is a stack. Fields go two to a row while there’s room, with a hint or an error under the control.</p>
+      <div class="stage">
+        <form class="stack" action="#" method="post">
+          <div class="fields">
+            <label class="field">
+              <span class="label">Title</span>
+              <input name="title" placeholder="Sign up" autocomplete="off">
+            </label>
+            <label class="field">
+              <span class="label">Area <span class="muted">(optional)</span></span>
+              <input name="area" placeholder="onboarding" autocomplete="off">
+              <span class="hint">Designs with the same area are listed together.</span>
+            </label>
+            <label class="field wide">
+              <span class="label">The app’s stack</span>
+              <input name="stack" aria-invalid="true" aria-describedby="stack-error" value="">
+              <span class="error" id="stack-error">Say which stack the app is written in.</span>
+            </label>
+          </div>
+          <div class="cluster actions">
+            <button class="btn primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Create design</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Inline</h3>
+      <p class="secondary">A control and its buttons on one line; they wrap when narrow.</p>
+      <div class="stage">
+        <form class="stack gap-1" action="#" method="post">
+          <label class="label" for="folder-path">Folder path</label>
+          <div class="inline">
+            <input id="folder-path" name="path" placeholder="C:\Projects\my-app" autocomplete="off" spellcheck="false">
+            <button class="btn" type="button">Choose…</button>
+            <button class="btn primary" type="submit">Open</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Choices and disclosure</h3>
+      <div class="stage stack">
+        <fieldset class="choices">
+          <legend class="sr-only">Kind</legend>
+          <label class="choice"><input type="radio" name="kind" value="design" checked> <span>A design <span class="muted">· usually one feature</span></span></label>
+          <label class="choice"><input type="radio" name="kind" value="system"> <span>The folder’s design system <span class="muted">· its tokens and components; every other design uses it</span></span></label>
+          <label class="choice"><input type="radio" name="kind" value="shell"> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
+        </fieldset>
+        <details class="disclosure">
+          <summary>Choose another stack</summary>
+          <label class="field">
+            <span class="label">The app’s stack</span>
+            <input name="stack" placeholder="ASP.NET Core MVC with Razor" autocomplete="off">
+          </label>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Feedback</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Pill</h3>
+      <div class="stage cluster">
+        <span class="pill">Design system</span>
+        <span class="pill accent">Current</span>
+        <span class="pill good">Check passes</span>
+        <span class="pill warn">Behind main</span>
+        <span class="pill danger">Doesn’t render</span>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Notice</h3>
+      <p class="secondary">News, a question before an outward step, or a failure.</p>
+      <div class="stage stack gap-3">
+        <div class="notice" role="status">
+          <p>Pushed <code>prelude/sign-up</code>. Once it’s merged, Prelude tidies up the branch here.</p>
+        </div>
+        <div class="notice warn" role="alertdialog" aria-labelledby="push-title">
+          <strong id="push-title">Push Sign up?</strong>
+          <p>This pushes <code>prelude/sign-up</code> to <code>origin</code>, where others can see it, and opens a pull request for it.</p>
+          <div class="cluster actions">
+            <button class="btn small primary" type="submit">Push and open the pull request</button>
+            <a class="btn small ghost" href="#">Not now</a>
+          </div>
+        </div>
+        <div class="notice danger" role="alert">
+          <strong>main is half brought in.</strong>
+          <p>These files clash: <code>views/sign-up.eta</code>. Send the agent a message and it resolves them first.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Dialog</h3>
+      <p class="secondary">Rare: prefer a notice in the page.</p>
+      <div class="stage">
+        <dialog open aria-labelledby="dialog-title">
+          <div class="stack gap-3">
+            <h2 id="dialog-title">Approve this design host?</h2>
+            <p class="secondary">It runs <code>npm run host</code> here, with your permissions, outside Prelude’s sandbox.</p>
+            <form method="dialog" class="cluster actions">
+              <button class="btn primary" value="approve">Approve and start it</button>
+              <button class="btn ghost" value="cancel">Not now</button>
+            </form>
+          </div>
+        </dialog>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>The session</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>Transcript, status and composer</h3>
+      <p class="secondary">The chat panel: the person’s messages on the right, the agent’s words as prose, its tools as one line each, Prelude’s notes in grey.</p>
+      <div class="stage tall session">
+        <section class="panel" aria-label="Session">
+          <div class="toolbar">
+            <span class="muted">Show</span>
+            <label class="choice"><input type="checkbox" checked> Agent</label>
+            <label class="choice"><input type="checkbox" checked> Tools</label>
+          </div>
+          <div class="transcript-scroll">
+            <ol class="transcript" aria-live="polite">
+              <li class="entry user"><div class="bubble">Let’s add an error state to the sign-up form.</div></li>
+              <li class="entry agent"><div class="prose"><p>I’ll add a <code>states/taken.json</code> where the email is already in use.</p></div></li>
+              <li class="entry tool"><span class="tool-name">Write</span> states/taken.json</li>
+              <li class="entry tool failed"><details><summary>Bash was refused or failed</summary><pre>Permission denied</pre></details></li>
+              <li class="entry note">Prelude rendered every page and form in every state (6), and they all render.</li>
+              <li class="entry note failed"><details open><summary>1 page doesn’t render. The agent is told with your next message.</summary>
+                <ul><li><code>/sign-up</code> · taken: it.form is undefined</li></ul></details></li>
+            </ol>
+          </div>
+          <div class="status" role="status">
+            <span class="pulse" aria-hidden="true"></span>
+            <span>Working…</span>
+            <form action="#" method="post"><button class="btn small ghost" type="submit">Stop</button></form>
+          </div>
+          <form class="composer" action="#" method="post">
+            <label class="sr-only" for="message">Message</label>
+            <textarea id="message" name="message" rows="3" required placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."></textarea>
+            <div class="composer-foot">
+              <span></span>
+              <button class="btn small primary" type="submit">Send</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Prose</h3>
+      <p class="secondary">The one block that spaces its own contents: rendered markdown can’t be wrapped in primitives.</p>
+      <div class="stage">
+        <div class="prose">
+          <h3>What changed</h3>
+          <p>The sign-up form now says when an email is <strong>already in use</strong>.</p>
+          <ul><li>A new state, <code>taken</code></li><li>An error under the email field</li></ul>
+          <pre><code>{ "email": "ada@example.com", "taken": true }</code></pre>
+          <blockquote>Tell the person what to do, not what went wrong.</blockquote>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="card">
+    <h2>Icons</h2>
+    <p class="secondary">Each named for what it means. The colour of the text beside it.</p>
+    <div class="grid gap-2 icon-grid" style="--min: 8rem">
+      <div class="cluster"><span class="icon icon-add" aria-hidden="true"></span>add</div>
+      <div class="cluster"><span class="icon icon-close" aria-hidden="true"></span>close</div>
+      <div class="cluster"><span class="icon icon-done" aria-hidden="true"></span>done</div>
+      <div class="cluster"><span class="icon icon-rename" aria-hidden="true"></span>rename</div>
+      <div class="cluster"><span class="icon icon-external" aria-hidden="true"></span>external</div>
+      <div class="cluster"><span class="icon icon-back" aria-hidden="true"></span>back</div>
+      <div class="cluster"><span class="icon icon-forward" aria-hidden="true"></span>forward</div>
+      <div class="cluster"><span class="icon icon-expand" aria-hidden="true"></span>expand</div>
+      <div class="cluster"><span class="icon icon-collapse" aria-hidden="true"></span>collapse</div>
+      <div class="cluster"><span class="icon icon-show-panel" aria-hidden="true"></span>show-panel</div>
+      <div class="cluster"><span class="icon icon-hide-panel" aria-hidden="true"></span>hide-panel</div>
+      <div class="cluster"><span class="icon icon-show" aria-hidden="true"></span>show</div>
+      <div class="cluster"><span class="icon icon-hide" aria-hidden="true"></span>hide</div>
+      <div class="cluster"><span class="icon icon-zoom-in" aria-hidden="true"></span>zoom-in</div>
+      <div class="cluster"><span class="icon icon-zoom-out" aria-hidden="true"></span>zoom-out</div>
+      <div class="cluster"><span class="icon icon-fit" aria-hidden="true"></span>fit</div>
+      <div class="cluster"><span class="icon icon-folder" aria-hidden="true"></span>folder</div>
+      <div class="cluster"><span class="icon icon-screen" aria-hidden="true"></span>screen</div>
+      <div class="cluster"><span class="icon icon-session" aria-hidden="true"></span>session</div>
+      <div class="cluster"><span class="icon icon-agent" aria-hidden="true"></span>agent</div>
+      <div class="cluster"><span class="icon icon-design-system" aria-hidden="true"></span>design-system</div>
+      <div class="cluster"><span class="icon icon-tokens" aria-hidden="true"></span>tokens</div>
+      <div class="cluster"><span class="icon icon-rule" aria-hidden="true"></span>rule</div>
+      <div class="cluster"><span class="icon icon-document" aria-hidden="true"></span>document</div>
+      <div class="cluster"><span class="icon icon-note" aria-hidden="true"></span>note</div>
+      <div class="cluster"><span class="icon icon-code" aria-hidden="true"></span>code</div>
+      <div class="cluster"><span class="icon icon-image" aria-hidden="true"></span>image</div>
+      <div class="cluster"><span class="icon icon-attach" aria-hidden="true"></span>attach</div>
+      <div class="cluster"><span class="icon icon-run" aria-hidden="true"></span>run</div>
+      <div class="cluster"><span class="icon icon-push" aria-hidden="true"></span>push</div>
+      <div class="cluster"><span class="icon icon-history" aria-hidden="true"></span>history</div>
+      <div class="cluster"><span class="icon icon-question" aria-hidden="true"></span>question</div>
+    </div>
+  </div>
+</div>
+</main>
+</body>
+</html>

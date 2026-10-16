@@ -1,0 +1,38 @@
+<!-- Field: a label over its control, with a hint or an error under it; the field
+     stacks them tightly. The <label> wraps the lot, so clicking the words focuses
+     the control. Say "(optional)" on the optional ones, not "*" on the required. An
+     error replaces the hint, says what to do, and is tied to the control with
+     aria-describedby. A form is a .stack: its .fields, its choices, its actions.
+     .fields lays fields out two to a row while the container has room (.wide for
+     one that takes the row); .inline puts a control and its buttons on one line,
+     wrapping when narrow - with its label, it's a .stack.gap-1. -->
+<form class="stack" action="#" method="post">
+  <div class="fields">
+    <label class="field">
+      <span class="label">Title</span>
+      <input name="title" placeholder="Sign up" autocomplete="off">
+    </label>
+    <label class="field">
+      <span class="label">Area <span class="muted">(optional)</span></span>
+      <input name="area" placeholder="onboarding" autocomplete="off">
+      <span class="hint">Designs with the same area are listed together.</span>
+    </label>
+    <label class="field wide">
+      <span class="label">The app’s stack</span>
+      <input name="stack" aria-invalid="true" aria-describedby="stack-error" value="">
+      <span class="error" id="stack-error">Say which stack the app is written in.</span>
+    </label>
+  </div>
+  <div class="cluster actions">
+    <button class="btn primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Create design</button>
+  </div>
+</form>
+
+<form class="stack gap-1" action="#" method="post">
+  <label class="label" for="folder-path">Folder path</label>
+  <div class="inline">
+    <input id="folder-path" name="path" placeholder="C:\Projects\my-app" autocomplete="off" spellcheck="false">
+    <button class="btn" type="button">Choose…</button>
+    <button class="btn primary" type="submit">Open</button>
+  </div>
+</form>

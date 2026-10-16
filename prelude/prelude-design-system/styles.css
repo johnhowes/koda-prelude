@@ -1,0 +1,44 @@
+/* The gallery's own rules: how the specimens look. Unlayered, like any
+   design's. Built from the tokens only; all spacing between blocks comes from
+   the system's layout primitives in the markup. */
+
+/* Light, dark, or the system's: a choice in the header, no script */
+:root:has(#scheme-light:checked) { color-scheme: light; }
+:root:has(#scheme-dark:checked) { color-scheme: dark; }
+
+.gallery { --measure-now: 60rem; padding-block: var(--space-8); }
+.gallery-intro { max-width: var(--measure); }
+.scheme { font-size: var(--text-sm); color: var(--fg-muted); }
+.scheme label { display: inline-flex; gap: var(--space-1); align-items: center; }
+
+.specimen > h3 { font-size: var(--text-md); }
+.specimen + .specimen { padding-top: var(--space-5); border-top: var(--border-width) solid var(--border); }
+.stage { padding: var(--space-4); background: var(--bg); border: var(--border-width) dashed var(--border); border-radius: var(--radius-md); }
+.stage.tall { height: 22rem; display: flex; padding: 0; overflow: hidden; }
+.stage.tall > .panel { flex: 1; border: 0; border-radius: 0; }
+.stage.session { height: 34rem; }
+.stage.menu-room { min-height: 12rem; align-items: flex-start; }
+.stage dialog { position: static; }
+
+/* A stand-in block, to show what a layout primitive does with its children */
+.demo { padding: var(--space-2) var(--space-3); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--radius-sm); font-size: var(--text-sm); }
+.demo.tall { min-block-size: 6rem; }
+.stage.resizable { resize: horizontal; overflow: auto; max-inline-size: 100%; }
+
+/* Tokens */
+.swatch { font-size: var(--text-xs); }
+.swatch code { align-self: flex-start; }
+.swatch-chip { display: block; height: var(--control-lg); border-radius: var(--radius-md); background: var(--swatch); border: var(--border-width) solid var(--border); }
+.scale-row > :first-child { flex: none; inline-size: 9rem; }
+.space-bar { block-size: var(--space-3); inline-size: var(--size); background: var(--accent); border-radius: var(--radius-sm); }
+.radius-box { display: block; inline-size: var(--control-lg); block-size: var(--control-lg); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--size); }
+.shadow-box { display: block; inline-size: 8rem; block-size: var(--control-lg); background: var(--surface); border-radius: var(--radius-md); box-shadow: var(--size); }
+.control-box { display: block; inline-size: var(--control-lg); block-size: var(--size); background: var(--surface-sunken); border: var(--border-width) solid var(--border-strong); border-radius: var(--radius-sm); }
+
+.icon-grid > div { font-size: var(--text-sm); color: var(--fg-muted); }
+.icon-grid .icon { color: var(--fg); font-size: var(--text-lg); }
+
+/* Guidelines */
+.rule-pair > div { padding: var(--space-3); border-radius: var(--radius-md); font-size: var(--text-sm); }
+.rule-pair .do { background: var(--good-soft); }
+.rule-pair .dont { background: var(--danger-soft); }

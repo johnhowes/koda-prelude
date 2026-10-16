@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tokens</title>
+<link rel="stylesheet" href="../system/tokens.css">
+<link rel="stylesheet" href="../system/components.css">
+<link rel="stylesheet" href="../system/icons.css">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<main class="center gallery">
+<div class="stack gap-6">
+  <header class="cluster gap-4">
+    <nav class="segmented" aria-label="Gallery">
+      <a class="btn small" href="01-tokens.html" aria-current="page">Tokens</a>
+      <a class="btn small" href="02-components.html">Components</a>
+      <a class="btn small" href="03-guidelines.html">Guidelines</a>
+    </nav>
+    <span class="spacer"></span>
+    <fieldset class="cluster gap-3 scheme">
+      <legend class="sr-only">Theme</legend>
+      <label><input type="radio" name="scheme" id="scheme-system" checked> System</label>
+      <label><input type="radio" name="scheme" id="scheme-light"> Light</label>
+      <label><input type="radio" name="scheme" id="scheme-dark"> Dark</label>
+    </fieldset>
+  </header>
+
+  <div class="stack gap-2">
+    <h1>Tokens</h1>
+    <p class="secondary gallery-intro">Prelude’s colour, type, space and shape, each named for its role. Every colour is written once for both themes. Designs use these through the components, and through <code>var()</code> when they need their own rules.</p>
+  </div>
+
+  <div class="card">
+    <h2>Surfaces and lines</h2>
+    <div class="grid gap-3" style="--min: 10rem">
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--bg)"></span><code>--bg</code><span class="muted">The page</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--surface)"></span><code>--surface</code><span class="muted">Cards, panels, fields</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--surface-raised)"></span><code>--surface-raised</code><span class="muted">Menus, dialogs</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--surface-sunken)"></span><code>--surface-sunken</code><span class="muted">Hover, code, wells</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--border)"></span><code>--border</code><span class="muted">Dividers, card edges</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--border-strong)"></span><code>--border-strong</code><span class="muted">Field and button edges</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Text</h2>
+    <div class="stack gap-2">
+      <div class="cluster gap-4 scale-row"><code>--fg</code><span>What you read: titles, body, labels on controls</span></div>
+      <div class="cluster gap-4 scale-row"><code>--fg-muted</code><span style="color: var(--fg-muted)">What explains: a card’s description, field labels</span></div>
+      <div class="cluster gap-4 scale-row"><code>--fg-subtle</code><span style="color: var(--fg-subtle)">What annotates: paths, dates, counts</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Accent and meaning</h2>
+    <div class="grid gap-3" style="--min: 10rem">
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--accent)"></span><code>--accent</code><span class="muted">The next step, the current one, links</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--accent-hover)"></span><code>--accent-hover</code><span class="muted">The accent, pointed at</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--accent-fg)"></span><code>--accent-fg</code><span class="muted">Text on the accent</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--accent-soft)"></span><code>--accent-soft</code><span class="muted">Your messages, the current row</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--good)"></span><code>--good</code><span class="muted">It worked</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--good-soft)"></span><code>--good-soft</code><span class="muted">Behind good news</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--warn)"></span><code>--warn</code><span class="muted">Needs a decision</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--warn-soft)"></span><code>--warn-soft</code><span class="muted">Behind a question</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--danger)"></span><code>--danger</code><span class="muted">It failed; can’t be undone</span></div>
+      <div class="stack gap-1 swatch"><span class="swatch-chip" style="--swatch: var(--danger-soft)"></span><code>--danger-soft</code><span class="muted">Behind a failure</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Type</h2>
+    <div class="stack gap-2">
+      <div class="cluster gap-4 scale-row"><code>--text-2xl</code><span style="font-size: var(--text-2xl); font-weight: var(--weight-heading); letter-spacing: -0.02em">Sign up</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-xl</code><span style="font-size: var(--text-xl); font-weight: var(--weight-heading)">A session’s title</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-lg</code><span style="font-size: var(--text-lg)">A dialog’s question</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-md</code><span style="font-size: var(--text-md)">Headings in prose</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-base</code><span>Body: what most of Prelude is set in</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-sm</code><span style="font-size: var(--text-sm)">Buttons, labels, notes, the toolbar</span></div>
+      <div class="cluster gap-4 scale-row"><code>--text-xs</code><span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; font-weight: var(--weight-strong); color: var(--fg-subtle)">Card labels, pills</span></div>
+      <div class="cluster gap-4 scale-row"><code>--font-mono</code><span style="font-family: var(--font-mono); font-size: var(--text-sm)">prelude/sign-up · Write states/taken.json</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Space</h2>
+    <p class="secondary">The only spaces there are. Layout primitives take their gaps from this scale (<code>.gap-1</code> … <code>.gap-10</code>).</p>
+    <div class="stack gap-2">
+      <div class="cluster gap-4 scale-row"><code>--space-half</code><span class="space-bar" style="--size: var(--space-half)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-1</code><span class="space-bar" style="--size: var(--space-1)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-2</code><span class="space-bar" style="--size: var(--space-2)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-3</code><span class="space-bar" style="--size: var(--space-3)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-4</code><span class="space-bar" style="--size: var(--space-4)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-5</code><span class="space-bar" style="--size: var(--space-5)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-6</code><span class="space-bar" style="--size: var(--space-6)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-8</code><span class="space-bar" style="--size: var(--space-8)"></span></div>
+      <div class="cluster gap-4 scale-row"><code>--space-10</code><span class="space-bar" style="--size: var(--space-10)"></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Controls, shape and depth</h2>
+    <div class="stack gap-3">
+      <div class="stage cluster gap-6">
+        <div class="stack gap-1 swatch"><span class="control-box" style="--size: var(--control-sm)"></span><code>--control-sm</code></div>
+        <div class="stack gap-1 swatch"><span class="control-box" style="--size: var(--control-md)"></span><code>--control-md</code></div>
+        <div class="stack gap-1 swatch"><span class="control-box" style="--size: var(--control-lg)"></span><code>--control-lg</code></div>
+      </div>
+      <div class="stage cluster gap-6">
+        <div class="stack gap-1 swatch"><span class="radius-box" style="--size: var(--radius-sm)"></span><code>--radius-sm</code></div>
+        <div class="stack gap-1 swatch"><span class="radius-box" style="--size: var(--radius-md)"></span><code>--radius-md</code></div>
+        <div class="stack gap-1 swatch"><span class="radius-box" style="--size: var(--radius-lg)"></span><code>--radius-lg</code></div>
+        <div class="stack gap-1 swatch"><span class="radius-box" style="--size: var(--radius-full)"></span><code>--radius-full</code></div>
+      </div>
+      <div class="stage cluster gap-6">
+        <div class="stack gap-1 swatch"><span class="shadow-box" style="--size: var(--shadow-sm)"></span><code>--shadow-sm</code></div>
+        <div class="stack gap-1 swatch"><span class="shadow-box" style="--size: var(--shadow-md)"></span><code>--shadow-md</code></div>
+        <div class="stack gap-1 swatch"><span class="shadow-box" style="--size: var(--shadow-lg)"></span><code>--shadow-lg</code></div>
+        <div class="stack gap-1 swatch"><span class="shadow-box" style="--size: var(--ring)"></span><code>--ring</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+</body>
+</html>

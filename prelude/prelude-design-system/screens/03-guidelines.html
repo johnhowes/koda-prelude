@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guidelines</title>
+<link rel="stylesheet" href="../system/tokens.css">
+<link rel="stylesheet" href="../system/components.css">
+<link rel="stylesheet" href="../system/icons.css">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<main class="center gallery">
+<div class="stack gap-6">
+  <header class="cluster gap-4">
+    <nav class="segmented" aria-label="Gallery">
+      <a class="btn small" href="01-tokens.html">Tokens</a>
+      <a class="btn small" href="02-components.html">Components</a>
+      <a class="btn small" href="03-guidelines.html" aria-current="page">Guidelines</a>
+    </nav>
+    <span class="spacer"></span>
+    <fieldset class="cluster gap-3 scheme">
+      <legend class="sr-only">Theme</legend>
+      <label><input type="radio" name="scheme" id="scheme-system" checked> System</label>
+      <label><input type="radio" name="scheme" id="scheme-light"> Light</label>
+      <label><input type="radio" name="scheme" id="scheme-dark"> Dark</label>
+    </fieldset>
+  </header>
+
+  <div class="stack gap-2">
+    <h1>Guidelines</h1>
+    <p class="secondary gallery-intro">Prelude is a calm workbench: a person and an agent design an app together, and the design is the thing on show. The interface steps back so the work can stand forward. The full text is <code>system/guidelines.md</code>.</p>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Rules</h2>
+
+    <section class="stack gap-3 specimen">
+      <h3>1. One accent, for “this” and “next”</h3>
+      <p class="secondary">The person should always find the next step at a glance.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span>One primary button per view: Send, Create design, Start the app build.</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>Two primary buttons side by side, or accent-coloured headings.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>2. Name roles, never looks</h3>
+      <p class="secondary">Both themes, and a host’s own palette, come from the tokens alone.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><code>color: var(--fg-subtle)</code></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span><code>color: #888</code> or <code>padding: 13px</code></span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>3. Quiet by default; colour means something</h3>
+      <p class="secondary">If everything is loud, the one failing check isn’t. Colour is never the only signal.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><span class="pill warn">Behind main</span></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A red dot with no words, or green for “nothing happened”.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>4. Say what happened, then what to do</h3>
+      <p class="secondary">The person is often waiting on the agent; every line should move them on.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span>“1 page doesn’t render. The agent is told with your next message.”</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>“Error: render failed (exit 1)!”</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>5. Ask before anything outward or hard to undo</h3>
+      <p class="secondary">The folder is the person’s; Prelude never surprises them with it.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span>“This pushes <code>prelude/sign-up</code> to <code>origin</code>, where others can see it.” With Not now.</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A Publish button that pushes straight away.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>6. Buttons say what they do</h3>
+      <p class="secondary">A verb and its object, sentence case. The label is the promise.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span>Merge into main · Push and open the pull request · Choose…</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>Submit · OK · Go</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>7. Components answer to their container</h3>
+      <p class="secondary">The same component lives in a page, a chat column and a pop-out window. The page’s frame is the app shell’s.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span>Container queries, flex-wrap, grid.</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span><code>@media (max-width: 600px)</code> in a component.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>8. Compose pages from layout primitives; space comes only from their gaps</h3>
+      <p class="secondary">Every block sits inside a <code>.stack</code>, <code>.cluster</code>, <code>.grid</code>, <code>.split</code> or <code>.center</code>, and the space between blocks is that primitive’s gap, from the space scale. Blocks have no outer margins; to space something differently, nest another primitive. One owner for every space means spacing is the same everywhere, and a block moves without bringing stray margins.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><code>&lt;div class="stack gap-1"&gt;&lt;h3 class="group-label"&gt;…&lt;ul class="list"&gt;…</code></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span><code>style="margin-top: var(--space-4)"</code>, or a class that adds margin to a card.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>9. Work without script</h3>
+      <p class="secondary">Views are server-rendered and swapped in place; script is the part that breaks.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><code>&lt;details class="menu"&gt;</code></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A click handler that toggles a class.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>10. Keyboard and screen reader first</h3>
+      <p class="secondary">The person may never touch the mouse while talking to the agent.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><code>&lt;button class="icon-btn" aria-label="Close"&gt;</code></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span><code>&lt;div onclick&gt;</code>, or removing the focus ring.</span></div>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>11. Both themes, always</h3>
+      <p class="secondary">Prelude follows the person’s system. Check every screen in light and dark (the switch is at the top).</p>
+    </section>
+  </div>
+
+  <div class="card">
+    <h2>Words</h2>
+    <p class="secondary">Sentence case everywhere, curly apostrophes, and “…” for something in progress or that asks for more.</p>
+    <table class="table">
+      <thead><tr><th scope="col">Say</th><th scope="col">Not</th><th scope="col">Because</th></tr></thead>
+      <tbody>
+        <tr><td>folder</td><td class="muted">project, workspace, repo</td><td>It’s a folder on disk.</td></tr>
+        <tr><td>design</td><td class="muted">project, mockup, prototype</td><td>One feature, grown over sessions.</td></tr>
+        <tr><td>session</td><td class="muted">chat, conversation, thread</td><td>One sitting with the agent on a design.</td></tr>
+        <tr><td>screen, page</td><td class="muted">mockup, artboard, frame, view</td><td>What the person sees; a view is code.</td></tr>
+        <tr><td>state</td><td class="muted">fixture, mock data, scenario</td><td>The data pages are shown with.</td></tr>
+        <tr><td>design system</td><td class="muted">theme, style guide, UI kit</td><td>The app’s vocabulary.</td></tr>
+        <tr><td>app shell, layout</td><td class="muted">template, chrome, frame</td><td>Where every design renders.</td></tr>
+        <tr><td>the agent</td><td class="muted">AI, assistant, bot, Claude</td><td>A role, not a brand.</td></tr>
+        <tr><td>build</td><td class="muted">generate, compile, deploy</td><td>Turning a design into the app’s code.</td></tr>
+        <tr><td>story</td><td class="muted">ticket, task, issue</td><td>What’s left to build, as text.</td></tr>
+        <tr><td>check, render</td><td class="muted">test, validate</td><td>Every page in every state is rendered.</td></tr>
+        <tr><td>approve</td><td class="muted">snapshot, baseline, accept</td><td>Saves the screens as they render now.</td></tr>
+        <tr><td>branch, merge, push, pull request</td><td class="muted">publish, ship, sync</td><td>Git’s own words.</td></tr>
+        <tr><td>update from main</td><td class="muted">rebase, sync, pull</td><td>It merges main into the branch.</td></tr>
+        <tr><td>finish the branch</td><td class="muted">close, complete, done</td><td>Merge it, or push it for review.</td></tr>
+        <tr><td>Not now</td><td class="muted">Cancel, Dismiss</td><td>It leaves the door open.</td></tr>
+        <tr><td>Stop</td><td class="muted">Abort, Kill, Cancel</td><td>Stops the agent’s turn.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</main>
+</body>
+</html>

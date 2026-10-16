@@ -1,0 +1,36 @@
+<!-- List: things to open, one per row - folders, designs, sessions. The whole row is
+     the link (a.item). Its icon says what kind of thing it is; .item-title names it,
+     with a .pill for its kind; a .muted line under it says where it is. A row that
+     isn't a link is a span.item; it may end with a .spacer and its own action. -->
+<ul class="list">
+  <li>
+    <a class="item" href="#">
+      <span class="icon icon-screen" aria-hidden="true"></span>
+      <span class="item-text">
+        <span class="item-title">Sign up</span>
+        <span class="muted">prelude/sign-up</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="item" href="#">
+      <span class="icon icon-design-system" aria-hidden="true"></span>
+      <span class="item-text">
+        <span class="item-title">Prelude Design System<span class="pill">Design system</span></span>
+        <span class="muted">prelude/prelude-design-system</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <span class="item">
+      <span class="icon icon-folder" aria-hidden="true"></span>
+      <span class="item-text">
+        <span class="item-title">another-app</span>
+        <span class="muted">C:\Projects\another-app</span>
+      </span>
+      <form action="#" method="post">
+        <button class="icon-btn small" type="submit" aria-label="Stop reading another-app"><span class="icon icon-close" aria-hidden="true"></span></button>
+      </form>
+    </span>
+  </li>
+</ul>

@@ -1,0 +1,17 @@
+<!-- Cluster: a row that wraps - buttons, pills, a label and its value, a line of
+     facts. Items keep their own width and wrap onto the next line when there's no
+     room. Default gap is --space-2. .baseline aligns text on its baseline (a label
+     and a value); .end pushes everything to the end; a .spacer inside pushes what
+     follows it to the end. A row of buttons is "cluster actions": its one-button
+     forms take no room of their own. -->
+<div class="cluster actions">
+  <button class="btn primary" type="submit">Merge into main</button>
+  <form action="#" method="post"><button class="btn" type="submit">Update from main</button></form>
+  <a class="btn ghost" href="#">Not now</a>
+</div>
+
+<div class="cluster baseline gap-1">
+  <span class="muted">On</span> <code>prelude/sign-up</code>
+  <span class="pill good">Check passes</span>
+  <span class="pill warn">2 commits behind main</span>
+</div>

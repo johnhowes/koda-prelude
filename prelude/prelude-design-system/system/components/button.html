@@ -1,0 +1,26 @@
+<!-- Button: anything that does something. A link styled as a button goes somewhere.
+     One .primary per view, for the step the person most likely wants next.
+     .ghost for quiet tools (toolbars, "Not now"); .danger for what can't be undone.
+     .small in toolbars and dense rows; .large only for a page's single call to action.
+     Put an icon first, aria-hidden; the words are the name. Group buttons in a
+     "cluster actions" row; a <form> inside it takes no room, so one-button forms line up. -->
+<div class="cluster actions">
+  <button class="btn primary" type="submit">Create design</button>
+  <button class="btn" type="button">Choose…</button>
+  <a class="btn ghost" href="#">Not now</a>
+  <button class="btn danger" type="button">Abandon the update</button>
+</div>
+
+<div class="cluster actions">
+  <button class="btn small" type="button"><span class="icon icon-add" aria-hidden="true"></span>New session</button>
+  <a class="btn small ghost" href="#" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
+  <button class="btn small" type="button" aria-pressed="true">Agent</button>
+  <button class="btn small" type="button" disabled>Send</button>
+</div>
+
+<div class="cluster actions">
+  <button class="btn large primary" type="submit">Start the app build</button>
+</div>
+
+<!-- A button that reads as a link, inside a sentence or a dense row. -->
+<button class="link-btn" type="button">Copy</button>

@@ -1,0 +1,10 @@
+<!-- Split: a main part and a side part - the chat beside the design, a list beside
+     its details. Mark the side with .side; the other child is the main part. They
+     sit side by side while the main part keeps --main-min of the row (default 55%);
+     after that the side wraps onto its own line. The side wants --side (default
+     20rem). The side may come first or last; it wraps in source order, so put
+     first whatever should be on top when narrow. Default gap is --space-4. -->
+<div class="split" style="--side: 22rem">
+  <section class="panel side" aria-label="Session">…</section>
+  <section class="panel" aria-label="Design">…</section>
+</div>

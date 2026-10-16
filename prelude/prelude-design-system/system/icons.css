@@ -1,0 +1,89 @@
+@layer tokens, base, components, host;
+
+/* Prelude's icons. One SVG per meaning in icons/, drawn as a mask over
+   currentColor, so a glyph is the colour of the text beside it in every
+   theme and in forced colours. The <span> says nothing (aria-hidden); the
+   control around it has the name.
+
+     <button class="icon-btn" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+
+   Each glyph's URL is a token, relative to this file, so a host can draw its
+   own. Every rule that uses one stays here, so the URLs resolve here. */
+
+@layer tokens {
+  :root {
+    --icon-add: url(icons/add.svg);
+    --icon-close: url(icons/close.svg);
+    --icon-done: url(icons/done.svg);
+    --icon-rename: url(icons/rename.svg);
+    --icon-external: url(icons/external.svg);
+    --icon-back: url(icons/back.svg);
+    --icon-forward: url(icons/forward.svg);
+    --icon-expand: url(icons/expand.svg);
+    --icon-collapse: url(icons/collapse.svg);
+    --icon-show-panel: url(icons/show-panel.svg);
+    --icon-hide-panel: url(icons/hide-panel.svg);
+    --icon-show: url(icons/show.svg);
+    --icon-hide: url(icons/hide.svg);
+    --icon-zoom-in: url(icons/zoom-in.svg);
+    --icon-zoom-out: url(icons/zoom-out.svg);
+    --icon-fit: url(icons/fit.svg);
+    --icon-folder: url(icons/folder.svg);
+    --icon-screen: url(icons/screen.svg);
+    --icon-session: url(icons/session.svg);
+    --icon-agent: url(icons/agent.svg);
+    --icon-design-system: url(icons/design-system.svg);
+    --icon-tokens: url(icons/tokens.svg);
+    --icon-rule: url(icons/rule.svg);
+    --icon-document: url(icons/document.svg);
+    --icon-note: url(icons/note.svg);
+    --icon-code: url(icons/code.svg);
+    --icon-image: url(icons/image.svg);
+    --icon-attach: url(icons/attach.svg);
+    --icon-run: url(icons/run.svg);
+    --icon-push: url(icons/push.svg);
+    --icon-history: url(icons/history.svg);
+    --icon-question: url(icons/question.svg);
+  }
+}
+
+@layer components {
+  .icon {
+    display: inline-block; inline-size: 1.25em; aspect-ratio: 1; flex: none; vertical-align: -0.25em;
+    background-color: currentColor;
+    mask: var(--icon) center / contain no-repeat;
+    forced-color-adjust: none;
+  }
+  .icon-add { --icon: var(--icon-add); }
+  .icon-close { --icon: var(--icon-close); }
+  .icon-done { --icon: var(--icon-done); }
+  .icon-rename { --icon: var(--icon-rename); }
+  .icon-external { --icon: var(--icon-external); }
+  .icon-back { --icon: var(--icon-back); }
+  .icon-forward { --icon: var(--icon-forward); }
+  .icon-expand { --icon: var(--icon-expand); }
+  .icon-collapse { --icon: var(--icon-collapse); }
+  .icon-show-panel { --icon: var(--icon-show-panel); }
+  .icon-hide-panel { --icon: var(--icon-hide-panel); }
+  .icon-show { --icon: var(--icon-show); }
+  .icon-hide { --icon: var(--icon-hide); }
+  .icon-zoom-in { --icon: var(--icon-zoom-in); }
+  .icon-zoom-out { --icon: var(--icon-zoom-out); }
+  .icon-fit { --icon: var(--icon-fit); }
+  .icon-folder { --icon: var(--icon-folder); }
+  .icon-screen { --icon: var(--icon-screen); }
+  .icon-session { --icon: var(--icon-session); }
+  .icon-agent { --icon: var(--icon-agent); }
+  .icon-design-system { --icon: var(--icon-design-system); }
+  .icon-tokens { --icon: var(--icon-tokens); }
+  .icon-rule { --icon: var(--icon-rule); }
+  .icon-document { --icon: var(--icon-document); }
+  .icon-note { --icon: var(--icon-note); }
+  .icon-code { --icon: var(--icon-code); }
+  .icon-image { --icon: var(--icon-image); }
+  .icon-attach { --icon: var(--icon-attach); }
+  .icon-run { --icon: var(--icon-run); }
+  .icon-push { --icon: var(--icon-push); }
+  .icon-history { --icon: var(--icon-history); }
+  .icon-question { --icon: var(--icon-question); }
+}
