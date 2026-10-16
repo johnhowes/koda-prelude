@@ -1307,6 +1307,102 @@ Decided 2026-10-15:
     - it changed nothing outside the design;
     - the check passed, and the new state's pages showed as not yet approved.
 
+#### Server events (6e)
+
+A design can describe a page the server updates on its own: Koda's `ko-connect`
+opens a channel, and a message down it is either an event (a region with
+`ko-invoke="event:needs-changed"` reloads) or markup with `ko-into` envelopes (a
+notice, a row). The preview has no channel, so none of that can be seen. On Prelude's
+own Landing page the agent wrote live "Needs you" and project cards, and in the preview
+only their 5-minute fallback poll ever ran. Prelude already fakes the server for
+requests (states, POST routes). Events are the same thing in the other direction: the
+server speaking first.
+
+**Declared in the design's `events.json`,** keyed by the event's name, beside
+`routes.json`:
+
+```json
+{
+  "needs-changed": {
+    "title": "A pull request needs review",
+    "add": "needs",
+    "with": { "kind": "review", "project": "Apiary", "summary": "Landing Page is ready to merge" },
+    "send": "needs-changed",
+    "push": [ { "into": "notice?", "view": "home/_notice", "data": "needs/:new" } ]
+  },
+  "projects-changed": { "title": "A branch was merged elsewhere", "send": "projects-changed" }
+}
+```
+
+- **`title`**: what the design bar calls it.
+- **A change to the data, optional**: one of the POST verbs (`update`, `add`, `remove`)
+  at a data path, with `with` giving the fields an `update` or `add` sets (a form posts
+  them; an event has no form). `:new` is the added record's id, as in answers.
+- **`send`**: an event, as Koda's message format has it (`name` or `name:value`).
+- **`push`**: markup, as `also` in an answer: envelopes rendered from the design's
+  views, each `ko-into` a region (with `?` when the page may not have it).
+- An event needs at least one of `send` and `push`.
+
+**The preview gets a channel.** The design's origin answers `/_prelude/live` with
+server-sent events, one stream per window. A layout opens it from its sample data, as
+the app will from its own: the shell's `layouts/<name>.json` carries
+`"live": "/_prelude/live"`, and the layout writes `ko-connect="<%= it.layout.live %>"`
+when there is one. The minimal built-in layout opens it too. A design with no events
+opens nothing that matters.
+
+**The design bar gets "Send event"**, a menu of the design's events by title, shown when
+it has any. Sending one:
+- applies its change to the working copy of the current state, as an accepted form does
+  (Reset data undoes it);
+- renders its `push` envelopes from the changed data;
+- sends `send` and the envelopes to every window showing the design.
+
+**The rest follows the POST routes:**
+- **The check** renders each event's `push` views in every state, so a view that doesn't
+  render is found, as answers are. A data path that finds nothing in a state is
+  skipped there, not failed.
+- **The agent** is told how to declare events (`designPrompt`'s views section), and that
+  the layout opens the channel from `it.layout.live`.
+- **Stories and builds** list each event under its page: when the server sends it (the
+  title), what changes, and what's sent. The build brief says to send it from where that
+  happens in the app, over the app's own channel.
+- **Groups:** an event belongs to the group whose page shows the regions it reaches (by
+  its `push` targets or the regions that listen for it); otherwise it's design-wide.
+
+**Not now:** events sent on a timer, values chosen in the bar, and events from another
+design (the shell's agent status, say). For the last, the shell declares its own.
+
+Decided 2026-10-16:
+- Events have a file of their own, `events.json`, not keys in `routes.json`.
+- They're sent from the design bar only, not from the chat.
+- One channel per design: an event reaches every window showing it.
+
+**Done when:** on Prelude's own Landing page, "Send event" › "A pull request needs
+review" adds the item, and "Needs you" reloads in the preview without a page load; the
+story lists both events; and a build sends them from the app.
+
+**As built (6e):**
+- `server/events.js` reads `events.json` (`readEvents`) and keeps the channels
+  (`createChannels`, `app.channels`): one per design, every window's stream on it. The
+  design's origin answers `/_prelude/live` (host.js).
+- `eventMessages` (host.js) applies the change with the POST routes' `applyChange`
+  and renders `push` with their envelopes. `POST /f/<project>/d/<design>/events` sends
+  it: the working copy changes as for a form, and the answer is a line for the bar's
+  status region (`_event-sent.eta`), never the surface, so the frame isn't reloaded.
+- A design with events gets `live` in its layout data (after the shell's sample, so the
+  preview's address wins); one without gets nothing, so no approved screen moves. The
+  built-in layout writes `ko-connect` from it.
+- The check renders each event's `push` in every state; a change whose data path finds
+  nothing there is skipped. Stories get a "Server events" section (`eventLine`), and
+  build briefs list the events with how to send them. An event goes with the page that
+  shows its pushed views or listens for it (`event:<name>` in a design view); otherwise
+  it's design-wide, in every page's story.
+- Checked in a browser on a scratch project: the page opened the channel, and sending
+  from the design bar reloaded "Needs you" and filled the notice with no page load.
+- **Not yet:** the increment (step 10) doesn't compare events, so a changed group's
+  story leaves a changed event out. The Done when on Prelude's own Landing page, and a
+  build sending events from an app, are still to be tried.
+
 ### Step 7: Build, within a team's lifecycle
 
 Step 6 made a design the app's real views, and 6d made porting a route a one-line change.

@@ -282,6 +282,21 @@ test('a project that already has an app connects it instead of building one (8b)
   assert.equal(existsSync(join(shellDir, 'layouts', 'app.eta')), false, 'the shell’s copy of the layout goes');
   assert.deepEqual(findLayout({ folderPath: shell, designDir: shellDir, shellDir, name: 'app' }).views, join(shell, 'server', 'views'), 'designs render in the app’s real layout');
   assert.equal(existsSync(join(shell, 'app')), false, 'no second app');
+
+  // The link was wrong (the shell's layout is a redesign): the agent empties
+  // layouts.json, as it can't delete files. Prelude removes it, and brings the
+  // shell's layout back as it was. A layout deleted on purpose stays deleted.
+  write(shell, 'prelude/shell/layouts/bare.eta', '<html><body class="bare"><%~ it.body %></body></html>');
+  commitAll(shell, 'A bare layout');
+  git(shell, 'rm', '-q', 'prelude/shell/layouts/bare.eta');
+  commitAll(shell, 'No bare layout after all');
+  write(shell, 'prelude/shell/layouts.json', {});
+  await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Unlink it' });
+  await settled(shellDir, sid, 3);
+  assert.equal(existsSync(join(shellDir, 'layouts.json')), false, 'an emptied layouts.json is removed');
+  assert.equal(readFileSync(join(shellDir, 'layouts', 'app.eta'), 'utf8'), '<html><body class="designed"><%~ it.body %></body></html>', 'the shell’s layout is back, from git');
+  assert.equal(existsSync(join(shellDir, 'layouts', 'bare.eta')), false, 'one deleted on purpose isn’t restored');
+  assert.match(git(shell, 'show', '--stat', '--format=', 'HEAD'), /prelude\/shell\/layouts\/app\.eta/, 'and committed with the turn');
 });
 
 test('a new folder, not yet a repository: the app build makes it one, and the shell’s branch', async () => {

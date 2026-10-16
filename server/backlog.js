@@ -8,6 +8,10 @@
 // forms posting there. "Copy as story" turns a group into Markdown for the
 // team's tracker, which owns when and who; Prelude stores nothing about it.
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { readEvents } from './events.js';
 import { readPostRoutes, readRoutes } from './host.js';
 import { readRules } from './rules.js';
 
@@ -49,11 +53,23 @@ export function backlogOf(designDir) {
     (group ? group.rules : designWide).push(rule);
   }
 
+  // Server events (6e) go with the page whose views they reach: one pushing
+  // into its views, or a view of it listening for the event. Else design-wide.
+  const eventsWide = [];
+  const viewsOf = group => [...group.routes.map(route => route.view), ...group.posts.flatMap(post => [post.form, post.answer.view, ...post.answer.also.map(also => also.view)])].filter(Boolean);
+  const textOf = view => { try { return readFileSync(join(designDir, 'views', `${view}.eta`), 'utf8'); } catch { return ''; } };
+  for (const group of [...groups, other]) group.events = [];
+  for (const event of readEvents(designDir)) {
+    const group = [...groups, other].find(g => event.push.some(part => part.view && viewsOf(g).includes(part.view))
+      || viewsOf(g).some(view => !view.startsWith('@app/') && textOf(view).includes(`event:${event.name}`)));
+    (group ? group.events : eventsWide).push(event);
+  }
+
   const all = other.routes.length || other.posts.length || other.rules.length ? [...groups, other] : groups;
   for (const group of all) {
     group.built = group.routes.every(route => route.ported) && group.posts.every(postBuilt) && !group.rules.some(rule => rule.proposed);
   }
-  return { groups: all, designWide };
+  return { groups: all, designWide, events: eventsWide };
 }
 
 const listOf = parts => (parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0] ?? '');
@@ -74,6 +90,15 @@ const verbOf = post => ({
   add: `adds a record to \`${post.at}\` from the posted fields`,
   remove: `removes the record at \`${post.at}\``,
 })[post.verb];
+
+/** A server event (6e) as a line of a story or a build brief: when, what changes, what's sent. */
+export function eventLine(event, at) {
+  const parts = [];
+  if (event.verb) parts.push({ update: `updates the record at \`${event.at}\``, add: `adds a record to \`${event.at}\``, remove: `removes the record at \`${event.at}\`` }[event.verb]);
+  if (event.send) parts.push(`sends the \`${event.send}\` event`);
+  for (const part of event.push) parts.push(part.view ? `pushes \`${at(part.view)}\` into \`${part.into.replace(/\?$/, '')}\`` : `empties \`${part.into.replace(/\?$/, '')}\``);
+  return `When ${event.title.replace(/^./, c => c.toLowerCase())} (\`${event.name}\`), the server ${listOf(parts)}, down the page's channel.`;
+}
 
 /**
  * A changed group's story (step 10): only the increment - what's new, what
@@ -144,7 +169,7 @@ export function incrementStory({ design, designPath, group, change, states = [],
 }
 
 /** A group as Markdown for a tracker: what it delivers, its acceptance criteria and its test cases. */
-export function storyMarkdown({ design, designPath, group, designWide = [], states = [], approved = false }) {
+export function storyMarkdown({ design, designPath, group, designWide = [], designEvents = [], states = [], approved = false }) {
   // A view as a path in the repository: the app's own, or the design's copy.
   const at = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
   const lines = [`# ${group.title}: ${design.title}`, ''];
@@ -159,6 +184,13 @@ export function storyMarkdown({ design, designPath, group, designWide = [], stat
   }
   for (const post of group.posts) lines.push(`- Form \`POST ${post.pattern}\`: ${verbOf(post)}`);
   lines.push('');
+
+  const events = [...(group.events ?? []), ...designEvents];
+  if (events.length) {
+    lines.push('## Server events', '', 'Sent by the server on its own, over the app\'s live channel (the page opens it with `ko-connect`):', '');
+    for (const event of events) lines.push(`- ${eventLine(event, at)}`);
+    lines.push('');
+  }
 
   lines.push('## Acceptance criteria', '');
   for (const post of group.posts) {

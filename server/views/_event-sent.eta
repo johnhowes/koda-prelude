@@ -1,0 +1,3 @@
+<%/* What "Send event" (6e) did, in the design bar's status region: the
+     frame is left alone, so the page shows the event arrive. */%>
+<span class="<%= it.failed ? 'err' : 'muted' %>"><%= it.notice %></span>

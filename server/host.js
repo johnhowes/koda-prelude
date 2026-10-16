@@ -42,6 +42,7 @@ import { fileURLToPath } from 'node:url';
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { appAssets } from './app-config.js';
 import { readHostConfig } from './hosts.js';
+import { LIVE_PATH, readEvents } from './events.js';
 import { readRules, ruleWarnings } from './rules.js';
 import { compareSnapshots, snapshotName } from './snapshots.js';
 
@@ -396,6 +397,8 @@ export async function handleDesignHost(req, res, app, host) {
     if (area === 'design') return sendFile(res, designDir, rel, notFound);
     if (area === 'system' && dirOf('system')) return sendFile(res, join(dirOf('system'), 'system'), rel, notFound);
     if (area === 'shell' && dirOf('shell')) return sendFile(res, dirOf('shell'), rel, notFound);
+    // The design's live channel (6e): server events sent from the design bar.
+    if (area === 'live' && !rel && app.channels) return app.channels.join(app.designKey(folder, design), req, res);
     return notFound();
   }
 
@@ -501,7 +504,11 @@ export async function renderPath(app, { folder, design, designDir, path, query =
   if (page.error) return renderError(page.error);
   const found = findLayout({ folderPath: folder.path, designDir, shellDir: dirOf('shell'), name: pageRoute.layout, ext })
     ?? { views: BUILT_IN_LAYOUTS, template: './layout', sample: {}, builtIn: true };
-  const shellData = { ...found.sample, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
+  // A design with server events (6e) gets its channel's address, as the app
+  // gives its own; a layout opens it from it.layout.live. Without events nothing
+  // changes, so no approved screen moves.
+  const live = readEvents(designDir).length ? { live: LIVE_PATH } : {};
+  const shellData = { ...found.sample, ...live, ...(dataset.layout && typeof dataset.layout === 'object' ? dataset.layout : {}) };
   return render(app, folder, {
     query,
     page: { views: page.views, template: page.template, data: pageRoute === route ? overlay.data : pageModel },
@@ -621,6 +628,12 @@ export async function checkDesign(app, { folder, design, designDir }, { renders 
         if (refused.status !== 422) failures.push({ state: state?.title ?? null, path: `${label} (empty)`, error: refused.error ?? `should refuse with 422, answered ${refused.status}` });
         keep(snapshotName(path, { post: true }), refused.status === 422 ? refused.html : null);
       }
+    }
+    // Each server event (6e), against a throwaway copy: its markup has to
+    // render. A state with nothing at its data path skips it.
+    for (const event of readEvents(designDir)) {
+      const fired = await eventMessages(app, { folder, designDir, event, dataset: structuredClone(readState(designDir, state)) });
+      for (const failure of fired.failures.filter(f => f.view)) failures.push({ state: state?.title ?? null, path: `event ${event.name} (${failure.view})`, error: failure.error });
     }
     for (const { route, path, fragment } of samplePaths(routes, readState(designDir, state))) {
       // An overlay is rendered both ways: alone, and over the page beneath.
@@ -776,6 +789,34 @@ const escapeHtml = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;',
 function envelope(into, html = '') {
   const tag = /^\s*<(tr|td|th|thead|tbody|tfoot|caption|colgroup|col)[\s>]/i.test(html) ? 'template' : 'div';
   return `<${tag} ko-into="${escapeHtml(into)}">${html}</${tag}>`;
+}
+
+/**
+ * A server event (6e), against `dataset` (changed in place): its change to the
+ * data, then what goes down the channel - the event, and its markup rendered
+ * from the changed data. { messages, changed, failures: [{ view, error }] }.
+ */
+export async function eventMessages(app, { folder, designDir, event, dataset }) {
+  const ext = readHostConfig(folder.path)?.views ?? '.eta';
+  let params = {};
+  let changed = false;
+  if (event.verb) {
+    const applied = applyChange(dataset, { verb: event.verb, at: event.at }, {}, event.with);
+    if (applied.missing) return { messages: [], changed: false, failures: [{ view: null, error: `There's nothing at "${applied.missing}" to change.` }] };
+    params = applied.params;
+    changed = true;
+  }
+  const failures = [];
+  const parts = [];
+  for (const part of event.push) {
+    if (!part.view) { parts.push(envelope(part.into)); continue; }   // the empty envelope: empty that region
+    const where = viewOf({ folderPath: folder.path, designDir, view: part.view, ext });
+    const answer = where.error ? renderError(where.error) : await render(app, folder, { page: { views: where.views, template: where.template, data: lookup(dataset, part.data, params) } });
+    if (answer.status !== 200) { failures.push({ view: part.view, error: answer.error ?? `It answered ${answer.status}.` }); continue; }
+    parts.push(envelope(part.into, answer.html));
+  }
+  const messages = [...(event.send ? [event.send] : []), ...(parts.length ? [parts.join('\n')] : [])];
+  return { messages, changed, failures };
 }
 
 /**
