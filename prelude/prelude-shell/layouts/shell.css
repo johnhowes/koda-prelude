@@ -19,6 +19,7 @@
   /* What the agent is working on: one line, cut short with an ellipsis. */
   .shell-agents { display: flex; min-inline-size: 0; max-inline-size: 100%; }
   .shell-agents > .btn { min-inline-size: 0; max-inline-size: 100%; }
+  .shell-waiting { display: flex; }
   .shell-clip { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
 
   /* The page's region. On app, the page scrolls with the window. */

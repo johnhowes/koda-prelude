@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Home · Prelude
+</title>
+<link href="/_prelude/system/tokens.css" rel="stylesheet">
+<link href="/_prelude/system/components.css" rel="stylesheet">
+<link href="/_prelude/system/icons.css" rel="stylesheet">
+<link href="/_prelude/shell/layouts/shell.css" rel="stylesheet">
+<link href="/_prelude/design/styles.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }
+</script>
+</head>
+<body class="shell">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+1
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="main" ko-history ko-location="/" ko-scope="/">
+<div class="center home">
+<div class="stack gap-8" ko-item>
+<div class="stack gap-2">
+<h1>
+Home
+</h1>
+<p class="secondary">
+What needs you across your projects, and where you left off.
+</p>
+</div>
+<section aria-labelledby="needs-you-title" class="card">
+<h2 id="needs-you-title">
+Needs you
+</h2>
+<div ko-as="needsYou" ko-invoke="load event:needs-changed every:300000" ko-source="/home/needs-you">
+<div aria-busy="true">
+<span class="sr-only">
+Checking what needs you…
+</span>
+<ul aria-hidden="true" class="list">
+<li>
+<span class="item">
+<span class="item-text stack gap-2">
+<span class="skeleton" style="--w: 45%">
+</span>
+<span class="skeleton" style="--w: 80%">
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span class="item-text stack gap-2">
+<span class="skeleton" style="--w: 60%">
+</span>
+<span class="skeleton" style="--w: 80%">
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span class="item-text stack gap-2">
+<span class="skeleton" style="--w: 35%">
+</span>
+<span class="skeleton" style="--w: 80%">
+</span>
+</span>
+</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="needsYou">
+<p>
+Prelude couldn’t check what needs you. Your projects are fine; try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="needsYou" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+<section aria-labelledby="projects-title" class="stack gap-3">
+<div class="cluster">
+<h2 class="group-label" id="projects-title">
+Projects
+</h2>
+<span class="spacer">
+</span>
+<a class="btn small" href="/open" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Open a project…
+</a>
+</div>
+<div ko-as="projectList" ko-invoke="load event:projects-changed event:needs-changed every:300000" ko-source="/home/projects">
+<div aria-busy="true" class="grid" style="--min: 18rem">
+<span class="sr-only">
+Reading what’s in your projects…
+</span>
+<article class="card gap-3">
+<div class="stack gap-1">
+<h3>
+<a href="/f/commercial-real-estate-origination">
+commercial-real-estate-origination-platform
+</a>
+</h3>
+<span class="muted project-path">
+C:\Users\Shared\Repositories\lendwithspark\commercial-real-estate-origination-platform
+</span>
+</div>
+<div aria-hidden="true" class="stack gap-2">
+<span class="skeleton" style="--w: 70%">
+</span>
+<span class="skeleton" style="--w: 45%">
+</span>
+</div>
+<span aria-hidden="true" class="skeleton" style="--w: 55%">
+</span>
+</article>
+<article class="card gap-3">
+<div class="stack gap-1">
+<h3>
+<a href="/f/x">
+x
+</a>
+</h3>
+<span class="muted project-path">
+D:\x
+</span>
+</div>
+<div aria-hidden="true" class="stack gap-2">
+<span class="skeleton" style="--w: 70%">
+</span>
+<span class="skeleton" style="--w: 45%">
+</span>
+</div>
+<span aria-hidden="true" class="skeleton" style="--w: 55%">
+</span>
+</article>
+</div>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="projectList">
+<p>
+Prelude couldn’t read what’s in your projects. Try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="projectList" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. The // dialog is named by the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); follow();
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

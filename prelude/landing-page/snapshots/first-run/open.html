@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Open a project · Prelude
+</title>
+<link href="/_prelude/system/tokens.css" rel="stylesheet">
+<link href="/_prelude/system/components.css" rel="stylesheet">
+<link href="/_prelude/system/icons.css" rel="stylesheet">
+<link href="/_prelude/shell/layouts/shell.css" rel="stylesheet">
+<link href="/_prelude/design/styles.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }
+</script>
+</head>
+<body class="shell">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+</div>
+</header>
+<main class="shell-main" id="main" ko-history ko-location="/" ko-scope="/">
+<div class="center home">
+<div class="empty page">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<div class="stack gap-2">
+<h1>
+Open your first project
+</h1>
+<p class="secondary">
+A project is a folder, usually a repo, new or already full of code. Everything Prelude makes goes in its
+<code>
+prelude/
+</code>
+directory, committed alongside the code.
+</p>
+</div>
+<div class="cluster actions">
+<a class="btn primary large" href="/open" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Open a project…
+</a>
+</div>
+<ol aria-label="How it goes" class="grid gap-5 first-run-steps" style="--min: 10rem">
+<li class="stack gap-1">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<strong>
+Open a project
+</strong>
+<span class="muted">
+A folder, new or already full of code.
+</span>
+</li>
+<li class="stack gap-1">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<strong>
+Design with the agent
+</strong>
+<span class="muted">
+Pages with real-looking data, written as your app’s own views.
+</span>
+</li>
+<li class="stack gap-1">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+<strong>
+Build it into the app
+</strong>
+<span class="muted">
+On a branch of its own, for you to merge.
+</span>
+</li>
+</ol>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/open" ko-region tabindex="-1">
+<div class="stack gap-4">
+<h2>
+Open a project
+</h2>
+<p class="secondary">
+A project is a folder, usually a repo, new or already full of code.
+</p>
+<form action="/folders" class="stack gap-1" ko-target="self" method="post">
+<label class="label" for="open-path">
+The project’s folder
+</label>
+<div class="inline">
+<input autocomplete="off" id="open-path" name="path" placeholder="C:\Projects\my-app" spellcheck="false" value="">
+<button class="btn" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn primary" type="submit">
+Open
+</button>
+</div>
+</form>
+</div>
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. The // dialog is named by the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); follow();
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<%/* Open a project, in the modal: the project's folder, typed or chosen. The
+     form answers into the modal it's in, so a folder that can't be opened says
+     why here; opening one closes the modal and refreshes the page. */%>
+<% const error = it.$errors?.path; %>
+<div class="stack gap-4">
+  <h2>Open a project</h2>
+  <p class="secondary">A project is a folder, usually a repo, new or already full of code.</p>
+  <form class="stack gap-1" action="/folders" method="post" ko-target="self">
+    <label class="label" for="open-path">The project’s folder</label>
+    <div class="inline">
+      <input id="open-path" name="path" value="<%= it.path ?? '' %>" placeholder="C:\Projects\my-app" autocomplete="off" spellcheck="false"
+             <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="open-path-error"<% } %>>
+      <button class="btn" type="button" data-pick-folder data-desktop-only>Choose…</button>
+      <button class="btn primary" type="submit">Open</button>
+    </div>
+    <% if (error) { %><span class="error" id="open-path-error"><%= error %></span><% } %>
+  </form>
+</div>

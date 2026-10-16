@@ -1,0 +1,109 @@
+{
+  "needs": [
+    {
+      "id": "n-x5p",
+      "kind": "pull-request",
+      "projectId": "borrower-portal",
+      "project": "borrower-portal",
+      "design": "Sign in",
+      "says": "Pushed prelude/sign-in. Its pull request is waiting for a review.",
+      "when": "yesterday",
+      "url": "https://github.com/lendwithspark/borrower-portal/pull/214"
+    },
+    {
+      "id": "n-m0c",
+      "kind": "to-build",
+      "projectId": "spark-lending",
+      "project": "spark-lending",
+      "design": "Repayment schedule",
+      "says": "3 pages are approved and ready to build.",
+      "when": "2 hours ago",
+      "url": "/f/spark-lending/d/repayment-schedule/build"
+    },
+    {
+      "id": "n-3fd",
+      "kind": "finished",
+      "projectId": "borrower-portal",
+      "project": "borrower-portal",
+      "design": "Document upload",
+      "says": "The agent finished its turn: the upload page now shows each file’s progress.",
+      "when": "40 minutes ago",
+      "url": "/f/borrower-portal/d/document-upload"
+    },
+    {
+      "id": "n-q81",
+      "kind": "stopped",
+      "projectId": "spark-lending",
+      "project": "spark-lending",
+      "design": "Rate lock",
+      "says": "The build stopped: 1 page doesn’t render in the app.",
+      "when": "25 minutes ago",
+      "url": "/f/spark-lending/d/rate-lock/build"
+    },
+    {
+      "id": "n-7k2",
+      "kind": "question",
+      "projectId": "borrower-portal",
+      "project": "borrower-portal",
+      "design": "Payment methods",
+      "says": "The agent asked whether a saved card can be removed while a payment is scheduled on it.",
+      "when": "4 minutes ago",
+      "url": "/f/borrower-portal/d/payment-methods"
+    }
+  ],
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "stack": "Node with Eta",
+      "designs": 9,
+      "changed": "2 minutes ago",
+      "inProgress": [
+        { "title": "Loan offers", "where": "The agent is working on it", "url": "/f/spark-lending/d/loan-offers" },
+        { "title": "Rate lock", "where": "Build stopped", "url": "/f/spark-lending/d/rate-lock/build" },
+        { "title": "Repayment schedule", "where": "3 pages to build", "url": "/f/spark-lending/d/repayment-schedule" },
+        { "title": "Underwriting queue", "where": "2 of 5 pages approved", "url": "/f/spark-lending/d/underwriting-queue" }
+      ]
+    },
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "path": "C:\\Projects\\borrower-portal",
+      "stack": "ASP.NET Core MVC with Razor",
+      "designs": 6,
+      "changed": "4 minutes ago",
+      "inProgress": [
+        { "title": "Payment methods", "where": "The agent is asking you", "url": "/f/borrower-portal/d/payment-methods" },
+        { "title": "Document upload", "where": "Turn finished", "url": "/f/borrower-portal/d/document-upload" },
+        { "title": "Sign in", "where": "Pull request open", "url": "/f/borrower-portal/d/sign-in" }
+      ]
+    },
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "stack": "Node with Eta",
+      "designs": 3,
+      "changed": "3 hours ago",
+      "inProgress": [
+        { "title": "Landing Page", "where": "2 pages, none approved yet", "url": "/f/prelude/d/landing-page" }
+      ]
+    },
+    {
+      "id": "rate-sheet-importer",
+      "name": "rate-sheet-importer",
+      "path": "C:\\Projects\\rate-sheet-importer",
+      "stack": null,
+      "designs": 1,
+      "changed": "5 days ago",
+      "inProgress": []
+    },
+    {
+      "id": "loan-calculator",
+      "name": "loan-calculator",
+      "path": "C:\\Projects\\old\\loan-calculator",
+      "missing": true
+    }
+  ]
+}

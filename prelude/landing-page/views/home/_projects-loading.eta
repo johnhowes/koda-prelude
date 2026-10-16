@@ -1,0 +1,20 @@
+<%/* The projects while their contents load. Their names and folders are
+     already known (they're the recent list), so they show for real; only
+     what's in each waits. */%>
+<% const projects = it.projects ?? []; %>
+<div class="grid" style="--min: 18rem" aria-busy="true">
+  <span class="sr-only">Reading what’s in your projects…</span>
+  <% for (const project of projects) { %>
+  <article class="card gap-3">
+    <div class="stack gap-1">
+      <h3><a href="/f/<%= project.id %>"><%= project.name ?? project.path.split(/[\\/]/).pop() %></a></h3>
+      <span class="muted project-path"><%= project.path %></span>
+    </div>
+    <div class="stack gap-2" aria-hidden="true">
+      <span class="skeleton" style="--w: 70%"></span>
+      <span class="skeleton" style="--w: 45%"></span>
+    </div>
+    <span class="skeleton" style="--w: 55%" aria-hidden="true"></span>
+  </article>
+  <% } %>
+</div>
