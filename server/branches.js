@@ -83,6 +83,27 @@ export function textAt(repo, rev, path) {
   try { return execFileSync('git', [...NO_MONITOR, 'show', `${rev}:${path}`], { cwd: repo, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }); } catch { return null; }
 }
 
+/** The files git has seen deleted under a folder (repository-relative, with /). */
+export function removedUnder(repo, dir) {
+  try {
+    return [...new Set(git(repo, 'log', '--diff-filter=D', '--name-only', '--format=', '--', dir).split('\n').map(line => line.trim()).filter(Boolean))];
+  } catch { return []; }
+}
+
+/**
+ * A file as it was just before the commit that last deleted it, or null if
+ * git never had it: { text, removedIn }. Prelude deletes a shell's copy of a
+ * layout once layouts.json links the app's; this brings it back.
+ */
+export function beforeRemoval(repo, path) {
+  try {
+    const removedIn = git(repo, 'log', '-1', '--format=%H', '--diff-filter=D', '--', path);
+    if (!removedIn) return null;
+    const text = textAt(repo, `${removedIn}^`, path);
+    return text === null ? null : { text, removedIn };
+  } catch { return null; }
+}
+
 /** The commits on a branch since a commit that touched a design (its sessions and approved screens aside). */
 export function designCommitsSince(repo, from, branch, designId) {
   try {

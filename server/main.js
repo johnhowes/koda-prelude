@@ -4,7 +4,7 @@
 // two shapes, and put `Vary: x-koda-fragment` and `x-koda: 1` on every
 // response the application produces, including its own refusals.
 
-import { createReadStream, existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { createServer as createHttpServer } from 'node:http';
 import { homedir } from 'node:os';
@@ -18,7 +18,7 @@ import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, list
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, incrementStory, storyMarkdown } from './backlog.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
@@ -930,8 +930,31 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         if (cleared) writeFileSync(file, JSON.stringify(table, null, 2) + '\n');
       } catch { /* no routes to tidy */ }
     }
-    // A shell layout that now names the app's file (layouts.json) has no copy of its own.
-    if (design.kind === 'shell') for (const name of Object.keys(shellLayoutLinks(dir))) rmSync(join(dir, 'layouts', `${name}${readHostConfig(folder.path)?.views ?? '.eta'}`), { force: true });
+    if (design.kind === 'shell') {
+      const ext = readHostConfig(folder.path)?.views ?? '.eta';
+      // An agent can't delete files, so an emptied layouts.json is a removed one.
+      const linksFile = join(dir, 'layouts.json');
+      try { if (existsSync(linksFile) && Object.keys(JSON.parse(readFileSync(linksFile, 'utf8'))).length === 0) rmSync(linksFile); } catch { /* not empty, or not JSON: the agent's */ }
+      // A shell layout that now names the app's file (layouts.json) has no copy of its own.
+      const links = shellLayoutLinks(dir);
+      for (const name of Object.keys(links)) rmSync(join(dir, 'layouts', `${name}${ext}`), { force: true });
+      // One whose link is gone gets its copy back, as it was before Prelude
+      // removed it: only one removed for a link, never one deleted on purpose.
+      for (const path of removedUnder(entry.path, `${PRELUDE_DIR}/${design.id}/layouts`)) {
+        const name = path.split('/').pop();
+        const layout = name.endsWith(ext) ? name.slice(0, -ext.length) : null;
+        if (!layout || links[layout]) continue;
+        const file = join(entry.path, ...path.split('/'));
+        const before = !existsSync(file) && beforeRemoval(entry.path, path);
+        if (!before) continue;
+        let linkedThen = null;
+        try { linkedThen = JSON.parse(textAt(entry.path, before.removedIn, `${PRELUDE_DIR}/${design.id}/layouts.json`) ?? '{}')[layout]; } catch { /* no links then */ }
+        if (typeof linkedThen === 'string' && linkedThen.startsWith('@app/')) {
+          mkdirSync(dirname(file), { recursive: true });   // git drops a folder its last file left
+          writeFileSync(file, before.text);
+        }
+      }
+    }
     const routesFile = join(dir, 'routes.json');
     const portedNow = build && existsSync(routesFile) ? ported(readFileSync(routesFile, 'utf8')) : 0;
     const wasMerging = app.branches.merging(entry);
