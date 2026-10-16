@@ -208,7 +208,8 @@ test('prelude check fails on a changed page, with a diff, and --approve accepts 
 test('the agent leaves ported views and approved snapshots alone', () => {
   const prompt = designPrompt({ title: 'Loans', designPath: 'prelude/loans', format: 'views' });
   assert.match(prompt, /"@app\/<path>" has been ported/);
-  assert.match(prompt, /don't change it, copy it back into the design/);
+  assert.match(prompt, /never edit the app's file itself/);
+  assert.match(prompt, /bring the view back into the design first: copy the app's file to prelude\/loans\/views\/.*add "from": "@app\/<the path it came from>"/);
   assert.match(prompt, /never inside a design's sessions\/ or snapshots\/ \(the screens the person approved\)/);
   const args = permissionArgs('prelude/loans');
   const denied = args[args.indexOf('--disallowedTools') + 1];

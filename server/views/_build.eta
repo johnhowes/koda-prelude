@@ -26,7 +26,12 @@
 
   <% for (const group of it.groups) { %>
   <div class="card build-group" ko-item>
-    <h2><%= group.title %> <span class="pill"><%= group.built ? 'Built' : 'To build' %></span></h2>
+    <h2><%= group.title %> <span class="pill"><%= { new: 'New', changed: 'Changed', 'to build': 'To build' }[group.kind] %></span><% if (!group.toBuild) { %> <span class="pill">Built</span><% } %></h2>
+    <%/* A changed group is described by its change alone (step 10): the
+         rest of the page is built, and its routes are noise here. */%>
+    <% if (group.kind === 'changed') { %>
+    <p class="sec"><%= group.change.summary %></p>
+    <% } else { %>
     <ul class="build-routes">
       <% for (const route of group.routes) { %>
       <li><code><%= route.pattern %></code><% if (route.title && route !== group.page) { %> <%= route.title %><% } %> <span class="muted">· <%= route.ported ? 'the app’s own view' : 'the design’s view' %></span></li>
@@ -42,6 +47,7 @@
       <% } %>
     </ul>
     <% } %>
+    <% } %>
     <details>
       <summary class="btn small ghost">Copy as story</summary>
       <textarea class="story" ko-as="story" rows="14" readonly><%= group.story %></textarea>
@@ -55,13 +61,20 @@
         });
       </script>
     </details>
-    <% if (!group.built && it.canBuild) { %>
+    <% if (group.toBuild && it.canBuild) { %>
     <form action="<%= it.base %>/builds" method="post">
       <input type="hidden" name="group" value="<%= group.key %>">
       <button class="btn small primary" type="submit" title="Builds this group on the design's branch, in a build session.">Start a build session</button>
     </form>
     <% } %>
   </div>
+  <% } %>
+
+  <% if (it.unchanged.length) { %>
+  <details class="card">
+    <summary class="muted">Unchanged (<%= it.unchanged.length %>): built, and not changed on this branch</summary>
+    <ul class="build-routes"><% for (const group of it.unchanged) { %><li><%= group.title %></li><% } %></ul>
+  </details>
   <% } %>
 
   <% if (it.designWide.length) { %>

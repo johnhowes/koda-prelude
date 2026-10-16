@@ -75,6 +75,74 @@ const verbOf = post => ({
   remove: `removes the record at \`${post.at}\``,
 })[post.verb];
 
+/**
+ * A changed group's story (step 10): only the increment - what's new, what
+ * changed, what's gone - with nothing about the rest of the existing page.
+ * `change` is increment.js's for the group; `states` the design's states.
+ */
+export function incrementStory({ design, designPath, group, change, states = [], shared = [] }) {
+  const at = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
+  const titleOf = id => states.find(state => state.id === id)?.title ?? id;
+  const lines = [`# ${group.title}: ${design.title} (change)`, ''];
+  lines.push(change.summary ? `${change.summary[0].toUpperCase()}${change.summary.slice(1)}.` : 'A change to this page.', '');
+
+  const isNew = change.newRoutes.length || change.newPosts.length || change.statesNew.length;
+  if (isNew) {
+    lines.push('## New', '');
+    for (const route of change.newRoutes) {
+      const what = route.over ? `**${route.title ?? route.pattern}**, in the \`${route.in}\` over \`${route.over}\`` : route.title ? `**${route.title}**` : 'Fragment';
+      lines.push(`- ${what} at \`${route.pattern}\` (\`${at(route.view)}\`), data \`${route.data || '(the whole state)'}\``);
+    }
+    for (const post of change.newPosts) {
+      lines.push(`- Form \`POST ${post.pattern}\`: ${verbOf(post)}${post.require.length ? `; refuses an empty ${post.require.map(name => `\`${name}\``).join(' or ')} with a 422 and \`${post.form ? at(post.form) : 'the missing fields'}\`` : ''}; then ${answerOf(post.answer, at)}.`);
+    }
+    for (const id of change.statesNew) lines.push(`- State **${titleOf(id)}**`);
+    lines.push('');
+  }
+
+  const changed = change.changedRoutes.length || change.changedPosts.length || change.shape.length || change.screens.length;
+  if (changed) {
+    lines.push('## Changed', '');
+    for (const { route, what } of change.changedRoutes) lines.push(`- \`${route.pattern}\`${route.title ? ` (${route.title})` : ''}: ${what.join('; ')}${route.from ? `. Port it back over \`${route.from.slice(5)}\`` : ''}.`);
+    for (const { post, what } of change.changedPosts) {
+      const said = what.map(item => (item === 'its answer changed' ? `it now ${answerOf(post.answer, at)}` : item));
+      lines.push(`- \`POST ${post.pattern}\`: ${said.join('; ')}.`);
+    }
+    for (const { pattern, gained, lost } of change.shape) {
+      const parts = [gained.length && `gains ${gained.map(path => `\`${path}\``).join(', ')}`, lost.length && `loses ${lost.map(path => `\`${path}\``).join(', ')}`].filter(Boolean);
+      lines.push(`- \`${pattern}\`'s data ${parts.join(' and ')}.`);
+    }
+    for (const screen of change.screens) lines.push(`- **${screen.page}** looks different, in ${screen.states.map(titleOf).join(', ')}.`);
+    lines.push('');
+  }
+
+  if (change.removedRoutes.length || change.removedPosts.length) {
+    lines.push('## Removed', '');
+    for (const route of change.removedRoutes) lines.push(`- \`${route.pattern}\`${route.title ? ` (${route.title})` : ''}`);
+    for (const post of change.removedPosts) lines.push(`- \`POST ${post.pattern}\``);
+    lines.push('');
+  }
+
+  const { added, reworded, retired } = change.rules;
+  if (added.length || reworded.length || retired.length) {
+    lines.push('## Rules', '');
+    for (const rule of added) lines.push(`- New: **${rule.id}.** ${rule.text}`);
+    for (const rule of reworded) lines.push(`- Reworded: **${rule.id}.** ${rule.text}`);
+    for (const rule of retired) lines.push(`- Retired: **${rule.id}.** ${rule.text}${rule.note ? ` (${rule.note})` : ''}`);
+    lines.push('');
+  }
+
+  if (shared.length) {
+    lines.push('## Shared changes', '', 'Made on this branch for this design:', '', ...shared.map(path => `- \`${path}\``), '');
+  }
+
+  if (change.states.length) {
+    lines.push('## Test cases', '', ...change.states.map(id => `- **${titleOf(id)}**`), '');
+  }
+  lines.push(`The full design is in \`${designPath}/\`.`);
+  return lines.join('\n');
+}
+
 /** A group as Markdown for a tracker: what it delivers, its acceptance criteria and its test cases. */
 export function storyMarkdown({ design, designPath, group, designWide = [], states = [], approved = false }) {
   // A view as a path in the repository: the app's own, or the design's copy.

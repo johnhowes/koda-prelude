@@ -28,9 +28,54 @@
     Once it’s merged there, Prelude tidies up the branch here.</p>
   <% } %>
 
+  <%/* In progress (step 10): the current work in one place - each design on
+       a branch, its stories, where it stands, and finishing it. Derived from
+       the branches; nothing here is stored. */%>
+  <% if (it.inProgress.length) { %>
+  <div class="card in-progress" ko-item>
+    <h2>In progress</h2>
+    <ul class="list">
+      <% for (const item of it.inProgress) { %>
+      <li>
+        <a class="item" href="<%= item.work.url %>">
+          <span class="icon icon-screen" aria-hidden="true"></span>
+          <span class="item-text">
+            <span class="item-title"><%= item.design.title %><% if (item.design.kind === 'system') { %><span class="pill">Design system</span><% } else if (item.design.kind === 'shell') { %><span class="pill">App shell</span><% } %></span>
+            <span class="muted">prelude/<%= item.design.id %></span>
+          </span>
+        </a>
+        <% if (item.stories.length) { %>
+        <ul class="build-routes">
+          <% for (const story of item.stories) { %>
+          <li><a href="<%= item.buildUrl %>"><%= story.title %></a> <span class="muted">· <%= story.toBuild ? (item.work.building?.title === story.title ? 'building' : 'to build') : 'built' %><%= story.kind === 'changed' ? ' · a change' : story.kind === 'new' ? ' · new' : '' %></span><% if (story.summary) { %><br><span class="muted"><%= story.summary %></span><% } %></li>
+          <% } %>
+        </ul>
+        <% } %>
+        <%~ include('./_branch', { work: item.work, finish: `/f/${it.folder.id}/branches/${item.work.id}`, back: `/f/${it.folder.id}` }) %>
+      </li>
+      <% } %>
+    </ul>
+    <% if (it.allStories) { %>
+    <details>
+      <summary class="btn small ghost">Copy all stories</summary>
+      <textarea class="story" ko-as="stories" rows="14" readonly><%= it.allStories %></textarea>
+      <button class="btn small" type="button" ko-as="copyAll">Copy</button>
+      <script type="koda">
+        // Copying to the clipboard is an action on the platform, not a value.
+        const { stories, copyAll } = koda.scope();
+        copyAll.element.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(stories.element.value);
+          copyAll.element.textContent = 'Copied';
+        });
+      </script>
+    </details>
+    <% } %>
+  </div>
+  <% } %>
+
   <div class="card">
     <h2>Designs</h2>
-    <% if (it.groups.length === 0) { %>
+    <% if (it.groups.length === 0 && !it.inProgress.length) { %>
     <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions. A design system is a design too: its screens are its gallery, and every other design in the folder uses it.</p>
     <% } %>
     <% for (const group of it.groups) { %>

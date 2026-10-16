@@ -58,6 +58,38 @@ export function mainBranch(folderPath) {
   try { return git(folderPath, 'symbolic-ref', '--short', 'HEAD'); } catch { return 'main'; }
 }
 
+/**
+ * Where a design's branch left the main branch (step 10): the commit its
+ * increment is measured from, or null.
+ */
+export function baselineOf(repo, branch) {
+  try { return git(repo, 'merge-base', mainBranch(repo), `refs/heads/${branch}`); } catch { return null; }
+}
+
+/** The files under a path at a commit, relative to it: Map(relative path -> blob id). */
+export function filesAt(repo, rev, prefix) {
+  const files = new Map();
+  try {
+    for (const line of git(repo, 'ls-tree', '-r', rev, '--', prefix).split('\n').filter(Boolean)) {
+      const [meta, path] = line.split('\t');
+      files.set(path.slice(prefix.length), meta.split(' ')[2]);
+    }
+  } catch { /* nothing there */ }
+  return files;
+}
+
+/** A file's text as it was at a commit, or null. */
+export function textAt(repo, rev, path) {
+  try { return execFileSync('git', [...NO_MONITOR, 'show', `${rev}:${path}`], { cwd: repo, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }); } catch { return null; }
+}
+
+/** The commits on a branch since a commit that touched a design (its sessions and approved screens aside). */
+export function designCommitsSince(repo, from, branch, designId) {
+  try {
+    return git(repo, 'log', '--format=%H', `${from}..refs/heads/${branch}`, '--', `prelude/${designId}`, `:(exclude)prelude/${designId}/sessions`, `:(exclude)prelude/${designId}/snapshots`).split('\n').filter(Boolean);
+  } catch { return []; }
+}
+
 /** The repository's remote, for pushing and pull requests: { url, host: 'github' | 'azure' | 'other' } or null. */
 export function remoteOf(folderPath) {
   let url;
@@ -244,6 +276,14 @@ export function createBranches({ home }) {
     /** Mark a branch as building one of its design's groups (one at a time), or as done building. */
     building(entry, group) {
       return update(entry.id, { building: group ? { group: group.key, title: group.title } : null, adopted: false });
+    },
+
+    /** Record that a group's build finished, at the branch's current commit (step 10). */
+    markBuilt(entry, groupKey) {
+      const current = read()[entry.id];
+      if (!current) return null;
+      const sha = git(parentPath(current), 'rev-parse', `refs/heads/${current.branch}`);
+      return update(entry.id, { built: { ...(current.built ?? {}), [groupKey]: sha } });
     },
 
     /** Commit everything in the worktree to its branch, if anything changed. Returns the commit's short id, or null. */

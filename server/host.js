@@ -88,8 +88,16 @@ export const isHosted = designDir => existsSync(join(designDir, 'routes.json'));
 
 /** The design's routes, in the order written: [{ pattern, view, title, data, layout }]. */
 export function readRoutes(designDir) {
-  let table;
-  try { table = JSON.parse(readFileSync(join(designDir, 'routes.json'), 'utf8')); } catch { return []; }
+  return parseRoutes(readTable(designDir));
+}
+
+/** A design's routes.json as an object, or null. */
+function readTable(designDir) {
+  try { return JSON.parse(readFileSync(join(designDir, 'routes.json'), 'utf8')); } catch { return null; }
+}
+
+/** The GET routes in a routes.json table (readRoutes, for a table read from elsewhere: git, step 10). */
+export function parseRoutes(table) {
   if (!table || typeof table !== 'object' || Array.isArray(table)) return [];
   return Object.entries(table)
     .filter(([pattern, route]) => pattern.startsWith('/') && route && typeof route.view === 'string')
@@ -105,6 +113,8 @@ export function readRoutes(designDir) {
       search: fieldMap(route.search, value => (Array.isArray(value) ? value.filter(f => typeof f === 'string') : typeof value === 'string' ? [value] : [])),
       match: fieldMap(route.match, value => (typeof value === 'string' ? value : null)),
       list: typeof route.list === 'string' ? route.list : null,
+      // A built view brought back into the design for a redesign (step 10): where it came from.
+      from: typeof route.from === 'string' && route.from.startsWith('@app/') ? route.from : null,
     }));
 }
 
@@ -194,8 +204,11 @@ export function matchRoute(routes, path) {
  *   [{ pattern, verb, at, data, require, form, answer: { redirect, view, data, also, event } }]
  */
 export function readPostRoutes(designDir) {
-  let table;
-  try { table = JSON.parse(readFileSync(join(designDir, 'routes.json'), 'utf8')); } catch { return []; }
+  return parsePostRoutes(readTable(designDir));
+}
+
+/** The POST routes in a routes.json table. */
+export function parsePostRoutes(table) {
   if (!table || typeof table !== 'object' || Array.isArray(table)) return [];
   const routes = [];
   for (const [key, route] of Object.entries(table)) {

@@ -111,6 +111,14 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     branch (`shared`). Finishing (`/f/<id>/branches/<branch>/merge|publish|update`)
     merges into main without touching the checkout, or pushes for a pull
     request (`gh`, `az`) after asking; merged branches are tidied up.
+  - Stories of the increment (plan, step 10): `server/increment.js` compares a
+    design on its branch with the same design where it left `main`, per group.
+    `groupsOf` (main.js) makes each group new, changed, to build or unchanged;
+    a changed group's story (`incrementStory`) and build brief (`buildPrompt`'s
+    `change`) hold only the change. To redesign a built page the design brings
+    its view back with `"from": "@app/…"` on the route; the build ports it back
+    and Prelude clears `from`. The folder page's "In progress" lists the work on
+    every branch, with "Copy all stories".
   - The app (plan, step 8): `server/app-config.js` reads `prelude.json`'s
     `app` (the stack chosen with the first design, and the app's path once
     built). The folder page's "The app" card starts the app build: a build

@@ -1821,6 +1821,39 @@ Decided 2026-10-16:
 - The current work is shown in one place: an "In progress" section on the folder page, not
   a page of its own.
 
+**As built:**
+- **The comparison** is `server/increment.js` (`incrementOf`). It reads the design at the
+  branch's merge-base with `main` from git and compares it with the worktree, per group:
+  routes and forms new, changed or removed; the data shape of each changed route; approved
+  screens that differ, per state; rules added, reworded or retired; and new states. A
+  group with any of these is "changed".
+  - A route's data shape is compared only where its view changed: a view that didn't
+    change shows nothing new, and a page whose data is the whole dataset would otherwise
+    change with every new field anywhere.
+  - An overlay's screen holds the page beneath it, so where that page differs too, and
+    the overlay's own route didn't change, the difference is left to the page.
+  - A retired rule that lost its `shown-on` counts where it was shown before.
+- **The Build page and stories** (`groupsOf` in `main.js`, `incrementStory` in
+  `backlog.js`): each group is New, Changed, To build or Unchanged, the last folded away.
+  A changed group is due until a build of it finishes (`entry.built[group]`, the commit it
+  finished at) with no design commit since.
+- **Build sessions** (`buildPrompt`'s `change`) list only the change: "already built:
+  this session builds a change to it, and only that".
+- **Redesign:** the design agent copies the app's file into the design, points the route
+  at it and adds `"from"`; the build ports it back. After each build turn Prelude clears
+  `from` on routes that are `@app/` again, and removes the design's views once every
+  route is.
+- **In progress** on the folder page lists each design with a branch, its stories and its
+  state, with "Copy all stories".
+- **Proven** on the Apiary clone: asked to show when each resource was last used, the
+  design agent brought Home back with `from` and added `resources[].lastUsed` and a rule.
+  Its story named only that: the view being redesigned, the data gained, the screens that
+  differ (Typical, Not connected), the new rule and those two states. A build session
+  ported it back, added the data in the app, and the check matched the approved screens.
+  It was merged and tidied.
+- **Found while proving it, and fixed:** the drawer over Home was listed as looking
+  different, only because Home beneath it did.
+
 ### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

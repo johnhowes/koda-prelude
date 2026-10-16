@@ -277,7 +277,7 @@ Drawers, modals and side panels are overlays: a fragment presented in a region t
 
 Forms post to POST routes in the same routes.json, keyed "POST <url>". Each does one thing to the state's data at a path, the same paths GET routes use: "update" merges the posted fields into that record (a field keeps the type its value has; dotted names such as address.city reach inside; give a checkbox a hidden input with value "false" before it, so unchecking it is posted), "add" appends a record with the fields and a new id (the answer can use :new), "remove" takes the record out. "require" lists fields that may not be empty: an empty one is refused with a 422 that re-renders "form" with what was typed, the messages in it.$errors (mark the field with ko-invalid-server="<%= it.$errors?.name %>" when there is one, and show the message), and nothing changes. "answer" is what comes back after the change: { "redirect": "/orders/:id" } for a 303 to a page; or { "view": "orders/_row", "data": "orders/:id" } for a fragment, rendered from the changed data, landing wherever the form aimed it; plus "also": [{ "into": "summary", "view": "orders/_summary", "data": "" }] to refresh other regions out of band, and { "into": "drawer?" } alone to close the region the form was in; "event" raises a named event. For example: "POST /orders/:id": { "update": "orders/:id", "require": ["borrower"], "form": "orders/_edit", "answer": { "view": "orders/_row", "data": "orders/:id", "also": [{ "into": "drawer?" }] } }. Aim each form as the real app would: a drawer's form at the row it changes, with the drawer closed by the answer; a row that saves itself with ko-target="self" and ko-attach="replace". Changes go to a working copy of the state, never the files; the person can reset it.
 
-A route whose view is "@app/<path>" has been ported: its view is now the app's own file in the repository (such as "@app/views/orders/list"), and the design's states are that view's test fixtures. Read it to see what the page really is, but don't change it, copy it back into the design, or point the route elsewhere; if it should change, say so in NOTES.md. Keep the states valid for it: the same shape, and every field it reads. A form's "require" names what the app's form posts.
+A route whose view is "@app/<path>" has been ported: its view is now the app's own file in the repository (such as "@app/views/orders/list"), and the design's states are that view's test fixtures. Read it to see what the page really is, and never edit the app's file itself. Keep the states valid for it: the same shape, and every field it reads. A form's "require" names what the app's form posts. A change to a built page's data or rules needs nothing more. When its markup must change (a redesign), bring the view back into the design first: copy the app's file to ${designPath}/views/ (with the partials it includes, if they change too), point the route's "view" at the copy, and add "from": "@app/<the path it came from>" to the route. Then redesign the copy as any design view. The page shows as to build again, and its build ports your version back over the app's file.
 
 Search and filter forms use GET: <form method="get" action="/orders"> with inputs named for the query parameters. Every view sees the query string as it.$query, so the form shows what was asked (value="<%= it.$query.q ?? '' %>"). The route filters, as the app's controller would, so views never filter: "search": { "q": ["borrower", "id"] } keeps the records where any of those fields contains ?q= (ignoring case); "match": { "status": "status" } keeps those whose field equals ?status=; an empty parameter filters nothing. They apply to the route's data when it is a list, or to the list at "list" inside it ("list": "orders"). For search as you type, give the results their own fragment route with the same filters and load it as a region that follows the box: <input type="search" id="q" name="q"> and <div id="results" ko-region calc-ko-source="'/orders/results?q=' + encode(q.value)" ko-invoke="input:q" ko-debounce="250">. Make sure a search that matches nothing shows a clear empty result.
 
@@ -360,17 +360,34 @@ ${referenceHost()}${references.length ? `\n\nYou may also read: ${references.map
  * a design - a page, its overlays, fragments and forms - in the app's real
  * code, on a branch of its own. `group` is a backlog group (backlog.js).
  */
-export function buildPrompt({ title, designPath, group, designWide = [], branch, references = [], stack = null, kodaPath = null }) {
-  const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}`);
-  const routes = group.routes.map(route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`).join('\n');
-  const posts = group.posts.map(post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`).join('\n');
-  const rules = group.rules.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
+export function buildPrompt({ title, designPath, group, change = null, designWide = [], branch, references = [], stack = null, kodaPath = null }) {
+  const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}${route.from ? `, redesigned from ${route.from.slice(5)}: port it back over that file, and remove the route's "from"` : ''}`);
+  const describe = route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`;
+  const describePost = post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`;
+  // A change to a built page (step 10): only the increment, never the rest of the page.
+  const routes = change
+    ? [
+      ...change.newRoutes.map(route => `${describe(route)} (new)`),
+      ...change.changedRoutes.map(({ route, what }) => `${describe(route)} (changed: ${what.join('; ')})`),
+      ...change.shape.map(({ pattern, gained, lost }) => `  - ${pattern}'s data ${[gained.length && `gains ${gained.join(', ')}`, lost.length && `loses ${lost.join(', ')}`].filter(Boolean).join(' and ')}: change the model and what fills it`),
+      ...change.screens.map(screen => `  - ${screen.page} looks different in ${screen.states.join(', ')}: match its approved screens`),
+      ...change.removedRoutes.map(route => `  - ${route.pattern} goes: remove it from the app`),
+    ].join('\n')
+    : group.routes.map(describe).join('\n');
+  const posts = change
+    ? [
+      ...change.newPosts.map(post => `${describePost(post)} (new)`),
+      ...change.changedPosts.map(({ post, what }) => `${describePost(post)} (changed: ${what.join('; ')})`),
+      ...change.removedPosts.map(post => `  - POST ${post.pattern} goes: remove it from the app`),
+    ].join('\n')
+    : group.posts.map(describePost).join('\n');
+  const rules = (change ? [...change.rules.added, ...change.rules.reworded].filter(rule => rule.proposed) : group.rules.filter(rule => rule.proposed)).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
   const wide = designWide.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
   return `You are building part of a design into this repository's app: "${group.title}" of the design "${title}", in ${designPath}/. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and opens the pull request.
 
 The design is the specification, and it is already the app's views: ${designPath}/routes.json says what each URL shows (its view, and "data", the path into a state that becomes the view's model) and what each form does (POST routes: update, add or remove at a data path; "require", refused with a 422 that re-renders "form" with the messages; "answer", what comes back). ${designPath}/states/ are the cases, and become the tests' fixtures. ${designPath}/RULES.md says what else must be true, and ${designPath}/NOTES.md why, including any porting spec.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here, and how ported views differ.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}
 
-This session builds:
+${change ? `"${group.title}" is already built: this session builds a change to it, and only that. Everything not listed stays as it is.\n\nThe change:` : 'This session builds:'}
 ${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes these proposed rules true:\n${rules}` : ''}${wide ? `\nThese proposed rules aren't tied to a page. Make true the ones what you build touches, and leave the rest:\n${wide}` : ''}
 
 For each of them:
