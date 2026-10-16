@@ -262,6 +262,8 @@ test('a project that already has an app connects it instead of building one (8b)
   assert.equal(turn.mode, 'build');
   assert.match(turn.systemPrompt, /You are connecting the app this repository already has to its designs \(prelude\/\)\. Don't build an app: it exists\./);
   assert.match(turn.systemPrompt, /A design host, only if it's needed/);
+  assert.match(turn.systemPrompt, /link a layout only when the shell's is the app's layout as it is[^.]*\. Where the shell's layout is a redesign[^.]*, don't link it/);
+  assert.match(turn.systemPrompt, /name, in prelude\/prelude\.json's "app\.assets", the URLs the app serves its own files at/);
   assert.doesNotMatch(turn.systemPrompt, /You are building the app itself/);
   await settled(shellDir, sid);
 

@@ -129,7 +129,8 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     as its own design host. Feature builds wait until it exists. A project that
     already has an app (`app.existing`, plan 8b) connects it instead: the same
     session, briefed by `connectAppPrompt`, finds the app and changes as little
-    as it can. A shell's
+    as it can. Without a host, `app.assets` (`appAssets`) names the app's own
+    files by URL, and host.js serves them on the preview origin. A shell's
     `layouts.json` names layouts that are the app's files.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its

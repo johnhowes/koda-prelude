@@ -10,7 +10,7 @@
 // already had a design host before step 8 (the Razor demo) has an app.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 import { PRELUDE_DIR } from './designs.js';
 
@@ -44,6 +44,23 @@ export function appOf(folderPath) {
     path,
     existing,
   };
+}
+
+/**
+ * The app's own files, by the URL the app serves them at, for an app connected
+ * without a design host (plan, 8b): prelude.json's "app.assets", such as
+ * { "/static/": "server/public/" }. Each folder is inside the repository, never
+ * the repository itself or its .git. [{ prefix, root }], the longest prefix first.
+ */
+export function appAssets(folderPath) {
+  const assets = read(folderPath).app?.assets;
+  if (!assets || typeof assets !== 'object') return [];
+  const repo = resolve(folderPath);
+  return Object.entries(assets)
+    .filter(([prefix, dir]) => /^\/[^\s]*\/$/.test(prefix) && !prefix.startsWith('/_prelude/') && typeof dir === 'string' && dir.trim())
+    .map(([prefix, dir]) => ({ prefix, root: resolve(repo, dir) }))
+    .filter(({ root }) => root.startsWith(repo + sep) && !root.slice(repo.length + 1).split(sep).some(part => part.startsWith('.')))
+    .sort((a, b) => b.prefix.length - a.prefix.length);
 }
 
 /** Record that the project already has an app, to be connected rather than built (plan, 8b). */

@@ -1674,10 +1674,17 @@ find it, not make one.
   session on the shell's branch, like the app build (group `@app`), whose instructions
   say to **find the app and change as little as possible**:
   - record `app.path` and `app.stack`, described from the code;
-  - point the shell's `layouts.json` at the app's own layout files where it has them;
+  - point the shell's `layouts.json` at the app's own layout files, **only where the
+    shell's layout is the app's as it is**. A shell that redesigns the layout keeps its
+    design, which designs render in until the redesign is built into the app; linking
+    it would throw the redesign away;
   - give the app Prelude's design-host contract **only if** Prelude's built-in Eta
     renderer can't render its views (a stack that isn't Eta, or Eta views that need the
     app's own helpers), behind `PRELUDE_HOST=1`, touching nothing else;
+  - without a host, name the app's own files in `app.assets`, by the URL the app
+    serves them at: `{ "/static/": "server/public/" }`. The built-in host serves them on
+    the preview's origin at those paths (`appAssets`, folders inside the repository
+    only, never `/_prelude/`), so the app's views load their CSS and Koda there;
   - write `prelude/HOST.md` only with a host;
   - change nothing else in the app, and note in the shell's `NOTES.md` anything the
     designs and the app disagree on (its CSS against the design system, say).
@@ -1690,6 +1697,11 @@ Decided 2026-10-16:
 - The person says the app exists; Prelude doesn't guess from the files.
 - For an Eta app, connecting is the json and `layouts.json`: no host unless its views
   need one.
+- Tried on Prelude itself: the first connection linked the shell's redesigned layout to
+  Prelude's current one, and its views' CSS and Koda didn't load in the preview. Hence
+  linking only an unredesigned layout, and `app.assets`.
+- Not yet: building a redesigned shell layout into an app that already exists. Only the
+  app build ports layouts, into an app it makes.
 
 ### Step 9: Branches - a design and its build on one branch
 

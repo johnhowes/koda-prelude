@@ -306,3 +306,24 @@ test('the picker lists overlays under their page, and the check renders them bot
     write('orders/views/orders/_edit.eta', '<form class="edit"><input name="borrower" value="<%= it.borrower %>"></form>');
   }
 });
+
+test('an app connected without a host (8b): its own files load on the preview origin, at the paths it serves them at', async () => {
+  const file = (path, text) => { const at = join(repo, ...path.split('/')); mkdirSync(dirname(at), { recursive: true }); writeFileSync(at, text); };
+  file('server/public/app.css', 'body { color: teal; }');
+  file('server/public/.secret', 'no');
+  file('.git-like/config', 'no');
+  write('prelude.json', { app: { existing: true, path: 'server', assets: { '/static/': 'server/public/', '/leak/': '../', '/whole/': '.', '/dot/': '.git-like/', '/_prelude/x/': 'server/public/' } } });
+  try {
+    const css = await hostGet('orders', '/static/app.css');
+    assert.equal(css.status, 200);
+    assert.match(css.body, /teal/);
+    assert.equal((await hostGet('orders', '/static/.secret')).status, 404, 'no dotfiles');
+    assert.equal((await hostGet('orders', '/static/../../package.json')).status, 404, 'nothing above its folder');
+    for (const path of ['/leak/package.json', '/whole/server/public/app.css', '/dot/config']) {
+      assert.equal((await hostGet('orders', path)).status, 404, `${path}: a folder outside the repository, the repository itself, or a hidden one is never served`);
+    }
+    assert.match((await hostGet('orders', '/orders')).body, /Harbor Street Bakery/, 'a route still renders');
+  } finally {
+    write('prelude.json', {});
+  }
+});

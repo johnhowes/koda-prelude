@@ -40,6 +40,7 @@ import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
+import { appAssets } from './app-config.js';
 import { readHostConfig } from './hosts.js';
 import { readRules, ruleWarnings } from './rules.js';
 import { compareSnapshots, snapshotName } from './snapshots.js';
@@ -430,6 +431,12 @@ export async function handleDesignHost(req, res, app, host) {
   const external = app.hosts && readHostConfig(folder.path);
   if (external && !matchRoute(readRoutes(designDir), path)) {
     if (await app.hosts.proxy(folder, external, req.url, res)) return;
+  }
+  // An app connected without a host (8b) names its own files' URLs in
+  // prelude.json, so the pages it renders load them here at the same paths.
+  if (!external && req.method === 'GET' && !matchRoute(readRoutes(designDir), path)) {
+    const asset = appAssets(folder.path).find(({ prefix }) => path.startsWith(prefix));
+    if (asset) return sendFile(res, asset.root, path.slice(asset.prefix.length), notFound);
   }
 
   const query = Object.fromEntries(url.searchParams.entries());
