@@ -27,6 +27,8 @@ function read(folderPath) {
  *            built before designing, since views are written in its language
  *   built  - the app exists: the app build recorded its path, or the folder
  *            had a design host of its own
+ *   existing - the person said the project already has an app (plan, 8b):
+ *            it's connected, not built, and its stack is described from the code
  */
 export function appOf(folderPath) {
   const config = read(folderPath);
@@ -34,12 +36,26 @@ export function appOf(folderPath) {
   const stack = typeof app.stack === 'string' && app.stack.trim() ? app.stack.trim() : null;
   const hasHost = Boolean(config.host && typeof config.host.start === 'string');
   const path = typeof app.path === 'string' && app.path.trim() ? app.path.trim() : null;
+  const existing = app.existing === true;
   return {
     stack: stack ?? (hasHost ? 'the app’s own (it has a design host)' : null),
     custom: Boolean(stack && stack !== DEFAULT_STACK),
-    built: Boolean(path) || (hasHost && !stack),
+    built: Boolean(path) || (hasHost && !stack && !existing),
     path,
+    existing,
   };
+}
+
+/** Record that the project already has an app, to be connected rather than built (plan, 8b). */
+export function markExisting(folderPath) {
+  const config = read(folderPath);
+  const app = config.app && typeof config.app === 'object' ? config.app : {};
+  // A stack chosen before is a guess about an app that wasn't there: the connection describes the real one.
+  const { stack, ...rest } = app;
+  config.app = { ...rest, existing: true };
+  mkdirSync(join(folderPath, PRELUDE_DIR), { recursive: true });
+  writeFileSync(join(folderPath, PRELUDE_DIR, 'prelude.json'), JSON.stringify(config, null, 2) + '\n');
+  return appOf(folderPath);
 }
 
 /** Record the folder's stack in prelude/prelude.json, keeping everything else there. */

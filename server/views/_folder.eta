@@ -111,7 +111,7 @@
        stack was recorded (designs made before Prelude asked): starting the
        build settles it. */%>
   <% const designsOfViews = it.groups.some(group => group.designs.some(design => design.kind !== 'system')); %>
-  <% if (it.app.stack || designsOfViews) { %>
+  <% if (it.app.stack || it.app.existing || designsOfViews) { %>
   <div class="card" id="app">
     <h2>The app</h2>
     <% if (it.app.built) { %>
@@ -120,7 +120,16 @@
     <p class="sec">The app is built on the shell’s branch. Once that branch is in your main branch, features can be built on top of it: open the shell to check what the build made (and approve its design host there, if it asks), then finish the branch.</p>
     <%~ include('./_branch', { work: it.shellWork, finish: `/f/${it.folder.id}/branches/${it.shellWork.id}`, back: `/f/${it.folder.id}#app`, error: it.finishError?.id === it.shellWork.id ? it.finishError.message : null }) %>
     <% } else if (it.shellWork?.building?.group === '@app') { %>
-    <p class="sec">The app is being built on the shell’s branch. <a href="<%= it.shellWork.url %>">Open the shell</a> to follow it.</p>
+    <p class="sec">The app is being <%= it.app.existing ? 'connected' : 'built' %> on the shell’s branch. <a href="<%= it.shellWork.url %>">Open the shell</a> to follow it.</p>
+    <% } else if (it.app.existing) { %>
+    <%/* An app the project already has (8b): connected, not built. */%>
+    <p class="sec">This project already has an app. Connecting it finds the app and its stack, and points the shell at the app’s own layouts, changing as little as it can, so designs render as the app’s own views and features are built into it.</p>
+    <% if (it.canBuild) { %>
+    <form action="/f/<%= it.folder.id %>/app/build" method="post">
+      <button class="btn small primary" type="submit">Connect the app</button>
+      <% if (it.git === 'none') { %><p class="muted">Designs and builds work on git branches: Prelude makes the project’s folder a git repository first, and commits it.</p><% } %>
+    </form>
+    <% } %>
     <% } else { %>
     <p class="sec">It will be <%= it.app.stack ?? it.defaultStack %>. There’s no app yet: the app build creates it on the shell’s branch, with the shell’s layouts and the design system, so features can be built on top of it.<% if (it.app.custom) { %> Designs here wait for it, since they’re written in its language.<% } %></p>
     <% if (it.canBuild) { %>
@@ -136,6 +145,7 @@
       </details>
       <% } %>
       <button class="btn small primary" type="submit">Start the app build</button>
+      <button class="btn small ghost" type="submit" name="existing" value="yes" title="Prelude finds the app this project already has and connects it, instead of building one.">This project already has an app</button>
       <% if (it.git === 'none') { %><p class="muted">Designs and builds work on git branches: Prelude makes the project’s folder a git repository first, and commits it.</p><% } %>
     </form>
     <% } else if (it.git === 'inside') { %>
@@ -191,7 +201,7 @@
       <%/* Asked once, the first time a design is made: the app's stack, which
            its designs are written in. The default is one click; another stack
            is a quiet option (step 8). */%>
-      <% if (!it.app.stack) { %>
+      <% if (!it.app.stack && !it.app.existing) { %>
       <div class="stack-choice">
         <p class="muted">Designs are written as the app’s own views. The app will be <strong><%= it.defaultStack %></strong>.</p>
         <details>
@@ -202,6 +212,7 @@
           </label>
           <p class="muted">Its app is built first, with a design host, and designs are then written in its language. The design system can be designed straight away.</p>
         </details>
+        <label class="check"><input type="checkbox" name="existing" value="yes"> <span class="muted">This project already has an app: connect it instead of building one</span></label>
       </div>
       <% } %>
       <div class="rowbtns">

@@ -329,6 +329,35 @@ const hostContract = () => {
 const referenceHost = () => readFileSync(new URL('../tools/reference-host.js', import.meta.url), 'utf8');
 
 /**
+ * The instructions for connecting an app the project already has (plan, 8b):
+ * find it and change as little as possible, so designs render as its own views
+ * and features are built into it. Arguments as appBuildPrompt's.
+ */
+export function connectAppPrompt({ shell, designs, system = null, branch, references = [], kodaPath = null }) {
+  const shellPath = `prelude/${shell.id}`;
+  const list = designs.filter(design => design.kind === 'design').map(design => `  - ${design.title} (prelude/${design.id})`).join('\n') || '  (none yet)';
+  return `You are connecting the app this repository already has to its designs (prelude/). Don't build an app: it exists. Find it, and change as little of it as you can. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it.
+
+The designs:
+- The app's shell, ${shellPath}: its layouts are in ${shellPath}/layouts/ (each <name>.eta, with sample data in <name>.json), and its routes, views and states are their gallery.${system ? `\n- The design system, ${system.path}/system/.` : ''}
+- The feature designs, each built into the app later as stories of their own:
+${list}
+
+Connect it:
+1. **Find the app:** read the repository (its README, package or project files, server code and views) and work out where the app is, what it's written in, and where its views and layouts live. If there's more than one candidate, or none, stop and ask the person.
+2. **prelude/prelude.json**: keep everything there, and set "app.path" to the app's folder (relative to the repository, such as "server" or "src/App") and "app.stack" to a short description of its stack from the code (for example "Node, node:http, Eta and Koda"). Keep "app.existing": true.
+3. **The shell's layouts:** where the app has its own layout files, write ${shellPath}/layouts.json naming each layout the shell has, by the app's file: { "app": "@app/<path to the layout, without its extension>" }. Prelude then renders every design inside the app's real layout, and removes the shell's copy. A shell layout the app has no counterpart for stays the shell's; say so in ${shellPath}/NOTES.md.
+4. **A design host, only if it's needed.** Prelude renders a design's views itself when they're Eta: the design's own, and the app's own files named "@app/<path>", with Eta's own include and layout and nothing else. If the app's views are Eta and render like that (no helpers, filters or globals of the app's own), add nothing: that's the whole connection. If they aren't Eta, or need the app's own helpers to render, give the app Prelude's design-host contract (below), answering only when it's started with PRELUDE_HOST=1 and rendering with the app's own engine and helpers; add "host" to prelude/prelude.json ({ "start": the command that starts the app, run with PRELUDE_HOST=1 already set; "url": a localhost address of its own; "views": the views' extension; "guide": "prelude/HOST.md" }), and write prelude/HOST.md on how views, partials, layouts and form fields are written in this app. Touch nothing else in the app to do it.
+5. **Change nothing else in the app**: not its pages, styles, data or tests. Where the designs and the app disagree (the app's CSS against the design system, a layout's regions, the stack the person was told), note it in ${shellPath}/NOTES.md for the person, rather than changing either.
+
+You can't run commands. After each turn Prelude renders the shell's gallery through the connected app and tells you with the next message what fails${kodaPath ? `. Koda's server conventions, if you need them, are in ${kodaPath}/.claude/skills/koda-server-setup/SKILL.md` : ''}.
+
+Prelude's design-host contract, if the app needs one:
+
+${hostContract()}${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/**
  * The instructions for the app build (plan: step 8): create the app itself in
  * a repository that has only its designs, as its own design host, with the
  * shell's layouts ported and the design system served. `shell` is the design

@@ -126,7 +126,10 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     `app` (the stack chosen with the first design, and the app's path once
     built). The folder page's "The app" card starts the app build: a build
     session of the shell (group `@app`, `appBuildPrompt`) that creates the app
-    as its own design host. Feature builds wait until it exists. A shell's
+    as its own design host. Feature builds wait until it exists. A project that
+    already has an app (`app.existing`, plan 8b) connects it instead: the same
+    session, briefed by `connectAppPrompt`, finds the app and changes as little
+    as it can. A shell's
     `layouts.json` names layouts that are the app's files.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its

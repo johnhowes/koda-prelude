@@ -85,7 +85,7 @@ test('in a repository, a new design is made on a branch of its own; the first de
   assert.equal(appOf(repo).stack, null);
 
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Loans', kind: 'design' })).status, 303);
-  assert.deepEqual(appOf(repo), { stack: DEFAULT_STACK, custom: false, built: false, path: null });
+  assert.deepEqual(appOf(repo), { stack: DEFAULT_STACK, custom: false, built: false, path: null, existing: false });
   assert.equal(git(repo, 'status', '--porcelain'), '', 'the stack choice is committed on main');
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Loans', kind: 'design' })).status, 422, 'one design per id, even only on a branch');
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Other tokens', kind: 'system' })).status, 422, 'one design system, even only on a branch');
@@ -102,7 +102,7 @@ test('another stack is described, and its app is built first, on the shell’s b
   const refused = await post(`/f/${fid}/designs`, { title: 'Loans', kind: 'design', stack: 'ASP.NET Core MVC with Razor' });
   assert.equal(refused.status, 409);
   assert.match(await refused.text(), /Designs here will be written in ASP\.NET Core MVC with Razor, so its app is built first/);
-  assert.deepEqual(appOf(repo), { stack: 'ASP.NET Core MVC with Razor', custom: true, built: false, path: null });
+  assert.deepEqual(appOf(repo), { stack: 'ASP.NET Core MVC with Razor', custom: true, built: false, path: null, existing: false });
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Tokens', kind: 'system' })).status, 303, 'the design system can be designed straight away');
 
   runner.turns.length = 0;
@@ -231,6 +231,55 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   assert.equal(buildTurn.mode, 'build');
   assert.match(buildTurn.prompt, /^\(From Prelude, not the person: the main branch was brought into this branch, and these files came in: [^)]*prelude\/prelude\.json/, 'the agent is told what came in');
   await settled(join(loans, 'prelude', 'loans'), bsid);
+});
+
+test('a project that already has an app connects it instead of building one (8b)', async () => {
+  // An Eta app of its own in server/, a shell, and the default stack recorded by mistake.
+  const { repo, fid } = await bareRepo();
+  write(repo, 'server/views/layout.eta', '<html><body class="the-real-app"><%~ it.body %></body></html>');
+  write(repo, 'server/main.js', '// the app');
+  createDesign(repo, { title: 'Shell', kind: 'shell' });
+  write(repo, 'prelude/shell/routes.json', { '/': { view: 'gallery/app', title: 'App layout', data: '' } });
+  write(repo, 'prelude/shell/views/gallery/app.eta', '<p>Skeleton</p>');
+  write(repo, 'prelude/shell/layouts/app.eta', '<html><body class="designed"><%~ it.body %></body></html>');
+  write(repo, 'prelude/prelude.json', { app: { stack: DEFAULT_STACK } });
+  commitAll(repo, 'An app, and its shell designed');
+
+  const card = await (await get(`/f/${fid}`)).text();
+  assert.match(card, /<button class="btn small ghost" type="submit" name="existing" value="yes"[^>]*>This project already has an app<\/button>/);
+
+  runner.turns.length = 0;
+  const started = await post(`/f/${fid}/app/build`, { existing: 'yes' });
+  assert.equal(started.status, 303, await started.text());
+  assert.deepEqual(JSON.parse(readFileSync(join(repo, 'prelude', 'prelude.json'), 'utf8')).app, { existing: true }, 'the guessed stack goes: the connection describes the real one');
+  const [, wid, sid] = location(started).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
+  const shell = worktreeOf(repo, 'prelude/shell');
+  const shellDir = join(shell, 'prelude', 'shell');
+  assert.equal(readSession(shellDir, sid).title, 'Connect the app');
+  await until(() => runner.turns.length >= 1);
+  const turn = runner.turns.at(-1);
+  assert.equal(turn.prompt, 'Connect the app.');
+  assert.equal(turn.mode, 'build');
+  assert.match(turn.systemPrompt, /You are connecting the app this repository already has to its designs \(prelude\/\)\. Don't build an app: it exists\./);
+  assert.match(turn.systemPrompt, /A design host, only if it's needed/);
+  assert.doesNotMatch(turn.systemPrompt, /You are building the app itself/);
+  await settled(shellDir, sid);
+
+  // Designs of views wait for it, as they're written in its language.
+  const early = await post(`/f/${fid}/designs`, { title: 'Loans', area: '', kind: 'design' });
+  assert.equal(early.status, 409);
+  assert.match(await early.text(), /the app this project already has is connected first\. Connect the app below\./);
+  assert.match(await (await get(`/f/${fid}`)).text(), /The app is being connected on the shell’s branch\./);
+
+  // The agent's work (here, by hand): the json and layouts.json, nothing else.
+  write(shell, 'prelude/prelude.json', { app: { existing: true, path: 'server', stack: 'Node, node:http, Eta and Koda' } });
+  write(shell, 'prelude/shell/layouts.json', { app: '@app/server/views/layout' });
+  await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Connected' });
+  await settled(shellDir, sid, 2);
+  assert.equal(appOf(shell).built, true, 'connected: the app is the one it had');
+  assert.equal(existsSync(join(shellDir, 'layouts', 'app.eta')), false, 'the shell’s copy of the layout goes');
+  assert.deepEqual(findLayout({ folderPath: shell, designDir: shellDir, shellDir, name: 'app' }).views, join(shell, 'server', 'views'), 'designs render in the app’s real layout');
+  assert.equal(existsSync(join(shell, 'app')), false, 'no second app');
 });
 
 test('a new folder, not yet a repository: the app build makes it one, and the shell’s branch', async () => {

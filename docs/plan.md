@@ -1659,6 +1659,38 @@ Decided 2026-10-15:
   5. **The real app** served the page and the drawer in both shapes, and gave a 404 for
      an unknown request.
 
+#### 8b: Connect the app (a project that already has one)
+
+Step 8 assumed every project starts without an app. Opened on Prelude itself, whose app
+is `server/`, the stack question recorded the default, and "The app" card started an
+app build, which made a second app in `app/`. A project with an app needs Prelude to
+find it, not make one.
+
+- **Saying so.** Where the stack is asked (the first design) and on "The app" card while
+  there's no app, a quiet choice: "This project already has an app". It records
+  `"app": { "existing": true }` in `prelude.json`; the stack is then described from the
+  code, not chosen.
+- **Connect the app** replaces "Start the app build" for such a project: a build
+  session on the shell's branch, like the app build (group `@app`), whose instructions
+  say to **find the app and change as little as possible**:
+  - record `app.path` and `app.stack`, described from the code;
+  - point the shell's `layouts.json` at the app's own layout files where it has them;
+  - give the app Prelude's design-host contract **only if** Prelude's built-in Eta
+    renderer can't render its views (a stack that isn't Eta, or Eta views that need the
+    app's own helpers), behind `PRELUDE_HOST=1`, touching nothing else;
+  - write `prelude/HOST.md` only with a host;
+  - change nothing else in the app, and note in the shell's `NOTES.md` anything the
+    designs and the app disagree on (its CSS against the design system, say).
+- Until it's connected, designs of views wait, as they do for an app in another stack:
+  they're written in the app's language.
+- Once connected, the app is built (`app.path`), and features build into it as into an
+  app Prelude made.
+
+Decided 2026-10-16:
+- The person says the app exists; Prelude doesn't guess from the files.
+- For an Eta app, connecting is the json and `layouts.json`: no host unless its views
+  need one.
+
 ### Step 9: Branches - a design and its build on one branch
 
 Steps 7 and 8 gave builds branches and left designs in the person's working copy. Testing on

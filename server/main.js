@@ -12,14 +12,14 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, buildPrompt, createCliRunner } from './agent.js';
+import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
 import { datasetOf, designHostOf, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, incrementStory, storyMarkdown } from './backlog.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, textAt } from './branches.js';
-import { DEFAULT_STACK, appOf, chooseStack } from './app-config.js';
+import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
@@ -321,7 +321,9 @@ async function handle(req, res, app) {
     if (rest === '/app/build' && req.method === 'POST' && !folder.branch) {
       const form = await readForm(req);
       let state = appOf(folder.path);
-      if (!state.stack) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
+      // An app the project already has is connected, not built (8b).
+      if (form.get('existing') === 'yes' && !state.built) state = markExisting(folder.path);
+      if (!state.stack && !state.existing) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
       if (state.built) return redirect(res, `/f/${folder.id}#app`);
       let shell = designsHere().find(design => design.kind === 'shell');
       let made;
@@ -398,7 +400,11 @@ async function handle(req, res, app) {
       // The design system is plain HTML, so it needs no stack.
       if (input.kind !== 'system') {
         let state = appOf(folder.path);
-        if (!state.stack) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
+        if (form.get('existing') === 'yes' && !state.stack && !state.built) state = markExisting(folder.path);
+        if (!state.stack && !state.existing) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
+        if (state.existing && !state.built) {
+          return view(409, { ...input, errors: { kind: 'Designs here are written as the app’s own views, so the app this project already has is connected first. Connect the app below.' } });
+        }
         if (state.custom && !state.built) {
           return view(409, { ...input, errors: { kind: `Designs here will be written in ${state.stack}, so its app is built first, with a design host. Start the app build below.` } });
         }
@@ -977,7 +983,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const stack = config && { ext: config.views, guide: config.guide };
     return {
       mode: 'build',
-      systemPrompt: isApp
+      systemPrompt: isApp && appOf(folder.path).existing
+        ? connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage })
+        : isApp
         ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
         : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
     };
@@ -1033,8 +1041,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     }
     if (turns.state(folder, design, null).kind !== 'idle') return refuse('The agent is working on this design. Wait for it to finish.');
     app.branches.building(entry, group);
-    const message = isApp ? 'Build the app.' : `Build ${group.title}.`;
-    const session = createSession(dir, { title: isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
+    const connecting = isApp && appOf(folder.path).existing;
+    const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : `Build ${group.title}.`;
+    const session = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
     const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, ...agentContext(session) });
     if (started.error) return refuse(started.error);
     return redirect(res, `${base}/sessions/${session.id}`);
