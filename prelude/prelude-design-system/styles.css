@@ -1,50 +1,44 @@
-/* The gallery's own rules: how the specimens are laid out. Unlayered, like any
-   design's. Built from the tokens only. */
+/* The gallery's own rules: how the specimens look. Unlayered, like any
+   design's. Built from the tokens only; all spacing between blocks comes from
+   the system's layout primitives in the markup. */
 
 /* Light, dark, or the system's: a choice in the header, no script */
 :root:has(#scheme-light:checked) { color-scheme: light; }
 :root:has(#scheme-dark:checked) { color-scheme: dark; }
 
-.gallery { max-width: 60rem; margin: 0 auto; padding: var(--space-8) var(--space-6); container-type: inline-size; }
-.gallery-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
-.gallery-head nav { display: flex; gap: var(--space-1); flex-wrap: wrap; }
-.gallery-head .scheme { display: flex; gap: var(--space-3); font-size: var(--text-sm); color: var(--fg-muted); }
-.gallery-head .scheme label { display: inline-flex; gap: var(--space-1); align-items: center; }
+.gallery { --measure-now: 60rem; padding-block: var(--space-8); }
 .gallery-intro { max-width: var(--measure); }
+.scheme { font-size: var(--text-sm); color: var(--fg-muted); }
+.scheme label { display: inline-flex; gap: var(--space-1); align-items: center; }
 
-.specimen { display: grid; gap: var(--space-3); }
-.specimen + .specimen { margin-top: var(--space-5); padding-top: var(--space-5); border-top: var(--border-width) solid var(--border); }
 .specimen > h3 { font-size: var(--text-md); }
-.specimen > .secondary { margin: 0; }
+.specimen + .specimen { padding-top: var(--space-5); border-top: var(--border-width) solid var(--border); }
 .stage { padding: var(--space-4); background: var(--bg); border: var(--border-width) dashed var(--border); border-radius: var(--radius-md); }
-.stage.row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
-.stage .card:last-child { margin-bottom: 0; }
 .stage.tall { height: 22rem; display: flex; padding: 0; overflow: hidden; }
 .stage.tall > .panel { flex: 1; border: 0; border-radius: 0; }
-.stage.menu-room { min-height: 12rem; }
+.stage.session { height: 34rem; }
+.stage.menu-room { min-height: 12rem; align-items: flex-start; }
 .stage dialog { position: static; }
 
+/* A stand-in block, to show what a layout primitive does with its children */
+.demo { padding: var(--space-2) var(--space-3); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--radius-sm); font-size: var(--text-sm); }
+.demo.tall { min-block-size: 6rem; }
+.stage.resizable { resize: horizontal; overflow: auto; max-inline-size: 100%; }
+
 /* Tokens */
-.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--space-3); }
-.swatch { display: grid; gap: var(--space-1); font-size: var(--text-xs); }
-.swatch-chip { height: var(--control-lg); border-radius: var(--radius-md); background: var(--swatch); border: var(--border-width) solid var(--border); }
-.swatch code { justify-self: start; }
-
-.scale { display: grid; gap: var(--space-2); }
-.scale-row { display: grid; grid-template-columns: 9rem 1fr; gap: var(--space-4); align-items: center; }
+.swatch { font-size: var(--text-xs); }
+.swatch code { align-self: flex-start; }
+.swatch-chip { display: block; height: var(--control-lg); border-radius: var(--radius-md); background: var(--swatch); border: var(--border-width) solid var(--border); }
+.scale-row > :first-child { flex: none; inline-size: 9rem; }
 .space-bar { block-size: var(--space-3); inline-size: var(--size); background: var(--accent); border-radius: var(--radius-sm); }
-.radius-box { inline-size: var(--control-lg); block-size: var(--control-lg); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--size); }
-.shadow-box { inline-size: 8rem; block-size: var(--control-lg); background: var(--surface); border-radius: var(--radius-md); box-shadow: var(--size); }
-.control-box { inline-size: var(--control-lg); block-size: var(--size); background: var(--surface-sunken); border: var(--border-width) solid var(--border-strong); border-radius: var(--radius-sm); }
+.radius-box { display: block; inline-size: var(--control-lg); block-size: var(--control-lg); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--size); }
+.shadow-box { display: block; inline-size: 8rem; block-size: var(--control-lg); background: var(--surface); border-radius: var(--radius-md); box-shadow: var(--size); }
+.control-box { display: block; inline-size: var(--control-lg); block-size: var(--size); background: var(--surface-sunken); border: var(--border-width) solid var(--border-strong); border-radius: var(--radius-sm); }
 
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: var(--space-2); }
-.icon-grid > div { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--fg-muted); }
+.icon-grid > div { font-size: var(--text-sm); color: var(--fg-muted); }
 .icon-grid .icon { color: var(--fg); font-size: var(--text-lg); }
 
 /* Guidelines */
-.rule-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-@container (width < 36rem) { .rule-pair { grid-template-columns: 1fr; } }
 .rule-pair > div { padding: var(--space-3); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .rule-pair .do { background: var(--good-soft); }
 .rule-pair .dont { background: var(--danger-soft); }
-.rule-pair strong { display: block; margin-bottom: var(--space-1); }

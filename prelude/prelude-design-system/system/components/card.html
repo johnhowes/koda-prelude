@@ -1,10 +1,14 @@
 <!-- Card: one topic on a page (Designs, The app, What the agent can read). Its <h2>
      is a small uppercase label, not a headline: the page's <h1> is the headline.
-     A .secondary paragraph under it says what the card is for. Inside, .group-label
-     heads a group of rows (a design's area). Don't nest cards. -->
+     A .secondary paragraph under it says what the card is for. A card stacks its
+     own children like a .stack (gap --space-4; .gap-* to change it). A .group-label
+     heads a group of rows (a design's area): put it and its list in a .stack.gap-1.
+     Cards sit in a .stack or a .grid, never with margins. Don't nest cards. -->
 <div class="card">
-  <h2>What the agent can read</h2>
-  <p class="secondary">This folder, and any folders you add here. Nothing else on this machine.</p>
-  <h3 class="group-label">Onboarding</h3>
-  <p>The card's content: a list, a form, a paragraph.</p>
+  <h2>Designs</h2>
+  <p class="secondary">A design usually describes one feature, and grows over many sessions.</p>
+  <div class="stack gap-1">
+    <h3 class="group-label">Onboarding</h3>
+    <ul class="list">…</ul>
+  </div>
 </div>

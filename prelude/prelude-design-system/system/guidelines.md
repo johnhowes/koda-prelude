@@ -48,26 +48,41 @@ unless the glyph is universal (close, zoom), and then with an `aria-label`.
 - Don't: "Submit", "OK", "Go".
 
 **7. Components answer to their container.** Lay out with flex-wrap, grid and
-container queries, never `@media` widths. Page layout belongs to the app shell.
+container queries, never `@media` widths. The page's frame (header, navigation,
+regions) belongs to the app shell; what's inside a region is composed from the
+layout primitives (rule 8).
 *Why:* the same component lives in a page, a chat column and a pop-out window.
 - Do: `.fields` goes to one column when its own box is narrow.
 - Don't: `@media (max-width: 600px)` in a component.
 
-**8. Work without script.** Menus are `details`, the transcript keeps to the
+**8. Compose pages from layout primitives; space comes only from their gaps.**
+Every block (a card, a notice, a heading, a form, a list) sits inside a primitive:
+`.stack` (one under another), `.cluster` (a row that wraps), `.grid` (equal
+columns, as many as fit), `.split` (main and side) or `.center` (a readable width).
+The space between blocks is the primitive's gap, chosen from the space scale
+with `.gap-*` or `--gap: var(--space-…)`. Blocks have no outer margins; to space
+something differently, nest another primitive. `.prose` is the one exception: it
+spaces rendered markdown itself.
+*Why:* one owner for every space means spacing is the same everywhere, and a
+block can be moved without bringing stray margins with it.
+- Do: `<div class="stack gap-1"><h3 class="group-label">Onboarding</h3><ul class="list">…</ul></div>`.
+- Don't: `style="margin-top: var(--space-4)"`, or a class that adds margin to a card.
+
+**9. Work without script.** Menus are `details`, the transcript keeps to the
 bottom with a reversed column, filters use `:has()`. Script only for what the
 platform can't express (Enter to send, copying to the clipboard).
 *Why:* views are server-rendered and swapped in place; script is the part that breaks.
 - Do: `<details class="menu">`.
 - Don't: a click handler that toggles a class.
 
-**9. Keyboard and screen reader first.** Every control is a real `button`, `a`
+**10. Keyboard and screen reader first.** Every control is a real `button`, `a`
 or form control; focus shows the ring; icons are `aria-hidden`; a status line is
 `role="status"`, a failure `role="alert"`.
 *Why:* the person may never touch the mouse while talking to the agent.
 - Do: `<button class="icon-btn" aria-label="Close">`.
 - Don't: `<div onclick>`, or removing the focus ring.
 
-**10. Both themes, always.** Every colour is `light-dark()`, and the host sets
+**11. Both themes, always.** Every colour is `light-dark()`, and the host sets
 `color-scheme`. Check every screen in light and dark.
 *Why:* Prelude follows the person's system, and the desktop app does too.
 
