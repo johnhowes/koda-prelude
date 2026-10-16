@@ -34,8 +34,10 @@ first run (no projects), all caught up, long names.
   as turns, builds and pushes change things, and each region reloads on its
   event (`ko-invoke="event:…"`). Every 5 minutes as well, for what Prelude
   can't see (a pull request merged on the Git server). Polling every 30s was
-  dropped: each refresh reads every project's branches. A design has no
-  channel, so in the preview only the poll runs.
+  dropped: each refresh reads every project's branches. The projects also
+  reload on `needs-changed`, since each card counts what's waiting in it.
+  `events.json` declares both for the preview's design bar, written against
+  the typical state (they name its records).
 - **A project whose folder has gone** stays as a card saying so, with "Remove
   from your projects" (`POST /folders/:id/remove`) (the person, 2026-10-16).
 - **The bar counts what needs you** (the person, 2026-10-16): a shell change,
@@ -53,5 +55,8 @@ first run (no projects), all caught up, long names.
 
 ## Open questions
 
+- In the preview the bar's count doesn't follow an event: it comes from the
+  layout's data, and pushing it would need a copy of the shell's partial in
+  this design. The app would push `#waiting` itself.
 - Should `projects-changed` name the project, so only its card reloads?
   Worth it only if reading all of them proves slow.

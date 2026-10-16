@@ -56,7 +56,7 @@
         <span class="spacer"></span>
         <a class="btn small" href="/open" ko-target="modal?"><span class="icon icon-folder" aria-hidden="true"></span>Open a project…</a>
       </div>
-      <div ko-as="projectList"<% if (it.load) { %> ko-source="/home/projects" ko-invoke="load event:projects-changed every:300000"<% } %>><%~ include('./_projects-loading', it) %></div>
+      <div ko-as="projectList"<% if (it.load) { %> ko-source="/home/projects" ko-invoke="load event:projects-changed event:needs-changed every:300000"<% } %>><%~ include('./_projects-loading', it) %></div>
       <div class="notice danger" role="alert" visible-when-unreachable="projectList">
         <p>Prelude couldn’t read what’s in your projects. Try again in a moment.</p>
         <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="projectList">Try again</button></div>

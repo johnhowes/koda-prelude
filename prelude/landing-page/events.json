@@ -1,0 +1,13 @@
+{
+  "needs-changed": {
+    "title": "Repayment schedule is built (it leaves Needs you)",
+    "remove": "needs/n-m0c",
+    "send": "needs-changed"
+  },
+  "projects-changed": {
+    "title": "Something changes in borrower-portal",
+    "update": "projects/borrower-portal",
+    "with": { "changed": "just now" },
+    "send": "projects-changed"
+  }
+}
