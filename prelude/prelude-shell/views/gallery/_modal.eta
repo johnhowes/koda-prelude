@@ -1,10 +1,13 @@
-<%/* Sample content for the modal: a question, answered in words. Not now
-     empties the region, as the shell's Close does. */%>
+<%/* Placeholder content for the modal: a heading (which names the dialog),
+   a few lines, and where its answers go. */%>
 <div class="stack gap-3">
-  <h2>Push <%= it.designs[0]?.title ?? 'this design' %>?</h2>
-  <p class="secondary">This pushes <code>prelude/<%= it.designs[0]?.id ?? 'sign-up' %></code> to <code>origin</code>, where others can see it, and opens a pull request for it.</p>
-  <div class="cluster actions">
-    <button class="btn primary" type="button">Push and open the pull request</button>
-    <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+  <h2><span class="sr-only">Sample question</span><span class="skeleton" style="--w: 70%" aria-hidden="true"></span></h2>
+  <div class="stack gap-2" aria-hidden="true">
+    <span class="skeleton"></span>
+    <span class="skeleton" style="--w: 65%"></span>
+  </div>
+  <div class="cluster" aria-hidden="true">
+    <span class="skeleton control" style="--w: 45%"></span>
+    <span class="skeleton control" style="--w: 25%"></span>
   </div>
 </div>

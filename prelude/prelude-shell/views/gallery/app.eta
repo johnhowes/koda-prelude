@@ -1,48 +1,17 @@
-<%/* The app layout's gallery page: a page like a project's, and a way to open
-     each region the layout offers. */%>
+<%/* The app layout's gallery page: placeholders where a page's content goes,
+     and a way to open each region the layout offers. */%>
 <div class="center">
   <div class="stack gap-6">
-    <div class="stack gap-2">
-      <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a></nav>
-      <h1><%= it.project.name %></h1>
-      <p class="muted"><%= it.project.path %></p>
+    <div class="stack gap-2" aria-hidden="true">
+      <span class="skeleton" style="--w: 25%"></span>
+      <span class="skeleton title" style="--w: 50%"></span>
     </div>
-
-    <div class="card">
-      <h2>What this layout offers</h2>
-      <p class="secondary">The bar, the page in the middle at a readable width, and three regions a page can ask for. Each opens over this page, and its link works on its own.</p>
-      <div class="cluster actions">
-        <a class="btn" href="/gallery/drawer" ko-target="drawer?">Open the drawer</a>
-        <a class="btn" href="/gallery/modal" ko-target="modal?">Open the modal</a>
-        <a class="btn" href="/gallery/notice" ko-target="notice?">Show a notice</a>
-      </div>
+    <div class="cluster actions">
+      <a class="btn" href="/gallery/drawer" ko-target="drawer?">Open the drawer</a>
+      <a class="btn" href="/gallery/modal" ko-target="modal?">Open the modal</a>
+      <a class="btn" href="/gallery/notice" ko-target="notice?">Show a notice</a>
     </div>
-
-    <div class="card">
-      <h2>Designs</h2>
-      <% if (it.designs.length === 0) { %>
-      <p class="secondary">No designs yet. A design usually describes one feature, and grows over many sessions.</p>
-      <% } else { %>
-      <% const areas = [...new Set(it.designs.map(design => design.area))]; %>
-      <% for (const area of areas) { %>
-      <div class="stack gap-1">
-        <h3 class="group-label"><%= area %></h3>
-        <ul class="list">
-          <% for (const design of it.designs.filter(design => design.area === area)) { %>
-          <li>
-            <span class="item">
-              <span class="icon icon-screen" aria-hidden="true"></span>
-              <span class="item-text">
-                <span class="item-title"><%= design.title %></span>
-                <span class="muted">prelude/<%= design.id %></span>
-              </span>
-            </span>
-          </li>
-          <% } %>
-        </ul>
-      </div>
-      <% } %>
-      <% } %>
-    </div>
+    <span class="skeleton block" aria-hidden="true"></span>
+    <span class="skeleton block" aria-hidden="true"></span>
   </div>
 </div>

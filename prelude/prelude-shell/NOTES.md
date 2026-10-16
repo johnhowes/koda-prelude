@@ -21,6 +21,12 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 
 ## Decisions
 
+- **The gallery shows placeholders, not content** (Prelude's guidance,
+  2026-10-16): grey `.skeleton` blocks (styles.css) wherever a page or an
+  overlay puts content, so what's real on screen is the layout's. The only
+  real content is the buttons that open each region. Placeholder headings keep
+  a hidden name ("Sample drawer", "Sample question"), so the dialog is still
+  named and the Close still lines up. States hold only layout data now.
 - **"Project", not "folder"** (the person's decision, 2026-10-16), in every
   word the shell shows and in its data (`it.layout.projects`, `agents[].project`).
   URLs keep `/f/<id>`: they're the app's routes, not words. A folder the agent
@@ -66,7 +72,8 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   was elsewhere (or one waiting on an approval)? Waiting to see how it feels.
 - The state `02-first-folder.json` should be renamed `02-first-project.json`
   (the agent can't rename or delete files).
-- Design system lacks: a drawer/overlay surface token or component (the shell
+- Design system lacks: a skeleton placeholder (the gallery draws its own in
+  styles.css; every shell's gallery will want one), a drawer/overlay surface token or component (the shell
   builds it from `--surface-raised`, `--shadow-lg`, `--backdrop`), a width
   for a drawer (uses `--measure-narrow`), and a drawer's heading size (the
   shell borrows the dialog's `--text-lg`).

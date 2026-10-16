@@ -1,16 +1,9 @@
-<%/* Sample content for the drawer: a fragment that starts with its own title. */%>
+<%/* Placeholder content for the drawer: a heading, then a few lines. */%>
 <div class="stack">
-  <h2>What the agent can read</h2>
-  <p class="secondary">This project, and any folders you add here. Nothing else on this machine.</p>
-  <ul class="list">
-    <li>
-      <span class="item">
-        <span class="icon icon-folder" aria-hidden="true"></span>
-        <span class="item-text">
-          <span class="item-title"><%= it.project.name %></span>
-          <span class="muted"><%= it.project.path %></span>
-        </span>
-      </span>
-    </li>
-  </ul>
+  <h2><span class="sr-only">Sample drawer</span><span class="skeleton" style="--w: 60%" aria-hidden="true"></span></h2>
+  <div class="stack gap-2" aria-hidden="true">
+    <span class="skeleton"></span>
+    <span class="skeleton" style="--w: 80%"></span>
+  </div>
+  <span class="skeleton block" aria-hidden="true"></span>
 </div>

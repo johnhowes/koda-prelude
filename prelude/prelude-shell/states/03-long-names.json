@@ -11,21 +11,5 @@
       { "design": "Credit decision summary for the underwriter’s queue", "project": "underwriting-workbench-and-credit-decisioning", "url": "/f/underwriting-workbench/d/credit-decision-summary" },
       { "design": "Statements", "project": "borrower-portal", "url": "/f/borrower-portal/d/statements" }
     ]
-  },
-  "project": { "id": "spark-commercial-lending-platform", "name": "spark-commercial-lending-platform-monorepo", "path": "C:\\Users\\JohnHowes\\source\\repos\\clients\\spark\\spark-commercial-lending-platform-monorepo" },
-  "designs": [
-    { "id": "sign-up-with-business-verification", "title": "Sign up with business verification and beneficial owners", "area": "Onboarding and know-your-customer" },
-    { "id": "loan-offers", "title": "Loan offers", "area": "Applications" }
-  ],
-  "session": {
-    "title": "Beneficial owners over 25% need their own identity check before the offer is shown",
-    "design": "Sign up with business verification and beneficial owners",
-    "screens": 14,
-    "entries": [
-      { "kind": "user", "text": "Every owner with more than 25% of the business needs their own identity check, and the offer shouldn’t show until they’ve all passed. Can we show who’s still outstanding?" },
-      { "kind": "agent", "text": "I’ll add an owners step after the business details, with each owner’s check as a row, and hold the offer page behind it with a notice listing who’s still to do." },
-      { "kind": "tool", "name": "Write", "text": "views/onboarding/business-verification/owners/_owner-identity-check-row.eta" },
-      { "kind": "note", "text": "Prelude rendered every page and form in every state (42), and they all render." }
-    ]
   }
 }
