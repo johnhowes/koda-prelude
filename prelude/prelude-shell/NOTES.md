@@ -41,7 +41,8 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   follows the region (`showModal()` when filled, `close()` when emptied), and
   Escape empties the region too. So the backdrop, inert page, focus and Escape
   are the platform's, and pages still just aim at `modal?`. The dialog is named
-  by the first heading in it, so a modal fragment starts with an `<h2>`.
+  by the first heading in it, so a modal fragment starts with an `<h2>`. The
+  Close sits beside the content, centred on that heading's line, not above it.
 - **Bar: brand, what the agent is working on, and a Projects menu** (recent
   projects, then "Open a project…"). Where you are stays the page's crumbs,
   since the bar isn't swapped on navigation and can't follow the page.

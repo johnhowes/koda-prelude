@@ -65,9 +65,16 @@
 
   /* Modal: a dialog over the page (the design system draws the dialog and
      its backdrop). Only laid out while open, or it would show closed. */
-  .shell-modal { inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5)); padding-block-start: var(--space-3); }
-  .shell-modal[open] { display: flex; flex-direction: column; gap: var(--space-1); }
-  .shell-modal > .icon-btn { align-self: flex-end; margin-inline-end: calc(-1 * var(--space-2)); }
+  /* The Close sits beside the content's heading, on its line: centred on a
+     dialog heading's line (--text-lg at --leading), whatever follows below. */
+  .shell-modal { inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5)); }
+  .shell-modal[open] { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: var(--space-3); }
+  .shell-modal > [ko-region] { grid-area: 1 / 1; }
+  .shell-modal > .icon-btn {
+    grid-area: 1 / 2;
+    margin-block-start: calc((var(--text-lg) * var(--leading) - var(--control-sm)) / 2);
+    margin-inline-end: calc(-1 * var(--space-2));
+  }
 
   /* The region itself takes focus when something opens in it; the ring
      would only frame the whole panel. */
