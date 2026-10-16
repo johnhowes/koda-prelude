@@ -178,7 +178,7 @@ async function handle(req, res, app) {
   const folderMatch = path.match(/^\/f\/([0-9a-f]+)(\/.*)?$/);
   if (folderMatch) {
     const folder = folders.get(folderMatch[1]);
-    if (!folder) return page(404, 'not-found', { what: 'That folder isn’t in your recent list. Open it again from the home page.' }, 'Not found');
+    if (!folder) return page(404, 'not-found', { what: 'That project isn’t in your recent projects. Open it again from the home page.' }, 'Not found');
     if (refuseFolder(folder.path)) {
       return page(404, 'not-found', { what: `${folder.path} is no longer there.`, forget: `/f/${folder.id}/forget` }, 'Not found');
     }
@@ -409,7 +409,7 @@ async function handle(req, res, app) {
         const existing = designsHere();
         if (input.kind !== 'design') {
           const same = existing.find(design => design.kind === input.kind);
-          if (same) return view(422, { ...input, errors: { kind: `This folder already has ${input.kind === 'system' ? 'a design system' : 'an app shell'}: "${same.title}".` } });
+          if (same) return view(422, { ...input, errors: { kind: `This project already has ${input.kind === 'system' ? 'a design system' : 'an app shell'}: "${same.title}".` } });
         }
         if (!id.split('/').at(-1)) return view(422, { ...input, errors: { title: String(input.title).trim() ? 'The title needs at least one letter or digit.' : 'Give the design a title.' } });
         if (existing.some(design => design.id === id)) return view(422, { ...input, errors: { title: `prelude/${id} already exists.` } });
@@ -1026,7 +1026,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (!isApp && !appOf(folder.path).built) {
       return refuse(buildView().appOnMain
         ? 'The app is on main, but not on this design’s branch yet. Bring main into the branch first (Update from main).'
-        : 'The app isn’t built yet. Build it first, from the folder page.');
+        : 'The app isn’t built yet. Build it first, from the project page.');
     }
     if (!isApp && entry.building && entry.building.group !== key && work.some(g => g.key === entry.building.group && g.toBuild)) {
       return refuse(`This design is building ${entry.building.title} now. Groups are built one at a time.`);

@@ -1,5 +1,5 @@
 <section class="page folder">
-  <p class="crumbs"><a href="/">Folders</a></p>
+  <p class="crumbs"><a href="/">Projects</a></p>
   <h1><%= it.folder.name %></h1>
   <p class="muted"><%= it.folder.path %></p>
 
@@ -76,7 +76,7 @@
   <div class="card">
     <h2>Designs</h2>
     <% if (it.groups.length === 0 && !it.inProgress.length) { %>
-    <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions. A design system is a design too: its screens are its gallery, and every other design in the folder uses it.</p>
+    <p class="sec">No designs yet. A design usually describes one feature, and grows over many sessions. A design system is a design too: its screens are its gallery, and every other design in the project uses it.</p>
     <% } %>
     <% for (const group of it.groups) { %>
     <% if (group.area) { %><h3 class="area"><%= group.area %></h3><% } %>
@@ -136,10 +136,10 @@
       </details>
       <% } %>
       <button class="btn small primary" type="submit">Start the app build</button>
-      <% if (it.git === 'none') { %><p class="muted">Designs and builds work on git branches: Prelude makes this folder a git repository first, and commits it.</p><% } %>
+      <% if (it.git === 'none') { %><p class="muted">Designs and builds work on git branches: Prelude makes the project’s folder a git repository first, and commits it.</p><% } %>
     </form>
     <% } else if (it.git === 'inside') { %>
-    <p class="muted">This folder is inside another git repository. Open that repository in Prelude to build here, so its builds get branches of their own.</p>
+    <p class="muted">This project’s folder is inside another git repository. Open that repository in Prelude to build here, so its builds get branches of their own.</p>
     <% } else if (it.git === 'missing') { %>
     <p class="muted">A build works on a git branch, and git isn’t installed on this machine (or isn’t on the PATH).</p>
     <% } %>
@@ -175,7 +175,7 @@
         <legend class="sr-only">Kind</legend>
         <label class="check"><input type="radio" name="kind" value="design" <% if (kind === 'design') { %>checked<% } %>> <span>A design <span class="muted">· usually one feature</span></span></label>
         <% if (!it.system) { %>
-        <label class="check"><input type="radio" name="kind" value="system" <% if (kind === 'system') { %>checked<% } %>> <span>The folder’s design system <span class="muted">· its tokens and components; every other design uses it</span></span></label>
+        <label class="check"><input type="radio" name="kind" value="system" <% if (kind === 'system') { %>checked<% } %>> <span>The project’s design system <span class="muted">· its tokens and components; every other design uses it</span></span></label>
         <% } %>
         <% if (!it.shell) { %>
         <label class="check"><input type="radio" name="kind" value="shell" <% if (kind === 'shell') { %>checked<% } %>> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
@@ -212,7 +212,7 @@
 
   <div class="card" id="reading">
     <h2>What the agent can read</h2>
-    <p class="sec">This folder, and any folders you add here, such as another repository whose CSS a design system should start from. Nothing else on this machine. The agent writes only inside the design it’s working on.</p>
+    <p class="sec">The project’s folder, and any folders you add here, such as another repository whose CSS a design system should start from. Nothing else on this machine. The agent writes only inside the design it’s working on.</p>
     <ul class="list">
       <li><span class="item"><span class="icon icon-folder" aria-hidden="true"></span>
         <span class="item-text"><span class="item-title"><%= it.folder.name %></span><span class="muted"><%= it.folder.path %></span></span></span></li>

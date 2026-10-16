@@ -66,7 +66,7 @@ test('reference folders are added on the folder page, kept on this machine, and 
 
   const refusals = [
     [join(other, 'nope'), /no folder at that path/],
-    [repo, /That’s this folder/],
+    [repo, /That’s the project’s own folder/],
     [other, /can already read that folder/],
   ];
   for (const [path, message] of refusals) {

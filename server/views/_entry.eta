@@ -28,12 +28,12 @@
   <% if (!e.built) { %>
     <%= e.group %> isn’t built yet. Send the next message to carry on.
   <% } else if (!e.checked) { %>
-    Prelude didn’t check the pages this turn (see above). Once they’re checked, finish the branch on <a href="<%= e.finish.url %>">the folder page</a>: <%= e.finish.label %>.
+    Prelude didn’t check the pages this turn (see above). Once they’re checked, finish the branch on <a href="<%= e.finish.url %>">the project page</a>: <%= e.finish.label %>.
   <% } else if (e.failures) { %>
     <%= e.failures === 1 ? '1 page doesn’t' : `${e.failures} pages don’t` %> render yet. The agent is told with your next message.
   <% } else { %>
     <% if (e.differ) { %><%= e.differ === 1 ? '1 page differs' : `${e.differ} pages differ` %> from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar. Then<% } else { %>When you’re happy with it,<% } %>
-    finish the branch on <a href="<%= e.finish.url %>">the folder page</a>: <%= e.finish.label %>.
+    finish the branch on <a href="<%= e.finish.url %>">the project page</a>: <%= e.finish.label %>.
   <% } %>
   </p>
 </li>

@@ -73,7 +73,7 @@ test('a session on the system is told to keep system/ and its gallery', async ()
   assert.match(prompt, /bring the gallery up to date/);
 
   const page = await (await get(`/f/${fid}/d/acme/sessions/new`)).text();
-  assert.match(page, /The folder’s design system/);
+  assert.match(page, /The project’s design system/);
 });
 
 test('a design of views uses it too, through the layout', async () => {
@@ -102,6 +102,20 @@ test('every other design uses it: told where it is and how to link it', async ()
 
   const page = await (await get(`/f/${fid}/d/onboarding/sign-up/sessions/new`)).text();
   assert.match(page, new RegExp(`Uses <a href="/f/${fid}/d/acme">Acme</a>`));
+});
+
+test('layout primitives (5e): the system provides its own, spaced by gaps; designs compose from them', () => {
+  const system = designPrompt({ title: 'Acme', designPath: 'prelude/acme', kind: 'system' });
+  assert.match(system, /Layout primitives, among the components: classes that arrange their children and own the space between them/);
+  assert.match(system, /Which ones, and their names, are yours to decide/, 'Prelude names none');
+  assert.match(system, /spaces its children with gap, taken only from the --space-\* tokens[^.]*never margins/);
+  assert.match(system, /never @media/);
+  const acme = { title: 'Acme', path: 'prelude/acme', href: '../../../acme/system', hasIcons: false };
+  const compose = /Compose pages from the system's layout primitives and leave the space between blocks to their gaps: no margins between blocks/;
+  assert.match(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', system: acme }), compose, 'plain screens');
+  assert.match(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', format: 'views', system: acme }), compose, 'views');
+  assert.match(designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell', system: acme }), compose, 'the shell’s layouts');
+  assert.doesNotMatch(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', format: 'views' }), compose, 'no system, nothing to compose from');
 });
 
 test('the link the agent is told resolves to the system on the preview host', () => {

@@ -1,9 +1,9 @@
 <section class="page home">
-  <h1>Open a folder</h1>
-  <p class="sec">Usually a repo. Everything Prelude makes goes in the folder’s <code>prelude/</code> directory, committed alongside the code.</p>
+  <h1>Open a project</h1>
+  <p class="sec">A project is a folder, usually a repo, new or already full of code. Everything Prelude makes goes in its <code>prelude/</code> directory, committed alongside the code.</p>
 
   <form class="open" action="/folders" method="post">
-    <label class="f" for="path">Folder path</label>
+    <label class="f" for="path">The project’s folder</label>
     <div class="inline">
       <input id="path" name="path" value="<%= it.value %>" placeholder="C:\Projects\my-app" autocomplete="off" spellcheck="false"
              <% if (it.error) { %>ko-invalid-server="<%= it.error %>" aria-describedby="path-error"<% } %>>
@@ -15,7 +15,7 @@
 
   <% if (it.recent.length > 0) { %>
   <div class="card">
-    <h2>Recent</h2>
+    <h2>Recent projects</h2>
     <ul class="list">
       <% for (const folder of it.recent) { %>
       <li>

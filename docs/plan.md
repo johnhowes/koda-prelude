@@ -11,7 +11,7 @@ There are four nouns, and nothing else until a new one earns its place.
 
 | Noun | What it is | Where it lives |
 | --- | --- | --- |
-| **Folder** | The working directory you chose, usually a repo | anywhere on disk |
+| **Project** | What you're designing (and later building), kept in a folder you chose, usually a repo | anywhere on disk |
 | **Design** | A named body of work (screens + notes) built up over many sessions; usually one feature | `prelude/<design>/` |
 | **Session** | One conversation with the agent, contributing to one design | `prelude/<design>/sessions/<id>/` |
 | **Screen** | One page of the design | `prelude/<design>/screens/NN-name.html` |
@@ -25,6 +25,14 @@ The interface has two surfaces, modeled on OrchestratR's design session:
 
 Pop out moves the Design surface to its own window, so one window holds the chat and
 the other holds the design.
+
+**Project, folder, app.** People see *project* for the whole of it: its designs, its
+design system and shell, and in time its app. *Folder* means only where it is on disk
+("the project's folder", a reference folder). *App* means only the built, running app
+and its stack. The code keeps its older names (`folders.js`, `app.folders`,
+`folderId`), as do the URLs (`/f/<id>`) and `~/.prelude/folders.json`: there, a
+folder is a project. (Decided 2026-10-16; this plan said "folder" for the project
+until then.)
 
 ## Ground rules
 
@@ -327,6 +335,70 @@ As built:
   redefines `--icon-*`.
 - **No versions yet**: one system, linked directly (Koda's `/ds/v1` versioning is
   deferred).
+
+#### 5e: Layout primitives (built 2026-10-16: the instructions; not yet proven with an agent)
+
+**The problem is spacing.** A system gives designs components but nothing to arrange
+them with, so each design lays out its pages in its own `styles.css`, with margins and
+gaps picked there and then, and the space between blocks drifts from page to page.
+Apiary's Landing Page wrote three layouts of its own: a vertical flow (`.home-header`,
+`.home-section`, its root), a wrapping row (`.home-facts`, `.request-facts`) and a card
+grid (`.home-resources`). Spark avoids this with its `<column>`, `<row>`, `<grid>` and
+`gap` tag helpers: pages are composed of layout primitives, and the primitives own the
+space between things.
+
+**Prelude prescribes no set of primitives.** Which ones a system has, what they're
+called and how they're written is the system's decision, as its components are. What
+Prelude asks is that every system has them and every design uses them.
+
+The prompt offers common ones as examples, for the system to take, rename or leave:
+- **stack:** children one under another;
+- **cluster:** children in a row that wraps (a toolbar, tags, label and value pairs);
+- **grid:** equal columns that fill the width, as many as fit;
+- **split:** a main part and a side part, the side dropping below when narrow;
+- **center:** content held to a readable width.
+
+**Telling the agents** (`designPrompt` in `server/agent.js`):
+- **A system's session:** provide layout primitives that arrange their children and
+  space them with `gap`, taken only from the system's spacing tokens (`--space-*`), and
+  that cope with narrow widths without `@media` (by wrapping, or by container queries).
+  Each is a component like any other: in `components.css`, with its canonical markup in
+  `components/`, on the gallery's components screen, and with a rule in `guidelines.md`
+  saying how pages are composed from them. Drafted from an app that already has layout
+  helpers, the system takes those, under the app's names.
+- **A design that uses the system** (screens, views and the shell's layouts): compose
+  pages from the system's primitives and leave the space between blocks to their gaps.
+  No margins between blocks and no spacing values of the design's own. A design's
+  `styles.css` is for what the system can't express. When a primitive is missing, note
+  it (or add it to the system, on a branch that may change it), as with any missing
+  component.
+
+**A repository with its own engine (6c).** In a Razor repo the views use the app's own
+tag helpers, which `HOST.md` teaches, and they emit the app's own classes. There the
+system's primitives are the app's, drafted from its CSS under its names, with
+`components/<name>.html` showing the markup a tag helper writes and `HOST.md` naming the
+tag. Nothing changes in the host contract.
+
+**Existing systems** get them by the same rules as any change to a system: a session on
+the system adds them (its prompt says to, if `system/` has none), or a feature that needs
+one adds it on a branch that may change the system. Prelude writes nothing to a system
+itself, and existing designs are left as they are; a design's next turn moves to the
+primitives where it touches that layout.
+
+**Not now:** a check that flags spacing in a design's own CSS (the instructions are
+enough for now), page frames (the shell's layouts and regions) and markup reuse (Eta
+partials).
+
+Decided 2026-10-16:
+- Prelude names no primitives; each system provides its own, spaced by gaps from its
+  spacing tokens, and designs compose pages from them.
+- Adding them follows the rules for any change to the system.
+- No check; the agents' instructions are enough for now.
+
+**Done when:** a new system drafted in one session has layout primitives in its gallery
+and guidelines; Apiary's system gains them on its next turn; and a new design on Apiary
+with a page like the Landing Page's is composed from them, its `styles.css` with no
+spacing between blocks of its own.
 
 ### Step 6: Screens in the app's own stack, with states as fake data
 
@@ -2072,3 +2144,7 @@ comments, the custom dialect, MCP tools, epics, tracker integration.
 - 2026-10-16: An update from main that clashes is left for the agent to resolve, with
   git's markers in the worktree, and committed once none is left; the person can
   abandon it instead.
+- 2026-10-16: The shell's gallery shows which part is the layout: the layout's own parts
+  are real, from its sample data, and what a design will put in a region is skeleton
+  content (grey bars and blocks in a page's shape, labelled with the region), styled in
+  the shell's own `styles.css`.

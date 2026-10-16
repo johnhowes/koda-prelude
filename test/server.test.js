@@ -40,7 +40,7 @@ test('one URL, two shapes, with the Koda headers', async () => {
 
   const fragment = await (await get('/', true)).text();
   assert.doesNotMatch(fragment, /<html/);
-  assert.match(fragment, /Open a folder/);
+  assert.match(fragment, /Open a project/);
   assert.ok(html.includes(fragment.trim()), 'the page contains the fragment');
 });
 

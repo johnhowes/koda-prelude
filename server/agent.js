@@ -174,6 +174,10 @@ export function createStreamReader(onEvent) {
 }
 
 
+// A design that uses the system composes its pages from the system's layout
+// primitives, which own the space between blocks (plan, 5e).
+const COMPOSE = 'Compose pages from the system\'s layout primitives and leave the space between blocks to their gaps: no margins between blocks, and no spacing values of the design\'s own. A design\'s styles.css is for what the system can\'t express. If a primitive is missing, treat it as any missing component.';
+
 /**
  * The instructions appended to Claude Code's own system prompt for a session
  * on a design.
@@ -217,6 +221,7 @@ You are working on the ${what} "${title}". Its folder is ${designPath}/, relativ
 - system/tokens.css - the tokens: custom properties on :root named for their role, never their look (--bg, --surface, --surface-sunken, --border, --fg, --fg-muted, --fg-subtle, --accent, --accent-hover, --accent-fg, --accent-soft, --good, --warn, --danger, --space-1…, --radius-sm…, --text-xs…, --font-sans, --shadow-md, --ring). Write each colour once with light-dark(). Literal colours belong here and nowhere else.
 - system/components.css - the components: classes built from the tokens and nothing else (no literal colours, spaces or radii), with a base section for bare elements, including [hidden] { display: none !important; }. Lay out with container queries, never @media.
 - system/components/<name>.html - one file per component: its canonical markup, starting with an HTML comment that says what it is for and when to use it. This is what designs copy, so keep it exactly in step with components.css.
+- Layout primitives, among the components: classes that arrange their children and own the space between them, so pages are spaced the same everywhere. Which ones, and their names, are yours to decide; common ones are a stack (one under another), a cluster (a row that wraps), a grid (equal columns, as many as fit), a split (a main part and a side part that drops below when narrow) and a center (held to a readable width). Each spaces its children with gap, taken only from the --space-* tokens (a variant per step if needed), never margins, and copes with narrow widths by wrapping or container queries, never @media. Give each its file in components/ and its place on the components screen, and say in guidelines.md how pages are composed from them. Drafted from an app that already has layout helpers, take those, under the app's names. If the system has none yet, add them.
 - system/guidelines.md - the rules, each with its reason and a short do and don't, and the product's words with the words to avoid.
 - system/icons/<meaning>.svg and system/icons.css, if the system has icons: one SVG per glyph, named for what it means (close, not x), drawn by masking a box filled with currentColor, with forced-color-adjust: none. Each glyph's URL is a token defined in icons.css, relative to icons.css; keep every rule that uses those tokens in icons.css, so the relative URLs resolve there.
 - Every CSS file in system/ starts with the same line, @layer tokens, base, components, host; and puts its rules in those layers: tokens in tokens, bare elements in base, classes in components. Designs' own rules stay unlayered, so they win.
@@ -230,6 +235,7 @@ If the person points you at existing CSS (this repository's, or a reference fold
 - Before designing, read ${system.path}/system/guidelines.md and the components in ${system.path}/system/components/.
 - Every screen links the system's styles, in this order, before its own: ${system.href}/tokens.css, ${system.href}/components.css${system.hasIcons ? `, ${system.href}/icons.css` : ''}. Then ../styles.css for this design's own rules, if it needs any.
 - Build screens from the system's components, copying their markup and classes. Write no literal colours, spaces or radii; use the tokens.
+- ${COMPOSE}
 ${mayChange(system.path) ? '- If the system lacks something this design needs, change it as described below.' : `- Don't change the design system from here. If it lacks something this design needs, design around it, and note in ${designPath}/NOTES.md what the system is missing, so it can be added in a session on the system itself.`}`);
   } else if (format === 'screens') {
     parts.push(`Styles shared by screens go in ${designPath}/styles.css, linked from a screen as ../styles.css. This folder has no design system yet; when it gets one, its designs will use it.`);
@@ -292,7 +298,13 @@ One URL answers in two shapes, and Prelude does it for you, as the real server d
 - layouts/<name>.json - sample data for that layout, which every design gets unless its state overrides it under "layout".
 - "app" is the layout every design uses unless a route names another (for example "bare", for sign-in or a full-screen wizard).
 
-The shell's own routes.json, views and states are its gallery: a page per layout, with sample content that shows each region it offers. Keep the gallery's views in ${designPath}/views/gallery/. A page the shell itself owns, one that belongs to no feature (Settings, say, or an account page the navigation links to), goes in views/ outside gallery/, with routes like any design's: it's built into the app like a feature's pages, and the gallery never is.`);
+The shell's own routes.json, views and states are its gallery: a page per layout, showing each region it offers. Make it plain which part is the layout and which isn't:
+
+- The layout's own parts (the navigation, the header, the user menu, anything a layout draws) are real, rendered from the layout's sample data as they will be in the app.
+- What a design will put in a region (the page in main, an overlay in the drawer or modal) is skeleton content: grey bars and blocks in the shape of a typical page (a heading bar, a few lines of text, a card or two), never realistic words or data, with a small muted label naming the region and what goes there ("main · a design's page"). Style it in ${designPath}/styles.css (a skeleton class from the tokens, such as --surface-sunken and --radius-sm), so it never reaches the app or the design system.
+- To show how a region behaves (a page longer than the window, a wide table), add a gallery page that says so in its title ("App layout · long page"), still in skeleton.
+
+Keep the gallery's views in ${designPath}/views/gallery/. A page the shell itself owns, one that belongs to no feature (Settings, say, or an account page the navigation links to), goes in views/ outside gallery/, with routes like any design's: it's built into the app like a feature's pages, and the gallery never is.`);
   } else {
     lines.push(shell
       ? `Pages render in the app shell's layouts (${shell.path}/layouts/), which load the design system and Koda. ${mayChange(shell.path) ? 'If this design needs something of the shell (a navigation item, a region, a new kind of page), change it as described below.' : `Don't change the shell from here; if this design needs a new kind of page, draft a layout in ${designPath}/views/layouts/<name>.eta and note in NOTES.md that it should move to the shell once agreed.`}`
@@ -300,7 +312,7 @@ The shell's own routes.json, views and states are its gallery: a page per layout
   }
   if (kind === 'design') lines.push(rulesSection(designPath));
   if (kind !== 'system' && system) {
-    lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. ${mayChange(system.path) ? 'If it lacks something this design needs, change it as described below.' : 'Don’t change it from here; note in NOTES.md what it lacks.'}`);
+    lines.push(`Use the folder's design system, "${system.title}" (${system.path}/system/): read its guidelines.md and components/ before designing, build views from its components' markup and classes, and write no literal colours, spaces or radii. ${COMPOSE} ${mayChange(system.path) ? 'If it lacks something this design needs, change it as described below.' : 'Don’t change it from here; note in NOTES.md what it lacks.'}`);
   } else if (kind !== 'system') {
     lines.push(`This folder has no design system yet; when it gets one, its designs will use it.`);
   }

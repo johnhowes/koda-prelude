@@ -141,7 +141,7 @@ export function createDesign(folderPath, { title, area, kind = 'design' }) {
 
   const special = Object.hasOwn(SPECIAL_KINDS, kind) ? kind : null;
   const existing = special && findKind(folderPath, special);
-  if (existing) errors.kind = `This folder already has ${SPECIAL_KINDS[special]}: "${existing.title}".`;
+  if (existing) errors.kind = `This project already has ${SPECIAL_KINDS[special]}: "${existing.title}".`;
 
   if (Object.keys(errors).length > 0) return { errors };
 

@@ -1,5 +1,8 @@
 // The folders Prelude has opened, remembered on this machine only.
 //
+// People see each as a project (plan: "Project, folder, app"); the code, the
+// URLs and folders.json keep calling it a folder.
+//
 // A folder is named in URLs by a short id derived from its path, so a path
 // never appears in a URL. The list lives in <home>/folders.json - a machine-local
 // convenience, never anything a design depends on (plan: ground rule 1).
@@ -101,7 +104,7 @@ export function createReferences(home) {
       if (refused) return { error: refused };
       const path = canonical(value);
       const key = p => (process.platform === 'win32' ? p.toLowerCase() : p);
-      if (key(path) === key(folder.path)) return { error: 'That’s this folder. The agent can always read it.' };
+      if (key(path) === key(folder.path)) return { error: 'That’s the project’s own folder. The agent can always read it.' };
       const all = read();
       const list = all[folder.id] ?? [];
       if (list.some(p => key(p) === key(path))) return { error: 'The agent can already read that folder.' };

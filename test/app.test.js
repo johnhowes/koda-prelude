@@ -244,7 +244,7 @@ test('a new folder, not yet a repository: the app build makes it one, and the sh
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, /<div class="card" id="app">[\s\S]*It will be Node, Express, Eta and Koda\. There’s no app yet/);
   assert.match(page, /<form action="\/f\/[0-9a-f]+\/app\/build" method="post">\s*<details>\s*<summary class="muted">Choose another stack<\/summary>/);
-  assert.match(page, /Prelude makes this folder a git repository first, and commits it/);
+  assert.match(page, /Prelude makes the project’s folder a git repository first, and commits it/);
 
   runner.turns.length = 0;
   const started = await post(`/f/${fid}/app/build`, { stack: 'ASP.NET Core MVC with Razor' });
@@ -266,6 +266,6 @@ test('a folder inside another repository is left alone, and says why', async () 
   const fid = await open(inner);
   createDesign(inner, { title: 'Landing', kind: 'design' });
   const page = await (await get(`/f/${fid}`)).text();
-  assert.match(page, /This folder is inside another git repository\. Open that repository in Prelude to build here/);
+  assert.match(page, /This project’s folder is inside another git repository\. Open that repository in Prelude to build here/);
   assert.doesNotMatch(page, /Start the app build/);
 });
