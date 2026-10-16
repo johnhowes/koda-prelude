@@ -254,7 +254,7 @@ test('a build ports the views; the design’s copies go, and the build is done',
   assert.deepEqual(next.finish, { url: `/f/${fid}`, label: 'Merge into main' });
   const session = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
   assert.match(session, /The design window now shows the app’s own views/);
-  assert.match(session, /<strong>Next:<\/strong>\s*When you’re happy with it,\s*finish the branch on <a href="\/f\/[0-9a-f]+">the folder page<\/a>: Merge into main\./);
+  assert.match(session, /<strong>Next:<\/strong>\s*When you’re happy with it,\s*finish the branch on <a href="\/f\/[0-9a-f]+">the project page<\/a>: Merge into main\./);
   assert.match(session, /the app’s own views, with the design’s states/, 'the design bar says so too');
 });
 
@@ -389,7 +389,7 @@ test('after a build turn (10.7): what’s next, from the turn’s check', () => 
   const next = extra => render('./_entry', { entry: { type: 'next', group: 'Home', built: true, checked: true, failures: 0, differ: 0, app: null, firstPorted: false, finish: { url: '/f/p', label: 'Push and open a pull request' }, ...extra } });
   assert.match(next({ built: false }), /Home isn’t built yet\. Send the next message to carry on\./);
   assert.match(next({ failures: 2 }), /2 pages don’t render yet\. The agent is told with your next message\./);
-  assert.match(next({ differ: 1 }), /1 page differs from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar\. Then\s*finish the branch on <a href="\/f\/p">the folder page<\/a>: Push and open a pull request\./);
+  assert.match(next({ differ: 1 }), /1 page differs from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar\. Then\s*finish the branch on <a href="\/f\/p">the project page<\/a>: Push and open a pull request\./);
   assert.match(next({ checked: false }), /Prelude didn’t check the pages this turn/);
   assert.match(next({ app: { url: 'http://localhost:5300', running: true, open: '/f/w/host/open' } }), /running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open/);
   assert.doesNotMatch(next({ app: { url: 'http://localhost:5300', running: false, open: '/f/w/host/open' } }), /running at/);

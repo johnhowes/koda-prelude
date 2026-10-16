@@ -73,7 +73,7 @@ test('a session on the system is told to keep system/ and its gallery', async ()
   assert.match(prompt, /bring the gallery up to date/);
 
   const page = await (await get(`/f/${fid}/d/acme/sessions/new`)).text();
-  assert.match(page, /The folder’s design system/);
+  assert.match(page, /The project’s design system/);
 });
 
 test('a design of views uses it too, through the layout', async () => {

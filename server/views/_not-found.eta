@@ -2,7 +2,7 @@
   <h1>Not found</h1>
   <p class="sec"><%= it.what %></p>
   <div class="rowbtns">
-    <a class="btn small" href="/">Back to folders</a>
+    <a class="btn small" href="/">Back to projects</a>
     <% if (it.forget) { %>
     <form action="<%= it.forget %>" method="post"><button class="btn small ghost" type="submit">Remove from recent</button></form>
     <% } %>

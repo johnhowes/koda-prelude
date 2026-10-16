@@ -5,7 +5,7 @@
      Nothing here is stored. */%>
 <section class="page build">
   <p class="crumbs">
-    <a href="/">Folders</a> ›
+    <a href="/">Projects</a> ›
     <a href="/f/<%= it.folder.id %>"><%= it.folder.name %></a> ›
     <a href="<%= it.base %>"><%= it.design.title %></a>
   </p>

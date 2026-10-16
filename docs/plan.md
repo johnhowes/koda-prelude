@@ -11,7 +11,7 @@ There are four nouns, and nothing else until a new one earns its place.
 
 | Noun | What it is | Where it lives |
 | --- | --- | --- |
-| **Folder** | The working directory you chose, usually a repo | anywhere on disk |
+| **Project** | What you're designing (and later building), kept in a folder you chose, usually a repo | anywhere on disk |
 | **Design** | A named body of work (screens + notes) built up over many sessions; usually one feature | `prelude/<design>/` |
 | **Session** | One conversation with the agent, contributing to one design | `prelude/<design>/sessions/<id>/` |
 | **Screen** | One page of the design | `prelude/<design>/screens/NN-name.html` |
@@ -25,6 +25,14 @@ The interface has two surfaces, modeled on OrchestratR's design session:
 
 Pop out moves the Design surface to its own window, so one window holds the chat and
 the other holds the design.
+
+**Project, folder, app.** People see *project* for the whole of it: its designs, its
+design system and shell, and in time its app. *Folder* means only where it is on disk
+("the project's folder", a reference folder). *App* means only the built, running app
+and its stack. The code keeps its older names (`folders.js`, `app.folders`,
+`folderId`), as do the URLs (`/f/<id>`) and `~/.prelude/folders.json`: there, a
+folder is a project. (Decided 2026-10-16; this plan said "folder" for the project
+until then.)
 
 ## Ground rules
 

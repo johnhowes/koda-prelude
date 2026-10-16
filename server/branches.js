@@ -109,7 +109,7 @@ export function prepare(folderPath, paths, message) {
   const state = gitState(folderPath);
   if (state === 'missing') return { error: 'Prelude works on git branches, and git isn’t installed on this machine (or isn’t on the PATH).' };
   if (state === 'inside') {
-    return { error: `This folder is inside another git repository (${git(folderPath, 'rev-parse', '--show-toplevel')}). Open that repository in Prelude instead, so its designs get branches of their own.` };
+    return { error: `This project’s folder is inside another git repository (${git(folderPath, 'rev-parse', '--show-toplevel')}). Open that repository in Prelude instead, so its designs get branches of their own.` };
   }
   try {
     if (state === 'none') {
@@ -124,7 +124,7 @@ export function prepare(folderPath, paths, message) {
     // commit is the folder as it is.
     if (!gitOk(folderPath, 'rev-parse', '--verify', '--quiet', 'HEAD')) {
       git(folderPath, 'add', '-A');
-      git(folderPath, 'commit', '-q', '--allow-empty', '-m', 'The folder so far (committed by Prelude)');
+      git(folderPath, 'commit', '-q', '--allow-empty', '-m', 'The project so far (committed by Prelude)');
       return {};
     }
     const present = paths.filter(path => existsSync(join(folderPath, ...path.split('/'))));
