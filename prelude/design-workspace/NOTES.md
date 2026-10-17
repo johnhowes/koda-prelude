@@ -134,9 +134,16 @@ doesn't render, building, new design, update clashed, popped out.
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-- Does the desktop app's WebView2 offer speech recognition? If not, the
-  desktop app could dictate natively (Windows speech) through
-  `preludeDesktop`, the same button. To check when building.
+- Dictation on this machine instead of the browser's service? Proposed
+  (2026-10-17, awaiting the person): record with MediaRecorder (works in
+  browsers and WebView2), send the audio to Prelude's own server, and
+  transcribe it there with a local Whisper model, primed with the design's
+  words (page, state and component names). Same in both clients, nothing
+  leaves the machine (so no third-party warning), better with technical
+  words; costs a model download and a moment's delay after speaking, not
+  words as you talk. WebView2 probably lacks the Web Speech API (to check),
+  so today's design would leave the desktop app on Windows' own voice
+  typing (Windows key + H).
 - Capture needs a headless browser in Prelude (a new dependency), or the
   desktop app's own capture. To decide when building.
 - When a state's file changes, should its working copy (what forms changed)
