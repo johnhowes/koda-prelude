@@ -1,0 +1,58 @@
+<%/* Starting points, in a session that hasn't begun: what Prelude knows needs
+     doing on this design, most pressing first, only what applies.
+       - a page that doesn't render: a message asking to fix it;
+       - an open question: a message answering it;
+       - a page that differs from its approved screen: Show, which puts it in
+         the design surface, since only the person can say if it's right;
+       - a proposed rule no page shows: a message asking to show it;
+       - where the last session ended: a message carrying on.
+     Picking one starts the message in the box (as Answer does), to add to
+     or send; nothing is sent until the person sends it. They go when the
+     session's first message is sent.
+
+     A design with no pages yet has nothing to point at, so it gets the
+     two ways to begin: describe the feature, or start from a picture.
+
+     `it` is the design. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const s = it.surface ?? {}; const review = s.review ?? { failures: [], differ: [] };
+   const starters = [];
+   for (const f of review.failures) starters.push({ icon: 'close', title: `Fix ${f.title} in ${f.stateTitle}`, detail: f.error, message: `${f.title} (${f.path}) doesn’t render in ${f.stateTitle}: ${f.error}. Fix it.` });
+   for (const q of it.questions ?? []) starters.push({ icon: 'question', title: q.text, detail: 'An open question', message: `About “${q.text}”: ` });
+   for (const d of review.differ) starters.push({ icon: 'screen', title: `${d.title} in ${d.stateTitle} differs from its approved screen`, detail: 'Look at it, then approve it again or ask for a change', show: d });
+   for (const r of (it.rules ?? []).filter(rule => rule.status === 'proposed' && !rule.shownOn)) starters.push({ icon: 'rule', title: `Show ${r.id} on a page`, detail: r.text, message: `${r.id} isn’t shown on any page: “${r.text}” Show it in a state, or say why nothing on screen can.` });
+   const last = (it.sessions ?? [])[0];
+   if (last?.lastLine) starters.push({ icon: 'history', title: `Carry on from “${last.title}”`, detail: last.lastLine, message: `Let’s carry on from “${last.title}”. ` });
+   const fresh = !(s.screens ?? []).length;
+   if (fresh) {
+     starters.push({ icon: 'document', title: 'Describe the feature', detail: 'Who uses it, and what they need to get done', message: 'This design is for ' });
+     starters.push({ icon: 'image', title: 'Start from a sketch or a screenshot', detail: 'Then attach it, paste it or drop it on the box', message: 'Here’s what I have in mind; start the first page from it. ' });
+   } %>
+<li class="entry starters">
+  <div class="stack gap-3">
+    <p class="secondary"><%= it.sessions?.length ? 'A new session.' : 'This design has no sessions yet.' %> The agent starts from the design’s files and its NOTES.md. <%= starters.length ? 'Start from one of these, or write your own.' : 'Tell it what you want to work on.' %></p>
+    <% if (starters.length) { %>
+    <ul class="list">
+      <% for (const starter of starters) { %>
+      <li class="item">
+        <span class="icon icon-<%= starter.icon %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span><%= starter.title %></span>
+          <span class="muted"><%= starter.detail %></span>
+        </span>
+        <% if (starter.show) { %>
+        <form action="<%= base %>/screen" method="post" ko-target="design">
+          <input type="hidden" name="surface.state" value="<%= starter.show.state %>">
+          <button class="btn small ghost" type="submit" name="surface.current" value="<%= starter.show.path %>">Show</button>
+        </form>
+        <% } else { %>
+        <form action="<%= base %>/start" method="post" ko-target="message-box">
+          <input type="hidden" name="message" value="<%= starter.message %>">
+          <button class="btn small ghost" type="submit" aria-label="Start with: <%= starter.title %>">Start with this</button>
+        </form>
+        <% } %>
+      </li>
+      <% } %>
+    </ul>
+    <% } %>
+  </div>
+</li>

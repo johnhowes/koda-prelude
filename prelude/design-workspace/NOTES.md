@@ -6,10 +6,15 @@ the pop-out window): today `server/views/_session.eta`, `_design.eta`,
 It renders in the shell's `workspace` and `window` layouts. The routes carry
 `"from": "@app/server/views/…"`, so the build ports it back.
 
-Pages: Design page, About the design (drawer), Pop-out window. The fake
-project is a lender's borrower portal, so sizes (phone, tablet) and a second
-client (its mobile app) mean something. States: typical, pages differ,
-doesn't render, building, new design, update clashed, popped out.
+Pages: Design page, with drawers (About the design, Rules, Open
+questions) and modals (an image, Mark up, Turn on dictation); Pop-out
+window. The fake project is a lender's borrower portal, so sizes (phone,
+tablet) and a second client (its mobile app) mean something. States:
+typical, pages differ, doesn't render, building, new design, update
+clashed, popped out, new session.
+
+All seven items of the first review are now designed or settled (item 4,
+the record picker, was dropped).
 
 ## Decisions
 
@@ -169,6 +174,17 @@ doesn't render, building, new design, update clashed, popped out.
   until the new one is in) and Remove the model. It's the person's, for
   this computer, so no project page holds it, and Prelude has no settings
   page. Added `.menu.up` and `.menu-note` to the design system.
+- **Starting points for a new session** (the person, 2026-10-17; item 7 of
+  the first review): a session with no messages lists what Prelude knows
+  needs doing, most pressing first and only what applies: pages that don't
+  render, open questions, pages that differ from their approved screens,
+  proposed rules no page shows, and carrying on from the last session.
+  "Start with this" starts the message in the box (`POST …/start`), to add
+  to or send; a page that differs only has Show (the person: only they can
+  judge it). A design with no pages gets "Describe the feature" and "Start
+  from a sketch or a screenshot". All from what Prelude already has (the
+  check, NOTES.md, RULES.md, the last session's last line), none written by
+  the agent. State `08-new-session` shows it; `05-new-design` the first.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -191,4 +207,3 @@ doesn't render, building, new design, update clashed, popped out.
 
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
-- Not taken on yet from the review: suggestions for a new session.

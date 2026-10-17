@@ -3,6 +3,10 @@
   "/f/:folder/d/:design/about": { "view": "workspace/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "/f/:folder/d/:design/rules": { "view": "workspace/_rules", "title": "Rules", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "/f/:folder/d/:design/questions": { "view": "workspace/_questions", "title": "Open questions", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "POST /f/:folder/d/:design/start": {
+    "update": "folders/:folder/designs/:design/draft",
+    "answer": { "view": "workspace/_answering", "data": "folders/:folder/designs/:design/draft" }
+  },
   "POST /f/:folder/d/:design/questions/:question/answer": {
     "update": "folders/:folder/designs/:design/draft",
     "answer": { "view": "workspace/_answering", "data": "folders/:folder/designs/:design/draft" }
