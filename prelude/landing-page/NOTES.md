@@ -58,6 +58,43 @@ first run (no projects), all caught up, long names.
 - **Times are prepared strings** ("4 minutes ago") in the data, as the app
   prepares data before rendering.
 
+## Built (2026-10-17)
+
+`/`, `/home/needs-you`, `/home/projects`, `/open` and both forms are the app's
+own: `server/views/home/`, answered in `server/main.js`, the model read in
+`server/home.js` (its typedefs are the states' shape). `/loading` stays the
+design's: the app needs no such URL.
+
+- **What counts as waiting**, read from each project's sessions and branches
+  each time: a *question* is the newest session's last turn ending in "?" (the
+  agent has no way to say it's asking; this is a heuristic). A *finished* turn
+  stays until its session is opened, or a week; opening is remembered on this
+  machine (`~/.prelude/seen.json`), and a turn that ends while its session is on
+  screen counts as opened. *Build stopped* is a branch building a group with no
+  turn running. *Ready to build* is an approved design with unbuilt groups, once
+  the app exists. A *pull request* is a pushed branch, until it's merged; the
+  home page's regions fetch and tidy a project with one (every 30 seconds at
+  most), which is how a merge on the Git server is found.
+- **"Last changed"** is the newest of a project's sessions, branches, pushes
+  and designs; when none, when it was last opened. A folder that's gone is
+  listed last.
+- **Opening a project goes to its page** (303 to `/f/<id>`), which lands in the
+  workspace; the app's layout closes the modal when the workspace moves.
+  Removing a project without script redirects home.
+- **A region Prelude can't read** answers 503 without `x-koda`, so Koda keeps
+  the region, marks it unreachable and the page's Try again appears.
+- **The app's layout** (`server/views/layout.eta`) gained what this page asks
+  of the shell, as little as it could: the modal region, the bar's count
+  (`#waiting`, `server/views/_waiting.eta`) and the app's live channel
+  (`/live`, `it.layout.live`). `needs-changed` and `projects-changed` are sent
+  as turns start and end, sessions are opened, designs are made or approved,
+  branches are pushed, merged or updated, and projects are opened or removed;
+  `needs-changed` also pushes the bar's count.
+- **The design system**: Home is written in it, and the rest of the app is
+  still on ds/v1, so the app serves the system at `/system/` (from
+  `prelude/prelude-design-system/system`) and the home pages link it instead
+  of ds/v1. `prelude.css` still applies on top.
+
 ## Open questions
 
 - In the preview the bar's count doesn't follow an event: it comes from the

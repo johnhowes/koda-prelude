@@ -201,9 +201,15 @@ test('a build works on the design’s own branch: a build session, its own instr
   assert.equal(second.status, 409);
   assert.match(await second.text(), /This design is building Borrowers now\. Groups are built one at a time\./);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
-  assert.match(view, /Building <strong>Borrowers<\/strong> on this design’s branch/);
+  assert.match(view, /Building <strong>Borrowers<\/strong> on this design’s branch, in <a href="\/f\/[0-9a-f]+\/d\/borrowers\/sessions\/[^"]+">Build: Borrowers<\/a>/);
+  // Its build session is easy to get back to: from its group, the sessions menu, and In progress.
+  assert.ok(view.includes(`Build session: <a href="/f/${wid}/d/borrowers/sessions/${sid}">Build: Borrowers</a>`));
+  assert.equal(view.match(/Build session: /g).length, 1, 'only the group that has one');
+  const folderPage = await (await get(`/f/${fid}`)).text();
+  assert.ok(folderPage.includes(`<a href="/f/${wid}/d/borrowers/sessions/${sid}">build session</a>`));
 
   const session = await (await get(location)).text();
+  assert.match(session, /<span class="item-title">Build: Borrowers <span class="pill">Build<\/span><\/span>/);
   assert.match(session, /A build session: it builds Borrowers into the app, on this design’s branch/);
   assert.match(session, /On <code>prelude\/borrowers<\/code>\s*· building Borrowers/);
   assert.match(session, /Merge into main/, 'no remote: finished by merging here');

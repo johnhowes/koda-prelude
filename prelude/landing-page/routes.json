@@ -1,17 +1,17 @@
 {
-  "/": { "view": "home/index", "title": "Home", "data": "" },
+  "/": { "view": "@app/server/views/home/index", "title": "Home", "data": "" },
   "/loading": { "view": "home/loading", "title": "Home, while it loads", "data": "" },
-  "/home/needs-you": { "view": "home/_needs-you", "data": "" },
-  "/home/projects": { "view": "home/_projects", "data": "" },
-  "/open": { "view": "home/_open", "title": "Open a project", "data": "", "over": "/", "in": "modal" },
+  "/home/needs-you": { "view": "@app/server/views/home/_needs-you", "data": "" },
+  "/home/projects": { "view": "@app/server/views/home/_projects", "data": "" },
+  "/open": { "view": "@app/server/views/home/_open", "title": "Open a project", "data": "", "over": "/", "in": "modal" },
   "POST /folders": {
     "add": "projects",
     "require": ["path"],
-    "form": "home/_open",
-    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "home/index", "data": "" }] }
+    "form": "@app/server/views/home/_open",
+    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "@app/server/views/home/index", "data": "" }] }
   },
   "POST /folders/:id/remove": {
     "remove": "projects/:id",
-    "answer": { "view": "home/_projects", "data": "" }
+    "answer": { "view": "@app/server/views/home/_projects", "data": "" }
   }
 }
