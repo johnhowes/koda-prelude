@@ -121,7 +121,7 @@ test('escapes what it shows', async () => {
 });
 
 test('the desktop app’s hooks: a relay script, and native-only controls marked', async () => {
-  const page = await (await get('/')).text();
+  const page = await (await get('/open')).text();
   assert.match(page, /<script type="module" src="\/static\/desktop\.js"><\/script>/);
   assert.match(page, /data-pick-folder data-desktop-only/);
   assert.equal((await get('/static/desktop.js')).status, 200);

@@ -25,6 +25,7 @@ import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
+import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { appendEntry, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
@@ -38,9 +39,18 @@ const kodaDir = dirname(fileURLToPath(import.meta.resolve('@kodalang/core')));
 const kodaPackage = canonical(dirname(kodaDir));
 const kodaVersion = JSON.parse(readFileSync(join(kodaPackage, 'package.json'), 'utf8')).version;
 
+// Prelude's own design system, in this repository's prelude/ folder: the pages
+// ported from a design (Home) are written in it, the rest still in ds/v1.
+const systemDir = (() => {
+  const root = dirname(here);
+  const system = findSystem(root);
+  return system ? join(root, PRELUDE_DIR, ...system.id.split('/'), 'system') : join(here, 'public', 'ds', 'v1');
+})();
+
 const STATIC = [
   { prefix: '/koda/', dir: kodaDir },
   { prefix: '/ds/', dir: join(here, 'public', 'ds') },
+  { prefix: '/system/', dir: systemDir },
   { prefix: '/static/', dir: join(here, 'public') },
 ];
 
@@ -72,7 +82,14 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     tidyEvery,           // how often, at most: tidying fetches from the remote
     references: createReferences(home),
     live,
-    turns: createTurns({ runner, live }),
+    // A turn starting or ending changes what needs the person and what's in
+    // its project; one that ended while its session was on screen was seen.
+    turns: createTurns({ runner, live, onChange: ({ key, finished, watched }) => {
+      if (finished && watched) app.seen.mark(key);
+      tell(app, { needs: true, projects: true });
+    } }),
+    seen: createSeen(home),   // the sessions the person has opened (home.js)
+    waiting: null,            // how many things wait on the person, once counted (the bar)
     watches: createWatches(),
     renderers: createRenderers({ appRoot: dirname(here) }),
     hosts: createHosts({ home }),
@@ -104,8 +121,10 @@ async function handle(req, res, app) {
   const url = new URL(req.url, 'http://localhost');
   const path = decodeURIComponent(url.pathname);
   const fragment = req.headers['x-koda-fragment'] === '1';
+  // Every layout gets the app's live channel and the bar's count.
+  const layout = () => ({ live: APP_LIVE, needsYou: waitingOf(app) });
   const page = (status, view, data, title) =>
-    send(res, status, shaped(view, data, { fragment, path, title }));
+    send(res, status, shaped(view, data, { fragment, path, title, layout: fragment ? {} : layout() }));
   const notFoundText = () => send(res, 404, 'Not found', 'text/plain; charset=utf-8');
 
   // The preview origin serves the designs' files and nothing else. Screens are
@@ -158,22 +177,66 @@ async function handle(req, res, app) {
     return res.end('prelude');
   }
 
-  if (path === '/' && req.method === 'GET') {
-    return page(200, 'home', { recent: folders.recent(), value: '', error: null }, 'Prelude');
+  // The app's live channel: what a page's regions reload on, and the bar's count.
+  if (path === APP_LIVE && req.method === 'GET') {
+    return app.live.open(APP_CHANNEL, req, res);
   }
+
+  // Home (prelude/landing-page): the page arrives with the recent projects'
+  // names, and its two regions read the rest, each on its own.
+  //   GET  /                        the page
+  //   GET  /home/needs-you          what waits on the person, across projects
+  //   GET  /home/projects           what's in each project
+  //   GET  /open                    Open a project, in the modal over /
+  //   POST /folders                 open one: its page, or the form refused
+  //   POST /folders/:id/remove      take one off the list; the disk is left alone
+  const homePage = (status, { modal = null } = {}) => {
+    // One URL, two shapes: a Koda region asking for / gets the page alone.
+    const body = { fragment, path: '/', title: 'Prelude', layout: fragment ? {} : layout(), system: true };
+    const regions = modal ? { modal: { html: render('./home/_open', modal), location: '/open' } } : {};
+    return send(res, status, shaped('home/index', homeOf(app, { contents: false }), { ...body, regions }));
+  };
+  // A region Prelude couldn't read: not the app's answer (no x-koda), so Koda
+  // keeps what the region had and offers to try again (R-d0y).
+  const unreadable = error => {
+    console.error(error);
+    res.writeHead(503, { 'content-type': 'text/plain; charset=utf-8', 'vary': 'x-koda-fragment', 'cache-control': 'no-store' });
+    return res.end('Prelude couldn’t read your projects.');
+  };
+  const homePart = (status, view) => {
+    let model;
+    try { model = homeOf(app, { tidy: folder => tidyFolder(app, folder) }); } catch (error) { return unreadable(error); }
+    app.waiting = model.needs.length;
+    return send(res, status, shaped(view, model, { fragment, path, title: 'Prelude', layout: fragment ? {} : layout(), system: true }));
+  };
+  const openForm = (status, data) => (fragment ? send(res, status, render('./home/_open', data)) : homePage(status, { modal: data }));
+
+  if (path === '/' && req.method === 'GET') return homePage(200);
+  if (path === '/home/needs-you' && req.method === 'GET') return homePart(200, 'home/_needs-you');
+  if (path === '/home/projects' && req.method === 'GET') return homePart(200, 'home/_projects');
+  if (path === '/open' && req.method === 'GET') return openForm(200, { path: '' });
 
   if (path === '/folders' && req.method === 'POST') {
     const form = await readForm(req);
     const value = cleanPath(form.get('path'));
     const error = refuseFolder(value);
-    if (error) return page(422, 'home', { recent: folders.recent(), value, error }, 'Prelude');
+    if (error) return openForm(422, { path: value, $errors: { path: error } });
     const folder = folders.open(value);
+    tell(app, { needs: true, projects: true });
     return redirect(res, `/f/${folder.id}`);
+  }
+
+  const removed = path.match(/^\/folders\/([0-9a-f]+)\/remove$/);
+  if (removed && req.method === 'POST') {
+    folders.forget(removed[1]);
+    tell(app, { needs: true, projects: true });
+    return fragment ? homePart(200, 'home/_projects') : redirect(res, '/');
   }
 
   const forget = path.match(/^\/f\/([0-9a-f]+)\/forget$/);
   if (forget && req.method === 'POST') {
     folders.forget(forget[1]);
+    tell(app, { needs: true, projects: true });
     return redirect(res, '/');
   }
 
@@ -251,15 +314,7 @@ async function handle(req, res, app) {
       }, `${folder.name} · Prelude`);
     };
 
-    // Remove the worktrees and branches of designs merged into main (here, or
-    // by a pull request on the server), at most every 30 seconds per folder.
-    const tidy = () => {
-      if (!repository || Date.now() - (app.tidied.get(folder.id) ?? 0) < app.tidyEvery) return;
-      app.tidied.set(folder.id, Date.now());
-      try {
-        app.branches.tidy(folder, { beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
-      } catch { /* git couldn't say: try again next time */ }
-    };
+    const tidy = () => { if (repository) tidyFolder(app, folder); };
 
     // A design's branch, made if it has none; for a folder that isn't a
     // repository yet, making one makes it one. { entry, worktree } or { error }.
@@ -291,6 +346,7 @@ async function handle(req, res, app) {
         if (merged.error) return finishFailed(entry, merged.error);
         app.tidied.delete(folder.id);
         tidy();
+        tell(app, { needs: true, projects: true });
         return redirect(res, designPage);
       }
       if (action === 'update') {
@@ -300,6 +356,7 @@ async function handle(req, res, app) {
           : updated.clashes
           ? `${updated.from} is half brought into this branch: ${updated.clashes.length === 1 ? '1 file clashes' : `${updated.clashes.length} files clash`} (${updated.clashes.join(', ')}), left with git's conflict markers. The agent resolves them with your next message; nothing is committed until it has. Or abandon the update.`
           : updated.files.length ? `Brought ${updated.from} into this branch: ${updated.files.length} ${updated.files.length === 1 ? 'file' : 'files'} came in. The agent is told with your next message.` : `${updated.from} had nothing new for this branch.`, Boolean(updated.error));
+        tell(app, { projects: true });
         return redirect(res, backTo);
       }
       if (action === 'abandon') {
@@ -314,6 +371,7 @@ async function handle(req, res, app) {
       const published = app.branches.publish(entry, { title: `${design.title} (designed and built with Prelude)`, body });
       if (published.error) return finishFailed(entry, published.error);
       noteOnBranch(entry, published.pr ? `Pushed ${entry.branch} and opened a pull request: ${published.pr}` : `Pushed ${entry.branch}. Open the pull request here: ${published.compare ?? 'on your Git server'}`);
+      tell(app, { needs: true, projects: true });
       return view(200, blank, undefined, { published: { branch: entry.branch, pr: published.pr, compare: published.compare } });
     }
 
@@ -426,10 +484,12 @@ async function handle(req, res, app) {
         const result = createDesign(made.entry.path, input);
         if (result.errors) return view(422, { ...input, errors: result.errors });
         app.branches.commit(made.entry, `${result.design.title}: a new design (committed by Prelude)`);
+        tell(app, { projects: true });
         return redirect(res, `/f/${made.entry.id}/d/${result.design.id}`);
       }
       const result = createDesign(folder.path, input);
       if (result.errors) return view(422, { ...input, errors: result.errors });
+      tell(app, { projects: true });
       return redirect(res, `/f/${folder.id}/d/${result.design.id}`);
     }
 
@@ -540,6 +600,21 @@ function noteOnBranch(entry, text, failed = false) {
 }
 
 const mainOf = folder => mainBranch(folder.path);
+
+/**
+ * Remove the worktrees and branches of a folder's designs merged into main
+ * (here, or by a pull request on the server), at most every 30 seconds per
+ * folder. A branch tidied away changes what needs the person (R-w2k).
+ */
+function tidyFolder(app, folder) {
+  if (folder.branch || Date.now() - (app.tidied.get(folder.id) ?? 0) < app.tidyEvery) return;
+  if (gitState(folder.path) !== 'repository') return;
+  app.tidied.set(folder.id, Date.now());
+  try {
+    const notes = app.branches.tidy(folder, { beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
+    if (notes.length) tell(app, { needs: true, projects: true });
+  } catch { /* git couldn't say: try again next time */ }
+}
 
 /** Whether a design has pages to build: a feature, or the shell's own (its Settings, say). */
 const buildsPages = design => design.kind === 'design' || design.kind === 'shell';
@@ -794,6 +869,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // Approving over pages that don't render would throw their approved versions away.
     const states = Math.max(1, listStates(dir).length);
     const count = review.failures.length ? 0 : writeSnapshots(dir, review.renders);
+    // Approved pages may now be ready to build.
+    if (count) tell(app, { needs: true, projects: true });
     const notice = review.failures.length
       ? `Not approved: ${review.failures.length === 1 ? '1 page doesn’t' : `${review.failures.length} pages don’t`} render. Fix ${review.failures.length === 1 ? 'it' : 'them'} first.`
       : `Approved ${count} ${count === 1 ? 'page' : 'pages'} in ${states} ${states === 1 ? 'state' : 'states'}.`;
@@ -1123,7 +1200,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (!session) return notFound();
   const sessionUrl = `${base}/sessions/${session.id}`;
 
-  if (action === undefined && req.method === 'GET') return sessionView(200, session, {});
+  if (action === undefined && req.method === 'GET') {
+    // Opened: a turn it finished no longer needs the person (R-8hc).
+    app.seen.mark(sessionKey(folder, design, session.id));
+    tell(app, { needs: true });
+    return sessionView(200, session, {});
+  }
 
   if (action === 'messages' && req.method === 'POST') {
     const message = String((await readForm(req)).get('message') ?? '').trim();

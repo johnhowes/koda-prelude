@@ -48,7 +48,12 @@ export function withFindings(failures, message) {
   return `${parts.join('\n\n')}\n\n${message}`;
 }
 
-export function createTurns({ runner, live }) {
+/**
+ * `onChange({ key, finished, watched })` hears each turn start and end: `key`
+ * is its session's, and `watched` whether a page showed the session as it ended.
+ */
+export function createTurns({ runner, live, onChange = () => {} }) {
+  const changed = change => { try { onChange(change); } catch (error) { console.error(error); } };
   const running = new Map();   // designKey -> { sessionId, stop, stopUrl, ctx }
   // What the last check found wrong with a design, told to the agent with the
   // next message on that design (the agent can't see the preview itself).
@@ -157,6 +162,7 @@ ${withFindings(told, message)}` : withFindings(told, message),
 
       running.set(dKey, { sessionId, stop: turn.stop, stopUrl, ctx });
       live.publish(ctx.key, statusMessage({ kind: 'working', stopUrl }));
+      changed({ key: ctx.key, finished: false, watched: false });
 
       findings.delete(dKey);
 
@@ -211,6 +217,7 @@ ${withFindings(told, message)}` : withFindings(told, message),
         }
         running.delete(dKey);
         live.publish(ctx.key, statusMessage({ kind: 'idle' }));
+        changed({ key: ctx.key, finished: true, watched: (live.listening?.(ctx.key) ?? 0) > 0 });
       };
       turn.done.then(finish, error => finish({ ok: false, error: String(error?.message ?? error) }));
       return { ok: true };

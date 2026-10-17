@@ -1,0 +1,5 @@
+<%/* How many things are waiting on the person, across their projects: a way
+     home, where they're listed. Nothing when nothing is. Pushed afresh down
+     the app's channel (ko-into="waiting") as things start and stop waiting. */%>
+<% const waiting = it.needsYou ?? 0; %>
+<% if (waiting > 0) { %><a class="btn small ghost" href="/">Needs you<span class="pill accent"><%= waiting %></span></a><% } %>
