@@ -115,14 +115,21 @@ doesn't render, building, new design, update clashed, popped out.
   server renders it (a headless browser), not the client: a cross-origin
   frame can't be read from the page, and it works the same in both
   clients. Captures are named "Page – State – 390×844.png".
-- **Dictation** (the person, 2026-10-17): a microphone beside Attach. The
-  first press asks once (a modal: the browser's speech service may send
-  what's said to Google or Microsoft), kept as the person's choice. On, it
-  listens and types into the box after what's there, pulsing while it
-  listens; again, or a pause, stops it. It's the browser's Web Speech API.
-  Where there's none (Firefox; probably the desktop app's WebView2), the
-  button says to use the system's dictation (Windows key + H). Added
-  `dictate` and `capture` icons, and a pressed `.icon-btn`, to the system.
+- **Dictation, transcribed on this computer** (the person, 2026-10-17;
+  replaces the browser's speech service): a microphone beside Attach. The
+  first press opens a modal to choose a speech model (Quick 142 MB English,
+  Balanced 466 MB, Most accurate 1.6 GB; Whisper) and download it once
+  from Hugging Face, the one outward step, said so. While it downloads the
+  microphone shows progress with Cancel, reloading on `dictation-changed`
+  (events.json shows it in the preview). Ready: press, speak, press again;
+  the browser records (MediaRecorder, in browsers and WebView2 alike), the
+  recording and what's typed go to `…/dictation/transcribe`, and the box
+  comes back with the words added at the end (`#message-box`, a region of
+  its own; the composer listens for Enter and paste on the form so it
+  survives that). Prelude's server runs the model, primed with the design's
+  words. Same in both clients; nothing said leaves the machine. Words come
+  after speaking, not while. The set-up is the person's, on this machine.
+  Added `dictate` and `capture` icons, and a pressed `.icon-btn`.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -134,16 +141,10 @@ doesn't render, building, new design, update clashed, popped out.
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-- Dictation on this machine instead of the browser's service? Proposed
-  (2026-10-17, awaiting the person): record with MediaRecorder (works in
-  browsers and WebView2), send the audio to Prelude's own server, and
-  transcribe it there with a local Whisper model, primed with the design's
-  words (page, state and component names). Same in both clients, nothing
-  leaves the machine (so no third-party warning), better with technical
-  words; costs a model download and a moment's delay after speaking, not
-  words as you talk. WebView2 probably lacks the Web Speech API (to check),
-  so today's design would leave the desktop app on Windows' own voice
-  typing (Windows key + H).
+- Where are the speech model removed or changed? Prelude has no settings
+  page yet; the folder page, or a menu on the microphone?
+- How Prelude runs Whisper (whisper.cpp through a Node binding, or a
+  sidecar binary) and on which hardware: to decide when building.
 - Capture needs a headless browser in Prelude (a new dependency), or the
   desktop app's own capture. To decide when building.
 - When a state's file changes, should its working copy (what forms changed)

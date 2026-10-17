@@ -34,7 +34,12 @@
           "session": null,
           "state": { "kind": "idle" },
           "entries": [],
-          "dictation": { "allowed": false },
+          "dictation": { "status": "none" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
           "queued": [],
           "images": [
             { "id": "img-7pa", "base": "/f/borrower-portal/d/loan-offers", "name": "IMG_2041.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null }

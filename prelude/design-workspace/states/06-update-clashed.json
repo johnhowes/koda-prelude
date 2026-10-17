@@ -52,7 +52,12 @@
             { "id": 5, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." },
             { "id": 6, "type": "note", "failed": true, "text": "Updating from main clashed in 2 files. Send the agent a message and it resolves them first, or abandon the update." }
           ],
-          "dictation": { "allowed": false },
+          "dictation": { "status": "none" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
           "queued": [],
           "images": [],
           "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },

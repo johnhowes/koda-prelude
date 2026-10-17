@@ -13,6 +13,9 @@
      posts it with the message, so "this" means something to the agent. It's
      on unless they turn it off, for a message about something else.
 
+     The microphone dictates: what's said is typed into the box, transcribed
+     on this computer (_dictation.eta).
+
      While the agent works, the box still takes a message: it waits under
      the transcript and goes when the turn ends (Send says so).
 
@@ -32,10 +35,7 @@
   <input type="hidden" name="action" value="<%= action %>">
   <%/* An id, not a name: marking up an image, in the modal, sends its copy here. */%>
   <ul class="attachments" id="attachments" ko-source="<%= draft.base %>/draft" ko-invoke="event:draft-changed" aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
-  <label class="sr-only" for="message">Message</label>
-  <textarea id="message" name="message" ko-as="message" rows="3" required
-            placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line."
-            <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="message-error"<% } %>><%= it.message ?? draft.message ?? '' %></textarea>
+  <div id="message-box" ko-region><%~ include('./_message-box', { message: it.message ?? draft.message, $errors: it.$errors }) %></div>
   <%/* The draft: what's typed is kept with the session as it's written (a
        moment after the person stops typing), so it's still here after a
        reload, or after looking at another session and coming back. Its own
@@ -64,7 +64,7 @@
           <input class="sr-only" type="file" name="image" ko-as="upload" accept="image/png, image/jpeg, image/gif, image/webp" multiple>
         </label>
       </div>
-      <% if (it.folder) { %><span id="dictation" ko-region><%~ include('./_dictation', it) %></span><% } %>
+      <% if (it.folder) { %><span id="dictation" ko-source="<%= base %>/dictation/button" ko-invoke="event:dictation-changed"><%~ include('./_dictation', it) %></span><% } %>
       <% if (error) { %><span class="error" id="message-error"><%= error %></span><% } %>
       <span class="muted" ko-as="draftKept" ko-region role="status"><% if (!error && draft.message) { %>Draft kept<% } %></span>
     </div>
@@ -73,11 +73,13 @@
   <script type="koda">
     // Two things no binding or trigger expresses: Enter to send, and taking
     // an image the person pastes or drops, which means moving a File into
-    // the upload's input (it then uploads as if chosen there).
+    // the upload's input (it then uploads as if chosen there). Listened for
+    // on the form, since dictation replaces the box itself.
     const { message, upload } = koda.scope();
     const form = message.element.form;
-    message.element.addEventListener('keydown', event => {
-      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    const inBox = event => event.target.name === 'message';
+    form.addEventListener('keydown', event => {
+      if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
         event.preventDefault();
         form.requestSubmit();
       }
@@ -92,7 +94,7 @@
       return true;
     };
     const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files');
-    message.element.addEventListener('paste', event => { if (take(event.clipboardData?.files ?? [])) event.preventDefault(); });
+    form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); });
     form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; });
     form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; });
     form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });

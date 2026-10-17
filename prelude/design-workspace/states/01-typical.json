@@ -61,7 +61,12 @@
             { "id": 15, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
             { "id": 16, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." }
           ],
-          "dictation": { "allowed": true },
+          "dictation": { "status": "ready", "model": "small" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
           "queued": [],
           "images": [
             { "id": "img-4k2", "base": "/f/borrower-portal/d/loan-offers", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null },

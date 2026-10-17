@@ -1,57 +1,73 @@
-<%/* Dictate: the microphone beside Attach. `it` is the design (its
-     `dictation` is the person's choice, kept for them, not for the design).
-
-     The first time, it asks (the modal): dictation uses the browser's own
-     speech service, which may send what's said to Google or Microsoft, so
-     the person agrees once before anything is sent.
-
-     Once on, pressing it listens and types what's said into the message
-     box, after what's there, words appearing as they're recognised; it's
-     pressed (and pulses) while listening. Pressing again, or a pause in
-     speaking, stops it. What's typed this way is kept as a draft like any.
-
-     Where the browser can't turn speech into text (the desktop app's window
-     among them), pressing it says so, and how to use the system's own
-     dictation instead. The script is the browser's speech API, which no
-     attribute expresses. */%>
-<% const base = `/f/${it.folder.id}/d/${it.id}`; %>
-<% if (!it.dictation?.allowed) { %>
-<a class="icon-btn small" href="<%= base %>/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it"><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></a>
-<% } else { %>
+<%/* Dictate: the microphone beside Attach. What's said is turned into text on
+     this computer, by Prelude's own server, with a speech model it keeps
+     (Whisper); no speech service sees it. So it works the same in a browser
+     and in the desktop app. `it` is the design; `it.dictation` is the
+     person's set-up, kept for them on this machine, not for the design:
+       - no model yet: the microphone opens the modal, to choose one and
+         download it (once);
+       - downloading: how far it's got, with Cancel; the region holding
+         this (#dictation, in the composer) reloads as the server says it's
+         moved on (dictation-changed);
+       - ready: press to speak; press again to stop. The recording goes to
+         the server with what's typed so far, and the box comes back with
+         what was said added at the end, and this afresh (out of band), so
+         "Typing what you said…" goes. The server tells the model this
+         design's words (pages, states, components) first, so it spells
+         them right.
+     Recording is the script: the microphone and MediaRecorder, which no
+     attribute expresses. Its file goes in the upload part's input, which
+     sends it, as a pasted image does. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const d = it.dictation ?? {}; %>
 <span class="cluster gap-2 dictation" ko-item>
-  <button class="icon-btn small" type="button" ko-as="dictate" aria-pressed="false" title="Dictate: press, then speak. Press again to stop."><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></button>
+<% if (d.status === 'ready') { %>
+  <div ko-form="<%= base %>/dictation/transcribe" ko-method="post" ko-invoke="change" ko-target="message-box">
+    <input type="hidden" name="message" ko-as="typed">
+    <input type="file" name="audio" ko-as="audio" accept="audio/*" hidden>
+    <button class="icon-btn small" type="button" ko-as="dictate" aria-pressed="false" title="Dictate: press, then speak. Press again to stop, and what you said is typed in."><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></button>
+  </div>
   <span class="muted" ko-as="heard" role="status" hidden></span>
   <script type="koda">
-    const { dictate, heard, onRemove } = koda.scope();
-    const box = document.getElementById('message');
-    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    const { dictate, audio, typed, heard, onRemove } = koda.scope();
     const say = text => { heard.element.textContent = text; heard.element.hidden = !text; };
-    let listening = null;
-    dictate.element.addEventListener('click', () => {
-      if (listening) { listening.stop(); return; }
-      if (!Recognition) {
-        say('This window can’t dictate. Your system can: on Windows press Windows key + H, on a Mac press the microphone key, then speak into the box.');
-        box.focus();
-        return;
-      }
-      const recognition = new Recognition();
-      recognition.lang = document.documentElement.lang || navigator.language;
-      recognition.interimResults = true;
-      const before = box.value ? box.value.replace(/\s*$/, ' ') : '';
-      recognition.onresult = event => {
-        box.value = before + [...event.results].map(result => result[0].transcript).join('');
-        box.dispatchEvent(new Event('input', { bubbles: true }));
+    let recorder = null;
+    const stopMicrophone = () => recorder?.stream.getTracks().forEach(track => track.stop());
+    dictate.element.addEventListener('click', async () => {
+      if (recorder) { recorder.stop(); return; }
+      let stream;
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+      catch { say('Prelude can’t use the microphone. Allow it for Prelude in your system’s or browser’s settings, then try again.'); return; }
+      if (!dictate.element.isConnected) { stream.getTracks().forEach(track => track.stop()); return; }
+      const chunks = [];
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = event => chunks.push(event.data);
+      recorder.onstop = () => {
+        stopMicrophone();
+        recorder = null;
+        dictate.element.setAttribute('aria-pressed', 'false');
+        const recording = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
+        if (recording.size === 0) { say('Nothing was heard. Press the microphone and speak.'); return; }
+        say('Typing what you said…');
+        // What's typed so far goes too, so nothing typed while listening is lost.
+        typed.element.value = document.getElementById('message')?.value ?? '';
+        const file = new DataTransfer();
+        file.items.add(new File([recording], 'dictation.webm', { type: recording.type }));
+        audio.element.files = file.files;
+        audio.element.dispatchEvent(new Event('change', { bubbles: true }));
       };
-      recognition.onerror = event => say(event.error === 'not-allowed' || event.error === 'service-not-allowed'
-        ? 'Prelude can’t use the microphone. Allow it in the browser’s settings for this site, then try again.'
-        : event.error === 'no-speech' ? 'Nothing was heard. Press the microphone and speak.' : 'Dictation stopped. Press the microphone to start again.');
-      recognition.onend = () => { listening = null; dictate.element.setAttribute('aria-pressed', 'false'); box.focus(); };
-      say('');
-      recognition.start();
-      listening = recognition;
+      recorder.start();
       dictate.element.setAttribute('aria-pressed', 'true');
+      say('Listening… press again when you’ve finished.');
     });
-    onRemove(() => listening?.abort());
+    onRemove(() => { if (recorder?.state === 'recording') { recorder.onstop = null; recorder.stop(); } stopMicrophone(); });
   </script>
-</span>
+<% } else if (d.status === 'downloading') { %>
+  <span class="icon icon-dictate" aria-hidden="true"></span>
+  <label class="muted cluster gap-2">Getting the speech model, <%= d.progress %>%<progress max="100" value="<%= d.progress %>"></progress></label>
+  <form action="<%= base %>/dictation/cancel" method="post" ko-target="dictation">
+    <input type="hidden" name="status" value="none">
+    <button class="link-btn" type="submit" title="Stop downloading the speech model. Dictation stays off.">Cancel</button>
+  </form>
+<% } else { %>
+  <a class="icon-btn small" href="<%= base %>/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it"><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></a>
 <% } %>
+</span>

@@ -36,8 +36,10 @@
   *proposed*
 - **R-k7c.** A capture is the page exactly as the window that captured it shows it: its page, state, size and client, or the app.
   *proposed*
-- **R-f2y.** Nothing said is sent anywhere until the person has agreed to dictation once and pressed the microphone; they’re asked only the first time.
+- **R-f2y.** What the person says is turned into text on their own computer and never leaves it; the only download is the speech model, once, when they turn dictation on.
   *shown-on: /f/:folder/d/:design/dictation @ pages-differ*
+  *proposed*
+- **R-n5q.** Dictation adds what was said after what’s already typed, keeping anything typed while it listened.
   *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*

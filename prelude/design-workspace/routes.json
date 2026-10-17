@@ -74,9 +74,18 @@
     }
   },
   "/f/:folder/d/:design/dictation": { "view": "workspace/_dictation-ask", "title": "Turn on dictation", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "modal" },
+  "/f/:folder/d/:design/dictation/button": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/dictation": {
     "update": "folders/:folder/designs/:design/dictation",
     "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design", "also": [{ "into": "modal?" }] }
+  },
+  "POST /f/:folder/d/:design/dictation/cancel": {
+    "update": "folders/:folder/designs/:design/dictation",
+    "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/dictation/transcribe": {
+    "update": "folders/:folder/designs/:design/draft",
+    "answer": { "view": "workspace/_dictation-ready", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/draft": {
     "update": "folders/:folder/designs/:design/draft",
