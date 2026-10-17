@@ -12,11 +12,11 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner } from './agent.js';
+import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, layoutsBuildPrompt } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
-import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks } from './host.js';
+import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
-import { backlogOf, incrementStory, storyMarkdown } from './backlog.js';
+import { backlogOf, incrementStory, layoutsStory, storyMarkdown } from './backlog.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
@@ -571,6 +571,20 @@ async function handle(req, res, app) {
 // built in a session of the folder's shell, since the shell is the app's frame.
 const APP_GROUP = { key: '@app', slug: 'app', title: 'The app', routes: [], posts: [], rules: [] };
 
+// The shell's layouts the app hasn't got yet, built from the shell's Build page (8c).
+const LAYOUTS_GROUP = { key: '@layouts', slug: 'layouts', title: 'The shell’s layouts', routes: [], posts: [], rules: [], events: [] };
+
+/** The shell's layouts in a folder (a branch's worktree): { id, dir, unbuilt: [name], links }, or null with no shell. */
+function shellLayoutsOf(folderPath) {
+  const shell = findShell(folderPath);
+  if (!shell) return null;
+  const dir = join(folderPath, PRELUDE_DIR, ...shell.id.split('/'));
+  return { id: shell.id, dir, unbuilt: unbuiltLayouts(dir, readHostConfig(folderPath)?.views ?? '.eta'), links: shellLayoutLinks(dir) };
+}
+
+/** The layouts a group's pages render in (overlays render over their page): [name]. */
+const layoutsOfGroup = group => [...new Set(group.routes.filter(route => !route.over).map(route => route.layout || 'app'))];
+
 /**
  * A design's branch, as the pages that list it show it (step 9): its links,
  * what it's doing, what its last check said - 'passing', 'failing',
@@ -677,11 +691,18 @@ function groupsOf(app, { entry, design, dir }) {
       shared = app.branches.status(entry).alsoChanges;
     } catch { /* git couldn't say: whole stories, as without a branch */ }
   }
+  // The shell's layouts (8c): once the app exists, the ones it hasn't got are
+  // the shell's first group, and a page that renders in one waits for it.
+  const folderPath = join(dir, ...design.id.split('/').map(() => '..'), '..');
+  const layouts = appOf(folderPath).built ? shellLayoutsOf(folderPath) : null;
+  const layoutsGroup = design.kind === 'shell' && layouts?.unbuilt.length
+    ? [{ ...LAYOUTS_GROUP, layouts: layouts.unbuilt, kind: 'to build', change: null, toBuild: true, built: false, needsLayouts: [], story: layoutsStory({ design, designPath, shellPath: `${PRELUDE_DIR}/${layouts.id}`, layouts: layouts.unbuilt }) }]
+    : [];
   return {
     designWide,
     events: backlog.events,   // server events no page claims (6e)
     shared,
-    groups: groups.map(group => {
+    groups: [...layoutsGroup, ...groups.map(group => {
       const change = increment?.groups.get(group.key) ?? null;
       const changed = change?.status === 'changed';
       const kind = changed ? 'changed' : change?.status === 'new' ? 'new' : group.built ? 'unchanged' : 'to build';
@@ -691,8 +712,9 @@ function groupsOf(app, { entry, design, dir }) {
       const story = changed
         ? incrementStory({ design, designPath, group, change, designEvents: increment?.designWide.events, states, shared })
         : storyMarkdown({ design, designPath, group, designWide, designEvents: backlog.events, states, approved });
-      return { ...group, kind, change, toBuild, story };
-    }),
+      const needsLayouts = layouts ? layoutsOfGroup(group).filter(name => layouts.unbuilt.includes(name)) : [];
+      return { ...group, kind, change, toBuild, story, needsLayouts };
+    })],
   };
 }
 
@@ -1433,7 +1455,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const finishedMerge = wasMerging && commit ? ` That finishes bringing ${wasMerging.from} in: every clash is resolved.` : '';
     let done = false;
     if (build) {
-      done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
+      done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built
+        : build.group === LAYOUTS_GROUP.key ? shellLayoutsOf(folder.path)?.unbuilt.length === 0
+        : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
       if (done) {
         app.branches.building(entry, null);
         // Built as of this commit: a later design change makes it due again (step 10).
@@ -1470,13 +1494,18 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const group = isApp ? APP_GROUP : backlog.groups.find(g => g.key === build.group) ?? { title: build.title, routes: [], posts: [], rules: [] };
     const config = readHostConfig(folder.path);
     const stack = config && { ext: config.views, guide: config.guide };
+    // The app's layouts the group's pages render in, so the brief can name them (8c).
+    const layouts = shellLayoutsOf(folder.path);
+    const pageLayouts = layouts ? layoutsOfGroup(group).map(name => ({ name, file: layouts.links[name]?.slice(5) ?? null })) : [];
     return {
       mode: 'build',
-      systemPrompt: isApp && appOf(folder.path).existing
+      systemPrompt: build.group === LAYOUTS_GROUP.key
+        ? layoutsBuildPrompt({ shell: design, layouts: layouts?.unbuilt ?? [], app: appOf(folder.path), branch: entry.branch, references, stack, kodaPath: kodaPackage })
+        : isApp && appOf(folder.path).existing
         ? connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage })
         : isApp
         ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
-        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, designEvents: backlog.events ?? [], branch: entry.branch, references, stack, kodaPath: kodaPackage }),
+        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, designEvents: backlog.events ?? [], layouts: pageLayouts, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
     };
   };
 
@@ -1507,6 +1536,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       appOnMain,
       updateUrl: entry && `/f/${parentId}/branches/${entry.id}/update`,
       appUrl: `/f/${parentId}#app`,
+      // Where the shell's Layouts group is built, for a page waiting on it (8c).
+      shellBuildUrl: (() => { const shell = design.kind === 'shell' ? null : findShell(folder.path); return shell ? `/f/${parentId}/d/${shell.id}/build` : null; })(),
       error: null,
       ...extra,
     };
@@ -1557,13 +1588,17 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         ? 'The app is on main, but not on this design’s branch yet. Bring main into the branch first (Update from main).'
         : 'The app isn’t built yet. Build it first, from the project page.');
     }
+    // A page renders in its layout, so the shell's layouts it uses come first (8c).
+    if (group.needsLayouts?.length) {
+      return refuse(`These pages render in the shell’s ${group.needsLayouts.map(name => `“${name}”`).join(' and ')} ${group.needsLayouts.length === 1 ? 'layout' : 'layouts'}, which the app hasn’t got yet. Build the shell’s layouts first, from the shell’s Build page.`);
+    }
     if (!isApp && entry.building && entry.building.group !== key && work.some(g => g.key === entry.building.group && g.toBuild)) {
       return refuse(`This design is building ${entry.building.title} now. Groups are built one at a time.`);
     }
     if (turns.state(folder, design, null).kind !== 'idle') return refuse('The agent is working on this design. Wait for it to finish.');
     app.branches.building(entry, group);
     const connecting = isApp && appOf(folder.path).existing;
-    const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : `Build ${group.title}.`;
+    const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : group.key === LAYOUTS_GROUP.key ? 'Build the shell’s layouts.' : `Build ${group.title}.`;
     const session = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
     const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, view, onIdle: sendWaiting, ...agentContext(session) });
     if (started.error) return refuse(started.error);

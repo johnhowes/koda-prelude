@@ -100,6 +100,26 @@ export function eventLine(event, at) {
   return `When ${event.title.replace(/^./, c => c.toLowerCase())} (\`${event.name}\`), the server ${listOf(parts)}, down the page's channel.`;
 }
 
+/** The shell's Layouts group as a story (8c): its designed layouts, built into the app's. */
+export function layoutsStory({ design, shellPath, layouts }) {
+  return [
+    `# The shell's layouts: ${design.title}`,
+    '',
+    `Build the shell's layouts into the app, as designed in \`${shellPath}/layouts/\`: each is the page every feature renders in, and the app doesn't have it yet.`,
+    '',
+    '## Delivers',
+    '',
+    ...layouts.map(name => `- The \`${name}\` layout (\`${shellPath}/layouts/${name}.eta\`), with the partials and CSS it uses`),
+    '',
+    '## Acceptance criteria',
+    '',
+    `- Each is the app's own layout, element for element, and \`${shellPath}/layouts.json\` names it.`,
+    '- The app\'s existing pages still render in their layouts, regions and all.',
+    `- The shell's gallery looks like its approved screens in \`${shellPath}/snapshots/\`.`,
+    '',
+  ].join('\n');
+}
+
 /**
  * A changed group's story (step 10): only the increment - what's new, what
  * changed, what's gone - with nothing about the rest of the existing page.

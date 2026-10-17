@@ -301,6 +301,75 @@ test('a project that already has an app connects it instead of building one (8b)
 
 test('a new folder, not yet a repository: the app build makes it one, and the shell’s branch', async () => {
   // A folder someone just started designing in: no git, no stack recorded.
+test('the shell’s layouts are built before the pages that render in them (8c)', async () => {
+  // An app that exists, a shell whose layouts are a redesign it hasn't got,
+  // and a feature whose page renders in the shell's "workspace" layout.
+  const { repo, fid } = await bareRepo();
+  write(repo, 'server/views/layout.eta', '<html><body class="old"><main id="workspace"><%~ it.body %></main></body></html>');
+  createDesign(repo, { title: 'Shell', kind: 'shell' });
+  write(repo, 'prelude/shell/routes.json', { '/': { view: 'gallery/app', title: 'App layout', data: '', layout: 'workspace' } });
+  write(repo, 'prelude/shell/views/gallery/app.eta', '<p>Skeleton</p>');
+  write(repo, 'prelude/shell/layouts/app.eta', '<html><body class="designed"><%~ it.body %></body></html>');
+  write(repo, 'prelude/shell/layouts/workspace.eta', '<html><body class="fill"><main id="main"><%~ it.body %></main><aside id="drawer" ko-region></aside></body></html>');
+  write(repo, 'prelude/shell/layouts/_regions.eta', '<aside id="drawer" ko-region></aside>');
+  createDesign(repo, { title: 'Workspace', kind: 'design' });
+  write(repo, 'prelude/workspace/routes.json', {
+    '/work': { view: 'work', title: 'Work', data: '', layout: 'workspace' },
+    '/work/rules': { view: '_rules', title: 'Rules', data: '', over: '/work', in: 'drawer' },
+  });
+  write(repo, 'prelude/workspace/views/work.eta', '<p>Work</p>');
+  write(repo, 'prelude/workspace/views/_rules.eta', '<p>Rules</p>');
+  write(repo, 'prelude/prelude.json', { app: { existing: true, path: 'server', stack: 'Node and Eta' } });
+  commitAll(repo, 'An app, a redesigned shell, and a feature');
+
+  // The feature waits for the layout its page renders in.
+  const work = await (await get(`/f/${fid}/d/workspace/build`)).text();
+  assert.match(work, /Its pages render in the shell’s “workspace” layout, which the app hasn’t got yet\. <a href="\/f\/[0-9a-f]+\/d\/shell\/build">Build the shell’s layouts first<\/a>\./);
+  assert.doesNotMatch(work, /Start a build session/);
+  const early = await post(`/f/${fid}/d/workspace/builds`, { group: '/work' });
+  assert.equal(early.status, 409);
+  assert.match(await early.text(), /These pages render in the shell’s “workspace” layout, which the app hasn’t got yet\. Build the shell’s layouts first/);
+
+  // The shell's Build page has its Layouts group: the layouts, not the partials.
+  const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
+  assert.match(shellBuild, /<h2>The shell’s layouts <span class="pill">To build<\/span><\/h2>/);
+  assert.match(shellBuild, /<code>layouts\/app\.eta<\/code>[\s\S]*<code>layouts\/workspace\.eta<\/code>/);
+  assert.doesNotMatch(shellBuild, /layouts\/_regions\.eta/);
+
+  runner.turns.length = 0;
+  const started = await post(`/f/${fid}/d/shell/builds`, { group: '@layouts' });
+  assert.equal(started.status, 303, await started.text());
+  const [, wid, sid] = location(started).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
+  const shell = worktreeOf(repo, 'prelude/shell');
+  const shellDir = join(shell, 'prelude', 'shell');
+  await until(() => runner.turns.length >= 1);
+  const turn = runner.turns.at(-1);
+  assert.equal(turn.prompt, 'Build the shell’s layouts.');
+  assert.equal(turn.mode, 'build');
+  assert.match(turn.systemPrompt, /You are building the app shell's layouts into this repository's app, in server\//);
+  assert.match(turn.systemPrompt, /  - app: prelude\/shell\/layouts\/app\.eta[\s\S]*  - workspace: prelude\/shell\/layouts\/workspace\.eta/);
+  assert.match(turn.systemPrompt, /keeping what the app's pages rely on: every region they target/);
+  await settled(shellDir, sid);
+
+  // The build's work (by hand): the layouts are the app's, and linked.
+  write(shell, 'server/views/layout.eta', '<html><body class="designed"><%~ it.body %></body></html>');
+  write(shell, 'server/views/workspace.eta', '<html><body class="fill"><main id="main"><%~ it.body %></main><aside id="drawer" ko-region></aside></body></html>');
+  write(shell, 'prelude/shell/layouts.json', { app: '@app/server/views/layout', workspace: '@app/server/views/workspace' });
+  await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Ported' });
+  await settled(shellDir, sid, 2);
+  assert.doesNotMatch(await (await get(`/f/${wid}/d/shell/build`)).text(), /The shell’s layouts/, 'built: every layout is the app’s');
+  assert.equal(existsSync(join(shellDir, 'layouts', 'workspace.eta')), false, 'the shell’s copy goes');
+
+  // On the shell's branch the feature's page no longer waits, and its brief names the layout.
+  const { createBranches } = await import('../server/branches.js');
+  const entry = createBranches({ home }).forDesign(fid, 'shell');
+  assert.equal(entry.building, null, 'the Layouts build is done');
+  const { layoutsBuildPrompt, buildPrompt } = await import('../server/agent.js');
+  assert.ok(layoutsBuildPrompt);
+  assert.match(buildPrompt({ title: 'Workspace', designPath: 'prelude/workspace', group: { title: 'Work', routes: [], posts: [], rules: [] }, layouts: [{ name: 'workspace', file: 'server/views/workspace' }], branch: 'prelude/workspace' }),
+    /Its pages render in the app's "workspace" layout \(server\/views\/workspace\): a page's markup sits in that layout's main region, and its overlays land in the layout's regions/);
+});
+
   const folderPath = canonical(mkdtempSync(join(tmpdir(), 'prelude-new-')));
   const fid = await open(folderPath);
   createDesign(folderPath, { title: 'Shell', kind: 'shell' });

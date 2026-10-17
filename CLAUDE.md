@@ -130,7 +130,10 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     `app` (the stack chosen with the first design, and the app's path once
     built). The folder page's "The app" card starts the app build: a build
     session of the shell (group `@app`, `appBuildPrompt`) that creates the app
-    as its own design host. Feature builds wait until it exists. A project that
+    as its own design host. Feature builds wait until it exists. Once it does,
+    the shell's layouts not yet linked in `layouts.json` are the shell's
+    "Layouts" group (`@layouts`, plan 8c), and a feature whose pages render in
+    one waits for it. A project that
     already has an app (`app.existing`, plan 8b) connects it instead: the same
     session, briefed by `connectAppPrompt`, finds the app and changes as little
     as it can. Without a host, `app.assets` (`appAssets`) names the app's own
