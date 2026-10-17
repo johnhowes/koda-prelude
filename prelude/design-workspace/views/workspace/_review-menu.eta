@@ -9,7 +9,7 @@
     <form action="<%= it.base %>/screen" method="post" ko-target="design">
       <%~ it.keep %>
       <input type="hidden" name="surface.state" value="<%= page.state %>">
-      <button type="submit" name="surface.current" value="<%= page.path %>" <% if (page.path === it.cur?.id && page.state === it.state?.id) { %>aria-current="true"<% } %>>
+      <button type="submit" name="surface.current" value="<%= page.path %>" <% if (page.path === it.current && page.state === it.state?.id) { %>aria-current="true"<% } %>>
         <span class="item-title"><%= page.title %> · <%= page.stateTitle %></span>
         <span class="muted"><%= page.path %><% if (page.error) { %>: <%= page.error %><% } %></span>
       </button>

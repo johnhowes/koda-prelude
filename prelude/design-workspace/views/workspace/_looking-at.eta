@@ -5,9 +5,11 @@
      writes it in `lookingSize`. It reloads when the design changes, so it
      follows the page and the state as they're picked. In App mode it's the
      page in the app, with no state. */%>
-<% const s = it.surface; const cur = s && (s.screens.find(x => x.id === s.current) ?? s.screens[0]);
+<% const s = it.surface; const current = s && (s.current ?? s.screens[0]?.id);
+   const cur = s && (s.screens.find(x => x.id === current || x.records?.some(r => r.path === current)) ?? s.screens[0]);
+   const record = cur?.records?.find(r => r.path === current);
    const state = s && (s.states.find(x => x.id === s.state) ?? s.states[0]); %>
-<% if (cur) { %><span class="sr-only">Looking at </span><%= cur.title %><% if (state) { %> · <%= state.title %><% } %><span calc-text="lookingSize.value ? ' · ' + lookingSize.value : ''"></span>
-<input type="hidden" name="lookingAt.page" value="<%= cur.id %>">
+<% if (cur) { %><span class="sr-only">Looking at </span><%= cur.title %><% if (record) { %> · <%= record.label %><% } %><% if (state) { %> · <%= state.title %><% } %><span calc-text="lookingSize.value ? ' · ' + lookingSize.value : ''"></span>
+<input type="hidden" name="lookingAt.page" value="<%= current %>">
 <input type="hidden" name="lookingAt.state" value="<%= state?.id ?? '' %>">
 <input type="hidden" name="lookingAt.size" calc-value="lookingSize.value"><% } else { %>No page on show<% } %>

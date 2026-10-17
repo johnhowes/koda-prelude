@@ -92,8 +92,12 @@
             "notice": null,
             "screens": [
               { "id": "/offers", "title": "Offers", "ported": true },
-              { "id": "/offers/off-2291", "title": "Offer" },
-              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/off-2291", "title": "Offer", "pattern": "/offers/:id", "records": [
+                { "id": "off-2291", "path": "/offers/off-2291", "label": "Northwind Bank", "note": "6.49% · 60 months" },
+                { "id": "off-2307", "path": "/offers/off-2307", "label": "First Community Federal Credit Union of Greater Minneapolis", "note": "6.15% · 72 months" },
+                { "id": "off-2315", "path": "/offers/off-2315", "label": "Harbor Lending", "note": "7.05% · 48 months · expired" }
+              ] },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer", "overlay": true, "pattern": "/offers/:id/accept", "of": "/offers/:id" },
               { "id": "/offers/compare", "title": "Compare offers" }
             ],
             "current": "/offers/compare",

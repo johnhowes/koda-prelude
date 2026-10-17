@@ -41,6 +41,11 @@
   *proposed*
 - **R-n5q.** Dictation adds what was said after what’s already typed, keeping anything typed while it listened.
   *proposed*
+- **R-s8b.** A page about one record offers every record the current state has for it, in the state’s order, each by its label; an overlay on such a page opens over the record on show.
+  *shown-on: /f/:folder/d/:design @ doesnt-render*
+  *proposed*
+- **R-g4e.** Going to a URL the design doesn’t answer leaves the page on show as it was and says there’s no such page.
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.
