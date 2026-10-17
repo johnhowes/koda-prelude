@@ -1035,7 +1035,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
     const body = render('./_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }) });
     if (fragment) return send(res, 200, body);
-    return send(res, 200, render('./workspace-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, live: `${base}/live`, bare: true }));
+    return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
   }
 
   // Show a page: in every window (R-c2m), and in the state named with it, as
@@ -1150,7 +1150,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
     const body = render('./_window', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }) });
     if (fragment) return send(res, 200, body);
-    return send(res, 200, render('./workspace-layout', { body, path: url.pathname, title: `${design.title} · design`, live: `${base}/live?view=window`, bare: true }));
+    return send(res, 200, render('./window-layout', { body, path: url.pathname, title: `${design.title} · design`, layout: { live: `${base}/live?view=window` } }));
   }
 
   /**

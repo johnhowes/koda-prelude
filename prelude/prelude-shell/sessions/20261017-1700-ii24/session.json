@@ -1,0 +1,11 @@
+{
+  "title": "Build: The shell’s layouts",
+  "claudeSessionId": "037055f2-b902-47be-a1fc-bee1763de9e8",
+  "started": true,
+  "startedAt": "2026-10-17T22:00:04.949Z",
+  "updatedAt": "2026-10-17T22:06:16.318Z",
+  "build": {
+    "group": "@layouts",
+    "title": "The shell’s layouts"
+  }
+}
