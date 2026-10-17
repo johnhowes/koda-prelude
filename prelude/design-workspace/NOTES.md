@@ -195,8 +195,10 @@ the record picker, was dropped).
 The page, its drawers and modals, and their forms are the app's own views
 now (`server/views/`, the page over `_session.eta`), with the model in
 `server/workspace.js` (`DesignPage`) and the routes in `handleDesign`
-(`server/main.js`). The pop-out window is still to build; its app view
-(`_window.eta`) already shows the new surface, since the two share it.
+(`server/main.js`). The pop-out window is built too (2026-10-17):
+`_window.eta`, the shared surface in the window layout, its channel
+`…/live?view=window`, which is how the panel beside the chat knows one is
+open.
 
 Where the app differs from the screens, on purpose:
 

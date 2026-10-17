@@ -2,18 +2,15 @@
 
 - **R-7vq.** A window’s size and client are its own: the pop-out can show a phone in the mobile app while the surface beside the chat fits the panel, and changing one never changes the other.
   *shown-on: /f/:folder/d/:design/window @ popped-out*
-  *proposed*
 - **R-c2m.** The page and the state on show belong to the design, so picking either moves every window showing it.
 - **R-h9x.** Every design in a project offers the same sizes and clients: the ones its app shell declares, with Fit the panel always first.
   *shown-on: /f/:folder/d/:design @ typical*
 - **R-e5n.** A custom size takes a width and a height between 200 and 4000 pixels; anything outside that shows the page fitting the panel.
 - **R-w3j.** A design remembers one custom size, offered in every window’s size menu after the shell’s sizes; setting another replaces it.
   *shown-on: /f/:folder/d/:design/window @ popped-out*
-  *proposed*
 - **R-b6d.** A message may be images alone, with no words.
 - **R-x8f.** The agent sees every image sent with a message, and the images stay with the session, so they’re still there when it’s opened again.
   *shown-on: /f/:folder/d/:design/window @ popped-out*
-  *proposed*
 - **R-m2s.** Only images can be attached (PNG, JPEG, GIF or WebP); pasting or dropping anything else leaves the message box as it was.
 - **R-r7h.** Each message tells the agent what the person was looking at when they sent it (the page, the state, and the size and client when they aren’t the defaults), unless they turned that off for it.
   *shown-on: /f/:folder/d/:design @ typical*
