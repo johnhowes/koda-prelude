@@ -30,11 +30,19 @@
       <% if (inSession) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
   <input type="hidden" name="type" value="user">
   <input type="hidden" name="action" value="<%= action %>">
-  <ul class="attachments" ko-as="attachments" ko-region aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
+  <%/* An id, not a name: marking up an image, in the modal, sends its copy here. */%>
+  <ul class="attachments" id="attachments" ko-region aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
   <label class="sr-only" for="message">Message</label>
   <textarea id="message" name="message" ko-as="message" rows="3" required
             placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line."
-            <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="message-error"<% } %>><%= it.message ?? '' %></textarea>
+            <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="message-error"<% } %>><%= it.message ?? draft.message ?? '' %></textarea>
+  <%/* The draft: what's typed is kept with the session as it's written (a
+       moment after the person stops typing), so it's still here after a
+       reload, or after looking at another session and coming back. Its own
+       action, so the message isn't sent. Sending empties it. */%>
+  <div hidden ko-form="<%= draft.base %>/draft" ko-method="post" ko-invoke="input:message" ko-debounce="800" ko-target="draftKept">
+    <input type="hidden" name="message" calc-value="message.value">
+  </div>
   <% if (waits) { %><p class="hint" id="message-waits">The agent is working. What you send now waits, and goes when it finishes.</p><% } %>
   <div class="composer-foot">
     <div class="composer-tools">
@@ -57,6 +65,7 @@
         </label>
       </div>
       <% if (error) { %><span class="error" id="message-error"><%= error %></span><% } %>
+      <span class="muted" ko-as="draftKept" ko-region role="status"><% if (!error && draft.message) { %>Draft kept<% } %></span>
     </div>
     <button class="btn small primary" type="submit"<% if (waits) { %> aria-describedby="message-waits"<% } %>><%= waits ? 'Send when it’s done' : 'Send' %></button>
   </div>

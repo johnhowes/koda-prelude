@@ -1,13 +1,15 @@
 <%/* An image from the session, full size, in the modal: one being sent or one
      already sent. Its name heads it (and names the dialog); the image is as
      large as the window allows, whole. Open in browser shows it at its own
-     size, to zoom in. Escape or Close goes back to the chat. */%>
+     size, to zoom in; Mark up draws on a copy to send. Escape or Close goes
+     back to the chat. */%>
 <div class="stack gap-3 modal-wide">
   <h2 class="image-name"><%= it.name %></h2>
   <img class="full-image" src="<%= it.url %>" alt="<%= it.name %>">
   <div class="cluster">
     <% if (it.sent) { %><span class="muted">Sent <%= it.sent %></span><% } else { %><span class="muted">Not sent yet</span><% } %>
     <span class="spacer"></span>
+    <a class="btn small" href="<%= it.base %>/images/<%= it.id %>/markup" ko-target="modal?"><span class="icon icon-rename" aria-hidden="true"></span>Mark up</a>
     <a class="btn small ghost" href="<%= it.url %>" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
   </div>
 </div>

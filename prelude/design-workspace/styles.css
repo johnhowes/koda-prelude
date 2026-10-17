@@ -65,4 +65,12 @@
     background: var(--surface-sunken); border-radius: var(--radius-md);
   }
   .image-name { overflow-wrap: anywhere; }
+
+  /* Marking up: the canvas shows the image whole, scaled to fit, and draws
+     in the danger colour (the script reads it from here). */
+  .markup-stage { display: grid; place-items: center; background: var(--surface-sunken); border-radius: var(--radius-md); }
+  .markup-stage canvas {
+    display: block; max-inline-size: 100%; max-block-size: 60vh;
+    color: var(--danger); cursor: crosshair; touch-action: none;
+  }
 }

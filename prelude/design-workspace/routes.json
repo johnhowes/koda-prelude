@@ -4,6 +4,14 @@
   "/f/:folder/d/:design/window": { "view": "workspace/window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window", "from": "@app/server/views/_window" },
   "/f/:folder/d/:design/looking-at": { "view": "workspace/_looking-at", "data": "folders/:folder/designs/:design" },
   "/f/:folder/d/:design/images/:image": { "view": "workspace/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
+  "/f/:folder/d/:design/images/:image/markup": { "view": "workspace/_markup", "title": "Mark up an image", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
+  "POST /f/:folder/d/:design/images/:image/markup": {
+    "add": "folders/:folder/designs/:design/draft/attachments",
+    "answer": {
+      "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft",
+      "also": [{ "into": "modal?" }]
+    }
+  },
   "/f/:folder/d/:design/preview": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/screen": {
     "update": "folders/:folder/designs/:design",
@@ -56,6 +64,10 @@
   "POST /f/:folder/d/:design/queued/:queued/cancel": {
     "remove": "folders/:folder/designs/:design/queued/:queued",
     "answer": { "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/draft": {
+    "update": "folders/:folder/designs/:design/draft",
+    "answer": { "view": "workspace/_draft-kept", "data": "folders/:folder/designs/:design/draft" }
   },
   "POST /f/:folder/d/:design/attachments": {
     "add": "folders/:folder/designs/:design/draft/attachments",

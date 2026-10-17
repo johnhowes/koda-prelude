@@ -64,6 +64,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   going along that the person can leave out; struck through when off.
   Added for "Design Workspace" (prelude/design-workspace): the page on
   show, going with a message.
+- **Segmented as radios**: a `.segmented` of labels around `.sr-only`
+  radios, the checked one current, for a choice made in a form. Added for
+  "Design Workspace" (prelude/design-workspace): the drawing tools when
+  marking up an image.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

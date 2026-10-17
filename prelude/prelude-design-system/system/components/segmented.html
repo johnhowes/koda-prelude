@@ -1,7 +1,17 @@
 <!-- Segmented: two or three views of the same thing, side by side (Design or App).
      Each is a link or button; the one showing has aria-current="true". Give the
-     group a role and a name. For a setting that's on or off, use a checkbox. -->
+     group a role and a name. For a setting that's on or off, use a checkbox.
+
+     As a choice in a form (a drawing tool), each option is a label around a
+     radio, the radio .sr-only: the checked one shows as current, and the arrow
+     keys move between them as radios do. -->
 <span class="segmented" role="group" aria-label="Show">
   <a class="btn small" href="#" aria-current="true">Design</a>
   <a class="btn small" href="#">App</a>
+</span>
+
+<span class="segmented" role="radiogroup" aria-label="Draw">
+  <label class="btn small"><input class="sr-only" type="radio" name="tool" value="pen" checked>Pen</label>
+  <label class="btn small"><input class="sr-only" type="radio" name="tool" value="arrow">Arrow</label>
+  <label class="btn small"><input class="sr-only" type="radio" name="tool" value="box">Box</label>
 </span>

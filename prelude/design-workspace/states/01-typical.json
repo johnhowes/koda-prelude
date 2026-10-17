@@ -63,11 +63,12 @@
           ],
           "queued": [],
           "images": [
-            { "id": "img-4k2", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null },
-            { "id": "img-9tw", "name": "Offer card – Figma.png", "url": "/_prelude/design/assets/figma-offer-card.svg", "sent": null }
+            { "id": "img-4k2", "base": "/f/borrower-portal/d/loan-offers", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null },
+            { "id": "img-9tw", "base": "/f/borrower-portal/d/loan-offers", "name": "Offer card – Figma.png", "url": "/_prelude/design/assets/figma-offer-card.svg", "sent": null }
           ],
           "draft": {
             "base": "/f/borrower-portal/d/loan-offers",
+            "message": "Here’s how I sketched the compare page, and the offer card from Figma. Use the card for each offer, and",
             "attachments": [
               { "id": "img-4k2", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg" },
               { "id": "img-9tw", "name": "Offer card – Figma.png", "url": "/_prelude/design/assets/figma-offer-card.svg" }

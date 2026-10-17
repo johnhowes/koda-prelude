@@ -265,7 +265,11 @@
   }
   .segmented > .btn { min-height: calc(var(--control-sm) - 2 * var(--space-half)); padding-inline: var(--space-3); border-color: transparent; background: transparent; box-shadow: none; color: var(--fg-muted); }
   .segmented > .btn:hover { color: var(--fg); background: transparent; }
-  .segmented > .btn[aria-current]:not([aria-current="false"]) { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-sm); border-color: transparent; }
+  .segmented > .btn[aria-current]:not([aria-current="false"]),
+  .segmented > .btn:has(> input:checked) { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-sm); border-color: transparent; }
+  /* A choice made in a form: each option a label around a hidden radio. */
+  .segmented > label.btn { cursor: pointer; }
+  .segmented > label.btn:has(> input:focus-visible) { box-shadow: var(--ring); }
 
   /* Toolbar: a strip of small controls across the top of a panel */
   .toolbar {

@@ -28,6 +28,12 @@
   *proposed*
 - **R-9cn.** Stopping the agent sends nothing that was waiting: the waiting messages go back into the message box, to send or change.
   *proposed*
+- **R-d3v.** Each session keeps its own unsent message, words and images, until it’s sent: a reload, or going to another session and back, finds it as it was left.
+  *shown-on: /f/:folder/d/:design @ typical*
+  *proposed*
+- **R-u6p.** Marking up an image never changes it: the marked-up copy goes in the message box, in place of the original only if the original was waiting there to be sent.
+  *shown-on: /f/:folder/d/:design/images/:image/markup @ typical*
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

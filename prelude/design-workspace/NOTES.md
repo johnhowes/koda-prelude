@@ -88,6 +88,21 @@ doesn't render, building, new design, update clashed, popped out.
   shows under the transcript, dashed, with Cancel. When the turn ends they
   go together, in order, as the next message; Stop puts them back in the
   box instead (rules R-z4k, R-9cn).
+- **Waiting messages can only be cancelled**, not edited (the person,
+  2026-10-17): cancel and retype.
+- **Drafts are kept** (the person, 2026-10-17): each session's message box
+  keeps its text and images on the server, the text saved 0.8s after the
+  person stops typing (`POST …/draft`, a hidden `ko-form` part following
+  the box with a binding), so a reload or another session and back finds
+  it. "Draft kept" says so quietly. Sending empties it.
+- **Marking up an image** (the person, 2026-10-17): Mark up on the
+  full-size view opens the image on a canvas in the modal: Pen, Arrow, Box,
+  Undo, Clear, in the danger colour. "Put it in the message" adds a PNG copy
+  to the message box (in place of the original if it was waiting there);
+  the original never changes. Not a desktop-only feature: a canvas works in
+  any browser. Canvas drawing is the script; it reads the colour from CSS.
+  The tray has an id now, so the modal can aim at it. Added radio options
+  to the design system's `.segmented` for the tools.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -98,10 +113,11 @@ doesn't render, building, new design, update clashed, popped out.
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
-  rules and files; drafts kept across sessions and reloads; marking up an
-  image; capturing the preview as an image; up-arrow to edit the last
-  message; dictation.
-- Should a waiting message be editable, not only cancelled?
+  rules and files; capturing the preview as an image; up-arrow to edit the
+  last message; dictation.
+- Mark up is pointer-only. Text labels on an image? A keyboard way to mark?
+- In the design, a marked-up copy shows no thumbnail (the fake route can't
+  store the file), and Mark up on a just-uploaded image has nothing to open.
 - An image added in the preview (a real upload) has no full-size view: the
   fake route doesn't add it to the session's images.
 
