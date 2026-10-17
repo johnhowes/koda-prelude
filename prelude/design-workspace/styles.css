@@ -43,4 +43,26 @@
     border: var(--border-width) solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md);
   }
   .device-page { padding: var(--space-5); }
+
+  /* A message waiting for the agent to finish: the person's bubble, quieter,
+     with when it goes and Cancel under it. */
+  .queued { padding-block: 0 var(--space-3); }
+  .queued:empty { display: none; }
+
+  /* A sent message keeps to the right, what it was about under it. */
+  .sent { align-items: flex-end; }
+  .looked-at { display: inline-flex; align-items: center; gap: var(--space-1); }
+  .queued .bubble { opacity: 0.7; border: var(--border-width) dashed var(--accent); }
+  .queued .entry.user { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
+  .queued form { display: contents; }
+}
+
+/* The image, full size, in the modal (its own scope: the modal isn't inside
+   the page). As large as the window allows, whole. */
+@scope (.modal-wide) {
+  .full-image {
+    display: block; inline-size: 100%; max-block-size: 70vh; object-fit: contain;
+    background: var(--surface-sunken); border-radius: var(--radius-md);
+  }
+  .image-name { overflow-wrap: anywhere; }
 }

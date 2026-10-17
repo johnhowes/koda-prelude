@@ -6,17 +6,19 @@
 <% const e = it.entry; %>
 <% const show = page => include('./_show', { base: it.base, page }); %>
 <% if (e.type === 'user') { %>
+<%/* The person's message: its images above the bubble, each opening full
+     size; under it, what they were looking at when they sent it, as the
+     agent was told. */%>
 <li class="entry user">
-  <% if (e.images?.length) { %>
-  <div class="stack gap-2">
+  <div class="stack gap-1 sent">
+    <% if (e.images?.length) { %>
     <ul class="attachments" aria-label="Images">
-      <% for (const image of e.images) { %><li><a class="attachment" href="<%= image.url %>" target="_blank"><img class="thumb" src="<%= image.url %>" alt="<%= image.name %>"><span class="attachment-name"><%= image.name %></span></a></li><% } %>
+      <% for (const image of e.images) { %><li><a class="attachment" href="<%= it.base %>/images/<%= image.id %>" ko-target="modal?" title="Show it full size"><img class="thumb" src="<%= image.url %>" alt="Show <%= image.name %> full size"><span class="attachment-name"><%= image.name %></span></a></li><% } %>
     </ul>
+    <% } %>
     <% if (e.message) { %><div class="bubble"><%= e.message %></div><% } %>
+    <% if (typeof e.lookingAt === 'string') { %><span class="muted looked-at"><span class="icon icon-screen" aria-hidden="true"></span> <%= e.lookingAt %></span><% } %>
   </div>
-  <% } else { %>
-  <div class="bubble"><%= e.message %></div>
-  <% } %>
 </li>
 <% } else if (e.type === 'text') { %>
 <li class="entry agent"><div class="prose"><%~ e.html %></div></li>

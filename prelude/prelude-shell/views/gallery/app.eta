@@ -9,6 +9,7 @@
     <div class="cluster actions">
       <a class="btn" href="/gallery/drawer" ko-target="drawer?">Open the drawer</a>
       <a class="btn" href="/gallery/modal" ko-target="modal?">Open the modal</a>
+      <a class="btn" href="/gallery/modal-wide" ko-target="modal?">Open the wide modal</a>
       <a class="btn" href="/gallery/notice" ko-target="notice?">Show a notice</a>
     </div>
     <span class="skeleton block" aria-hidden="true"></span>

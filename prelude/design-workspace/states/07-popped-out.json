@@ -37,11 +37,18 @@
           "state": { "kind": "working", "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd/stop" },
           "entries": [
             { "id": 1, "type": "user", "message": "On a phone, a long lender name runs into the rate (circled). And the two offers on the compare page should stack, with the cheaper one first.", "images": [
-              { "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg" }
-            ] },
+              { "id": "img-2hd", "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg" }
+            ], "lookingAt": "Compare offers · Typical · Phone · Spark mobile app" },
             { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
             { "id": 3, "type": "text", "html": "<p>The comparison is a <code>.grid</code> already, so it stacks when narrow; the order is what needs changing. I’ll have the controller put the cheaper offer first, so the view doesn’t sort.</p>" },
             { "id": 4, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/routes.json" }
+          ],
+          "queued": [
+            { "id": "q-1", "message": "Also, the Accept button should stay in view on a phone while you scroll the comparison.", "images": 0 },
+            { "id": "q-2", "message": "Like this one, from the Figma file.", "images": 1 }
+          ],
+          "images": [
+            { "id": "img-2hd", "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg", "sent": "today at 14:03" }
           ],
           "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {

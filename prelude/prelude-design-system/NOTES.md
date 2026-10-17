@@ -60,6 +60,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   drop; the same list shows them in a sent message. The box now grows as
   the person types (`field-sizing: content`, up to 33vh). Added for "Design
   Workspace" (prelude/design-workspace).
+- **Chip** (`.chip`, `.chip-text`): a pill-shaped checkbox for something
+  going along that the person can leave out; struck through when off.
+  Added for "Design Workspace" (prelude/design-workspace): the page on
+  show, going with a message.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

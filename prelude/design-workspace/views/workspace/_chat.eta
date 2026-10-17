@@ -39,6 +39,9 @@
     <ol id="transcript" class="transcript" ko-region aria-live="polite"><%~ include('./_transcript', it) %></ol>
   </div>
 
+  <%/* Waiting to send, while the agent works. */%>
+  <ol id="queued" class="transcript queued" ko-region aria-label="Waiting to send"><%~ include('./_queued', it) %></ol>
+
   <div id="agent-status" ko-region><%~ include('./_status', it.state) %></div>
 
   <%~ include('./_composer', it) %>

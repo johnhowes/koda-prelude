@@ -2,6 +2,8 @@
   "/f/:folder/d/:design": { "view": "workspace/page", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace", "from": "@app/server/views/_session" },
   "/f/:folder/d/:design/about": { "view": "workspace/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "/f/:folder/d/:design/window": { "view": "workspace/window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window", "from": "@app/server/views/_window" },
+  "/f/:folder/d/:design/looking-at": { "view": "workspace/_looking-at", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/images/:image": { "view": "workspace/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
   "/f/:folder/d/:design/preview": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/screen": {
     "update": "folders/:folder/designs/:design",
@@ -41,6 +43,19 @@
       "view": "workspace/_composer", "data": "folders/:folder/designs/:design",
       "also": [{ "into": "transcript", "view": "workspace/_transcript", "data": "folders/:folder/designs/:design" }]
     }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/queue": {
+    "add": "folders/:folder/designs/:design/queued",
+    "require": ["message"],
+    "form": "workspace/_composer",
+    "answer": {
+      "view": "workspace/_composer", "data": "folders/:folder/designs/:design",
+      "also": [{ "into": "queued", "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }]
+    }
+  },
+  "POST /f/:folder/d/:design/queued/:queued/cancel": {
+    "remove": "folders/:folder/designs/:design/queued/:queued",
+    "answer": { "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/attachments": {
     "add": "folders/:folder/designs/:design/draft/attachments",

@@ -44,7 +44,7 @@
           "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
           "state": { "kind": "idle" },
           "entries": [
-            { "id": 1, "type": "user", "message": "Let’s show each offer’s monthly payment beside its rate, and let the borrower compare two offers side by side." },
+            { "id": 1, "type": "user", "message": "Let’s show each offer’s monthly payment beside its rate, and let the borrower compare two offers side by side.", "lookingAt": "Offers · Typical" },
             { "id": 2, "type": "text", "html": "<p>I’ll add the monthly payment to each offer’s row, and a <strong>Compare offers</strong> page that takes two offers.</p>" },
             { "id": 3, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/NOTES.md" },
             { "id": 4, "type": "tool", "name": "Write", "summary": "prelude/loan-offers/views/offers/_row.eta" },
@@ -54,12 +54,17 @@
             { "id": 8, "type": "text", "html": "<p>Each row now shows the monthly payment under the APR, and <code>/offers/compare</code> puts two offers side by side, with the total cost of each. With no offers, Compare isn’t offered.</p><p>Should the comparison also show what each costs over its whole term, or only per month?</p>" },
             { "id": 9, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
             { "id": 10, "type": "note", "text": "Committed to prelude/loan-offers (4e1a9c2)." },
-            { "id": 11, "type": "user", "message": "Over the whole term too. And make the cheaper offer stand out." },
+            { "id": 11, "type": "user", "message": "Over the whole term too. And make the cheaper offer stand out.", "lookingAt": "Compare offers · Typical · Phone" },
             { "id": 12, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/compare.eta" },
             { "id": 13, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/NOTES.md" },
             { "id": 14, "type": "text", "html": "<p>The comparison now shows the total cost over each term, and the cheaper offer carries a <em>Lower total cost</em> pill. I kept the accent for the Accept button, as the system asks.</p>" },
             { "id": 15, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
             { "id": 16, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." }
+          ],
+          "queued": [],
+          "images": [
+            { "id": "img-4k2", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null },
+            { "id": "img-9tw", "name": "Offer card – Figma.png", "url": "/_prelude/design/assets/figma-offer-card.svg", "sent": null }
           ],
           "draft": {
             "base": "/f/borrower-portal/d/loan-offers",

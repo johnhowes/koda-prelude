@@ -71,6 +71,23 @@ doesn't render, building, new design, update clashed, popped out.
   reads them (the CLI's Read takes images). Paste and drop are the one
   script: moving a File into the upload's input. The box grows as you type.
   Components (`.attachments` …) went into the design system.
+- **A thumbnail opens its image full size** (the person, 2026-10-17), in
+  the modal (`/images/:image`), whether it's waiting to send or sent; Open
+  in browser for its own size. Added a wide modal to the shell
+  (`.modal-wide`) for it.
+- **What you're looking at goes with the message** (the person,
+  2026-10-17): a chip at the box's foot, "Compare offers · Typical ·
+  Phone", on by default, off for a message about something else. Page and
+  state come from the server and follow the design (`/looking-at`, reloaded
+  on `design-changed`); the size and client are the surface beside the
+  chat's, written by it in `#lookingSize` and read with a binding, and left
+  out at Fit and Browser. A sent message shows what it was about under
+  its bubble. Added `.chip` to the design system.
+- **Messages wait while the agent works** (the person, 2026-10-17): the
+  box stays open, Send says "Send when it's done", and each waiting message
+  shows under the transcript, dashed, with Cancel. When the turn ends they
+  go together, in order, as the next message; Stop puts them back in the
+  box instead (rules R-z4k, R-9cn).
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -80,9 +97,13 @@ doesn't render, building, new design, update clashed, popped out.
 
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
-- What else to add to the message box: see the proposals in the session of
-  2026-10-17 (the page on show as context, mentions, queueing while the
-  agent works, drafts kept, marking up an image).
+- Not taken on yet for the message box: @ mentions of pages, states,
+  rules and files; drafts kept across sessions and reloads; marking up an
+  image; capturing the preview as an image; up-arrow to edit the last
+  message; dictation.
+- Should a waiting message be editable, not only cancelled?
+- An image added in the preview (a real upload) has no full-size view: the
+  fake route doesn't add it to the session's images.
 
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).

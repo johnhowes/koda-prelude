@@ -2,6 +2,7 @@
   "/gallery": { "view": "gallery/app", "title": "App layout", "data": "" },
   "/gallery/drawer": { "view": "gallery/_drawer", "title": "App layout, with the drawer", "data": "", "over": "/gallery", "in": "drawer" },
   "/gallery/modal": { "view": "gallery/_modal", "title": "App layout, with the modal", "data": "", "over": "/gallery", "in": "modal" },
+  "/gallery/modal-wide": { "view": "gallery/_modal-wide", "title": "App layout, with the wide modal", "data": "", "over": "/gallery", "in": "modal" },
   "/gallery/notice": { "view": "gallery/_notice", "title": "App layout, with a notice", "data": "", "over": "/gallery", "in": "notice" },
   "/gallery/workspace": { "view": "gallery/workspace", "title": "Workspace layout", "data": "", "layout": "workspace" },
   "/gallery/window": { "view": "gallery/window", "title": "Window layout", "data": "", "layout": "window" }

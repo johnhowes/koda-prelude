@@ -47,6 +47,13 @@
    const keep = include('./_keep', here);
    const windowName = `prelude-${it.folder.id}-${it.id}`; %>
 <section id="design" class="panel design<%= popped ? ' popped' : '' %>" aria-label="Design" ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
+  <%/* How the surface beside the chat is looking, for the message box's
+       "looking at" chip: its size and client, when they aren't the
+       defaults. Only this window's; a pop-out's are its own. */%>
+  <% if (view === 'inline') { %>
+  <% const looking = popped ? [] : [size.width ? (size.id === 'custom' ? `${size.width} × ${size.height}` : size.title) : null, client.id === s.clients[0].id ? null : client.title].filter(Boolean); %>
+  <input type="hidden" id="lookingSize" value="<%= looking.join(' · ') %>">
+  <% } %>
   <div class="toolbar">
     <% if (s.app) { %>
     <span class="segmented" role="group" aria-label="Show">

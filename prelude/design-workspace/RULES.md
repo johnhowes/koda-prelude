@@ -20,6 +20,14 @@
   *proposed*
 - **R-m2s.** Only images can be attached (PNG, JPEG, GIF or WebP); pasting or dropping anything else leaves the message box as it was.
   *proposed*
+- **R-r7h.** Each message tells the agent what the person was looking at when they sent it (the page, the state, and the size and client when they aren’t the defaults), unless they turned that off for it.
+  *shown-on: /f/:folder/d/:design @ typical*
+  *proposed*
+- **R-z4k.** Messages sent while the agent is working wait, and go to it together, in the order they were written, when its turn ends.
+  *shown-on: /f/:folder/d/:design @ building*
+  *proposed*
+- **R-9cn.** Stopping the agent sends nothing that was waiting: the waiting messages go back into the message box, to send or change.
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

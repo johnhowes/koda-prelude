@@ -8,13 +8,24 @@
      posts the tray's ids with the message; the agent is told where each
      image is, and reads it.
 
+     The chip at its foot says what the person is looking at - the page and
+     state on show, and the size beside the chat when it isn't Fit - and
+     posts it with the message, so "this" means something to the agent. It's
+     on unless they turn it off, for a message about something else.
+
+     While the agent works, the box still takes a message: it waits under
+     the transcript and goes when the turn ends (Send says so).
+
      A refused message comes back with only what was posted, so the form
      carries its own action: the design's fake POST routes need it, where
-     the app re-renders from the session it already has. */%>
+     the app re-renders from the session it already has. In the design a
+     waiting message posts to …/queue; the app takes both at …/messages. */%>
 <% const design = it.folder ? `/f/${it.folder.id}/d/${it.id}` : '';
-   const action = it.action || (it.session ? `${design}/sessions/${it.session.id}/messages` : `${design}/sessions`);
-   const inSession = action.endsWith('/messages'); const error = it.$errors?.message;
-   const draft = it.draft ?? { base: action.replace(/\/sessions(\/[^/]+\/messages)?$/, ''), attachments: [] }; %>
+   const working = it.state?.kind === 'working';
+   const action = it.action || (it.session ? `${design}/sessions/${it.session.id}/${working ? 'queue' : 'messages'}` : `${design}/sessions`);
+   const inSession = /\/(messages|queue)$/.test(action); const waits = action.endsWith('/queue'); const error = it.$errors?.message;
+   const base = action.replace(/\/sessions(\/[^/]+\/(messages|queue))?$/, '');
+   const draft = it.draft ?? { base, attachments: [] }; %>
 <form class="composer" action="<%= action %>" method="post" ko-item
       <% if (inSession) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
   <input type="hidden" name="type" value="user">
@@ -24,8 +35,19 @@
   <textarea id="message" name="message" ko-as="message" rows="3" required
             placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line."
             <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="message-error"<% } %>><%= it.message ?? '' %></textarea>
+  <% if (waits) { %><p class="hint" id="message-waits">The agent is working. What you send now waits, and goes when it finishes.</p><% } %>
   <div class="composer-foot">
     <div class="composer-tools">
+      <%/* On by default; turning it off posts "false", so the agent isn't
+           told. The words follow the design (event:design-changed). */%>
+      <% if (!it.surface || it.surface.screens.length) { %>
+      <input type="hidden" name="lookingAt.include" value="false">
+      <label class="chip" title="Tells the agent which page you mean. Turn it off for a message about something else.">
+        <input type="checkbox" name="lookingAt.include" value="true" <%= it.lookingAt?.include === 'false' ? '' : 'checked' %>>
+        <span class="icon icon-screen" aria-hidden="true"></span>
+        <span class="chip-text" ko-source="<%= base %>/looking-at" ko-invoke="<%= it.surface ? '' : 'load ' %>event:design-changed"><% if (it.surface) { %><%~ include('./_looking-at', it) %><% } %></span>
+      </label>
+      <% } %>
       <%/* Uploads on its own, into the tray: a part of the form with its
            own action, so the message isn't sent with it. */%>
       <div ko-form="<%= draft.base %>/attachments" ko-method="post" ko-invoke="change" ko-target="attachments">
@@ -36,7 +58,7 @@
       </div>
       <% if (error) { %><span class="error" id="message-error"><%= error %></span><% } %>
     </div>
-    <button class="btn small primary" type="submit">Send</button>
+    <button class="btn small primary" type="submit"<% if (waits) { %> aria-describedby="message-waits"<% } %>><%= waits ? 'Send when it’s done' : 'Send' %></button>
   </div>
   <script type="koda">
     // Two things no binding or trigger expresses: Enter to send, and taking
