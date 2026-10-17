@@ -1,9 +1,15 @@
 <%/* The message box. In a session it answers with itself (cleared, or with
-     the refusal); for a new session the answer is the new session's page. */%>
-<% const base = `/f/${it.folder.id}/d/${it.id}`; const action = it.session ? `${base}/sessions/${it.session.id}/messages` : `${base}/sessions`; const error = it.$errors?.message; %>
+     the refusal); for a new session the answer is the new session's page.
+
+     A refused message comes back with only what was posted, so the form
+     carries its own action: the design's fake POST routes need it, where
+     the app re-renders from the session it already has. */%>
+<% const action = it.action ?? (it.session ? `/f/${it.folder.id}/d/${it.id}/sessions/${it.session.id}/messages` : `/f/${it.folder.id}/d/${it.id}/sessions`);
+   const inSession = action.endsWith('/messages'); const error = it.$errors?.message; %>
 <form class="composer" action="<%= action %>" method="post" ko-item
-      <% if (it.session) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
+      <% if (inSession) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
   <input type="hidden" name="type" value="user">
+  <input type="hidden" name="action" value="<%= action %>">
   <label class="sr-only" for="message">Message</label>
   <textarea id="message" name="message" ko-as="message" rows="3" required
             placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."

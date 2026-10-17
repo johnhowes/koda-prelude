@@ -45,6 +45,9 @@ doesn't render, building, new design, update clashed, popped out.
   nothing visible; it matters for Landing Page's Open a project (Choose…).
 - **The design's forms post dotted fields** (`surface.current`,
   `surface.state`) so the preview works; the app posts `screen` and `state`.
+  The composer posts hidden `type` and `action` for the same reason: a
+  refused message re-renders from the posted fields alone, so the form must
+  carry its own action. The app's composer posts only `message`.
 
 ## Open questions
 
