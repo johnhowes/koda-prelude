@@ -42,6 +42,9 @@ export function createLive() {
       for (const res of channels.get(key) ?? []) write(res, message);
     },
 
+    /** How many pages are subscribed to `key`. */
+    listening: key => channels.get(key)?.size ?? 0,
+
     closeAll() {
       for (const subscribers of channels.values()) for (const res of subscribers) res.end();
       channels.clear();

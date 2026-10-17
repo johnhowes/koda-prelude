@@ -217,4 +217,31 @@
   .build-routes, .build-rules { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
   .build-group details, .in-progress details { margin-block: var(--space-2); }
   .build-group .story, .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+
+  /* The bar's count of what needs the person (R-z3g). */
+  .waiting { display: flex; }
+
+  /* The modal (ko-target="modal?"): its region beside its Close, as the
+     shell draws it. Hidden while empty: closed. */
+  .modal-dialog { inline-size: min(34rem, 100% - 2 * var(--space-5)); padding: var(--space-5); }
+  .modal-dialog[open] { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: var(--space-3); }
+  .modal-dialog > [ko-region] { grid-area: 1 / 1; }
+  .modal-dialog > [ko-region]:focus-visible { box-shadow: none; outline: none; }
+  .modal-dialog > .icon-btn { grid-area: 1 / 2; }
+
+  /* Pages ported from a design hold their own width (.center); the page gives
+     them room above and below, as the shell does. */
+  main > .center { padding-block: var(--space-8); }
+}
+
+/* Home's own rules (prelude/landing-page): what the design system can't say. */
+@scope (.home) {
+  /* A folder's path is one long word; let it wrap rather than push the card. */
+  .project-path { overflow-wrap: anywhere; }
+
+  /* First run: the steps after opening a project, a row across the empty
+     page, each centred under its icon. */
+  .first-run-steps { align-self: stretch; list-style: none; padding: 0; }
+  .first-run-steps > li { align-items: center; }
+  .first-run-steps strong { color: var(--fg-muted); }
 }

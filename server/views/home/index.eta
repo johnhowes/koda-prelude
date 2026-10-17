@@ -1,0 +1,5 @@
+<%/* Home: what needs the person across their projects, and where they left
+     off. The page comes at once with the recent projects' names; what needs
+     them, and what's in each project, load into their regions on their own,
+     since each means reading every project's branches. */%>
+<%~ include('./_home', { ...it, load: true }) %>
