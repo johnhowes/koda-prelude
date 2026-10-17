@@ -444,7 +444,21 @@ export async function handleDesignHost(req, res, app, host) {
 
   const query = Object.fromEntries(url.searchParams.entries());
   const answer = await renderPath(app, { folder, design, designDir, path, query, fragment, stateId: state?.id ?? null, dataset });
-  return sendHtml(res, answer.status, answer.html);
+  return sendHtml(res, answer.status, fragment ? answer.html : withClient(answer.html));
+}
+
+/**
+ * A client (prelude/design-workspace, R-4tw) is attributes on the page's
+ * root: the design surface's frame names them in its name
+ * ("prelude-client:{…}"), which stays with the frame as links in it are
+ * followed, and each page sets them before it paints. Only on the design's
+ * origin, as served: what's rendered for the check is untouched.
+ */
+const CLIENT_SCRIPT = '<script>(()=>{const m=/^prelude-client:(\\{.*\\})$/.exec(window.name);if(!m)return;try{for(const[k,v]of Object.entries(JSON.parse(m[1])))document.documentElement.setAttribute(k,String(v))}catch{}})()</script>';
+
+function withClient(html) {
+  const head = /<head(\s[^>]*)?>/i.exec(html);
+  return head ? html.slice(0, head.index + head[0].length) + CLIENT_SCRIPT + html.slice(head.index + head[0].length) : html;
 }
 
 /**

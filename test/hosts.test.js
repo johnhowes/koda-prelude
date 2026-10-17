@@ -133,16 +133,16 @@ test('once approved, it starts, renders through the host, and serves the app’s
 test('the real app in the design surface (10.8): Design or App, the same screen, each window its own', async () => {
   // The app is built here (its host is the repository's own), so the switch shows.
   const design = await (await get(`/f/${fid}/d/loans/preview?view=inline`)).text();
-  assert.match(design, /<a class="btn small ghost" href="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline" ko-target="design" aria-current="true"[^>]*>Design<\/a>/);
+  assert.match(design, /<a class="btn small" href="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design" aria-current="true"[^>]*>Design<\/a>/);
   assert.match(design, new RegExp(`<iframe title="Loans" src="http://loans\\.${fid}\\.preview\\.localhost:${port}/loans`));
 
   const app = await (await get(`/f/${fid}/d/loans/preview?view=inline&mode=app`)).text();
-  assert.match(app, /href="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline&amp;mode=app" ko-target="design" aria-current="true"[^>]*>App<\/a>/);
+  assert.match(app, /href="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline&amp;mode=app&amp;size=fit&amp;client=browser" ko-target="design" aria-current="true"[^>]*>App<\/a>/);
   assert.match(app, new RegExp(`<iframe title="Loans \\(the app\\)" src="http://localhost:${hostPort}/loans"></iframe>`), 'the app itself, at the same path');
   assert.match(app, /The app, with its own data/);
   assert.doesNotMatch(app, /Approve these screens|Approve again/, 'the design’s states and approval step aside');
-  assert.match(app, /ko-source="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline&amp;mode=app"/, 'the mode is in the surface’s URL, so the window keeps it');
-  assert.match(app, /<input type="hidden" name="mode" value="app">/, 'and its forms carry it');
+  assert.match(app, /ko-source="\/f\/[0-9a-f]+\/d\/loans\/preview\?view=inline&amp;mode=app&amp;size=fit&amp;client=browser"/, 'the mode is in the surface’s URL, so the window keeps it');
+  assert.match(app, /<input type="hidden" name="surface\.mode" value="app">/, 'and its forms carry it');
 
   // Picking a screen in App mode stays in App mode.
   const picked = await fetch(`${base}/f/${fid}/d/loans/screen`, { method: 'POST', headers: { 'x-koda-fragment': '1' }, body: new URLSearchParams({ view: 'inline', mode: 'app', screen: '/loans' }) });

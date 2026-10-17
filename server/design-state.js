@@ -78,6 +78,41 @@ export function createDesignState({ live }) {
       return true;
     },
 
+    /**
+     * A state's file changed while forms had changed its data (R-a6x): the
+     * changes go, so the pages read the file as it is now, and the design
+     * bar says so once - in the window that shows the design next. The files'
+     * change is announced by whoever saw it.
+     */
+    dropCopy(key, notice) {
+      of(key).copy = null;
+      of(key).reset = notice;
+    },
+    takeReset(key) {
+      const notice = of(key).reset ?? null;
+      of(key).reset = null;
+      return notice;
+    },
+
+    /**
+     * The design's custom size, one, replacing the last (R-w3j): every window
+     * offers it after the shell's sizes. Which size a window shows is its own.
+     */
+    custom: key => of(key).custom ?? null,
+    setCustom(key, size) {
+      of(key).custom = size;
+      announce(key);
+    },
+
+    /**
+     * The session the chat shows ("new" before one starts): where Answer,
+     * Start with this, a capture or a marked-up image put their message.
+     */
+    session: key => of(key).session ?? null,
+    showSession(key, sessionId) {
+      of(key).session = sessionId;
+    },
+
     /** A pop-out window opened; returns what to call when it closes. */
     windowOpened(key) {
       of(key).windows++;

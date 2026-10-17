@@ -14,9 +14,11 @@ export function createLive() {
   return {
     /**
      * Start an event stream on `res`, send `initial` messages, then keep it
-     * subscribed to `key`. `onClose` runs when the page goes away.
+     * subscribed to `key` - or to each of several keys, so one page has one
+     * channel. `onClose` runs when the page goes away.
      */
     open(key, req, res, initial = [], { onClose = () => {} } = {}) {
+      const keys = [key].flat();
       res.writeHead(200, {
         'content-type': 'text/event-stream; charset=utf-8',
         'cache-control': 'no-store',
@@ -26,14 +28,18 @@ export function createLive() {
       res.write(': open\n\n');
       for (const message of initial) write(res, message);
 
-      if (!channels.has(key)) channels.set(key, new Set());
-      channels.get(key).add(res);
+      for (const one of keys) {
+        if (!channels.has(one)) channels.set(one, new Set());
+        channels.get(one).add(res);
+      }
       const keepAlive = setInterval(() => res.write(': ping\n\n'), 25000);
 
       req.on('close', () => {
         clearInterval(keepAlive);
-        channels.get(key)?.delete(res);
-        if (channels.get(key)?.size === 0) channels.delete(key);
+        for (const one of keys) {
+          channels.get(one)?.delete(res);
+          if (channels.get(one)?.size === 0) channels.delete(one);
+        }
         onClose();
       });
     },

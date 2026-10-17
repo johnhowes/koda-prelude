@@ -1,0 +1,123 @@
+<%/* The drawer behind the header's branch button: everything about the design
+     that the page used to stack above the work. Its branch in full (the
+     check, how it stands against main, the app on it, what it changes
+     outside the design, and finishing it), then what it uses, then what the
+     agent can read. */%>
+<% const w = it.branch; const home = it.folder.parentId ?? it.folder.id; const finish = w && `/f/${home}/branches/${w.id}`; const back = `/f/${it.folder.id}/d/${it.id}`; %>
+<div class="stack gap-6">
+  <div class="stack gap-1">
+    <h2><%= it.title %></h2>
+    <p class="secondary"><%= it.kind === 'system' ? 'The project’s design system. Every other design here uses it.' : it.kind === 'shell' ? 'The app’s shell: its layouts. Every other design here renders in it.' : `A design in ${it.folder.name}.` %></p>
+  </div>
+
+  <% if (w) { %>
+  <section class="stack gap-3" aria-labelledby="about-branch">
+    <h3 class="group-label" id="about-branch">Branch</h3>
+    <p>Works on <code><%= w.branch %></code><% if (w.building) { %>, building <%= w.building.title %><% } %>.</p>
+    <ul class="list">
+      <li class="item">
+        <span class="icon icon-done" aria-hidden="true"></span>
+        <span class="item-text">
+          <% if (w.check === 'passing') { %><span>Its check passes.</span><span class="muted">Every page renders in every state.</span>
+          <% } else if (w.check === 'failing') { %><span><%= w.failures === 1 ? '1 page doesn’t' : `${w.failures} pages don’t` %> render yet.</span><span class="muted">The agent is told with your next message.</span>
+          <% } else if (w.check === 'waiting') { %><span>Not checked: its design host needs your approval.</span><span class="muted">Approve it in the design bar.</span>
+          <% } else { %><span>Not checked yet.</span><span class="muted">Prelude checks the pages after each turn.</span><% } %>
+        </span>
+      </li>
+      <li class="item">
+        <span class="icon icon-history" aria-hidden="true"></span>
+        <span class="item-text">
+          <% if (w.behind) { %><span><%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %>.</span><span class="muted">Update from <%= w.into %> to carry on from what’s there now.</span>
+          <% } else { %><span>Up to date with <%= w.into %>.</span><% } %>
+          <% if (!w.worked) { %><span class="muted">Nothing done on it yet.</span><% } %>
+        </span>
+      </li>
+      <% if (w.running) { %>
+      <li class="item">
+        <span class="icon icon-run" aria-hidden="true"></span>
+        <span class="item-text">
+          <% if (w.running.running) { %><span>The app on this branch is running at <code><%= w.running.url %></code>.</span><span class="muted">With its own data, not the design’s states.</span>
+          <% } else if (w.running.approved) { %><span>The app on this branch isn’t running.</span><span class="muted">Starting it stops another branch’s app at <%= w.running.url %>.</span>
+          <% } else { %><span>The app on this branch isn’t running.</span><span class="muted">Its design host needs your approval first, in the design bar.</span><% } %>
+        </span>
+        <% if (w.running.running) { %>
+        <a class="btn small ghost" href="<%= w.running.open %>" target="_blank">Open<span class="icon icon-external" aria-hidden="true"></span></a>
+        <% } else if (w.running.approved) { %>
+        <form action="<%= w.running.start %>" method="post">
+          <input type="hidden" name="back" value="<%= back %>">
+          <button class="btn small" type="submit">Start it</button>
+        </form>
+        <% } %>
+      </li>
+      <% } %>
+      <% if (w.alsoChanges?.length) { %>
+      <li class="item">
+        <span class="icon icon-document" aria-hidden="true"></span>
+        <span class="item-text">
+          <span>Also changes, outside the design:</span>
+          <span class="secondary"><% for (const [i, path] of w.alsoChanges.slice(0, 6).entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %><%= w.alsoChanges.length > 6 ? `, and ${w.alsoChanges.length - 6} more` : '' %></span>
+        </span>
+      </li>
+      <% } %>
+    </ul>
+    <% if (w.error) { %><div class="notice danger" role="alert"><p><%= w.error %></p></div><% } %>
+    <% if (w.merging?.unresolved?.length) { %>
+    <div class="notice danger" role="alert">
+      <p><%= w.merging.from %> is half brought in. Send the agent a message and it resolves the clash first; nothing is committed until it has.</p>
+      <div class="cluster actions">
+        <form action="<%= finish %>/abandon" method="post">
+          <input type="hidden" name="back" value="<%= back %>">
+          <button class="btn small ghost" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
+        </form>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="cluster actions">
+      <% if (w.behind) { %>
+      <form action="<%= finish %>/update" method="post">
+        <input type="hidden" name="back" value="<%= back %>">
+        <button class="btn small" type="submit" title="Merge <%= w.into %> into this branch, so it carries on from what’s there now.">Update from <%= w.into %></button>
+      </form>
+      <% } %>
+      <% if (w.worked) { %>
+      <form action="<%= finish %>/<%= w.remote ? 'publish' : 'merge' %>" method="post">
+        <input type="hidden" name="back" value="<%= back %>">
+        <button class="btn small<%= w.check === 'passing' ? ' primary' : '' %>" type="submit"
+                title="<%= w.remote ? `Push ${w.branch} and open a pull request into ${w.into}. Prelude asks first.` : `Merge ${w.branch} into ${w.into}: the design and anything built, together. Its worktree and branch are tidied up after.` %>"><%= w.remote ? 'Push and open a pull request…' : `Merge into ${w.into}` %></button>
+      </form>
+      <% } %>
+    </div>
+    <% } %>
+  </section>
+  <% } else if (it.merged) { %>
+  <section class="stack gap-2" aria-labelledby="about-branch">
+    <h3 class="group-label" id="about-branch">Branch</h3>
+    <p class="secondary">Its branch, <code><%= it.merged.branch %></code>, was merged into <%= it.merged.into %> <%= it.merged.when %>. Its worktree and branch were tidied up.</p>
+  </section>
+  <% } %>
+
+  <% if (it.system || it.shell) { %>
+  <section class="stack gap-2" aria-labelledby="about-uses">
+    <h3 class="group-label" id="about-uses">Uses</h3>
+    <ul class="list">
+      <% if (it.system) { %>
+      <li><a class="item" href="/f/<%= home %>/d/<%= it.system.id %>"><span class="icon icon-design-system" aria-hidden="true"></span><span class="item-text"><span class="item-title"><%= it.system.title %></span><span class="muted">Its design system</span></span></a></li>
+      <% } %>
+      <% if (it.shell) { %>
+      <li><a class="item" href="/f/<%= home %>/d/<%= it.shell.id %>"><span class="icon icon-screen" aria-hidden="true"></span><span class="item-text"><span class="item-title"><%= it.shell.title %></span><span class="muted">The app shell its pages render in</span></span></a></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+
+  <section class="stack gap-2" aria-labelledby="about-reading">
+    <h3 class="group-label" id="about-reading">What the agent can read</h3>
+    <ul class="list">
+      <li class="item"><span class="icon icon-folder" aria-hidden="true"></span><span class="item-text"><span>This repository</span></span></li>
+      <% for (const reference of it.references ?? []) { %>
+      <li class="item"><span class="icon icon-folder" aria-hidden="true"></span><span class="item-text"><span><%= reference.name %></span><span class="muted"><%= reference.path %></span></span></li>
+      <% } %>
+    </ul>
+    <p><a href="/f/<%= home %>#reading">Change what it can read</a></p>
+  </section>
+</div>

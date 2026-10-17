@@ -1,120 +1,120 @@
 {
-  "/f/:folder/d/:design": { "view": "workspace/page", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace", "from": "@app/server/views/_session" },
-  "/f/:folder/d/:design/about": { "view": "workspace/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
-  "/f/:folder/d/:design/rules": { "view": "workspace/_rules", "title": "Rules", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
-  "/f/:folder/d/:design/questions": { "view": "workspace/_questions", "title": "Open questions", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design": { "view": "@app/server/views/_session", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace" },
+  "/f/:folder/d/:design/about": { "view": "@app/server/views/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design/rules": { "view": "@app/server/views/_rules", "title": "Rules", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design/questions": { "view": "@app/server/views/_questions", "title": "Open questions", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "POST /f/:folder/d/:design/start": {
     "update": "folders/:folder/designs/:design/draft",
-    "answer": { "view": "workspace/_answering", "data": "folders/:folder/designs/:design/draft" }
+    "answer": { "view": "@app/server/views/_answering", "data": "folders/:folder/designs/:design/draft" }
   },
   "POST /f/:folder/d/:design/questions/:question/answer": {
     "update": "folders/:folder/designs/:design/draft",
-    "answer": { "view": "workspace/_answering", "data": "folders/:folder/designs/:design/draft" }
+    "answer": { "view": "@app/server/views/_answering", "data": "folders/:folder/designs/:design/draft" }
   },
   "/f/:folder/d/:design/window": { "view": "workspace/window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window", "from": "@app/server/views/_window" },
-  "/f/:folder/d/:design/looking-at": { "view": "workspace/_looking-at", "data": "folders/:folder/designs/:design" },
-  "/f/:folder/d/:design/images/:image": { "view": "workspace/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
-  "/f/:folder/d/:design/images/:image/markup": { "view": "workspace/_markup", "title": "Mark up an image", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
+  "/f/:folder/d/:design/looking-at": { "view": "@app/server/views/_looking-at", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/images/:image": { "view": "@app/server/views/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
+  "/f/:folder/d/:design/images/:image/markup": { "view": "@app/server/views/_markup", "title": "Mark up an image", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
   "POST /f/:folder/d/:design/images/:image/markup": {
     "add": "folders/:folder/designs/:design/draft/attachments",
     "answer": {
-      "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft",
+      "view": "@app/server/views/_attachments", "data": "folders/:folder/designs/:design/draft",
       "also": [{ "into": "modal?" }]
     }
   },
-  "/f/:folder/d/:design/preview": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/preview": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/screen": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/state": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/size": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/reset": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/approve": {
     "remove": "folders/:folder/designs/:design/surface/review",
-    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/events": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "workspace/_event-sent", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_event-sent", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/sessions": {
     "update": "folders/:folder/designs/:design",
     "require": ["message"],
-    "form": "workspace/_composer",
+    "form": "@app/server/views/_composer",
     "answer": { "redirect": "/f/:folder/d/:design" }
   },
   "POST /f/:folder/d/:design/sessions/:session/messages": {
     "add": "folders/:folder/designs/:design/entries",
     "require": ["message"],
-    "form": "workspace/_composer",
+    "form": "@app/server/views/_composer",
     "answer": {
-      "view": "workspace/_composer", "data": "folders/:folder/designs/:design",
-      "also": [{ "into": "transcript", "view": "workspace/_transcript", "data": "folders/:folder/designs/:design" }]
+      "view": "@app/server/views/_composer", "data": "folders/:folder/designs/:design",
+      "also": [{ "into": "transcript", "view": "@app/server/views/_transcript", "data": "folders/:folder/designs/:design" }]
     }
   },
   "POST /f/:folder/d/:design/sessions/:session/queue": {
     "add": "folders/:folder/designs/:design/queued",
     "require": ["message"],
-    "form": "workspace/_composer",
+    "form": "@app/server/views/_composer",
     "answer": {
-      "view": "workspace/_composer", "data": "folders/:folder/designs/:design",
-      "also": [{ "into": "queued", "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }]
+      "view": "@app/server/views/_composer", "data": "folders/:folder/designs/:design",
+      "also": [{ "into": "queued", "view": "@app/server/views/_queued", "data": "folders/:folder/designs/:design" }]
     }
   },
   "POST /f/:folder/d/:design/queued/:queued/cancel": {
     "remove": "folders/:folder/designs/:design/queued/:queued",
-    "answer": { "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_queued", "data": "folders/:folder/designs/:design" }
   },
-  "/f/:folder/d/:design/draft": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" },
+  "/f/:folder/d/:design/draft": { "view": "@app/server/views/_attachments", "data": "folders/:folder/designs/:design/draft" },
   "POST /f/:folder/d/:design/capture": {
     "add": "folders/:folder/designs/:design/draft/attachments",
     "answer": {
-      "view": "workspace/_captured", "data": "folders/:folder/designs/:design/draft/attachments/:new",
-      "also": [{ "into": "attachments?", "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }]
+      "view": "@app/server/views/_captured", "data": "folders/:folder/designs/:design/draft/attachments/:new",
+      "also": [{ "into": "attachments?", "view": "@app/server/views/_attachments", "data": "folders/:folder/designs/:design/draft" }]
     }
   },
-  "/f/:folder/d/:design/dictation": { "view": "workspace/_dictation-ask", "title": "Turn on dictation", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "modal" },
-  "/f/:folder/d/:design/dictation/button": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/dictation": { "view": "@app/server/views/_dictation-ask", "title": "Turn on dictation", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "modal" },
+  "/f/:folder/d/:design/dictation/button": { "view": "@app/server/views/_dictation", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/dictation": {
     "update": "folders/:folder/designs/:design/dictation",
-    "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design", "also": [{ "into": "modal?" }] }
+    "answer": { "view": "@app/server/views/_dictation", "data": "folders/:folder/designs/:design", "also": [{ "into": "modal?" }] }
   },
   "POST /f/:folder/d/:design/dictation/remove": {
     "update": "folders/:folder/designs/:design/dictation",
-    "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_dictation", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/dictation/cancel": {
     "update": "folders/:folder/designs/:design/dictation",
-    "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_dictation", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/dictation/transcribe": {
     "update": "folders/:folder/designs/:design/draft",
-    "answer": { "view": "workspace/_dictation-ready", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "@app/server/views/_dictation-ready", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/draft": {
     "update": "folders/:folder/designs/:design/draft",
-    "answer": { "view": "workspace/_draft-kept", "data": "folders/:folder/designs/:design/draft" }
+    "answer": { "view": "@app/server/views/_draft-kept", "data": "folders/:folder/designs/:design/draft" }
   },
   "POST /f/:folder/d/:design/attachments": {
     "add": "folders/:folder/designs/:design/draft/attachments",
-    "answer": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "folders/:folder/designs/:design/draft" }
   },
   "POST /f/:folder/d/:design/attachments/:attachment/remove": {
     "remove": "folders/:folder/designs/:design/draft/attachments/:attachment",
-    "answer": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "folders/:folder/designs/:design/draft" }
   },
   "POST /f/:folder/d/:design/sessions/:session/stop": {
     "update": "folders/:folder/designs/:design/state",
-    "answer": { "view": "workspace/_status", "data": "folders/:folder/designs/:design/state" }
+    "answer": { "view": "@app/server/views/_status", "data": "folders/:folder/designs/:design/state" }
   }
 }

@@ -83,8 +83,10 @@ test('a turn gets the folder’s reference folders', async () => {
   assert.equal(turn.references[0], canonical(other));
   assert.match(turn.references.at(-1), /@kodalang[\\/]core$/, 'a design made of views may also read Koda’s own guidance');
   assert.ok(turn.systemPrompt.includes(canonical(other)));
-  const design = await (await get(`/f/${fid}/d/checkout/sessions/new`)).text();
-  assert.match(design, new RegExp(`The agent reads this repository, <span title="[^"]+">${basename(other)}</span>\\. <a href="/f/${fid}#reading">Change what it can read</a>`));
+  // What the agent can read is in the design's About drawer.
+  const design = await (await get(`/f/${fid}/d/checkout/about`)).text();
+  assert.match(design, new RegExp(`<span>${basename(other)}</span><span class="muted">[^<]+</span>`));
+  assert.match(design, new RegExp(`<a href="/f/${fid}#reading">Change what it can read</a>`));
 
   assert.equal((await post(`/f/${fid}/references/remove`, { path: canonical(other) })).status, 303);
   const page = await (await get(`/f/${fid}`)).text();

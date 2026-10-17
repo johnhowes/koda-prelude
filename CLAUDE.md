@@ -139,6 +139,15 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.
+  - A design's page (built from `prelude/design-workspace`): `_session.eta` and
+    its partials, in `workspace-layout.eta` (Prelude's design system, the
+    shell's chrome, `drawer?` and `modal?`; styles in `public/workspace.css`).
+    Its model is `server/workspace.js` (`DesignPage`), shaped like the
+    design's states. `server/drafts.js` keeps each session's unsent message
+    and images in `~/.prelude/drafts/`; `server/capture.js` takes a picture
+    of a page with a headless Edge or Chrome; `server/dictation.js` downloads
+    a Whisper model and transcribes with whisper.cpp's `whisper-cli` and
+    `ffmpeg`. Messages sent while the agent works wait in `turns.js`.
 - The in-app browser pane doesn't render cross-origin iframes, so the preview looks
   blank there. To check the preview, use a real browser, or open the frame's URL
   directly.

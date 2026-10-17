@@ -76,22 +76,28 @@ export function servePreludeFile(res, root, rel, send) {
 /**
  * Watches on design folders, shared by everyone looking at the same design and
  * closed when the last one leaves. Changes under sessions/ (the transcript,
- * written all the time) are ignored; the rest are batched.
+ * written all the time) are ignored; the rest are batched, and `onChange` is
+ * told the paths that changed, relative to the folder watched.
  */
 export function createWatches({ debounceMs = 150 } = {}) {
-  const watches = new Map();   // key -> { watcher, count, timer }
+  const watches = new Map();   // key -> { watcher, count, timer, paths }
 
   return {
     acquire(key, dir, onChange) {
       let entry = watches.get(key);
       if (!entry) {
-        entry = { count: 0, timer: null, watcher: null };
+        entry = { count: 0, timer: null, watcher: null, paths: new Set() };
         try {
           entry.watcher = watch(dir, { recursive: true }, (_, name) => {
             const path = String(name ?? '').replace(/\\/g, '/');
             if (path === 'sessions' || path.startsWith('sessions/')) return;
+            entry.paths.add(path);
             clearTimeout(entry.timer);
-            entry.timer = setTimeout(onChange, debounceMs);
+            entry.timer = setTimeout(() => {
+              const paths = [...entry.paths];
+              entry.paths.clear();
+              onChange(paths);
+            }, debounceMs);
           });
           entry.watcher.on('error', () => {});
         } catch { /* no watch, no live reload; Refresh still works */ }

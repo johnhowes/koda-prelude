@@ -1,0 +1,67 @@
+<%/* The layout of a design's page and its pop-out window (the shell's
+     workspace and window layouts, prelude/prelude-shell): the bar, then the
+     page filling the rest of the window, which doesn't scroll - the page's
+     panels do. `bare` (the pop-out) has no bar.
+
+     It offers the regions a page may ask for, drawer? and modal?, each
+     printed with what the server put there for a deep link to an overlay
+     (`regions`), and hidden while empty; and a live channel (`live`) for a
+     page that doesn't open its own (the pop-out: a design's page opens its
+     session's in the page). It's on Prelude's design system, not /ds/v1. */%>
+<% const drawer = it.regions?.drawer, modal = it.regions?.modal; %>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.title ?? 'Prelude' %></title>
+<link rel="icon" href="/static/icon.svg">
+<link rel="stylesheet" href="/system/tokens.css">
+<link rel="stylesheet" href="/system/components.css">
+<link rel="stylesheet" href="/system/icons.css">
+<link rel="stylesheet" href="/shell/shell.css">
+<link rel="stylesheet" href="/static/workspace.css">
+<script type="importmap">{ "imports": { "@kodalang/core": "/koda/koda.js" } }</script>
+</head>
+<body class="shell fill<%= it.bare ? ' bare' : '' %>">
+<% if (!it.bare) { %>
+<header class="shell-bar">
+  <a class="shell-brand" href="/">Prelude</a>
+</header>
+<% } %>
+<main id="main" class="shell-main" ko-scope="/" ko-location="<%= it.path %>" ko-history><%~ it.body %></main>
+<aside class="shell-drawer" aria-label="Drawer">
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="drawer" aria-label="Close the drawer"><span class="icon icon-close" aria-hidden="true"></span></button>
+  <div id="drawer" ko-region ko-focus="region" tabindex="-1"<% if (drawer) { %> ko-location="<%= drawer.location %>"<% } %>><%~ drawer?.html ?? '' %></div>
+</aside>
+<dialog id="modal-dialog" class="shell-modal" aria-label="Question">
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
+  <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
+</dialog>
+<% if (it.live) { %><div hidden ko-connect="<%= it.live %>"></div><% } %>
+<script type="module" src="/static/desktop.js"></script>
+<script type="module">
+  // The modal is a real dialog, open while its region holds something.
+  // Koda fills and empties the region; showModal() is the platform's, and no
+  // attribute calls it, so this follows the region. Escape closes the dialog,
+  // and then empties the region too. The dialog is named by its first heading.
+  const dialog = document.getElementById('modal-dialog');
+  const region = document.getElementById('modal');
+  const close = dialog.querySelector('[commandfor="modal"]');
+  const follow = () => {
+    const filled = region.childElementCount > 0;
+    const heading = region.querySelector('h1, h2, h3');
+    if (heading) dialog.setAttribute('aria-label', heading.textContent.trim());
+    if (filled && !dialog.open) dialog.showModal();
+    if (!filled && dialog.open) dialog.close();
+  };
+  new MutationObserver(follow).observe(region, { childList: true });
+  dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); });
+  follow();
+</script>
+<script type="module">
+  import { start } from '@kodalang/core';
+  start(document);
+</script>
+</body>
+</html>

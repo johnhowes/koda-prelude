@@ -1,0 +1,5 @@
+<%/* The line beside Capture, once the picture is in the message box. `it` is
+     the new attachment. The server also sends draft-changed, so the message
+     box's tray shows it wherever the chat is. When the picture couldn't be
+     taken (no browser to take it with, say), `it.error` says why. */%>
+<% if (it.error) { %><span class="error"><%= it.error %></span><% } else { %><span class="muted">Captured: it’s in the message box.</span><% } %>

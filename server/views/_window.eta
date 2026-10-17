@@ -1,7 +1,8 @@
 <%/* A pop-out window: the design surface alone, filling the window. It
-     connects to the design's channel as a window, which is how the inline
-     surface beside the chat knows to step aside while it is open. */%>
-<div class="window-page">
-  <%~ include('./_design', it.surface) %>
+     connects to the design's channel as a window (its layout's live
+     channel), which is how the surface beside the chat knows to step aside
+     while it is open. Its size and client are its own, so it can show
+     another size than the panel. `it` is the design (DesignPage). */%>
+<div class="stack design-page window-page">
+  <%~ include('./_surface', { ...it, view: 'window' }) %>
 </div>
-<div hidden ko-connect="<%= it.live %>"></div>

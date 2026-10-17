@@ -190,6 +190,81 @@ the record picker, was dropped).
   tray isn't emptied after sending (a route does one change). The app does
   both.
 
+## Built: the Design page (2026-10-17)
+
+The page, its drawers and modals, and their forms are the app's own views
+now (`server/views/`, the page over `_session.eta`), with the model in
+`server/workspace.js` (`DesignPage`) and the routes in `handleDesign`
+(`server/main.js`). The pop-out window is still to build; its app view
+(`_window.eta`) already shows the new surface, since the two share it.
+
+Where the app differs from the screens, on purpose:
+
+- **The frame is the page**: `_frame.eta` is an iframe in the design's
+  `.device`, not the drawn placeholder. At a size it's laid out at that
+  width and height and scaled by a measured `--scale` (a ResizeObserver).
+  A client's attributes ride in the frame's `name`
+  (`prelude-client:{…}`), and the design's origin sets them on each page
+  it serves into such a frame (`withClient`, host.js), so they hold as
+  links are followed (R-4tw).
+- **The composer posts only `message`** (and its parts): no hidden `type`
+  or `action`. A refused message re-renders from the session, so in the
+  check (which has only the posted fields) a refusal renders without the
+  session's action.
+- **The page renders in an app layout of its own**,
+  `server/views/workspace-layout.eta`: the shell's workspace and window
+  layouts with Prelude's bar, `drawer?` and `modal?`, and the page's one
+  live channel. It links Prelude's design system (`/system/`) and the
+  shell's `shell.css` (`/shell/`), served from `prelude/`, and the
+  design's styles, moved to `server/public/workspace.css`. Other pages keep
+  `layout.eta` and `/ds/v1`.
+- **One channel per page**: a session's page connects to
+  `…/sessions/<id>/live?from=N`, which carries the session's entries and
+  status, the design's events (`design-changed`, `draft-changed`) and
+  dictation's (`dictation-changed`); a new session's page to `…/live`.
+  The page's channel is in the page (`it.live`, printed at the end of
+  `_session.eta`), not the layout: going to another session swaps only
+  the page, and the channel has to follow it. The pop-out's is its
+  layout's.
+- **Drafts live at the session's address**: `draft.base` is
+  `…/sessions/<id>` (or `…/sessions/new`), so each session keeps its own
+  (R-d3v). They're kept on this machine (`~/.prelude/drafts/`), not in
+  the repository; sending moves the images into the session's folder
+  (`sessions/<id>/images/`) and tells the agent their paths. Answer,
+  Start with this, Capture and dictation land in the draft of the session
+  the chat shows (the last one a page opened). The design-level URLs in
+  routes.json (`…/draft`, `…/attachments`) answer for that session too.
+- **Waiting messages** are the app's to hold while the turn runs (in
+  memory, in `turns.js`): their images move into the session's folder as
+  they're queued, and come back into the box on Stop (R-9cn). Cancelling
+  one deletes its images.
+- **Entries keep two kinds the design doesn't show**: a build turn's
+  "Next:" entry and the check's "ahead of the app" note, as the app had
+  them; no state has one.
+- **The design host's log** still shows under the bar when there is one
+  (the design shows only the approval).
+- **Send event** still says when its markup didn't render or no page
+  heard it (`it.sent`), as the app did.
+- **A capture or dictation that fails** says why: `_captured.eta` and
+  `_dictation.eta` take an `error`.
+- **Capture** uses Edge or Chrome already on the computer, headless, over
+  the DevTools protocol with Node's own WebSocket (`server/capture.js`; no
+  new dependency; `PRELUDE_BROWSER` names another). This answers the open
+  question below for now.
+- **Dictation** runs whisper.cpp's `whisper-cli` with the downloaded ggml
+  model, after `ffmpeg` turns the recording into 16 kHz WAV
+  (`server/dictation.js`; `PRELUDE_WHISPER`, `PRELUDE_FFMPEG`). Both are
+  the person's to install; the microphone says so when one is missing.
+  Models come from `huggingface.co/ggerganov/whisper.cpp` into
+  `~/.prelude/speech-models/`. This answers the open question below for
+  now.
+- **Questions** are NOTES.md's "Open questions" bullets; a question's id
+  is a hash of its words, and its date is the commit that added its line
+  (git blame). Decisions are the "Decisions" bullets, the bold lead as the
+  title.
+- **The custom size and which session the chat shows** are kept in
+  memory, with the page and the state on show (`design-state.js`).
+
 ## Open questions
 
 - A message may be images alone (rule R-b6d), but the design's route still

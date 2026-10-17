@@ -1,1 +1,1 @@
-<div ko-into="agent-status"><%~ include('./_status', it) %></div>
+<div ko-into="agent-status"><%~ include('./_status', it.state) %></div>

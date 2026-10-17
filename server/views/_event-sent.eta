@@ -1,3 +1,6 @@
-<%/* What "Send event" (6e) did, in the design bar's status region: the
-     frame is left alone, so the page shows the event arrive. */%>
-<span class="<%= it.failed ? 'err' : 'muted' %>"><%= it.notice %></span>
+<%/* The line beside Send event, after one is sent. `it.event` is the name
+     posted; the title is the design's. When sending it went wrong - its
+     markup didn't render, or no page is listening - the app says so in
+     `it.sent` ({ notice, failed }) instead. */%>
+<% const event = it.surface.events.find(e => e.name === it.event); %>
+<% if (it.sent) { %><span class="<%= it.sent.failed ? 'error' : 'muted' %>"><%= it.sent.notice %></span><% } else if (event) { %><span class="muted">Sent: <%= event.title %>.</span><% } else { %><span class="error">That event is no longer in the design.</span><% } %>
