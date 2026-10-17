@@ -137,7 +137,7 @@ test('a question stays until it’s answered, newest first, and the bar counts i
   assert.match(projects, /<span class="pill accent">1 waiting on you<\/span>/);
 
   const page = await (await get('/')).text();
-  assert.match(page, /<div id="waiting" class="waiting" ko-region ko-focus="none">\s*<a class="btn small ghost" href="\/">Needs you<span class="pill accent">\d+<\/span><\/a>/);
+  assert.match(page, /<div id="waiting" class="shell-waiting" ko-region ko-focus="none">\s*<a class="btn small ghost" href="\/">Needs you<span class="pill accent">\d+<\/span><\/a>/);
 });
 
 test('a project whose folder has gone says so, and removing it leaves the disk alone', async () => {

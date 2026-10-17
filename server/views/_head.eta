@@ -1,0 +1,21 @@
+<%/* What every layout's <head> holds (prelude/prelude-shell): the design
+     system, the shell's chrome, the page's own rules (`styles`), and Koda.
+     `system: false` is a page still written in ds/v1: it gets ds/v1's
+     components, over Prelude's tokens, which the shell's chrome is drawn
+     with and ds/v1 hasn't all of. */%>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.title ?? 'Prelude' %></title>
+<link rel="icon" href="/static/icon.svg">
+<link rel="stylesheet" href="/system/tokens.css">
+<% if (it.system === false) { %>
+<link rel="stylesheet" href="/ds/v1/tokens.css">
+<link rel="stylesheet" href="/ds/v1/components.css">
+<link rel="stylesheet" href="/ds/v1/icons.css">
+<% } else { %>
+<link rel="stylesheet" href="/system/components.css">
+<link rel="stylesheet" href="/system/icons.css">
+<% } %>
+<link rel="stylesheet" href="/static/shell.css">
+<link rel="stylesheet" href="<%= it.styles %>">
+<script type="importmap">{ "imports": { "@kodalang/core": "/koda/koda.js" } }</script>

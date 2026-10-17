@@ -1,0 +1,14 @@
+<%/* A pop-out window: the design surface alone, filling the window, with no
+     bar (the shell's window layout, prelude/prelude-shell). The window's own
+     frame says what it is. Its live channel is the layout's (`layout.live`):
+     the window connects to the design's channel as a window. */%>
+<!doctype html>
+<html lang="en">
+<head>
+<%~ include('./_head', { ...it, system: true, styles: '/static/workspace.css' }) %>
+</head>
+<body class="shell fill bare">
+<main id="main" class="shell-main" ko-scope="/" ko-location="<%= it.path %>" ko-history><%~ it.body %></main>
+<%~ include('./_regions', it) %>
+</body>
+</html>
