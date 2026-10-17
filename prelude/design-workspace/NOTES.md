@@ -151,6 +151,24 @@ doesn't render, building, new design, update clashed, popped out.
   question's date is that of the commit that added its bullet; NOTES.md
   stays as it is (the person, 2026-10-17). A new question is flagged only
   by the count going up (the person, 2026-10-17).
+- **A fuller status line** (the person, 2026-10-17; item 6 of the first
+  review): while the agent works, its latest step in words ("Editing
+  compare.eta", the path in the title), how long the turn has run (a
+  binding on its start, `duration(now() - …)`, so it moves on its own), how
+  many messages wait, and Stop. The step is pushed as each tool starts.
+  After the turn, "Checking every page in every state…" while Prelude
+  checks (no state shows it: every state here is after a check).
+- **A state's file changing drops its working copy** (recommended and
+  agreed, 2026-10-17): Prelude throws away what forms changed in that
+  state, and the design bar says so once ("Typical’s file changed, so what
+  your forms did to its data was undone"). Fixes "There's nothing at …"
+  after the agent adds data a page needs. A change to `server/design-state.js`.
+- **The speech model's menu sits beside the microphone** (recommended and
+  agreed, 2026-10-17): a small menu, opening upwards, says which model and
+  its size, with Change model… (the same modal; the old model keeps working
+  until the new one is in) and Remove the model. It's the person's, for
+  this computer, so no project page holds it, and Prelude has no settings
+  page. Added `.menu.up` and `.menu-note` to the design system.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -162,18 +180,10 @@ doesn't render, building, new design, update clashed, popped out.
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-- Where are the speech model removed or changed? Prelude has no settings
-  page yet; the folder page, or a menu on the microphone?
 - How Prelude runs Whisper (whisper.cpp through a Node binding, or a
   sidecar binary) and on which hardware: to decide when building.
 - Capture needs a headless browser in Prelude (a new dependency), or the
   desktop app's own capture. To decide when building.
-- When a state's file changes, should its working copy (what forms changed)
-  be dropped? Today it's kept until Reset data, so a page needing data the
-  file has since gained fails with "There's nothing at …" (found
-  2026-10-17: the images route, after the states gained `images`).
-  Proposed: drop it, and say so in the design bar ("The state changed, so
-  what forms did was reset").
 - In the design, a marked-up copy shows no thumbnail (the fake route can't
   store the file), and Mark up on a just-uploaded image has nothing to open.
 - An image added in the preview (a real upload) has no full-size view: the
@@ -181,5 +191,4 @@ doesn't render, building, new design, update clashed, popped out.
 
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
-- Not taken on yet from the review: a fuller status line, suggestions for
-  a new session.
+- Not taken on yet from the review: suggestions for a new session.

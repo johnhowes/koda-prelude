@@ -43,7 +43,14 @@
             { "id": "20261016-1530-a8vn", "title": "Accepting an offer", "started": "Yesterday, 15:30" }
           ],
           "session": { "id": "20261017-1305-b7xa", "title": "Build: Compare offers", "build": { "title": "Compare offers" } },
-          "state": { "kind": "working", "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-1305-b7xa/stop" },
+          "state": {
+            "kind": "working",
+            "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-1305-b7xa/stop",
+            "step": { "says": "Editing compare.eta", "path": "src/views/offers/compare.eta" },
+            "startedAt": "2026-10-17T13:05:12Z",
+            "since": "6:40",
+            "waiting": 1
+          },
           "entries": [
             { "id": 1, "type": "user", "message": "Build Compare offers." },
             { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },

@@ -253,6 +253,9 @@
     border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
   }
   .menu.start .menu-list { inset-inline: 0 auto; }
+  /* .up opens above its button, for a menu at the foot of a panel (the composer). */
+  .menu.up .menu-list { top: auto; bottom: calc(100% + var(--space-1)); }
+  .menu-list > .menu-note { padding: var(--space-2) var(--space-3); }
   /* Its choices; a real button in a form inside it (Go) stays a button. */
   .menu-list a:not(.btn), .menu-list button:not(.btn) {
     display: flex; flex-direction: column; align-items: flex-start; width: 100%;

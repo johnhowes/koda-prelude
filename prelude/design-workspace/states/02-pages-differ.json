@@ -96,7 +96,8 @@
               { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
             ],
             "state": "01-typical",
-            "changed": true,
+            "changed": false,
+            "reset": "Typical’s file changed, so what your forms did to its data was undone. The pages show the file as it is now.",
             "events": [
               { "name": "offer-expired", "title": "An offer expires" },
               { "name": "offer-added", "title": "A new offer arrives" }

@@ -76,6 +76,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **Menu groups**: `<hr>` between groups, and a small form at the end with
   a real `.btn` (menu row styles now skip `.btn`, which they used to flatten).
   Added for "Design Workspace" (prelude/design-workspace): a custom size.
+- **Menu `.up` and `.menu-note`**: a menu that opens above its button (one
+  at the foot of a panel would open off the bottom), and a line in a menu
+  that says something. Added for "Design Workspace" (prelude/design-workspace):
+  the speech model's menu beside the microphone.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

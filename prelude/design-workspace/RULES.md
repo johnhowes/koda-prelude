@@ -51,6 +51,11 @@
 - **R-y3h.** Answering an open question starts a message about it in the message box, after anything already typed; nothing is sent until the person sends it.
   *shown-on: /f/:folder/d/:design/questions @ typical*
   *proposed*
+- **R-a6x.** When a state’s file changes, what forms did to that state’s data is undone, and the design bar says so once.
+  *shown-on: /f/:folder/d/:design @ pages-differ*
+  *proposed*
+- **R-h4u.** Changing the speech model keeps dictation working with the old one until the new one has downloaded, then removes the old one.
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

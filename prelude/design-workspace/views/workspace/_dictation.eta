@@ -25,6 +25,22 @@
     <input type="file" name="audio" ko-as="audio" accept="audio/*" hidden>
     <button class="icon-btn small" type="button" ko-as="dictate" aria-pressed="false" title="Dictate: press, then speak. Press again to stop, and what you said is typed in."><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></button>
   </div>
+  <%/* The speech model, beside the microphone that uses it: which one, and
+       changing or removing it. It's the person's, for this computer, so it
+       lives here rather than in any project. Opens upwards: the composer is
+       at the foot of the window. */%>
+  <% const model = (it.speechModels ?? []).find(m => m.id === d.model); %>
+  <details class="menu start up" ko-as="modelMenu">
+    <summary class="icon-btn small" title="The speech model dictation uses"><span class="icon icon-expand" aria-hidden="true"></span><span class="sr-only">Speech model</span></summary>
+    <div class="menu-list">
+      <p class="menu-note muted">Speech model: <%= model ? `${model.title}, ${model.size}` : d.model %>, kept on this computer.<% if (d.switchingTo && d.switchingTo !== d.model) { %> Getting <%= (it.speechModels ?? []).find(m => m.id === d.switchingTo)?.title ?? d.switchingTo %> to replace it.<% } %></p>
+      <a href="<%= base %>/dictation" ko-target="modal?" ko-set="modelMenu.open = false"><span class="item-title">Change model…</span><span class="muted">Downloads the one you choose, then removes this one</span></a>
+      <form action="<%= base %>/dictation/remove" method="post" ko-target="dictation">
+        <input type="hidden" name="status" value="none">
+        <button type="submit"><span class="item-title">Remove the model</span><span class="muted">Frees <%= model?.size ?? 'its space' %>. Dictation is off until you set it up again.</span></button>
+      </form>
+    </div>
+  </details>
   <span class="muted" ko-as="heard" role="status" hidden></span>
   <script type="koda">
     const { dictate, audio, typed, heard, onRemove } = koda.scope();

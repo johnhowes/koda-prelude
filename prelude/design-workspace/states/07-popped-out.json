@@ -34,7 +34,14 @@
             { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" }
           ],
           "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
-          "state": { "kind": "working", "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd/stop" },
+          "state": {
+            "kind": "working",
+            "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd/stop",
+            "step": { "says": "Looking at the screenshot you sent", "path": "Screenshot 2026-10-17 at 14.02.png" },
+            "startedAt": "2026-10-17T14:03:20Z",
+            "since": "1:12",
+            "waiting": 2
+          },
           "entries": [
             { "id": 1, "type": "user", "message": "On a phone, a long lender name runs into the rate (circled). And the two offers on the compare page should stack, with the cheaper one first.", "images": [
               { "id": "img-2hd", "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg" }

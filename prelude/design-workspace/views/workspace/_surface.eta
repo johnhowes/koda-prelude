@@ -212,6 +212,12 @@
   </form>
   <% } %>
 
+  <%/* A state's file changed while forms had changed its data: Prelude threw
+       the changes away, so the pages read the file as it is now. Said once,
+       in the window that shows it next. */%>
+  <% if (s.reset && !appMode) { %>
+  <div class="notice" role="status"><p><%= s.reset %></p></div>
+  <% } %>
   <% if (s.notice) { %>
   <div class="notice good" role="status"><p><%= s.notice %></p></div>
   <% } else if (!appMode && review.failures.length) { %>
