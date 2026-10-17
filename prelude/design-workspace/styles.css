@@ -1,0 +1,41 @@
+/* The design page's own rules: what the design system can't say. */
+@scope (.design-page) {
+  /* The page fills the workspace layout; the chat and the surface fill what
+     the header leaves, and scroll inside themselves. */
+  :scope { min-block-size: 0; }
+  .workspace { flex: 1; min-block-size: 0; }
+  .window-page > .design { flex: 1; }
+
+  /* A one-line header: the title at a section's size, not a page's. */
+  .design-head h1 { font-size: var(--text-xl); }
+  .branch-summary code { background: none; padding: 0; }
+
+  /* A long session or page title is cut short in its menu button. */
+  .clip { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* While the surface is in its own window, the chat takes the page and the
+     surface's bar sits above it. */
+  .workspace:has(> .design.popped) { flex-direction: column-reverse; flex-wrap: nowrap; }
+  .workspace > .design.popped { flex: none; min-inline-size: 0; }
+  .workspace:has(> .design.popped) > .chat { flex: 1; }
+
+  /* Show: Agent, Tools. Unchecking one hides those entries. */
+  .chat:has(.show-agent:not(:checked)) .entry.agent,
+  .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
+  .show-page { display: inline; }
+
+  /* The frame: the page fills it at Fit. At a size, the page keeps that
+     shape, as large as fits the panel and never larger than itself. */
+  .design-frame {
+    flex: 1; min-block-size: 0; display: grid; place-items: center;
+    container-type: size; overflow: hidden; background: var(--surface-sunken);
+  }
+  .design-frame.sized { padding: var(--space-4); }
+  .device { inline-size: 100%; block-size: 100%; overflow: hidden; background: var(--bg); }
+  .sized .device {
+    inline-size: min(100cqi, var(--w) * 1px, 100cqb * var(--w) / var(--h));
+    block-size: auto; aspect-ratio: var(--w) / var(--h);
+    border: var(--border-width) solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  }
+  .device-page { padding: var(--space-5); }
+}

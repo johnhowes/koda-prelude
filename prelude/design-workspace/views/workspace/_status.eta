@@ -1,0 +1,18 @@
+<%/* What the agent is doing, for the session's status line. Idle shows
+     nothing. `it` is the session's state. */%>
+<% if (it.kind === 'working') { %>
+<div class="status" role="status">
+  <span class="pulse" aria-hidden="true"></span>
+  <span>Working…</span>
+  <% if (it.stopUrl) { %>
+  <form action="<%= it.stopUrl %>" method="post" ko-target="agent-status">
+    <input type="hidden" name="kind" value="stopping">
+    <button class="btn small ghost" type="submit">Stop</button>
+  </form>
+  <% } %>
+</div>
+<% } else if (it.kind === 'stopping') { %>
+<div class="status" role="status"><span>Stopping…</span></div>
+<% } else if (it.kind === 'busy') { %>
+<div class="status" role="status"><span>Another session on this design is working. You can send a message when it’s done.</span></div>
+<% } %>

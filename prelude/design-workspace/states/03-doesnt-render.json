@@ -1,0 +1,100 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "failing",
+            "failures": 1,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-1122-r5tj", "title": "A co-borrower on the offer", "started": "Today, 11:22" },
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" }
+          ],
+          "session": { "id": "20261017-1122-r5tj", "title": "A co-borrower on the offer" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Some offers are for two borrowers. Show the co-borrower’s name under the borrower’s on the offer page." },
+            { "id": 2, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/detail.eta" },
+            { "id": 3, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/states/01-typical.json" },
+            { "id": 4, "type": "text", "html": "<p>The offer page now shows the co-borrower under the borrower, when there is one. Offer <code>off-2291</code> has one in the typical state.</p>" },
+            {
+              "id": 5, "type": "check", "rendered": 17, "differ": [], "warnings": [],
+              "failures": [
+                { "path": "/offers/off-2291", "title": "Offer", "state": "04-long-names", "stateTitle": "Long names", "error": "Cannot read properties of undefined (reading 'name') in offers/detail.eta, line 14" }
+              ]
+            },
+            { "id": 6, "type": "note", "text": "Committed to prelude/loan-offers (9a2e7c1)." }
+          ],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers" },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/off-2291",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [],
+            "approved": 16,
+            "review": {
+              "failures": [
+                { "path": "/offers/off-2291", "title": "Offer", "state": "04-long-names", "stateTitle": "Long names", "error": "Cannot read properties of undefined (reading 'name') in offers/detail.eta, line 14" }
+              ],
+              "differ": []
+            },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+              { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

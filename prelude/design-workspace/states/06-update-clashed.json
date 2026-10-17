@@ -1,0 +1,94 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [
+              "prelude/spark-design-system/system/components.css"
+            ],
+            "running": null,
+            "merging": {
+              "from": "main",
+              "unresolved": [
+                "prelude/spark-design-system/system/components.css",
+                "prelude/loan-offers/routes.json"
+              ]
+            },
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" },
+            { "id": "20261016-1530-a8vn", "title": "Accepting an offer", "started": "Yesterday, 15:30" }
+          ],
+          "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Make the cheaper offer stand out on the compare page." },
+            { "id": 2, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 3, "type": "text", "html": "<p>The cheaper offer now carries a <em>Lower total cost</em> pill.</p>" },
+            { "id": 4, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
+            { "id": 5, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." },
+            { "id": 6, "type": "note", "failed": true, "text": "Updating from main clashed in 2 files. Send the agent a message and it resolves them first, or abandon the update." }
+          ],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers" },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/compare",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

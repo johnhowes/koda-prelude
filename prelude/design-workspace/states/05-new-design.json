@@ -1,0 +1,66 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": null,
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": null,
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "unchecked",
+            "failures": 0,
+            "behind": 0,
+            "worked": false,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [],
+          "session": null,
+          "state": { "kind": "idle" },
+          "entries": [],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [],
+            "current": null,
+            "states": [],
+            "state": null,
+            "changed": false,
+            "events": [],
+            "approved": 0,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 3,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-1040-p0wz", "title": "Rates to two decimals", "started": "Today, 10:40" },
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" }
+          ],
+          "session": { "id": "20261017-1040-p0wz", "title": "Rates to two decimals" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Show every APR to two decimal places, like 6.49%, everywhere it appears." },
+            { "id": 2, "type": "tool", "name": "Grep", "summary": "apr in prelude/loan-offers/views" },
+            { "id": 3, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/_row.eta" },
+            { "id": 4, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 5, "type": "text", "html": "<p>Every APR now shows two decimal places: on each offer’s row and on the comparison. The offer page reads its rate from the row, so it follows.</p>" },
+            {
+              "id": 6, "type": "check", "rendered": 18, "failures": [], "warnings": [],
+              "differ": [
+                { "path": "/offers", "title": "Offers", "state": "01-typical", "stateTitle": "Typical" },
+                { "path": "/offers/compare", "title": "Compare offers", "state": "04-long-names", "stateTitle": "Long names" }
+              ]
+            },
+            { "id": 7, "type": "note", "text": "Committed to prelude/loan-offers (0c93f5a)." }
+          ],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers" },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": true,
+            "events": [
+              { "name": "offer-expired", "title": "An offer expires" },
+              { "name": "offer-added", "title": "A new offer arrives" }
+            ],
+            "approved": 16,
+            "review": {
+              "failures": [],
+              "differ": [
+                { "path": "/offers", "title": "Offers", "state": "01-typical", "stateTitle": "Typical" },
+                { "path": "/offers/compare", "title": "Compare offers", "state": "04-long-names", "stateTitle": "Long names" }
+              ]
+            },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+              { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" },
+              { "id": "mobile-app", "title": "Spark mobile app", "says": "Inside the iOS and Android app: no site header, and Back is the app’s own" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

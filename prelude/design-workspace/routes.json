@@ -1,0 +1,45 @@
+{
+  "/f/:folder/d/:design": { "view": "workspace/page", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace", "from": "@app/server/views/_session" },
+  "/f/:folder/d/:design/about": { "view": "workspace/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design/window": { "view": "workspace/window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window", "from": "@app/server/views/_window" },
+  "/f/:folder/d/:design/preview": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" },
+  "POST /f/:folder/d/:design/screen": {
+    "update": "folders/:folder/designs/:design",
+    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/state": {
+    "update": "folders/:folder/designs/:design",
+    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/reset": {
+    "update": "folders/:folder/designs/:design",
+    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/approve": {
+    "remove": "folders/:folder/designs/:design/surface/review",
+    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/events": {
+    "update": "folders/:folder/designs/:design",
+    "answer": { "view": "workspace/_event-sent", "data": "folders/:folder/designs/:design" }
+  },
+  "POST /f/:folder/d/:design/sessions": {
+    "add": "folders/:folder/designs/:design/entries",
+    "require": ["message"],
+    "form": "workspace/_composer",
+    "answer": { "redirect": "/f/:folder/d/:design" }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/messages": {
+    "add": "folders/:folder/designs/:design/entries",
+    "require": ["message"],
+    "form": "workspace/_composer",
+    "answer": {
+      "view": "workspace/_composer", "data": "folders/:folder/designs/:design",
+      "also": [{ "into": "transcript", "view": "workspace/_transcript", "data": "folders/:folder/designs/:design" }]
+    }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/stop": {
+    "update": "folders/:folder/designs/:design/state",
+    "answer": { "view": "workspace/_status", "data": "folders/:folder/designs/:design/state" }
+  }
+}

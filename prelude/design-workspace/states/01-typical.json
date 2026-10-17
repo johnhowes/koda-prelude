@@ -1,0 +1,111 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [
+            { "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+          ],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [
+              "prelude/spark-design-system/system/components/rate.html",
+              "prelude/spark-design-system/system/components.css",
+              "prelude/spark-design-system/NOTES.md"
+            ],
+            "running": { "running": true, "approved": true, "url": "http://localhost:5173", "open": "/host/open?folder=borrower-portal&branch=loan-offers", "start": "/f/borrower-portal/host/start" },
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" },
+            { "id": "20261016-1530-a8vn", "title": "Accepting an offer", "started": "Yesterday, 15:30" },
+            { "id": "20261015-1104-m3qe", "title": "The offers list", "started": "15 Oct, 11:04" }
+          ],
+          "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Let’s show each offer’s monthly payment beside its rate, and let the borrower compare two offers side by side." },
+            { "id": 2, "type": "text", "html": "<p>I’ll add the monthly payment to each offer’s row, and a <strong>Compare offers</strong> page that takes two offers.</p>" },
+            { "id": 3, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/NOTES.md" },
+            { "id": 4, "type": "tool", "name": "Write", "summary": "prelude/loan-offers/views/offers/_row.eta" },
+            { "id": 5, "type": "tool", "name": "Write", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 6, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/routes.json" },
+            { "id": 7, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/states/01-typical.json" },
+            { "id": 8, "type": "text", "html": "<p>Each row now shows the monthly payment under the APR, and <code>/offers/compare</code> puts two offers side by side, with the total cost of each. With no offers, Compare isn’t offered.</p><p>Should the comparison also show what each costs over its whole term, or only per month?</p>" },
+            { "id": 9, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
+            { "id": 10, "type": "note", "text": "Committed to prelude/loan-offers (4e1a9c2)." },
+            { "id": 11, "type": "user", "message": "Over the whole term too. And make the cheaper offer stand out." },
+            { "id": 12, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 13, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/NOTES.md" },
+            { "id": 14, "type": "text", "html": "<p>The comparison now shows the total cost over each term, and the cheaper offer carries a <em>Lower total cost</em> pill. I kept the accent for the Accept button, as the system asks.</p>" },
+            { "id": 15, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
+            { "id": 16, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." }
+          ],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": { "url": "http://localhost:5173", "running": true, "approved": true, "start": "/f/borrower-portal/host/start" },
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers", "ported": true },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/compare",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [
+              { "name": "offer-expired", "title": "An offer expires" },
+              { "name": "offer-added", "title": "A new offer arrives" }
+            ],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+              { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" },
+              { "id": "mobile-app", "title": "Spark mobile app", "says": "Inside the iOS and Android app: no site header, and Back is the app’s own" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

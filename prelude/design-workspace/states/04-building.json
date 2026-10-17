@@ -1,0 +1,103 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [
+            { "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+          ],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "unchecked",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": { "title": "Compare offers" },
+            "alsoChanges": [
+              "src/routes/offers.js",
+              "src/views/offers/compare.eta",
+              "src/views/offers/_cost.eta",
+              "test/offers.test.js"
+            ],
+            "running": { "running": false, "approved": true, "url": "http://localhost:5173", "open": "/host/open?folder=borrower-portal&branch=loan-offers", "start": "/f/borrower-portal/host/start" },
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-1305-b7xa", "title": "Build: Compare offers", "started": "Today, 13:05", "build": true },
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" },
+            { "id": "20261016-1530-a8vn", "title": "Accepting an offer", "started": "Yesterday, 15:30" }
+          ],
+          "session": { "id": "20261017-1305-b7xa", "title": "Build: Compare offers", "build": { "title": "Compare offers" } },
+          "state": { "kind": "working", "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-1305-b7xa/stop" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Build Compare offers." },
+            { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 3, "type": "tool", "name": "Read", "summary": "src/routes/offers.js" },
+            { "id": 4, "type": "text", "html": "<p>The app’s offers controller already loads one offer at a time. I’ll add <code>GET /offers/compare</code>, which takes <code>a</code> and <code>b</code>, and work out each offer’s total cost on the server, as the design’s states have it.</p>" },
+            { "id": 5, "type": "tool", "name": "Edit", "summary": "src/routes/offers.js" },
+            { "id": 6, "type": "tool", "name": "Write", "summary": "src/views/offers/compare.eta" },
+            { "id": 7, "type": "tool-result", "name": "Bash", "error": true, "text": "npm test -- offers\n\n✖ compare shows the cheaper offer first (4.2ms)\n  AssertionError: expected 'off-2291' to equal 'off-2307'" },
+            { "id": 8, "type": "tool", "name": "Edit", "summary": "src/views/offers/compare.eta" }
+          ],
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": { "url": "http://localhost:5173", "running": false, "approved": true, "start": "/f/borrower-portal/host/start" },
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers", "ported": true },
+              { "id": "/offers/off-2291", "title": "Offer", "ported": true },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer", "ported": true },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/compare",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [
+              { "name": "offer-expired", "title": "An offer expires" }
+            ],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+              { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" },
+              { "id": "mobile-app", "title": "Spark mobile app", "says": "Inside the iOS and Android app: no site header, and Back is the app’s own" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
