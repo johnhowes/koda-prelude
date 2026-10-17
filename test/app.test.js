@@ -198,7 +198,9 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   const afterMerge = await (await get(`/f/${fid}`)).text();
   assert.match(afterMerge, /Merged lately[\s\S]*<code>prelude\/shell<\/code> was merged into main/);
   assert.match(afterMerge, /Node, Express, Eta and Koda, in <code>app\/<\/code>/);
-  assert.match(await (await fetch(`${base}/f/${fid}/d/shell`)).text(), /Its branch, <code>prelude\/shell<\/code>, was merged into main/, 'the design’s page says so too');
+  // The design's page says so too: in its header, and in full in its About drawer.
+  assert.match(await (await fetch(`${base}/f/${fid}/d/shell`)).text(), /<span class="icon icon-done" aria-hidden="true"><\/span>Merged into main/, 'the design’s page says so too');
+  assert.match(await (await fetch(`${base}/f/${fid}/d/shell/about`)).text(), /Its branch, <code>prelude\/shell<\/code>, was merged into main /);
 
   // The shell's own page is built like a feature's; its gallery never is.
   const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
@@ -299,8 +301,6 @@ test('a project that already has an app connects it instead of building one (8b)
   assert.match(git(shell, 'show', '--stat', '--format=', 'HEAD'), /prelude\/shell\/layouts\/app\.eta/, 'and committed with the turn');
 });
 
-test('a new folder, not yet a repository: the app build makes it one, and the shell’s branch', async () => {
-  // A folder someone just started designing in: no git, no stack recorded.
 test('the shell’s layouts are built before the pages that render in them (8c)', async () => {
   // An app that exists, a shell whose layouts are a redesign it hasn't got,
   // and a feature whose page renders in the shell's "workspace" layout.
@@ -370,6 +370,8 @@ test('the shell’s layouts are built before the pages that render in them (8c)'
     /Its pages render in the app's "workspace" layout \(server\/views\/workspace\): a page's markup sits in that layout's main region, and its overlays land in the layout's regions/);
 });
 
+test('a new folder, not yet a repository: the app build makes it one, and the shell’s branch', async () => {
+  // A folder someone just started designing in: no git, no stack recorded.
   const folderPath = canonical(mkdtempSync(join(tmpdir(), 'prelude-new-')));
   const fid = await open(folderPath);
   createDesign(folderPath, { title: 'Shell', kind: 'shell' });

@@ -2248,7 +2248,7 @@ Decided 2026-10-16:
 **As built (10.8):** `surface()` in main.js takes a `mode` (`modeOf`, from the surface's
 URL or a form's hidden `mode`) and `appHere()` (the host's url, and whether it's running
 from this folder and approved). In App mode the frame's `src` is the host's url plus the
-screen's path, with no cache-busting. `_design.eta` draws the switch, hides the state
+screen's path, with no cache-busting. `_design.eta` (since replaced by the Design Workspace's `_surface.eta`) drew the switch, hides the state
 picker, Reset and Approve, and shows Start it (`ko-target="design"`, back to App) when the
 app isn't running. Checked in a browser on the Apiary clone: App framed its app, and Start
 it brought it up. Found while testing it, and fixed: requests now and then reset when they
