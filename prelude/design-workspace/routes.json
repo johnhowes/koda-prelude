@@ -11,6 +11,10 @@
     "update": "folders/:folder/designs/:design",
     "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
   },
+  "POST /f/:folder/d/:design/size": {
+    "update": "folders/:folder/designs/:design",
+    "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }
+  },
   "POST /f/:folder/d/:design/reset": {
     "update": "folders/:folder/designs/:design",
     "answer": { "view": "workspace/_surface", "data": "folders/:folder/designs/:design" }

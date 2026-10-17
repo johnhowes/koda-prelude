@@ -36,7 +36,10 @@ doesn't render, building, new design, update clashed, popped out.
   phone while the panel fits. Page and state stay shared, as today.
 - **Sizes**: Fit the panel (default), then fixed sizes, then Custom (width
   and height fields, 200-4000 px; the person, 2026-10-17). One size at a
-  time, not several side by side (the person, 2026-10-17). At a size the
+  time, not several side by side (the person, 2026-10-17). The custom size
+  is remembered for the design (the person, 2026-10-17): one, replaced
+  when another is set, listed after the shell's sizes in every window
+  (`POST …/size`); which size a window shows stays its own. At a size the
   frame keeps that shape, scaled down to fit (container units in the
   design; the app's iframe needs a transform from its measured size).
 - **Sizes and clients are declared by the app shell** (the person agreed,
@@ -60,8 +63,6 @@ doesn't render, building, new design, update clashed, popped out.
 
 ## Open questions
 
-- Should a custom size be remembered for the design, or only the window?
-  Today it's the window's, in its URL, like the other sizes.
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
 - Not taken on yet from the review: rules and open questions on the page,

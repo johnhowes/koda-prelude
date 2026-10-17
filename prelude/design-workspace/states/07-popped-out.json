@@ -45,6 +45,7 @@
             "view": "inline",
             "mode": "design",
             "size": "phone",
+            "custom": { "width": 360, "height": 740 },
             "client": "mobile-app",
             "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
             "app": null,
