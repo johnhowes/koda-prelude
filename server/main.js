@@ -191,7 +191,8 @@ async function handle(req, res, app) {
   //   POST /folders                 open one: its page, or the form refused
   //   POST /folders/:id/remove      take one off the list; the disk is left alone
   const homePage = (status, { modal = null } = {}) => {
-    const body = { fragment: false, path: '/', title: 'Prelude', layout: layout(), system: true };
+    // One URL, two shapes: a Koda region asking for / gets the page alone.
+    const body = { fragment, path: '/', title: 'Prelude', layout: fragment ? {} : layout(), system: true };
     const regions = modal ? { modal: { html: render('./home/_open', modal), location: '/open' } } : {};
     return send(res, status, shaped('home/index', homeOf(app, { contents: false }), { ...body, regions }));
   };
