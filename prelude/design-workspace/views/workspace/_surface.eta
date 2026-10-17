@@ -65,6 +65,12 @@
 
     <% if (cur) { %>
     <%~ include('./_page-menu', { screens: s.screens, cur, current, base, keep, url, origin, view }) %>
+    <%/* The design's rules, those for the page on show counted: they say
+         what the page can't (what's meant to hold, what happens unseen). */%>
+    <% const pageRules = (it.rules ?? []).filter(rule => rule.status !== 'retired' && rule.shownOn?.page === current).length; %>
+    <% if (it.rules?.length) { %>
+    <a class="btn small ghost" href="<%= base %>/rules" ko-target="drawer?" title="The design’s rules: <%= pageRules === 1 ? '1 is' : `${pageRules} are` %> shown on this page."><span class="icon icon-rule" aria-hidden="true"></span>Rules<% if (pageRules) { %> <span class="pill"><%= pageRules %></span><% } %></a>
+    <% } %>
     <% } %>
 
     <% if (appMode) { %>

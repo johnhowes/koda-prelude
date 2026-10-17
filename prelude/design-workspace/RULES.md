@@ -45,6 +45,12 @@
   *retired: the person held it off (2026-10-17); records are found by following links in the page.*
 - ~~**R-g4e.** Going to a URL the design doesn’t answer leaves the page on show as it was and says there’s no such page.~~
   *retired: Go to a URL was held off with the record picker (2026-10-17).*
+- **R-j8w.** The design’s rules are listed with those shown on the page on show first, then those on other pages, then those no page shows.
+  *shown-on: /f/:folder/d/:design/rules @ typical*
+  *proposed*
+- **R-y3h.** Answering an open question starts a message about it in the message box, after anything already typed; nothing is sent until the person sends it.
+  *shown-on: /f/:folder/d/:design/questions @ typical*
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

@@ -52,6 +52,13 @@
             { "id": 5, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." },
             { "id": 6, "type": "note", "failed": true, "text": "Updating from main clashed in 2 files. Send the agent a message and it resolves them first, or abandon the update." }
           ],
+          "rules": [
+            { "id": "R-k3f", "text": "Of two offers compared, the one that costs less over its whole term is marked “Lower total cost”; when they cost the same, neither is.", "status": "proposed", "shownOn": { "page": "/offers/compare", "title": "Compare offers", "state": "01-typical", "stateTitle": "Typical" } }
+          ],
+          "questions": [
+            { "id": "q-tie", "text": "When two offers cost the same in total, which goes first on the compare page?", "asked": "today at 09:41" }
+          ],
+          "decisions": [],
           "dictation": { "status": "none" },
           "speechModels": [
             { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },

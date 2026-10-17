@@ -1,6 +1,12 @@
 {
   "/f/:folder/d/:design": { "view": "workspace/page", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace", "from": "@app/server/views/_session" },
   "/f/:folder/d/:design/about": { "view": "workspace/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design/rules": { "view": "workspace/_rules", "title": "Rules", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "/f/:folder/d/:design/questions": { "view": "workspace/_questions", "title": "Open questions", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
+  "POST /f/:folder/d/:design/questions/:question/answer": {
+    "update": "folders/:folder/designs/:design/draft",
+    "answer": { "view": "workspace/_answering", "data": "folders/:folder/designs/:design/draft" }
+  },
   "/f/:folder/d/:design/window": { "view": "workspace/window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window", "from": "@app/server/views/_window" },
   "/f/:folder/d/:design/looking-at": { "view": "workspace/_looking-at", "data": "folders/:folder/designs/:design" },
   "/f/:folder/d/:design/images/:image": { "view": "workspace/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },

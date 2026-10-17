@@ -135,6 +135,19 @@ doesn't render, building, new design, update clashed, popped out.
   record, and other records are found by following links in the page. A
   picker (records under their page, Go to a URL) was designed and taken
   back out.
+- **Rules and open questions on the page** (the person, 2026-10-17; item 5
+  of the first review). Rules sit with the page they're about: Rules in
+  the design bar, after the page menu, counting those shown on the page on
+  show, opens a drawer (`/rules`): this page's, other pages', then those no
+  page shows, each Proposed or Built, with Show (that page, in that state);
+  retired ones fold away with why. Questions sit with the chat, where
+  they're answered: Questions in the chat's toolbar, counted in the accent
+  (each is a next step), opens a drawer (`/questions`) of NOTES.md's open
+  questions with when they were asked; Answer starts a message "About
+  “…”: " in the box (after what's typed, in the app) and closes the drawer.
+  Decisions so far fold away below. Prelude reads both files (rules.js
+  already reads RULES.md; NOTES.md's "Open questions" and "Decisions"
+  sections are bullets, the decision's bold lead as its title).
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -165,5 +178,10 @@ doesn't render, building, new design, update clashed, popped out.
 
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
-- Not taken on yet from the review: rules and open questions on the page,
-  a fuller status line, suggestions for a new session.
+- Not taken on yet from the review: a fuller status line, suggestions for
+  a new session.
+- An open question has no id or date in NOTES.md today. Prelude could date
+  each by the commit that added it, and the agent could ask a question in
+  the chat and the notes at once; or questions get their own file.
+- Should a new question the agent asks also flag itself (the count turning
+  up as the turn ends), or is the count enough?

@@ -25,6 +25,11 @@
       <label class="choice"><input type="checkbox" class="show-agent" checked> Agent</label>
       <label class="choice"><input type="checkbox" class="show-tools" checked> Tools</label>
     </span>
+    <%/* What the agent is waiting on the person to decide: counted in the
+         accent, since each is a next step. */%>
+    <% if (it.questions?.length) { %>
+    <a class="btn small ghost" href="<%= base %>/questions" ko-target="drawer?" title="Open questions: what the agent is waiting for you to decide."><span class="icon icon-question" aria-hidden="true"></span>Questions <span class="pill accent"><%= it.questions.length %></span></a>
+    <% } %>
     <a class="btn small ghost" href="<%= base %>/sessions/new"><span class="icon icon-add" aria-hidden="true"></span>New session</a>
   </div>
   <% if (it.session?.build) { %>

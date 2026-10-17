@@ -34,6 +34,9 @@
           "session": null,
           "state": { "kind": "idle" },
           "entries": [],
+          "rules": [],
+          "questions": [],
+          "decisions": [],
           "dictation": { "status": "none" },
           "speechModels": [
             { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },

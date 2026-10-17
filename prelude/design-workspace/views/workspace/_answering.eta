@@ -1,0 +1,5 @@
+<%/* The answer to Answer: the message box, starting with the question (after
+     anything already typed, in the app), and the drawer closed. `it` is the
+     session's draft. */%>
+<%~ include('./_message-box', { message: it.message }) %>
+<div ko-into="drawer?"></div>
