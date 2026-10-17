@@ -147,7 +147,10 @@ doesn't render, building, new design, update clashed, popped out.
   “…”: " in the box (after what's typed, in the app) and closes the drawer.
   Decisions so far fold away below. Prelude reads both files (rules.js
   already reads RULES.md; NOTES.md's "Open questions" and "Decisions"
-  sections are bullets, the decision's bold lead as its title).
+  sections are bullets, the decision's bold lead as its title). A
+  question's date is that of the commit that added its bullet; NOTES.md
+  stays as it is (the person, 2026-10-17). A new question is flagged only
+  by the count going up (the person, 2026-10-17).
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -180,8 +183,3 @@ doesn't render, building, new design, update clashed, popped out.
   nowhere (the design shows one session at the design's URL).
 - Not taken on yet from the review: a fuller status line, suggestions for
   a new session.
-- An open question has no id or date in NOTES.md today. Prelude could date
-  each by the commit that added it, and the agent could ask a question in
-  the chat and the notes at once; or questions get their own file.
-- Should a new question the agent asks also flag itself (the count turning
-  up as the turn ends), or is the count enough?
