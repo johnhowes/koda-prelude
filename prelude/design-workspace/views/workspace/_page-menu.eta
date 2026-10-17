@@ -1,55 +1,22 @@
 <%/* The page menu, in the design bar: which page is on show, and the way to
-     any other.
-
-     Its button says the page, and for a page about one record, which one
-     ("Offer · Northwind Bank"). The menu lists the design's pages in order,
-     each with its overlays under it. A page about one record (its URL has a
-     :param) lists the records the current state has for it, so the person
-     picks the one to look at: the long name, the expired offer. An overlay
-     opens over the record on show, or the first.
-
-     Records are labelled from the state's data: the field the route names
-     ("label" in routes.json), or else its name or title, else its id; the
-     note under each is the route's own choice of fields.
-
-     Go to a URL takes any address on the design's origin, query string and
-     all, for what the list can't offer (a search with its words, a record
-     that's added by a form). Refresh and Open in browser act on the page on
-     show, so they end the menu.
+     the others. The design's titled pages in order, each overlay under its
+     page; a page about one record shows the state's first, and others are
+     reached by following links in the page itself. Refresh and Open in
+     browser act on the page on show, so they end the menu.
 
      `it` has screens, cur (the screen on show), current (its path), base,
      keep, url and origin. */%>
-<% const recordOn = it.cur?.records?.find(r => r.path === it.current); %>
-<details class="menu start" ko-as="pageMenu">
-  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span><span class="clip"><%= it.cur.title %><% if (recordOn) { %> · <%= recordOn.label %><% } %></span></summary>
+<details class="menu start">
+  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span><span class="clip"><%= it.cur.title %></span></summary>
   <div class="menu-list">
     <form action="<%= it.base %>/screen" method="post" ko-target="design">
       <%~ it.keep %>
       <% for (const screen of it.screens) { %>
-      <% const isCur = screen === it.cur;
-         /* An overlay over a record page opens over the record on show. */
-         const overRecord = screen.of && recordOn && it.cur.pattern === screen.of;
-         const at = isCur ? it.current : overRecord ? screen.pattern.replace(/:[^/]+/, recordOn.id) : screen.id; %>
-      <button type="submit" name="surface.current" value="<%= at %>" class="<%= screen.overlay ? 'sub' : '' %>" <% if (isCur && !recordOn) { %>aria-current="true"<% } %>>
-        <span class="item-title"><%= screen.overlay ? screen.title.split(' › ').pop() : screen.title %><% if (screen.records) { %> <span class="pill"><%= screen.records.length %> in this state</span><% } %></span>
-        <span class="muted"><%= screen.pattern ?? screen.id %><% if (screen.ported) { %> · the app’s own view<% } %></span>
-      </button>
-      <% for (const record of screen.records ?? []) { %>
-      <button type="submit" name="surface.current" value="<%= record.path %>" class="sub" <% if (record.path === it.current) { %>aria-current="true"<% } %>>
-        <span class="item-title"><span class="clip"><%= record.label %></span></span>
-        <span class="muted"><%= record.note ?? record.path %></span>
+      <button type="submit" name="surface.current" value="<%= screen.id %>" <% if (screen === it.cur) { %>aria-current="true"<% } %>>
+        <span class="item-title"><%= screen.title %></span>
+        <span class="muted"><%= screen.id %><% if (screen.ported) { %> · the app’s own view<% } %></span>
       </button>
       <% } %>
-      <% } %>
-    </form>
-    <hr>
-    <form class="stack gap-2 go-to" action="<%= it.base %>/screen" method="post" ko-target="design">
-      <%~ it.keep %>
-      <label class="label" for="go-to-<%= it.view %>">Go to a URL</label>
-      <div class="inline">
-        <input id="go-to-<%= it.view %>" name="surface.current" required placeholder="/offers/off-2315?tab=history" value="<%= it.current %>" autocomplete="off" spellcheck="false">
-        <button class="btn small" type="submit" ko-set="pageMenu.open = false">Go</button>
-      </div>
     </form>
     <hr>
     <a href="<%= it.url %>" ko-target="design"><span class="item-title">Refresh</span><span class="muted">Load this page again</span></a>

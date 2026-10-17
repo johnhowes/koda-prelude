@@ -2,21 +2,17 @@
      details/summary, so it needs no script. The summary shows the current choice;
      each row is a link or a submit button, with a title and a .muted line; the
      current one has aria-current. Opens to the right edge; .start opens from the left.
-     A row that belongs to the one above it (a page's records) is .sub, indented. An
-     <hr> separates groups; a small form (a field and its .btn) may end the list. -->
-<details class="menu start">
-  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Offer · Northwind Bank</summary>
+     An <hr> separates groups; a small form (a field and its .btn) may end the
+     list, and its .btn stays a button. -->
+<details class="menu">
+  <summary class="btn small ghost"><span class="icon icon-fit" aria-hidden="true"></span>Phone</summary>
   <div class="menu-list">
-    <form action="#" method="post">
-      <button type="submit" name="screen" value="/offers"><span class="item-title">Offers</span><span class="muted">/offers</span></button>
-      <button type="submit" name="screen" value="/offers/off-2291"><span class="item-title">Offer <span class="pill">3 in this state</span></span><span class="muted">/offers/:id</span></button>
-      <button class="sub" type="submit" name="screen" value="/offers/off-2291" aria-current="true"><span class="item-title">Northwind Bank</span><span class="muted">6.49% · 60 months</span></button>
-      <button class="sub" type="submit" name="screen" value="/offers/off-2315"><span class="item-title">Harbor Lending</span><span class="muted">7.05% · expired</span></button>
-    </form>
+    <a href="#"><span class="item-title">Fit the panel</span><span class="muted">As wide and tall as the panel</span></a>
+    <a href="#" aria-current="true"><span class="item-title">Phone</span><span class="muted">390 × 844</span></a>
     <hr>
     <form class="stack gap-2" action="#" method="post">
-      <label class="label" for="go-to">Go to a URL</label>
-      <div class="inline"><input id="go-to" name="screen" placeholder="/offers/off-2315"><button class="btn small" type="submit">Go</button></div>
+      <label class="label" for="custom-width">Custom size</label>
+      <div class="inline"><input id="custom-width" name="width" type="number" placeholder="Width"><button class="btn small" type="submit">Use this size</button></div>
     </form>
   </div>
 </details>

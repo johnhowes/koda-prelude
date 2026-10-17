@@ -130,18 +130,11 @@ doesn't render, building, new design, update clashed, popped out.
   words. Same in both clients; nothing said leaves the machine. Words come
   after speaking, not while. The set-up is the person's, on this machine.
   Added `dictate` and `capture` icons, and a pressed `.icon-btn`.
-- **Pick the record, not only the page** (the person, 2026-10-17; item 4
-  of the first review, corrected: Prelude already lists `:param` pages,
-  filled with the state's first record). The page menu lists, under a page
-  about one record, the records the state has for it (label and a note),
-  so the long name or the expired one is one click; its button says which
-  ("Offer · Northwind Bank"). Overlays are indented under their page and
-  open over the record on show. "Go to a URL" ends the list, for any
-  address (a query string, a record a form added); Refresh and Open in
-  browser after it. Capture and the "looking at" chip name the record too.
-  A record's label: the field a route names (`"label"` in routes.json, new),
-  else `name` or `title`, else its id. Added `.menu-list .sub` and groups to
-  the design system.
+- **No record picker** (the person, 2026-10-17, item 4 of the first
+  review): Prelude already lists `:param` pages with the state's first
+  record, and other records are found by following links in the page. A
+  picker (records under their page, Go to a URL) was designed and taken
+  back out.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -174,7 +167,3 @@ doesn't render, building, new design, update clashed, popped out.
   nowhere (the design shows one session at the design's URL).
 - Not taken on yet from the review: rules and open questions on the page,
   a fuller status line, suggestions for a new session.
-- A page with hundreds of records: list the first 20 and filter the rest
-  as you type? Not yet: states hold a handful.
-- A record's note (the fields under its label): should routes.json name
-  them (`"note": ["rate", "term"]`), or is the label enough?

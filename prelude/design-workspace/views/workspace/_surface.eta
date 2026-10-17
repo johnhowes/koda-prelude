@@ -39,12 +39,8 @@
    const here = { view, mode: appMode ? 'app' : 'design', size: size.id, client: client.id };
    const surfaceUrl = change => `${base}/preview?${new URLSearchParams(Object.entries({ ...here, ...change }).filter(([, value]) => value !== ''))}`;
    const url = surfaceUrl({});
-   /* The page on show: a listed page, one of a page's records, or another
-      address a route answers (matched by its pattern). */
-   const matches = (pattern, path) => Boolean(pattern) && new RegExp(`^${pattern.replace(/:[^/]+/g, '[^/]+')}$`).test(path.split('?')[0]);
-   const current = s.current ?? s.screens[0]?.id ?? null;
-   const cur = s.screens.find(x => x.id === current || x.records?.some(r => r.path === current))
-     ?? s.screens.find(x => matches(x.pattern, current ?? '')) ?? s.screens[0] ?? null;
+   const cur = s.screens.find(x => x.id === s.current) ?? s.screens[0] ?? null;
+   const current = cur?.id ?? null;
    const state = s.states.find(x => x.id === s.state) ?? s.states[0] ?? null;
    const popped = view === 'inline' && s.popped;
    const review = s.review ?? { failures: [], differ: [] };
@@ -122,8 +118,7 @@
          it says where the picture went; the tray in the chat reloads on
          draft-changed, so a capture from the pop-out lands there too. */%>
     <% if (cur && !popped && !(appMode && !s.app.running)) { %>
-    <% const record = cur.records?.find(r => r.path === current);
-       const shot = `${cur.title}${record ? ` – ${record.label}` : ''} –${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`; %>
+    <% const shot = `${cur.title} – ${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`; %>
     <details class="menu start" ko-as="captureMenu">
       <summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</summary>
       <form class="menu-list" action="<%= base %>/capture" method="post" ko-target="capture-status">

@@ -73,10 +73,9 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   (`aria-pressed="true"`): accent, glyph pulsing, for something on and
   working (listening). Added for "Design Workspace"
   (prelude/design-workspace): dictation, and capturing the preview.
-- **Menu groups**: `.menu-list .sub` (an indented row belonging to the one
-  above), `<hr>` between groups, a small form at the end with a real
-  `.btn` (menu row styles now skip `.btn`). Added for "Design Workspace"
-  (prelude/design-workspace): picking a page's record, Go to a URL.
+- **Menu groups**: `<hr>` between groups, and a small form at the end with
+  a real `.btn` (menu row styles now skip `.btn`, which they used to flatten).
+  Added for "Design Workspace" (prelude/design-workspace): a custom size.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions
