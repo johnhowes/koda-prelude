@@ -34,6 +34,10 @@
     <p class="sec"><%= group.change.summary %></p>
     <% } else { %>
     <ul class="build-routes">
+      <%/* The shell's Layouts group (8c): its layouts, designed and not yet the app's. */%>
+      <% for (const name of group.layouts ?? []) { %>
+      <li><code>layouts/<%= name %>.eta</code> <span class="muted">· the shell’s design, not yet the app’s</span></li>
+      <% } %>
       <% for (const route of group.routes) { %>
       <li><code><%= route.pattern %></code><% if (route.title && route !== group.page) { %> <%= route.title %><% } %> <span class="muted">· <%= route.ported ? 'the app’s own view' : 'the design’s view' %></span></li>
       <% } %>
@@ -65,7 +69,10 @@
     <% if (group.session) { %>
     <p class="sec">Build session: <a href="<%= group.session.url %>"><%= group.session.title %></a></p>
     <% } %>
-    <% if (group.toBuild && it.canBuild) { %>
+    <% if (group.toBuild && group.needsLayouts?.length) { %>
+    <%/* A page renders in its layout, so the shell's layouts it uses come first (8c). */%>
+    <p class="muted">Its pages render in the shell’s <%= group.needsLayouts.map(name => `“${name}”`).join(' and ') %> <%= group.needsLayouts.length === 1 ? 'layout' : 'layouts' %>, which the app hasn’t got yet. <% if (it.shellBuildUrl) { %><a href="<%= it.shellBuildUrl %>">Build the shell’s layouts first</a>.<% } else { %>Build the shell’s layouts first.<% } %></p>
+    <% } else if (group.toBuild && it.canBuild) { %>
     <form action="<%= it.base %>/builds" method="post">
       <input type="hidden" name="group" value="<%= group.key %>">
       <button class="btn small primary" type="submit" title="Builds this group on the design's branch, in a build session.">Start a build session</button>

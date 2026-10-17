@@ -301,6 +301,23 @@ export function shellLayoutLinks(shellDir) {
   return Object.fromEntries(Object.entries(links).filter(([name, path]) => /^[a-z0-9][a-z0-9-]*$/i.test(name) && typeof path === 'string' && path.startsWith('@app/')));
 }
 
+/** The shell's own layouts, by name: each layouts/<name><ext> that isn't a partial (_name). */
+export function shellLayouts(shellDir, ext = '.eta') {
+  let files;
+  try { files = readdirSync(join(shellDir, 'layouts')); } catch { return []; }
+  return files.filter(file => file.endsWith(ext) && !file.startsWith('_') && !file.startsWith('.')).map(file => file.slice(0, -ext.length)).sort();
+}
+
+/**
+ * The shell's layouts the app hasn't got yet (8c): designed in the shell and
+ * not linked to an app file in layouts.json. Once the app exists, these are
+ * the shell's Layouts group, built before the features whose pages use them.
+ */
+export function unbuiltLayouts(shellDir, ext = '.eta') {
+  const links = shellLayoutLinks(shellDir);
+  return shellLayouts(shellDir, ext).filter(name => !links[name]);
+}
+
 /**
  * Where a route's layout comes from: { views, template, sample } or null.
  * "@app/<path>" is a real layout in the repository, read in place.

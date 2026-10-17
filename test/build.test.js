@@ -210,9 +210,12 @@ test('a build works on the design’s own branch: a build session, its own instr
 
   const session = await (await get(location)).text();
   assert.match(session, /<span class="item-title">Build: Borrowers <span class="pill">Build<\/span><\/span>/);
-  assert.match(session, /A build session: it builds Borrowers into the app, on this design’s branch/);
-  assert.match(session, /On <code>prelude\/borrowers<\/code>\s*· building Borrowers/);
-  assert.match(session, /Merge into main/, 'no remote: finished by merging here');
+  assert.match(session, /<div class="notice" role="note">\s*<p>This session builds <strong>Borrowers<\/strong> into the app, on this design’s branch\./, 'a notice at the top of the chat');
+  // The header names the branch; its state and actions are in the About drawer.
+  assert.match(session, /<span class="icon icon-push" aria-hidden="true"><\/span><code>prelude\/borrowers<\/code>/);
+  const about = await (await get(`/f/${wid}/d/borrowers/about`)).text();
+  assert.match(about, /Works on <code>prelude\/borrowers<\/code>, building Borrowers\./);
+  assert.match(about, /Merge into main/, 'no remote: finished by merging here');
 });
 
 test('a design session on the branch may change the design system; the change travels with the design, and shows', async () => {

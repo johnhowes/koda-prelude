@@ -1802,7 +1802,42 @@ Decided 2026-10-16:
   Prelude's current one, and its views' CSS and Koda didn't load in the preview. Hence
   linking only an unredesigned layout, and `app.assets`.
 - Not yet: building a redesigned shell layout into an app that already exists. Only the
-  app build ports layouts, into an app it makes.
+  app build ports layouts, into an app it makes. (Since done: 8c.)
+
+#### 8c: Building the shell's layouts
+
+Found on Prelude itself. The Design Workspace's pages name the shell's `workspace`
+layout, a redesign with a drawer and a page that fills the window. A build ported the
+pages, but Prelude's real layout had neither, so Rules (an overlay in the drawer) took
+over the page and the design surface shrank to a sliver. The check passed, because with
+no layout linked it renders the ported views in the shell's designed layout.
+
+- **A "Layouts" group on the shell's Build page**, shown once the app exists and a shell
+  layout isn't linked in `layouts.json`. Its build session ports those layouts, with the
+  partials and CSS they use, into the app: changing the app's own layout where the
+  redesign replaces it, adding the others, keeping what the app's pages already rely on.
+  Then it links each in `layouts.json`, and Prelude removes the shell's copies. The group
+  is built once every layout is linked.
+- **Layouts before the features that use them.** A feature group whose pages name a
+  shell layout the app hasn't got yet can't start a build: the Build page says which
+  layout to build first, as it does for the app. A layout counts as the app's once it's
+  linked, on that branch.
+- **The brief names the layout:** a feature build is told which of the app's layouts its
+  pages render in.
+- Once linked, designs render in the app's real layout, so the check sees what the app
+  will show.
+
+Decided 2026-10-17:
+- The shell's layouts are built like a feature's pages, from the shell's Build page.
+- A feature waits for the layouts its pages use.
+
+**As built (8c):** `unbuiltLayouts` (host.js) lists the shell's layouts with no link in
+`layouts.json`. With the app built, `groupsOf` puts them first on the shell's Build page as
+the `@layouts` group (`layoutsStory`), and gives every other group `needsLayouts`: the
+unbuilt layouts its pages render in (`layoutsOfGroup`; overlays render over their page).
+The builds route refuses a group that needs one, and the Build page links to the shell's.
+The Layouts build is briefed by `layoutsBuildPrompt`, and is done when no layout is left
+unlinked. A feature's brief names the app layouts its pages render in.
 
 ### Step 9: Branches - a design and its build on one branch
 
@@ -2213,7 +2248,7 @@ Decided 2026-10-16:
 **As built (10.8):** `surface()` in main.js takes a `mode` (`modeOf`, from the surface's
 URL or a form's hidden `mode`) and `appHere()` (the host's url, and whether it's running
 from this folder and approved). In App mode the frame's `src` is the host's url plus the
-screen's path, with no cache-busting. `_design.eta` draws the switch, hides the state
+screen's path, with no cache-busting. `_design.eta` (since replaced by the Design Workspace's `_surface.eta`) drew the switch, hides the state
 picker, Reset and Approve, and shows Start it (`ko-target="design"`, back to App) when the
 app isn't running. Checked in a browser on the Apiary clone: App framed its app, and Start
 it brought it up. Found while testing it, and fixed: requests now and then reset when they

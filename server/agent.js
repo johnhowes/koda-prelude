@@ -334,6 +334,30 @@ const hostContract = () => {
 const referenceHost = () => readFileSync(new URL('../tools/reference-host.js', import.meta.url), 'utf8');
 
 /**
+ * The instructions for building the shell's layouts into an app that already
+ * exists (plan, 8c): the layouts designed in the shell and not yet the app's,
+ * ported, then linked in layouts.json. `app` is appOf's.
+ */
+export function layoutsBuildPrompt({ shell, layouts, app, branch, references = [], stack = null, kodaPath = null }) {
+  const shellPath = `prelude/${shell.id}`;
+  return `You are building the app shell's layouts into this repository's app${app.path ? `, in ${app.path}/` : ''}${app.stack ? ` (${app.stack})` : ''}. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it.
+
+The shell, ${shellPath}, designs the page every feature renders in. These of its layouts aren't the app's yet:
+${layouts.map(name => `  - ${name}: ${shellPath}/layouts/${name}.eta, with sample data in ${name}.json`).join('\n')}
+
+Feature pages that render in them have already been built, or wait for this: until the app has these layouts, those pages render in whatever layout the app has, without the regions and the page structure they were designed in.
+
+For each layout:
+- Port it into the app, where the app keeps its layouts, element for element, with the partials it includes (${shellPath}/layouts/_*.eta) and the CSS it uses (the shell's own stylesheets, such as ${shellPath}/layouts/*.css or ${shellPath}/styles.css where the layouts use it), into the app's stylesheets. Change only what real code requires: the app's real URLs for stylesheets and scripts, and the data the app gives a layout instead of the sample data.
+- Where the app already has a layout that this one redesigns (the app's main layout, say, against the shell's "app"), change the app's file into the design, keeping what the app's pages rely on: every region they target (ko-target, ko-into), the main region's id, and anything the app's own code reads. Say in ${shellPath}/NOTES.md what you kept and why.
+- Write ${shellPath}/layouts.json naming each layout by the app's file: { "${layouts[0] ?? 'app'}": "@app/<path to it, without its extension>" }, keeping any it already has. Prelude then renders every design inside the app's real layouts, and removes the shell's copies.
+
+Change nothing else in the app: not its pages, data or tests, beyond what the layouts need.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}
+
+You can't run commands. After each turn Prelude renders the shell's gallery, and every design's pages, through the app's layouts, and tells you with the next message what fails.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/**
  * The instructions for connecting an app the project already has (plan, 8b):
  * find it and change as little as possible, so designs render as its own views
  * and features are built into it. Arguments as appBuildPrompt's.
@@ -406,7 +430,7 @@ ${referenceHost()}${references.length ? `\n\nYou may also read: ${references.map
  * a design - a page, its overlays, fragments and forms - in the app's real
  * code, on a branch of its own. `group` is a backlog group (backlog.js).
  */
-export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], branch, references = [], stack = null, kodaPath = null }) {
+export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], layouts = [], branch, references = [], stack = null, kodaPath = null }) {
   const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}${route.from ? `, redesigned from ${route.from.slice(5)}: port it back over that file, and remove the route's "from"` : ''}`);
   const describe = route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`;
   const describePost = post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`;
@@ -442,7 +466,7 @@ export function buildPrompt({ title, designPath, group, change = null, designWid
 
 The design is the specification, and it is already the app's views: ${designPath}/routes.json says what each URL shows (its view, and "data", the path into a state that becomes the view's model) and what each form does (POST routes: update, add or remove at a data path; "require", refused with a 422 that re-renders "form" with the messages; "answer", what comes back). ${designPath}/states/ are the cases, and become the tests' fixtures. ${designPath}/RULES.md says what else must be true, and ${designPath}/NOTES.md why, including any porting spec.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here, and how ported views differ.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}
 
-${change ? `"${group.title}" is already built: this session builds a change to it, and only that. Everything not listed stays as it is.\n\nThe change:` : 'This session builds:'}
+${layouts.length ? `Its pages render in the app's ${layouts.map(layout => layout.file ? `"${layout.name}" layout (${layout.file})` : `"${layout.name}" layout`).join(' and ')}: a page's markup sits in that layout's main region, and its overlays land in the layout's regions (a route's "in"). Build the pages for it; don't add a layout of your own.\n\n` : ''}${change ? `"${group.title}" is already built: this session builds a change to it, and only that. Everything not listed stays as it is.\n\nThe change:` : 'This session builds:'}
 ${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes these proposed rules true:\n${rules}` : ''}${wide ? `\nThese proposed rules aren't tied to a page. Make true the ones what you build touches, and leave the rest:\n${wide}` : ''}${events ? `\nand has the server send these events on its own (${designPath}/events.json):\n${events}` : ''}
 
 For each of them:
