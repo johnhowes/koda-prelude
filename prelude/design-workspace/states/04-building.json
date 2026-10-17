@@ -54,6 +54,7 @@
             { "id": 7, "type": "tool-result", "name": "Bash", "error": true, "text": "npm test -- offers\n\n✖ compare shows the cheaper offer first (4.2ms)\n  AssertionError: expected 'off-2291' to equal 'off-2307'" },
             { "id": 8, "type": "tool", "name": "Edit", "summary": "src/views/offers/compare.eta" }
           ],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {
             "view": "inline",
             "mode": "design",

@@ -13,6 +13,13 @@
 - **R-w3j.** A design remembers one custom size, offered in every window’s size menu after the shell’s sizes; setting another replaces it.
   *shown-on: /f/:folder/d/:design/window @ popped-out*
   *proposed*
+- **R-b6d.** A message may be images alone, with no words.
+  *proposed*
+- **R-x8f.** The agent sees every image sent with a message, and the images stay with the session, so they’re still there when it’s opened again.
+  *shown-on: /f/:folder/d/:design/window @ popped-out*
+  *proposed*
+- **R-m2s.** Only images can be attached (PNG, JPEG, GIF or WebP); pasting or dropping anything else leaves the message box as it was.
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

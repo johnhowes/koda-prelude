@@ -6,7 +6,18 @@
 <% const e = it.entry; %>
 <% const show = page => include('./_show', { base: it.base, page }); %>
 <% if (e.type === 'user') { %>
-<li class="entry user"><div class="bubble"><%= e.message %></div></li>
+<li class="entry user">
+  <% if (e.images?.length) { %>
+  <div class="stack gap-2">
+    <ul class="attachments" aria-label="Images">
+      <% for (const image of e.images) { %><li><a class="attachment" href="<%= image.url %>" target="_blank"><img class="thumb" src="<%= image.url %>" alt="<%= image.name %>"><span class="attachment-name"><%= image.name %></span></a></li><% } %>
+    </ul>
+    <% if (e.message) { %><div class="bubble"><%= e.message %></div><% } %>
+  </div>
+  <% } else { %>
+  <div class="bubble"><%= e.message %></div>
+  <% } %>
+</li>
 <% } else if (e.type === 'text') { %>
 <li class="entry agent"><div class="prose"><%~ e.html %></div></li>
 <% } else if (e.type === 'tool') { %>

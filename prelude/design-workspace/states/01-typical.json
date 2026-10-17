@@ -61,6 +61,13 @@
             { "id": 15, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
             { "id": 16, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." }
           ],
+          "draft": {
+            "base": "/f/borrower-portal/d/loan-offers",
+            "attachments": [
+              { "id": "img-4k2", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg" },
+              { "id": "img-9tw", "name": "Offer card – Figma.png", "url": "/_prelude/design/assets/figma-offer-card.svg" }
+            ]
+          },
           "surface": {
             "view": "inline",
             "mode": "design",

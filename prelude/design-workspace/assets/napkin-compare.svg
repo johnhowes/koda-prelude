@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <!-- Sample data: a photo of a napkin sketch of the compare page. -->
+  <rect width="640" height="480" fill="#f3ede1"/>
+  <g fill="none" stroke="#2f3a56" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 70 q120 -6 240 2"/>
+    <rect x="60" y="110" width="240" height="300" rx="14" transform="rotate(-1 180 260)"/>
+    <rect x="340" y="114" width="240" height="296" rx="14" transform="rotate(1.5 460 262)"/>
+    <path d="M90 160 h120 M90 200 h170 M90 240 h90"/>
+    <path d="M370 160 h120 M370 200 h170 M370 240 h90"/>
+    <rect x="90" y="340" width="120" height="40" rx="8"/>
+    <rect x="370" y="340" width="120" height="40" rx="8"/>
+    <ellipse cx="150" cy="300" rx="70" ry="22" stroke="#c0392b"/>
+    <path d="M230 300 q60 -40 120 -150" stroke="#c0392b"/>
+  </g>
+  <text x="360" y="90" font-family="Comic Sans MS, cursive" font-size="26" fill="#c0392b">cheaper one first!</text>
+</svg>

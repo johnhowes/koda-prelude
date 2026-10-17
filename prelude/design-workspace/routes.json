@@ -42,6 +42,14 @@
       "also": [{ "into": "transcript", "view": "workspace/_transcript", "data": "folders/:folder/designs/:design" }]
     }
   },
+  "POST /f/:folder/d/:design/attachments": {
+    "add": "folders/:folder/designs/:design/draft/attachments",
+    "answer": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }
+  },
+  "POST /f/:folder/d/:design/attachments/:attachment/remove": {
+    "remove": "folders/:folder/designs/:design/draft/attachments/:attachment",
+    "answer": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }
+  },
   "POST /f/:folder/d/:design/sessions/:session/stop": {
     "update": "folders/:folder/designs/:design/state",
     "answer": { "view": "workspace/_status", "data": "folders/:folder/designs/:design/state" }

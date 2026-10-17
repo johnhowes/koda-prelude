@@ -54,6 +54,12 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **Empty page** (`.empty.page`): a first-run page's empty state, centred in
   the page's height (60svh), with a heading and its action. Added for "Landing
   Page" (prelude/landing-page).
+- **Composer attachments** (`.attachments`, `.attachment`, `.thumb`,
+  `.attachment-name`, `.composer-tools`, `.composer[data-dropping]`):
+  images going with a message as thumbnails, added by Attach, paste or
+  drop; the same list shows them in a sent message. The box now grows as
+  the person types (`field-sizing: content`, up to 33vh). Added for "Design
+  Workspace" (prelude/design-workspace).
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

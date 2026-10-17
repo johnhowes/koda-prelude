@@ -51,6 +51,7 @@
             },
             { "id": 7, "type": "note", "text": "Committed to prelude/loan-offers (0c93f5a)." }
           ],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {
             "view": "inline",
             "mode": "design",

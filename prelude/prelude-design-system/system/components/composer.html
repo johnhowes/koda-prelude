@@ -1,11 +1,37 @@
 <!-- Composer: the message box under a transcript. Enter sends, Shift+Enter starts a
-     new line, and the placeholder says so. A refusal shows as an .error at the
-     foot's start; Send stays at its end. -->
+     new line, and the placeholder says so. The box grows as the person types.
+     Images go with the message as .attachments above the box: added with Attach
+     an image, or pasted or dropped onto the box, each a thumbnail with its name
+     and Remove (a submit with its own formaction, since forms can't nest). The foot holds the tools at its start (Attach), then a refusal as
+     an .error, then Send at its end. While something it can take is dragged over
+     it, the page marks it data-dropping. -->
 <form class="composer" action="#" method="post">
+  <ul class="attachments" aria-label="Attached images">
+    <li class="attachment">
+      <img class="thumb" src="napkin.jpg" alt="">
+      <span class="attachment-name">napkin.jpg</span>
+      <button class="icon-btn small" type="submit" formaction="#" formnovalidate aria-label="Remove napkin.jpg"><span class="icon icon-close" aria-hidden="true"></span></button>
+    </li>
+  </ul>
   <label class="sr-only" for="message">Message</label>
   <textarea id="message" name="message" rows="3" required placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."></textarea>
   <div class="composer-foot">
-    <span></span>
+    <div class="composer-tools">
+      <label class="icon-btn small" title="Attach an image: or paste one, or drop it on the box">
+        <span class="icon icon-attach" aria-hidden="true"></span><span class="sr-only">Attach an image</span>
+        <input class="sr-only" type="file" name="image" accept="image/*" multiple>
+      </label>
+    </div>
     <button class="btn small primary" type="submit">Send</button>
   </div>
 </form>
+
+<!-- In a sent message, the images sit above the bubble, each opening full size. -->
+<li class="entry user">
+  <div class="stack gap-2">
+    <ul class="attachments" aria-label="Images">
+      <li><a class="attachment" href="napkin.jpg" target="_blank"><img class="thumb" src="napkin.jpg" alt="napkin.jpg"><span class="attachment-name">napkin.jpg</span></a></li>
+    </ul>
+    <div class="bubble">Like this sketch: the cheaper offer on the left.</div>
+  </div>
+</li>

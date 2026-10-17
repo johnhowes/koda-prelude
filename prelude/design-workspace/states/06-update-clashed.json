@@ -52,6 +52,7 @@
             { "id": 5, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." },
             { "id": 6, "type": "note", "failed": true, "text": "Updating from main clashed in 2 files. Send the agent a message and it resolves them first, or abandon the update." }
           ],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {
             "view": "inline",
             "mode": "design",

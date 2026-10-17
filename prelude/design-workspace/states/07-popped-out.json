@@ -36,11 +36,14 @@
           "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
           "state": { "kind": "working", "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd/stop" },
           "entries": [
-            { "id": 1, "type": "user", "message": "On a phone, the two offers on the compare page should stack, with the cheaper one first." },
+            { "id": 1, "type": "user", "message": "On a phone, a long lender name runs into the rate (circled). And the two offers on the compare page should stack, with the cheaper one first.", "images": [
+              { "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg" }
+            ] },
             { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
             { "id": 3, "type": "text", "html": "<p>The comparison is a <code>.grid</code> already, so it stacks when narrow; the order is what needs changing. I’ll have the controller put the cheaper offer first, so the view doesn’t sort.</p>" },
             { "id": 4, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/routes.json" }
           ],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {
             "view": "inline",
             "mode": "design",

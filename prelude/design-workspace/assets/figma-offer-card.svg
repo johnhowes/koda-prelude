@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
+  <!-- Sample data: an export of a Figma frame, an offer card. -->
+  <rect width="800" height="520" fill="#e9ebef"/>
+  <rect x="160" y="60" width="480" height="400" rx="16" fill="#ffffff" stroke="#d5d8de"/>
+  <text x="200" y="120" font-family="Inter, sans-serif" font-size="18" fill="#6b7280">Offer from Northwind Bank</text>
+  <text x="200" y="175" font-family="Inter, sans-serif" font-size="44" font-weight="700" fill="#111827">6.49% APR</text>
+  <text x="200" y="215" font-family="Inter, sans-serif" font-size="20" fill="#374151">$412.80 a month for 60 months</text>
+  <rect x="200" y="245" width="140" height="30" rx="15" fill="#dcfce7"/>
+  <text x="218" y="266" font-family="Inter, sans-serif" font-size="15" fill="#166534">Lower total cost</text>
+  <line x1="200" y1="305" x2="600" y2="305" stroke="#e5e7eb"/>
+  <text x="200" y="345" font-family="Inter, sans-serif" font-size="16" fill="#6b7280">Total cost $24,768.00 · Expires 24 Oct</text>
+  <rect x="200" y="380" width="180" height="48" rx="10" fill="#b4532a"/>
+  <text x="236" y="410" font-family="Inter, sans-serif" font-size="17" font-weight="600" fill="#ffffff">Accept offer</text>
+  <text x="168" y="48" font-family="Inter, sans-serif" font-size="13" fill="#8b5cf6">Offer card / Default</text>
+</svg>

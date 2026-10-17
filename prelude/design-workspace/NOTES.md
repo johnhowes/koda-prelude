@@ -61,7 +61,28 @@ doesn't render, building, new design, update clashed, popped out.
   a session is an `update` of the design in the design, so its refusal
   re-renders with the design's data.
 
+- **Images in the message box** (the person, 2026-10-17): a sketch, a
+  Figma export, a screenshot of a problem. Attach (paperclip), paste into
+  the box, or drop on it. Each uploads at once (`POST …/attachments`, a
+  `ko-form` part, so the message isn't sent) into the session's draft and
+  comes back as a thumbnail with Remove; Send posts their ids. Sent
+  messages show the images above the bubble, each opening full size. The
+  app keeps them with the session and tells the agent their paths, so it
+  reads them (the CLI's Read takes images). Paste and drop are the one
+  script: moving a File into the upload's input. The box grows as you type.
+  Components (`.attachments` …) went into the design system.
+- In the design, a message refused while images are attached comes back
+  with an empty tray (the fake route has only the posted fields), and the
+  tray isn't emptied after sending (a route does one change). The app does
+  both.
+
 ## Open questions
+
+- A message may be images alone (rule R-b6d), but the design's route still
+  requires text: its `require` can't say "text or an image".
+- What else to add to the message box: see the proposals in the session of
+  2026-10-17 (the page on show as context, mentions, queueing while the
+  agent works, drafts kept, marking up an image).
 
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
