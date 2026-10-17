@@ -15,6 +15,7 @@ import { join } from 'node:path';
 
 import { backlogOf } from './backlog.js';
 import { filesAt, textAt } from './branches.js';
+import { parseEvents } from './events.js';
 import { listStates, lookup, parsePostRoutes, parseRoutes, readPostRoutes, readRoutes, samplePaths } from './host.js';
 import { parseRules, readRules } from './rules.js';
 import { readSnapshots, snapshotName } from './snapshots.js';
@@ -74,7 +75,9 @@ function groupKeyFor(pattern, keys) {
  * where change = { status: 'new' | 'changed' | 'unchanged', summary, newRoutes,
  * changedRoutes: [{ route, what: [text] }], removedRoutes, newPosts,
  * changedPosts, removedPosts, shape: [{ pattern, gained, lost }],
- * screens: [{ page, states }], rules: { added, reworded, retired }, states, statesNew }.
+ * screens: [{ page, states }], rules: { added, reworded, retired },
+ * events: { added, changed: [{ event, what }], removed }, states, statesNew }.
+ * designWide also has { events }: the design-wide events, compared the same way.
  */
 export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
   const prefix = `prelude/${designId}/`;
@@ -111,15 +114,33 @@ export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
   const rules = readRules(designDir);
   const baseRules = new Map(parseRules(at('RULES.md') ?? '').map(rule => [rule.id, rule]));
 
-  const { groups, designWide } = backlogOf(designDir);
+  const { groups, designWide, events: eventsWide } = backlogOf(designDir);
   const keys = groups.map(group => group.key);
+
+  // Server events (6e), against the baseline's events.json. One that's gone
+  // goes with the page whose views it pushed into, as backlog.js places events.
+  const baseEvents = new Map(parseEvents(json(at('events.json'))).map(event => [event.name, event]));
+  const nowEvents = new Set([...groups.flatMap(group => group.events ?? []), ...(eventsWide ?? [])].map(event => event.name));
+  const viewsOf = group => [...group.routes.map(route => route.view), ...group.posts.flatMap(post => [post.form, post.answer.view, ...post.answer.also.map(also => also.view)])].filter(Boolean);
+  const goneEvents = [...baseEvents.values()].filter(event => !nowEvents.has(event.name));
+  const placeGone = event => groups.find(group => event.push.some(part => part.view && viewsOf(group).includes(part.view)))?.key ?? null;
+  const compareEvents = (now, gone) => {
+    const out = { added: [], changed: [], removed: gone };
+    for (const event of now) {
+      const before = baseEvents.get(event.name);
+      if (!before) { out.added.push(event); continue; }
+      const what = eventDifferences(before, event);
+      if (what.length) out.changed.push({ event, what });
+    }
+    return out;
+  };
   const changes = new Map();
   const claimedRules = new Set();
 
   for (const group of groups) {
     const change = {
       status: 'unchanged', newRoutes: [], changedRoutes: [], removedRoutes: [], newPosts: [], changedPosts: [], removedPosts: [],
-      shape: [], screens: [], rules: { added: [], reworded: [], retired: [] }, states: [], statesNew: [],
+      shape: [], screens: [], rules: { added: [], reworded: [], retired: [] }, events: { added: [], changed: [], removed: [] }, states: [], statesNew: [],
     };
     const screenStates = new Set();
 
@@ -206,6 +227,8 @@ export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
       else if (before.text !== rule.text) change.rules.reworded.push(rule);
     }
 
+    change.events = compareEvents(group.events ?? [], goneEvents.filter(event => placeGone(event) === group.key));
+
     // The states it shows up in: where its screens changed, the new ones, or
     // those its changed rules are shown in.
     const ruleStates = [...change.rules.added, ...change.rules.reworded].flatMap(rule => rule.shownOn.map(place => place.state).filter(Boolean));
@@ -215,7 +238,8 @@ export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
     const pageNew = designNew || (group.page && !baseRoutes.some(route => route.pattern === group.page.pattern));
     const anything = change.newRoutes.length || change.changedRoutes.length || change.removedRoutes.length || change.newPosts.length
       || change.changedPosts.length || change.removedPosts.length || change.shape.length || change.screens.length
-      || change.rules.added.length || change.rules.reworded.length || change.rules.retired.length;
+      || change.rules.added.length || change.rules.reworded.length || change.rules.retired.length
+      || change.events.added.length || change.events.changed.length || change.events.removed.length;
     change.status = pageNew ? 'new' : anything ? 'changed' : 'unchanged';
     change.summary = summaryOf(group, change);
     changes.set(group.key, change);
@@ -232,7 +256,20 @@ export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
     else if (before.text !== rule.text) wide.reworded.push(rule);
   }
   const removedGroups = baseRoutes.filter(route => route.title && !route.over && !routes.some(now => now.pattern === route.pattern)).map(route => route.title);
-  return { designNew, groups: changes, removedGroups, statesGone, designWide: { rules: wide, all: designWide } };
+  const events = compareEvents(eventsWide ?? [], goneEvents.filter(event => placeGone(event) === null));
+  return { designNew, groups: changes, removedGroups, statesGone, designWide: { rules: wide, events, all: designWide } };
+}
+
+/** What differs between two versions of an event: [text]. */
+function eventDifferences(before, now) {
+  const what = [];
+  if (before.title !== now.title) what.push(`it's now "${now.title}"`);
+  if (before.verb !== now.verb || before.at !== now.at || JSON.stringify(before.with) !== JSON.stringify(now.with)) {
+    what.push(now.verb ? `it now ${now.verb === 'add' ? `adds a record to ${now.at}` : now.verb === 'update' ? `updates ${now.at}` : `removes ${now.at}`}` : 'it no longer changes the data');
+  }
+  if (before.send !== now.send) what.push(now.send ? `it sends ${now.send}` : 'it no longer sends an event');
+  if (JSON.stringify(before.push) !== JSON.stringify(now.push)) what.push(now.push.length ? `it pushes ${now.push.map(part => part.view ? `${part.view} into ${part.into}` : `nothing into ${part.into}`).join(', ')}` : 'it no longer pushes markup');
+  return what;
 }
 
 /** "Edit borrower gains a notes field; R-q8m is new; its screen changed in Typical." */
@@ -251,6 +288,9 @@ function summaryOf(group, change) {
   for (const rule of change.rules.added) parts.push(`${rule.id} is new`);
   for (const rule of change.rules.reworded) parts.push(`${rule.id} is reworded`);
   for (const rule of change.rules.retired) parts.push(`${rule.id} is retired`);
+  for (const event of change.events.added) parts.push(`a new event, ${event.name}`);
+  for (const { event } of change.events.changed) parts.push(`the ${event.name} event changes`);
+  for (const event of change.events.removed) parts.push(`the ${event.name} event goes`);
   if (!parts.length && change.screens.length) parts.push(`${change.screens.map(screen => screen.page).join(', ')} looks different`);
   return parts.join('; ');
 }

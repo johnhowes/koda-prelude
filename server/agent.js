@@ -430,7 +430,14 @@ export function buildPrompt({ title, designPath, group, change = null, designWid
   const rules = (change ? [...change.rules.added, ...change.rules.reworded].filter(rule => rule.proposed) : group.rules.filter(rule => rule.proposed)).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
   const wide = designWide.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`).join('\n');
   const designAt = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
-  const events = [...(group.events ?? []), ...designEvents].map(event => `  - ${eventLine(event, designAt)}`).join('\n');
+  // A change sends only its new and changed events, and stops sending the gone ones.
+  const events = (change
+    ? [
+      ...(change.events?.added ?? []).map(event => `  - ${eventLine(event, designAt)} (new)`),
+      ...(change.events?.changed ?? []).map(({ event, what }) => `  - ${eventLine(event, designAt)} (changed: ${what.join('; ')})`),
+      ...(change.events?.removed ?? []).map(event => `  - ${event.name} (${event.title}) goes: stop sending it`),
+    ]
+    : [...(group.events ?? []), ...designEvents].map(event => `  - ${eventLine(event, designAt)}`)).join('\n');
   return `You are building part of a design into this repository's app: "${group.title}" of the design "${title}", in ${designPath}/. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and opens the pull request.
 
 The design is the specification, and it is already the app's views: ${designPath}/routes.json says what each URL shows (its view, and "data", the path into a state that becomes the view's model) and what each form does (POST routes: update, add or remove at a data path; "require", refused with a 422 that re-renders "form" with the messages; "answer", what comes back). ${designPath}/states/ are the cases, and become the tests' fixtures. ${designPath}/RULES.md says what else must be true, and ${designPath}/NOTES.md why, including any porting spec.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here, and how ported views differ.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}

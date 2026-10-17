@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
 
 import { buildPrompt } from '../server/agent.js';
+import { backlogOf, incrementStory } from '../server/backlog.js';
 import { baselineOf, createBranches } from '../server/branches.js';
 import { createDesign } from '../server/designs.js';
 import { canonical, folderId } from '../server/folders.js';
@@ -188,4 +189,50 @@ test('a changed group is built once a build of it finishes, and due again after 
   const due = await page(`/f/${wid}/d/loans/build`);
   assert.doesNotMatch(due, /<span class="pill">Built<\/span>/, 'a design change after the build makes it due again');
   assert.match(due, /Start a build session/);
+});
+
+test('server events in the increment: new, changed and gone, by page and design-wide', () => {
+  const small = canonical(mkdtempSync(join(tmpdir(), 'prelude-events-')));
+  git(small, 'init', '-q', '-b', 'main');
+  createDesign(small, { title: 'Home' });
+  write(small, 'prelude/home/routes.json', { '/': { view: 'home', title: 'Home', data: '' } });
+  write(small, 'prelude/home/views/home.eta', '<section ko-invoke="event:needs-changed"></section>');
+  write(small, 'prelude/home/views/_notice.eta', '<p>Notice</p>');
+  write(small, 'prelude/home/events.json', {
+    'needs-changed': { title: 'Something needs you', send: 'needs-changed' },
+    'old-notice': { title: 'An old notice', push: [{ into: 'main', view: 'home' }] },
+    'wide-gone': { title: 'Wide and gone', send: 'wide-gone' },
+  });
+  git(small, 'add', '-A');
+  git(small, 'commit', '-q', '-m', 'Home, with events');
+  const baseline = git(small, 'rev-parse', 'HEAD');
+  write(small, 'prelude/home/events.json', {
+    'needs-changed': { title: 'Something needs you', add: 'needs', with: { summary: 'Review' }, send: 'needs-changed' },
+    'new-notice': { title: 'A new notice', push: [{ into: 'main', view: 'home' }] },
+    'wide-new': { title: 'Wide and new', send: 'wide-new' },
+  });
+
+  const designDir = join(small, 'prelude', 'home');
+  const change = incrementOf({ repo: small, base: baseline, designId: 'home', designDir });
+  const home = change.groups.get('/');
+  assert.equal(home.status, 'changed', 'events alone make a page changed');
+  assert.deepEqual(home.events.added.map(event => event.name), ['new-notice']);
+  assert.deepEqual(home.events.changed.map(({ event, what }) => [event.name, what]), [['needs-changed', ['it now adds a record to needs']]]);
+  assert.deepEqual(home.events.removed.map(event => event.name), ['old-notice'], 'gone, and placed by the views it pushed');
+  assert.match(home.summary, /a new event, new-notice; the needs-changed event changes; the old-notice event goes/);
+  assert.deepEqual(change.designWide.events.added.map(event => event.name), ['wide-new']);
+  assert.deepEqual(change.designWide.events.removed.map(event => event.name), ['wide-gone']);
+
+  const group = backlogOf(designDir).groups[0];
+  const story = incrementStory({ design: { title: 'Home' }, designPath: 'prelude/home', group, change: home, designEvents: change.designWide.events });
+  assert.match(story, /## Server events\n\n- New: When a new notice \(`new-notice`\), the server pushes `prelude\/home\/views\/home` into `main`/);
+  assert.match(story, /- Changed \(it now adds a record to needs\): When something needs you \(`needs-changed`\), the server adds a record to `needs` and sends the `needs-changed` event/);
+  assert.match(story, /- New: When wide and new \(`wide-new`\)/);
+  assert.match(story, /- Gone: the server no longer sends `old-notice` \(An old notice\)\./);
+  assert.match(story, /- Gone: the server no longer sends `wide-gone`/);
+
+  const prompt = buildPrompt({ title: 'Home', designPath: 'prelude/home', group, change: home, branch: 'prelude/home' });
+  assert.match(prompt, /- When a new notice \(`new-notice`\)[^\n]* \(new\)/);
+  assert.match(prompt, /- When something needs you \(`needs-changed`\)[^\n]* \(changed: it now adds a record to needs\)/);
+  assert.match(prompt, /- old-notice \(An old notice\) goes: stop sending it/);
 });

@@ -589,7 +589,7 @@ function groupsOf(app, { entry, design, dir }) {
       const builtSince = Boolean(builtAt && repo && designCommitsSince(repo, builtAt, entry.branch, design.id).length === 0);
       const toBuild = changed ? !(group.built && builtSince) : !group.built;
       const story = changed
-        ? incrementStory({ design, designPath, group, change, states, shared })
+        ? incrementStory({ design, designPath, group, change, designEvents: increment?.designWide.events, states, shared })
         : storyMarkdown({ design, designPath, group, designWide, designEvents: backlog.events, states, approved });
       return { ...group, kind, change, toBuild, story };
     }),

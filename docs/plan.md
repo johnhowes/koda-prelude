@@ -1399,9 +1399,14 @@ story lists both events; and a build sends them from the app.
   it's design-wide, in every page's story.
 - Checked in a browser on a scratch project: the page opened the channel, and sending
   from the design bar reloaded "Needs you" and filled the notice with no page load.
-- **Not yet:** the increment (step 10) doesn't compare events, so a changed group's
-  story leaves a changed event out. The Done when on Prelude's own Landing page, and a
-  build sending events from an app, are still to be tried.
+- **In the increment (step 10):** `incrementOf` compares `events.json` with the
+  baseline's, per page (`change.events`: added, changed with what, removed) and
+  design-wide (`designWide.events`). A changed event makes its page changed. A gone
+  event goes with the page whose views it pushed. The change's story has a "Server
+  events" section (New, Changed, Gone), and a build of a change is briefed with only
+  those.
+- **Not yet:** the Done when on Prelude's own Landing page, and a build sending events
+  from an app, are still to be tried.
 
 ### Step 7: Build, within a team's lifecycle
 

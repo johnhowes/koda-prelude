@@ -105,7 +105,7 @@ export function eventLine(event, at) {
  * changed, what's gone - with nothing about the rest of the existing page.
  * `change` is increment.js's for the group; `states` the design's states.
  */
-export function incrementStory({ design, designPath, group, change, states = [], shared = [] }) {
+export function incrementStory({ design, designPath, group, change, designEvents = { added: [], changed: [], removed: [] }, states = [], shared = [] }) {
   const at = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
   const titleOf = id => states.find(state => state.id === id)?.title ?? id;
   const lines = [`# ${group.title}: ${design.title} (change)`, ''];
@@ -154,6 +154,19 @@ export function incrementStory({ design, designPath, group, change, states = [],
     for (const rule of added) lines.push(`- New: **${rule.id}.** ${rule.text}`);
     for (const rule of reworded) lines.push(`- Reworded: **${rule.id}.** ${rule.text}`);
     for (const rule of retired) lines.push(`- Retired: **${rule.id}.** ${rule.text}${rule.note ? ` (${rule.note})` : ''}`);
+    lines.push('');
+  }
+
+  // Server events (6e): new, changed and gone, the page's and the design-wide ones.
+  const events = change.events ?? { added: [], changed: [], removed: [] };
+  const eventsAdded = [...events.added, ...designEvents.added];
+  const eventsChanged = [...events.changed, ...designEvents.changed];
+  const eventsGone = [...events.removed, ...designEvents.removed];
+  if (eventsAdded.length || eventsChanged.length || eventsGone.length) {
+    lines.push('## Server events', '');
+    for (const event of eventsAdded) lines.push(`- New: ${eventLine(event, at)}`);
+    for (const { event, what } of eventsChanged) lines.push(`- Changed (${what.join('; ')}): ${eventLine(event, at)}`);
+    for (const event of eventsGone) lines.push(`- Gone: the server no longer sends \`${event.name}\` (${event.title}).`);
     lines.push('');
   }
 
