@@ -55,7 +55,6 @@ test('screens are listed in order, named by their <title> or their file', () => 
 
 test('with no screens, the design surface says so', async () => {
   const html = await (await get(`${designUrl}/preview`)).text();
-  assert.match(html, /0 screens/);
   assert.match(html, /No screens yet/);
   assert.doesNotMatch(html, /<iframe/);
 });
@@ -71,7 +70,6 @@ test('the design surface shows the current screen in a frame, and answers with i
   screen('02-pay.html', '<!doctype html><title>Pay</title>');
 
   const first = await (await get(`${designUrl}/preview`)).text();
-  assert.match(first, /2 screens/);
   assert.match(first, /<iframe title="Cart" src="[^"]+\/p\/checkout\/screens\/01-cart\.html\?v=\d+"/, 'the first screen until one is picked');
   assert.match(first, /id="design"[^>]*ko-attach="replace"[^>]*ko-invoke="event:design-changed"/);
   assert.match(first, /target="_blank"/, 'Open in browser leaves Koda alone');
@@ -90,15 +88,15 @@ test('the design surface shows the current screen in a frame, and answers with i
 
 test('pop out: a window of its own, and the inline surface steps aside while it is open', async () => {
   const inline = await (await get(`${designUrl}/preview?view=inline`)).text();
-  const popOut = inline.match(/<a [^>]*href="([^"]+\/window)" target="(prelude-[^"]+)"[^>]*>\s*<span class="icon icon-expand"/);
+  const popOut = inline.match(/<a [^>]*href="([^"]+\/window)" target="(prelude-[^"]+)"[^>]*>\s*<span class="icon icon-external"[^>]*><\/span>Pop out/);
   assert.ok(popOut, 'a Pop out link with a named target, so the same window is reused');
 
   const window = await (await get(popOut[1], false)).text();
   assert.match(window, /^<!doctype html>/);
-  assert.doesNotMatch(window, /class="bar"/, 'no Prelude header');
-  assert.match(window, /class="window-page"/);
+  assert.doesNotMatch(window, /class="shell-bar"/, 'no Prelude header');
+  assert.match(window, /class="stack design-page window-page"/);
   assert.match(window, /ko-connect="[^"]+\/live\?view=window"/);
-  assert.doesNotMatch(window, /icon-expand/, 'no Pop out inside the pop-out');
+  assert.doesNotMatch(window, /Pop out/, 'no Pop out inside the pop-out');
 
   // While the window's channel is open, the inline surface is a strip.
   const controller = new AbortController();
@@ -106,7 +104,7 @@ test('pop out: a window of its own, and the inline surface steps aside while it 
   const reader = channel.body.getReader();
   await reader.read();
   const strip = await (await get(`${designUrl}/preview?view=inline`)).text();
-  assert.match(strip, /class="design popped"/);
+  assert.match(strip, /class="panel design popped"/);
   assert.match(strip, /Showing in its own window/);
   assert.doesNotMatch(strip, /<iframe/);
   assert.doesNotMatch(await (await get(`${designUrl}/preview?view=window`)).text(), /popped/, 'the window itself is never a strip');
@@ -194,9 +192,25 @@ test('changes are refused from any origin but Prelude’s own', async () => {
 
 test('the session page shows the chat beside the design, listening for changes', async () => {
   const html = await (await get(`${designUrl}/sessions/new`)).text();
-  assert.match(html, /class="workspace"/);
+  assert.match(html, /class="split gap-3 workspace"/);
   assert.match(html, /id="design"/);
-  assert.match(html, new RegExp(`ko-connect="${designUrl}/live"`));
+  assert.match(html, new RegExp(`ko-connect="${designUrl}/live"`), 'in the page, so it follows the session');
+
+  // A cold load is the page in its layout, with the regions overlays open in.
+  const page = await (await get(`${designUrl}/sessions/new`, false)).text();
+  assert.match(page, /^<!doctype html>/);
+  assert.match(page, /<div id="drawer" ko-region/);
+  assert.match(page, /<div id="modal" ko-region/);
+  assert.match(page, /href="\/system\/components\.css"/);
+});
+
+test('an overlay answers alone, or over the page on a cold load', async () => {
+  const alone = await (await get(`${designUrl}/rules`)).text();
+  assert.match(alone, /<h2>Rules<\/h2>/);
+  assert.doesNotMatch(alone, /id="design"/);
+  const cold = await (await get(`${designUrl}/rules`, false)).text();
+  assert.match(cold, /id="design"/, 'the page beneath');
+  assert.match(cold, new RegExp(`<div id="drawer" ko-region ko-focus="region" tabindex="-1" ko-location="${designUrl}/rules"><div class="stack gap-6 rules">`));
 });
 
 test('a change to the design’s files is announced; a change to its sessions is not', async () => {

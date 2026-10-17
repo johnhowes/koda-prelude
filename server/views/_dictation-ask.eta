@@ -1,0 +1,41 @@
+<%/* Asked once, before dictating for the first time: how dictation works, and
+     the one thing it needs, a speech model, downloaded once and kept on this
+     computer. Choosing one starts the download; the microphone shows how
+     it's going, and is ready when it's done. The download is the only thing
+     that goes outside: what's said never does (R-f2y). `it` is the design;
+     the models on offer are `it.speechModels`. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const models = it.speechModels ?? [];
+   /* Opened again from the model's menu, it changes the model. */
+   const changing = it.dictation?.status === 'ready';
+   const chosen = changing ? it.dictation.model : models[1]?.id; %>
+<div class="stack gap-4">
+  <h2><%= changing ? 'Change the speech model' : 'Dictate your messages?' %></h2>
+  <% if (!changing) { %>
+  <p class="secondary">Press the microphone and speak, then press it again: what you said is typed into the message box, for you to check and send. It’s turned into text here, on this computer. Nothing you say leaves it.</p>
+  <% } else { %>
+  <p class="secondary">Dictation keeps working with the model you have until the new one has downloaded; then the old one is removed.</p>
+  <% } %>
+  <form class="stack gap-4" action="<%= base %>/dictation" method="post" ko-target="dictation">
+    <%/* Changing keeps the model in use (status stays ready) and fetches the
+         new one beside it (R-h4u). */%>
+    <% if (!changing) { %><input type="hidden" name="status" value="downloading"><input type="hidden" name="progress" value="0"><% } %>
+    <fieldset class="stack gap-2">
+      <legend class="label">It needs a speech model, downloaded once</legend>
+      <div class="choices">
+        <% for (const [i, model] of models.entries()) { %>
+        <label class="choice">
+          <input type="radio" name="<%= changing ? 'switchingTo' : 'model' %>" value="<%= model.id %>" <%= model.id === chosen ? 'checked' : '' %> required>
+          <span class="stack gap-0"><strong><%= model.title %> · <%= model.size %></strong><span class="muted"><%= model.says %></span></span>
+        </label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="notice warn">
+      <p>This downloads the model from Hugging Face (<code>huggingface.co</code>) into Prelude’s folder on this computer. You can remove it later.</p>
+    </div>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit"><%= changing ? 'Download and switch' : 'Download and turn on dictation' %></button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+</div>

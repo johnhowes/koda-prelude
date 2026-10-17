@@ -1,0 +1,34 @@
+<%/* The page's header, one line: where the design sits, its title, and its
+     branch in a word or two, which opens the drawer with the rest. A pill
+     says only what the person should act on or know at a glance: the check,
+     and how far behind main the branch is. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const w = it.branch; %>
+<header class="cluster gap-3 design-head">
+  <div class="stack gap-0">
+    <nav class="crumbs" aria-label="Where you are">
+      <a href="/">Projects</a><span aria-hidden="true">›</span>
+      <a href="/f/<%= it.folder.parentId ?? it.folder.id %>"><%= it.folder.name %></a>
+      <% if (it.area) { %><span aria-hidden="true">›</span><span><%= it.area %></span><% } %>
+    </nav>
+    <h1><%= it.title %></h1>
+  </div>
+  <span class="spacer"></span>
+  <div class="cluster">
+    <a class="btn small ghost branch-summary" href="<%= base %>/about" ko-target="drawer?" title="The branch, what this design uses, and what the agent can read.">
+      <% if (w) { %>
+      <span class="icon icon-push" aria-hidden="true"></span><code><%= w.branch %></code>
+      <% if (w.merging?.unresolved?.length) { %><span class="pill danger">Clash to resolve</span>
+      <% } else if (w.check === 'failing') { %><span class="pill danger"><%= w.failures === 1 ? '1 page doesn’t render' : `${w.failures} pages don’t render` %></span>
+      <% } else if (w.check === 'waiting') { %><span class="pill warn">Host needs approval</span>
+      <% } else if (w.check === 'passing') { %><span class="pill good">Check passes</span>
+      <% } else { %><span class="pill">Not checked yet</span><% } %>
+      <% if (w.behind) { %><span class="pill warn"><%= w.behind %> behind <%= w.into %></span><% } %>
+      <% } else if (it.merged) { %>
+      <span class="icon icon-done" aria-hidden="true"></span>Merged into <%= it.merged.into %>
+      <% } else { %>
+      <span class="icon icon-document" aria-hidden="true"></span>About the design
+      <% } %>
+    </a>
+    <% if (it.buildUrl) { %><a class="btn small" href="<%= it.buildUrl %>"><span class="icon icon-code" aria-hidden="true"></span>Build</a><% } %>
+  </div>
+</header>

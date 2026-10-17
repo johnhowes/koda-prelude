@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 520">
+  <!-- Sample data: a phone screenshot where a long lender name runs into the rate. -->
+  <rect width="390" height="520" fill="#faf9f7"/>
+  <rect x="0" y="0" width="390" height="56" fill="#ffffff" stroke="#e7e2da"/>
+  <text x="20" y="35" font-family="sans-serif" font-size="18" font-weight="700" fill="#1f2328">Your offers</text>
+  <rect x="16" y="80" width="358" height="120" rx="12" fill="#ffffff" stroke="#e7e2da"/>
+  <text x="32" y="114" font-family="sans-serif" font-size="16" font-weight="700" fill="#1f2328">First Community Federal Credit Union of</text>
+  <text x="300" y="114" font-family="sans-serif" font-size="16" font-weight="700" fill="#1f2328">6.49%</text>
+  <text x="32" y="146" font-family="sans-serif" font-size="14" fill="#6b6560">$412.80 a month · 60 months</text>
+  <rect x="16" y="220" width="358" height="120" rx="12" fill="#ffffff" stroke="#e7e2da"/>
+  <text x="32" y="254" font-family="sans-serif" font-size="16" font-weight="700" fill="#1f2328">Northwind Bank</text>
+  <text x="300" y="254" font-family="sans-serif" font-size="16" font-weight="700" fill="#1f2328">7.15%</text>
+  <text x="32" y="286" font-family="sans-serif" font-size="14" fill="#6b6560">$398.10 a month · 72 months</text>
+  <ellipse cx="300" cy="108" rx="70" ry="24" fill="none" stroke="#e11d48" stroke-width="4"/>
+</svg>

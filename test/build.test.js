@@ -153,7 +153,7 @@ test('the Build view lists the groups, each copied as a story, with a build sess
   assert.match(page, /Start a build session/, 'a design with no branch yet can start one: starting makes its branch');
   assert.match(page, /Design-wide rules/);
   const session = await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text();
-  assert.match(session, /href="\/f\/[0-9a-f]+\/d\/borrowers\/build">Build<\/a>/);
+  assert.match(session, /href="\/f\/[0-9a-f]+\/d\/borrowers\/build"><span class="icon icon-code" aria-hidden="true"><\/span>Build<\/a>/);
 });
 
 let wid;
@@ -263,7 +263,7 @@ test('a build ports the views; the design’s copies go, and the build is done',
   const session = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
   assert.match(session, /The design window now shows the app’s own views/);
   assert.match(session, /<strong>Next:<\/strong>\s*When you’re happy with it,\s*finish the branch on <a href="\/f\/[0-9a-f]+">the project page<\/a>: Merge into main\./);
-  assert.match(session, /the app’s own views, with the design’s states/, 'the design bar says so too');
+  assert.match(session, /· the app’s own view/, 'the page menu says so too');
 });
 
 test('a merge git refuses changes nothing, and says why beside the branch’s buttons', async () => {

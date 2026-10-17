@@ -54,6 +54,32 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **Empty page** (`.empty.page`): a first-run page's empty state, centred in
   the page's height (60svh), with a heading and its action. Added for "Landing
   Page" (prelude/landing-page).
+- **Composer attachments** (`.attachments`, `.attachment`, `.thumb`,
+  `.attachment-name`, `.composer-tools`, `.composer[data-dropping]`):
+  images going with a message as thumbnails, added by Attach, paste or
+  drop; the same list shows them in a sent message. The box now grows as
+  the person types (`field-sizing: content`, up to 33vh). Added for "Design
+  Workspace" (prelude/design-workspace).
+- **Chip** (`.chip`, `.chip-text`): a pill-shaped checkbox for something
+  going along that the person can leave out; struck through when off.
+  Added for "Design Workspace" (prelude/design-workspace): the page on
+  show, going with a message.
+- **Segmented as radios**: a `.segmented` of labels around `.sr-only`
+  radios, the checked one current, for a choice made in a form. Added for
+  "Design Workspace" (prelude/design-workspace): the drawing tools when
+  marking up an image.
+- **Icons `dictate` and `capture`**, drawn for Prelude until Material's
+  are copied in (icons/NOTICE.md); and a pressed `.icon-btn`
+  (`aria-pressed="true"`): accent, glyph pulsing, for something on and
+  working (listening). Added for "Design Workspace"
+  (prelude/design-workspace): dictation, and capturing the preview.
+- **Menu groups**: `<hr>` between groups, and a small form at the end with
+  a real `.btn` (menu row styles now skip `.btn`, which they used to flatten).
+  Added for "Design Workspace" (prelude/design-workspace): a custom size.
+- **Menu `.up` and `.menu-note`**: a menu that opens above its button (one
+  at the foot of a panel would open off the bottom), and a line in a menu
+  that says something. Added for "Design Workspace" (prelude/design-workspace):
+  the speech model's menu beside the microphone.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

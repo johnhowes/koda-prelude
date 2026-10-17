@@ -1,87 +1,35 @@
-<%/* A design: the chat (session switcher, transcript, status line, message
-     box) beside the design surface. With no session yet, the first message
-     starts one. */%>
-<section class="session-page">
-  <header class="session-head">
-    <div>
-      <p class="crumbs">
-        <a href="/">Projects</a> ›
-        <a href="/f/<%= it.folder.id %>"><%= it.folder.name %></a>
-        <% if (it.design.area) { %>› <span><%= it.design.area %></span><% } %>
-      </p>
-      <h1><%= it.design.title %></h1>
-      <% const home = it.folder.branch?.parentId ?? it.folder.id; %>
-      <% if (it.branch?.building && it.session?.build) { %>
-      <p class="muted">A build session: it builds <%= it.session.build.title %> into the app, on this design’s branch. <% if (it.buildUrl) { %><a href="<%= it.buildUrl %>">Back to Build</a><% } %></p>
-      <% } %>
-      <% if (it.design.kind === 'system') { %>
-      <p class="muted">The project’s design system. Every other design here uses it.</p>
-      <% } else if (it.design.kind === 'shell') { %>
-      <p class="muted">The app’s shell: its layouts. Every other design here renders in it.<% if (it.system) { %> Uses <a href="/f/<%= home %>/d/<%= it.system.id %>"><%= it.system.title %></a>.<% } %></p>
-      <% } else if (it.system || it.shell) { %>
-      <p class="muted">
-        <% if (it.system) { %>Uses <a href="/f/<%= home %>/d/<%= it.system.id %>"><%= it.system.title %></a><% } %>
-        <% if (it.system && it.shell) { %>·<% } %>
-        <% if (it.shell) { %>Renders in <a href="/f/<%= home %>/d/<%= it.shell.id %>"><%= it.shell.title %></a><% } %>
-      </p>
-      <% } %>
-      <p class="muted">The agent reads this repository<% for (const reference of it.references) { %>, <span title="<%= reference.path %>"><%= reference.name %></span><% } %>. <a href="/f/<%= home %>#reading">Change what it can read</a></p>
-      <%/* Its branch (step 9): where it stands, and finishing it. */%>
-      <% if (it.branch) { %><%~ include('./_branch', { work: it.branch, finish: it.branch.finish, back: it.branch.back }) %><% } %>
-      <% if (it.merged && !it.branch) { %><p class="muted">Its branch, <code><%= it.merged.branch %></code>, was merged into <%= it.merged.into %> on <%= new Date(it.merged.at).toLocaleString() %>; its worktree and branch were tidied up.</p><% } %>
+<%/* A design's page: a one-line header (where it is, its title, and its
+     branch in a word), then the chat beside the design surface, filling the
+     window. Everything else about the design - the branch in full, what it
+     uses, what the agent can read - is one click away in the drawer, so the
+     header stays one line and the work gets the room. An update from main
+     that clashed is the one exception: it holds the branch, so it shows here.
+
+     The page is /f/:folder/d/:design/sessions/:session (the design's URL
+     redirects to its latest session, or shows a new one). `it` is the
+     design (DesignPage, server/workspace.js). */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; %>
+<div class="stack gap-3 design-page">
+  <%~ include('./_header', it) %>
+  <% if (it.branch?.merging?.unresolved?.length) { %>
+  <% const m = it.branch.merging; %>
+  <div class="notice danger" role="alert">
+    <strong><%= m.from %> is half brought in.</strong>
+    <p><%= m.unresolved.length === 1 ? 'This file clashes' : 'These files clash' %>: <% for (const [i, path] of m.unresolved.entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %>. Send the agent a message and it resolves <%= m.unresolved.length === 1 ? 'it' : 'them' %> first; nothing is committed until it has.</p>
+    <div class="cluster actions">
+      <form action="/f/<%= it.folder.parentId ?? it.folder.id %>/branches/<%= it.branch.id %>/abandon" method="post">
+        <input type="hidden" name="back" value="<%= base %>">
+        <button class="btn small ghost" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
+      </form>
     </div>
-    <nav class="sessions" aria-label="Sessions">
-      <% if (it.sessions.length > 0) { %>
-      <details class="menu">
-        <summary class="btn small ghost">
-          <span class="icon icon-conversation" aria-hidden="true"></span>
-          <%= it.session ? it.session.title : `Sessions (${it.sessions.length})` %>
-        </summary>
-        <ul class="menu-list">
-          <% for (const s of it.sessions) { %>
-          <li><a href="<%= it.urls.design %>/sessions/<%= s.id %>" <% if (it.session && s.id === it.session.id) { %>aria-current="page"<% } %>>
-            <span class="item-title"><%= s.title %><% if (s.build) { %> <span class="pill">Build</span><% } %></span>
-            <span class="muted"><%= new Date(s.startedAt).toLocaleString() %></span>
-          </a></li>
-          <% } %>
-        </ul>
-      </details>
-      <% } %>
-      <% if (it.buildUrl) { %><a class="btn small ghost" href="<%= it.buildUrl %>">Build</a><% } %>
-      <a class="btn small" href="<%= it.urls.design %>/sessions/new"><span class="icon icon-add" aria-hidden="true"></span>New session</a>
-    </nav>
-  </header>
-
-  <div class="workspace">
-  <div class="chat">
-    <div class="filters" role="group" aria-label="Show">
-      <span class="muted">Show</span>
-      <label><input type="checkbox" class="show-agent" checked> Agent</label>
-      <label><input type="checkbox" class="show-tools" checked> Tools</label>
-    </div>
-
-    <%/* The scroller is a reversed column, so it starts at the bottom and stays
-         there as entries arrive - unless the person has scrolled up to read. */%>
-    <div class="transcript-scroll">
-    <ol id="transcript" class="transcript" ko-region aria-live="polite">
-      <% if (!it.session) { %>
-      <li class="entry empty muted">
-        <%= it.sessions.length === 0 ? 'This design has no sessions yet.' : 'A new session.' %>
-        The agent starts from the design’s files and its NOTES.md, so tell it what you want to work on.
-      </li>
-      <% } %>
-      <% for (const entry of it.entries) { %><%~ include('./_entry', { entry }) %><% } %>
-    </ol>
-    </div>
-
-    <div id="agent-status" ko-region><%~ include('./_status', { state: it.state }) %></div>
-
-    <%~ include('./_composer', it.composer) %>
-
-    <% if (it.session) { %><div hidden ko-connect="<%= it.urls.live %>"></div><% } %>
   </div>
-
-  <%~ include('./_design', it.surface) %>
+  <% } %>
+  <div class="split gap-3 workspace" style="--side: 26rem">
+    <%~ include('./_chat', it) %>
+    <%~ include('./_surface', { ...it, view: 'inline' }) %>
   </div>
-  <div hidden ko-connect="<%= it.designLive %>"></div>
-</section>
+  <%/* The page's channel (`it.live`, the app's): in the page, not the layout,
+       since going to another session swaps only the page, and the channel
+       is the session's. */%>
+  <% if (it.live) { %><div hidden ko-connect="<%= it.live %>"></div><% } %>
+</div>

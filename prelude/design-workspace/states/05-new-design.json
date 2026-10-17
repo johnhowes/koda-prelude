@@ -1,0 +1,85 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": null,
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": null,
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "unchecked",
+            "failures": 0,
+            "behind": 0,
+            "worked": false,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [],
+          "session": null,
+          "state": { "kind": "idle" },
+          "entries": [],
+          "rules": [],
+          "questions": [],
+          "decisions": [],
+          "dictation": { "status": "none" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
+          "queued": [],
+          "images": [
+            { "id": "img-7pa", "base": "/f/borrower-portal/d/loan-offers", "name": "IMG_2041.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null }
+          ],
+          "draft": {
+            "base": "/f/borrower-portal/d/loan-offers",
+            "attachments": [
+              { "id": "img-7pa", "name": "IMG_2041.jpg", "url": "/_prelude/design/assets/napkin-compare.svg" }
+            ]
+          },
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [],
+            "current": null,
+            "states": [],
+            "state": null,
+            "changed": false,
+            "events": [],
+            "approved": 0,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

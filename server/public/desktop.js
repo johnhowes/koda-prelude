@@ -13,7 +13,8 @@
 const desktop = window.preludeDesktop ?? null;
 
 if (desktop) {
-  document.querySelector('.prelude')?.setAttribute('data-desktop', '');
+  // The page's root: .prelude in the app's layout, the document in the shell's.
+  (document.querySelector('.prelude') ?? document.documentElement).setAttribute('data-desktop', '');
 
   document.addEventListener('click', event => {
     const control = event.target.closest?.('[data-pick-folder], a[data-pop-out], a[target="_blank"]');

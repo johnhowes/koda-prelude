@@ -159,6 +159,9 @@
   }
   .icon-btn:hover { background: var(--surface-sunken); color: var(--fg); }
   .icon-btn.small { min-width: var(--control-sm); min-height: var(--control-sm); }
+  /* On, and doing something while it's on (dictating): accent, its glyph pulsing. */
+  .icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .icon-btn[aria-pressed="true"] > .icon { animation: pulse var(--duration-pulse) var(--ease) infinite; }
   .icon-btn.danger { color: var(--danger); }
   .icon-btn:disabled { opacity: 0.35; cursor: default; }
 
@@ -184,6 +187,18 @@
   .pill.good { background: var(--good-soft); color: var(--good); }
   .pill.warn { background: var(--warn-soft); color: var(--warn); }
   .pill.danger { background: var(--danger-soft); color: var(--danger); }
+
+  /* Chip: something going along, which the person can leave out (a checkbox) */
+  .chip {
+    display: inline-flex; align-items: center; gap: var(--space-1); min-inline-size: 0; max-inline-size: 100%;
+    padding: var(--space-half) var(--space-2); border-radius: var(--radius-full);
+    background: var(--accent-soft); color: var(--fg-muted); font-size: var(--text-xs); font-weight: var(--weight-strong);
+    cursor: pointer;
+  }
+  .chip > input { flex: none; }
+  .chip-text { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip:has(> input:not(:checked)) { background: var(--surface-sunken); color: var(--fg-subtle); }
+  .chip:has(> input:not(:checked)) .chip-text { text-decoration: line-through; }
 
   /* Fields: a label over its control, a hint or an error under it */
   .field { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -238,13 +253,19 @@
     border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
   }
   .menu.start .menu-list { inset-inline: 0 auto; }
-  .menu-list a, .menu-list button {
+  /* .up opens above its button, for a menu at the foot of a panel (the composer). */
+  .menu.up .menu-list { top: auto; bottom: calc(100% + var(--space-1)); }
+  .menu-list > .menu-note { padding: var(--space-2) var(--space-3); }
+  /* Its choices; a real button in a form inside it (Go) stays a button. */
+  .menu-list a:not(.btn), .menu-list button:not(.btn) {
     display: flex; flex-direction: column; align-items: flex-start; width: 100%;
     padding: var(--space-2) var(--space-3); border: 0; background: none; text-align: start;
     border-radius: var(--radius-sm); color: var(--fg); text-decoration: none;
   }
-  .menu-list a:hover, .menu-list button:hover { background: var(--surface-sunken); color: var(--fg); }
+  .menu-list a:not(.btn):hover, .menu-list button:not(.btn):hover { background: var(--surface-sunken); color: var(--fg); }
   .menu-list [aria-current]:not([aria-current="false"]) { background: var(--accent-soft); }
+  .menu-list hr { margin-block: var(--space-1); }
+  .menu-list > form:not(:has(> button)) { padding: var(--space-2) var(--space-3); }
 
   /* Segmented: two or three views of the same thing; one is current */
   .segmented {
@@ -253,7 +274,11 @@
   }
   .segmented > .btn { min-height: calc(var(--control-sm) - 2 * var(--space-half)); padding-inline: var(--space-3); border-color: transparent; background: transparent; box-shadow: none; color: var(--fg-muted); }
   .segmented > .btn:hover { color: var(--fg); background: transparent; }
-  .segmented > .btn[aria-current]:not([aria-current="false"]) { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-sm); border-color: transparent; }
+  .segmented > .btn[aria-current]:not([aria-current="false"]),
+  .segmented > .btn:has(> input:checked) { background: var(--surface); color: var(--fg); box-shadow: var(--shadow-sm); border-color: transparent; }
+  /* A choice made in a form: each option a label around a hidden radio. */
+  .segmented > label.btn { cursor: pointer; }
+  .segmented > label.btn:has(> input:focus-visible) { box-shadow: var(--ring); }
 
   /* Toolbar: a strip of small controls across the top of a panel */
   .toolbar {
@@ -336,8 +361,31 @@
 
   /* Composer: the message box under a transcript */
   .composer { display: flex; flex-direction: column; gap: var(--space-2); border-top: var(--border-width) solid var(--border); padding: var(--space-3) var(--space-4); margin: 0; }
-  .composer textarea { min-height: 4.5rem; }
+  /* The box grows with what's typed, up to a third of the window, then scrolls. */
+  .composer textarea { min-height: 4.5rem; max-block-size: 33vh; field-sizing: content; resize: none; }
   .composer-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+  .composer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-inline-size: 0; }
+  /* Something dragged over the box that it can take: say so where it lands. */
+  .composer[data-dropping] textarea { border-color: var(--accent); border-style: dashed; background: var(--accent-soft); }
+
+  /* Attachments: images going with a message, as thumbnails. In the composer
+     each has Remove at its corner; in a sent message each opens full size. */
+  .attachments { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+  .attachments:empty { display: none; }
+  .attachment {
+    position: relative; display: flex; flex-direction: column; gap: var(--space-1);
+    inline-size: 5rem; font-size: var(--text-xs); color: var(--fg-subtle); text-decoration: none;
+  }
+  .attachment .thumb {
+    display: block; inline-size: 100%; aspect-ratio: 1; object-fit: cover;
+    border: var(--border-width) solid var(--border); border-radius: var(--radius-md); background: var(--surface-sunken);
+  }
+  /* A thumbnail that opens its image: the .attachment is the link, or holds it. */
+  a.attachment:hover .thumb, .attachment > a:hover .thumb { border-color: var(--accent); }
+  .attachment > a { display: block; border-radius: var(--radius-md); }
+  .attachment-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .attachment > .icon-btn { position: absolute; inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) auto auto; background: var(--surface-raised); border-color: var(--border); border-radius: var(--radius-full); box-shadow: var(--shadow-sm); }
+  .entry.user .attachments { justify-content: flex-end; }
 
   /* Prose: the agent's words, or any markdown, rendered */
   .prose > :first-child { margin-top: 0; }

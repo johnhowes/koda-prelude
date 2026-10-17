@@ -1,0 +1,46 @@
+<%/* The design's open questions (NOTES.md's "Open questions"), in the
+     drawer, opened from Questions in the chat's toolbar: what the agent is
+     waiting on the person to decide. Answer starts a message about that
+     question in the message box, and closes the drawer, so the answer is
+     written where the agent reads it. Once answered, the agent records the
+     decision in NOTES.md and the question leaves the list. Decisions made
+     so far fold away below, for reference.
+
+     `it` is the design: `it.questions` and `it.decisions` as Prelude reads
+     them from NOTES.md. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const questions = it.questions ?? []; const decisions = it.decisions ?? []; %>
+<div class="stack gap-6">
+  <div class="stack gap-1">
+    <h2>Open questions</h2>
+    <p class="secondary">What the agent is waiting for you to decide about this design.</p>
+  </div>
+  <% if (!questions.length) { %>
+  <p class="empty">Nothing waiting on you. When the agent needs a decision, it lands here as well as in the chat.</p>
+  <% } else { %>
+  <ul class="list">
+    <% for (const question of questions) { %>
+    <li class="item">
+      <span class="icon icon-question" aria-hidden="true"></span>
+      <span class="item-text">
+        <span><%= question.text %></span>
+        <% if (question.asked) { %><span class="muted">Asked <%= question.asked %></span><% } %>
+      </span>
+      <form action="<%= base %>/questions/<%= question.id %>/answer" method="post" ko-target="message-box">
+        <input type="hidden" name="message" value="About “<%= question.text %>”: ">
+        <button class="btn small" type="submit" aria-label="Answer: <%= question.text %>">Answer</button>
+      </form>
+    </li>
+    <% } %>
+  </ul>
+  <% } %>
+  <% if (decisions.length) { %>
+  <details class="disclosure">
+    <summary><%= decisions.length === 1 ? '1 decision so far' : `${decisions.length} decisions so far` %></summary>
+    <ul class="list">
+      <% for (const decision of decisions) { %>
+      <li class="item"><span class="item-text"><strong><%= decision.title %></strong><span class="secondary"><%= decision.why %></span></span></li>
+      <% } %>
+    </ul>
+  </details>
+  <% } %>
+</div>

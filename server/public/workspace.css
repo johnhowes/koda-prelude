@@ -1,0 +1,106 @@
+/* A design's page and its pop-out window (prelude/design-workspace): what
+   Prelude's design system and the shell's chrome can't say. Unlayered, so
+   it wins over the system's components without a specificity contest
+   (koda-styling). */
+
+@layer tokens, base, components, host;
+
+/* The design page's own rules: what the design system can't say. */
+@scope (.design-page) {
+  /* The page fills the workspace layout; the chat and the surface fill what
+     the header leaves, and scroll inside themselves. */
+  :scope { min-block-size: 0; }
+  .workspace { flex: 1; min-block-size: 0; }
+  .window-page > .design { flex: 1; }
+
+  /* A one-line header: the title at a section's size, not a page's. */
+  .design-head h1 { font-size: var(--text-xl); }
+  .branch-summary code { background: none; padding: 0; }
+
+  /* A long session or page title is cut short in its menu button. */
+  .clip { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* While the surface is in its own window, the chat takes the page and the
+     surface's bar sits above it. */
+  .workspace:has(> .design.popped) { flex-direction: column-reverse; flex-wrap: nowrap; }
+  .workspace > .design.popped { flex: none; min-inline-size: 0; }
+  .workspace:has(> .design.popped) > .chat { flex: 1; }
+
+  /* Show: Agent, Tools. Unchecking one hides those entries. */
+  .chat:has(.show-agent:not(:checked)) .entry.agent,
+  .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
+  .show-page { display: inline; }
+
+  /* The status line's step: one line, cut short, so Stop stays in place. */
+  .status-step { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Custom size, at the foot of the size menu: two short number fields. */
+  .custom-size { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
+  .custom-size .inline { align-items: center; }
+  .custom-size .inline > input { flex: 1 1 5rem; }
+
+  /* The frame: the page fills it at Fit. At a size, the page keeps that
+     shape, as large as fits the panel and never larger than itself. */
+  .design-frame {
+    flex: 1; min-block-size: 0; display: grid; place-items: center;
+    container-type: size; overflow: hidden; background: var(--surface-sunken);
+  }
+  .design-frame.sized { padding: var(--space-4); }
+  .device { inline-size: 100%; block-size: 100%; overflow: hidden; background: var(--bg); }
+  .sized .device {
+    inline-size: min(100cqi, var(--w) * 1px, 100cqb * var(--w) / var(--h));
+    block-size: auto; aspect-ratio: var(--w) / var(--h);
+    border: var(--border-width) solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  }
+
+  /* The page itself. At a size it's laid out at that width and height, and
+     scaled to the device's box by the measured --scale (_frame.eta). */
+  .device > iframe { display: block; inline-size: 100%; block-size: 100%; border: 0; }
+  .sized .device > iframe {
+    inline-size: calc(var(--w) * 1px); block-size: calc(var(--h) * 1px);
+    transform: scale(var(--scale, 1)); transform-origin: 0 0;
+  }
+  .design[ko-loading] .design-frame { opacity: 0.85; }
+
+  /* The design host's log, under the bar, when it has one. */
+  .host-log { padding-inline: var(--space-4); font-size: var(--text-xs); }
+  .host-log pre { max-block-size: 12rem; overflow: auto; white-space: pre-wrap; }
+
+  /* The agent's words as they stream in (_live-entry.eta), before they're
+     saved and shown as markdown. */
+  .entry.live .say { white-space: pre-wrap; }
+  .entry.live .say:empty::after { content: "…"; color: var(--fg-subtle); }
+  /* After a build turn: where the app runs, and what's next. */
+  .entry.next p { margin: 0 0 var(--space-1); }
+  .entry.next p:last-child { margin-block-end: 0; }
+
+  /* A message waiting for the agent to finish: the person's bubble, quieter,
+     with when it goes and Cancel under it. */
+  .queued { padding-block: 0 var(--space-3); }
+  .queued:empty { display: none; }
+
+  /* A sent message keeps to the right, what it was about under it. */
+  .sent { align-items: flex-end; }
+  .looked-at { display: inline-flex; align-items: center; gap: var(--space-1); }
+  .queued .bubble { opacity: 0.7; border: var(--border-width) dashed var(--accent); }
+  .queued .entry.user { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
+  .queued form { display: contents; }
+}
+
+/* The image, full size, in the modal (its own scope: the modal isn't inside
+   the page). As large as the window allows, whole. */
+@scope (.modal-wide) {
+  .full-image {
+    display: block; inline-size: 100%; max-block-size: 70vh; object-fit: contain;
+    background: var(--surface-sunken); border-radius: var(--radius-md);
+  }
+  .image-name { overflow-wrap: anywhere; }
+
+  /* Marking up: the canvas shows the image whole, scaled to fit, and draws
+     in the danger colour (the script reads it from here). */
+  .markup-stage { display: grid; place-items: center; background: var(--surface-sunken); border-radius: var(--radius-md); }
+  .markup-stage canvas {
+    display: block; max-inline-size: 100%; max-block-size: 60vh;
+    color: var(--danger); cursor: crosshair; touch-action: none;
+  }
+}

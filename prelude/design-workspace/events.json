@@ -1,0 +1,14 @@
+{
+  "dictation-progress": {
+    "title": "The speech model is half downloaded",
+    "update": "folders/borrower-portal/designs/loan-offers/dictation",
+    "with": { "status": "downloading", "progress": 72 },
+    "send": "dictation-changed"
+  },
+  "dictation-ready": {
+    "title": "The speech model has downloaded",
+    "update": "folders/borrower-portal/designs/loan-offers/dictation",
+    "with": { "status": "ready", "progress": 100 },
+    "send": "dictation-changed"
+  }
+}

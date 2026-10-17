@@ -1,0 +1,120 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 1,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "Today, 09:12" }
+          ],
+          "session": { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare" },
+          "state": {
+            "kind": "working",
+            "stopUrl": "/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd/stop",
+            "step": { "says": "Looking at the screenshot you sent", "path": "Screenshot 2026-10-17 at 14.02.png" },
+            "startedAt": "2026-10-17T14:03:20Z",
+            "since": "1:12",
+            "waiting": 2
+          },
+          "entries": [
+            { "id": 1, "type": "user", "message": "On a phone, a long lender name runs into the rate (circled). And the two offers on the compare page should stack, with the cheaper one first.", "images": [
+              { "id": "img-2hd", "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg" }
+            ], "lookingAt": "Compare offers · Typical · Phone · Spark mobile app" },
+            { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            { "id": 3, "type": "text", "html": "<p>The comparison is a <code>.grid</code> already, so it stacks when narrow; the order is what needs changing. I’ll have the controller put the cheaper offer first, so the view doesn’t sort.</p>" },
+            { "id": 4, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/routes.json" }
+          ],
+          "rules": [
+            { "id": "R-k3f", "text": "Of two offers compared, the one that costs less over its whole term is marked “Lower total cost”; when they cost the same, neither is.", "status": "proposed", "shownOn": { "page": "/offers/compare", "title": "Compare offers", "state": "01-typical", "stateTitle": "Typical" } },
+            { "id": "R-m6t", "text": "On a phone, the compared offers stack, the one that costs less first.", "status": "proposed", "shownOn": { "page": "/offers/compare", "title": "Compare offers", "state": "01-typical", "stateTitle": "Typical" } }
+          ],
+          "questions": [
+            { "id": "q-sticky", "text": "Should Accept stay in view on a phone while the comparison scrolls, or sit at its end?", "asked": "today at 14:05" }
+          ],
+          "decisions": [],
+          "dictation": { "status": "ready", "model": "large-v3-turbo" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
+          "queued": [
+            { "id": "q-1", "message": "Also, the Accept button should stay in view on a phone while you scroll the comparison.", "images": 0 },
+            { "id": "q-2", "message": "Like this one, from the Figma file.", "images": 1 }
+          ],
+          "images": [
+            { "id": "img-2hd", "base": "/f/borrower-portal/d/loan-offers", "name": "Screenshot 2026-10-17 at 14.02.png", "url": "/_prelude/design/assets/screenshot-overlap.svg", "sent": "today at 14:03" }
+          ],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
+          "surface": {
+            "view": "inline",
+            "mode": "design",
+            "size": "phone",
+            "custom": { "width": 360, "height": 740 },
+            "client": "mobile-app",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "app": null,
+            "host": null,
+            "popped": true,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers" },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/compare",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 },
+              { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+              { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" },
+              { "id": "mobile-app", "title": "Spark mobile app", "says": "Inside the iOS and Android app: no site header, and Back is the app’s own" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

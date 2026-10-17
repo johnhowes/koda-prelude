@@ -1,0 +1,105 @@
+<%/* Marking up an image, in the modal: draw on it to point something out - a
+     circle round the problem, an arrow to where something should go, a box
+     round what to copy - then save. The original is never changed: saving
+     puts the marked-up copy in the message box (in place of the original,
+     if that was waiting there), ready to send (R-u6p). Escape or Close
+     leaves it.
+
+     Drawing is a canvas, so it's the one script: the image is drawn at its
+     own size and shown scaled to fit, and each mark is kept so Undo can take
+     the last off. Marks are drawn in the danger colour, from the tokens.
+     Saving turns the canvas into a PNG, puts it in the form's file input
+     and sends the form. It works in a browser and in the desktop app alike.
+
+     It's pointer-only: a person who can't draw can say the same in words. */%>
+<div class="stack gap-3 modal-wide markup" ko-item>
+  <h2 class="image-name">Mark up <%= it.name %></h2>
+  <form class="stack gap-3" action="<%= it.base %>/images/<%= it.id %>/markup" method="post" enctype="multipart/form-data" ko-target="attachments">
+    <div class="cluster">
+      <span class="segmented" role="radiogroup" aria-label="Draw">
+        <label class="btn small"><input class="sr-only" type="radio" name="tool" value="pen" checked>Pen</label>
+        <label class="btn small"><input class="sr-only" type="radio" name="tool" value="arrow">Arrow</label>
+        <label class="btn small"><input class="sr-only" type="radio" name="tool" value="box">Box</label>
+      </span>
+      <span class="spacer"></span>
+      <button class="btn small ghost" type="button" ko-as="undo" disabled>Undo</button>
+      <button class="btn small ghost" type="button" ko-as="clear" disabled>Clear</button>
+    </div>
+    <div class="markup-stage">
+      <img ko-as="source" src="<%= it.url %>" alt="" hidden>
+      <canvas ko-as="canvas" role="img" aria-label="<%= it.name %>, to draw on"></canvas>
+    </div>
+    <input type="file" name="image" ko-as="output" accept="image/png" hidden>
+    <div class="cluster">
+      <span class="muted"><%= it.sent ? 'The marked-up copy goes in the message box; the image you sent stays as it is.' : 'The marked-up copy takes this image’s place in the message box.' %></span>
+      <span class="spacer"></span>
+      <button class="btn small primary" type="button" ko-as="save" disabled>Put it in the message</button>
+    </div>
+  </form>
+  <script type="koda">
+    // Drawing on a canvas: genuinely imperative, so a script.
+    const { canvas, source, output, undo, clear, save } = koda.scope();
+    const surface = canvas.element;
+    const form = surface.closest('form');
+    const pen = surface.getContext('2d');
+    const marks = [];
+    let drawing = null;
+
+    // The stylesheet gives the canvas the danger colour; its computed colour
+    // is that token resolved for this theme.
+    const colour = () => getComputedStyle(surface).color;
+    const width = () => Math.max(3, Math.round(surface.width / 200));
+    const at = event => {
+      const box = surface.getBoundingClientRect();
+      return { x: (event.clientX - box.left) * surface.width / box.width, y: (event.clientY - box.top) * surface.height / box.height };
+    };
+    const drawMark = mark => {
+      pen.strokeStyle = colour(); pen.lineWidth = width(); pen.lineCap = 'round'; pen.lineJoin = 'round';
+      const [from, to] = [mark.points[0], mark.points.at(-1)];
+      pen.beginPath();
+      if (mark.tool === 'box') pen.rect(from.x, from.y, to.x - from.x, to.y - from.y);
+      else if (mark.tool === 'arrow') {
+        const angle = Math.atan2(to.y - from.y, to.x - from.x), head = width() * 5;
+        pen.moveTo(from.x, from.y); pen.lineTo(to.x, to.y);
+        pen.moveTo(to.x - head * Math.cos(angle - 0.5), to.y - head * Math.sin(angle - 0.5)); pen.lineTo(to.x, to.y);
+        pen.lineTo(to.x - head * Math.cos(angle + 0.5), to.y - head * Math.sin(angle + 0.5));
+      } else mark.points.forEach((point, i) => (i ? pen.lineTo(point.x, point.y) : pen.moveTo(point.x, point.y)));
+      pen.stroke();
+    };
+    const paint = () => {
+      pen.clearRect(0, 0, surface.width, surface.height);
+      pen.drawImage(source.element, 0, 0, surface.width, surface.height);
+      for (const mark of drawing ? [...marks, drawing] : marks) drawMark(mark);
+      undo.element.disabled = clear.element.disabled = marks.length === 0;
+      save.element.disabled = marks.length === 0;
+    };
+    const start = () => {
+      surface.width = source.element.naturalWidth || 800;
+      surface.height = source.element.naturalHeight || 600;
+      paint();
+    };
+    if (source.element.complete) start(); else source.element.addEventListener('load', start, { once: true });
+
+    surface.addEventListener('pointerdown', event => {
+      surface.setPointerCapture(event.pointerId);
+      drawing = { tool: form.elements.tool.value, points: [at(event)] };
+    });
+    surface.addEventListener('pointermove', event => {
+      if (!drawing) return;
+      if (drawing.tool === 'pen') drawing.points.push(at(event)); else drawing.points[1] = at(event);
+      paint();
+    });
+    const finish = () => { if (drawing?.points.length > 1) marks.push(drawing); drawing = null; paint(); };
+    surface.addEventListener('pointerup', finish);
+    surface.addEventListener('pointercancel', () => { drawing = null; paint(); });
+    undo.element.addEventListener('click', () => { marks.pop(); paint(); });
+    clear.element.addEventListener('click', () => { marks.length = 0; paint(); });
+    save.element.addEventListener('click', () => surface.toBlob(blob => {
+      if (!blob || !surface.isConnected) return;
+      const file = new DataTransfer();
+      file.items.add(new File([blob], <%~ JSON.stringify(`${it.name.replace(/\.[^.]+$/, '')} (marked up).png`).replace(/</g, '\\u003c') %>, { type: 'image/png' }));
+      output.element.files = file.files;
+      form.requestSubmit();
+    }, 'image/png'));
+  </script>
+</div>

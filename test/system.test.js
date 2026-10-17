@@ -72,7 +72,7 @@ test('a session on the system is told to keep system/ and its gallery', async ()
   assert.match(prompt, /light-dark\(\)/);
   assert.match(prompt, /bring the gallery up to date/);
 
-  const page = await (await get(`/f/${fid}/d/acme/sessions/new`)).text();
+  const page = await (await get(`/f/${fid}/d/acme/about`)).text();
   assert.match(page, /The project’s design system/);
 });
 
@@ -100,8 +100,8 @@ test('every other design uses it: told where it is and how to link it', async ()
   assert.doesNotMatch(prompt, /icons\.css/, 'no icons until the system has them');
   assert.match(prompt, /Don't change the design system from here/);
 
-  const page = await (await get(`/f/${fid}/d/onboarding/sign-up/sessions/new`)).text();
-  assert.match(page, new RegExp(`Uses <a href="/f/${fid}/d/acme">Acme</a>`));
+  const page = await (await get(`/f/${fid}/d/onboarding/sign-up/about`)).text();
+  assert.match(page, new RegExp(`<a class="item" href="/f/${fid}/d/acme">[\\s\\S]*?<span class="item-title">Acme</span><span class="muted">Its design system</span>`));
 });
 
 test('layout primitives (5e): the system provides its own, spaced by gaps; designs compose from them', () => {

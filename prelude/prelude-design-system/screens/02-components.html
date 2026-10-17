@@ -137,6 +137,11 @@
           <a class="btn small" href="#" aria-current="true">Design</a>
           <a class="btn small" href="#">App</a>
         </span>
+        <span class="segmented" role="radiogroup" aria-label="Draw">
+          <label class="btn small"><input class="sr-only" type="radio" name="gallery-tool" value="pen" checked>Pen</label>
+          <label class="btn small"><input class="sr-only" type="radio" name="gallery-tool" value="arrow">Arrow</label>
+          <label class="btn small"><input class="sr-only" type="radio" name="gallery-tool" value="box">Box</label>
+        </span>
       </div>
     </section>
 
@@ -449,10 +454,25 @@
             <form action="#" method="post"><button class="btn small ghost" type="submit">Stop</button></form>
           </div>
           <form class="composer" action="#" method="post">
+            <ul class="attachments" aria-label="Attached images">
+              <li class="attachment">
+                <img class="thumb" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23f4efe6'/%3E%3Cpath d='M12 20h56M12 34h30M12 46h40M12 58h22' stroke='%23555' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" alt="">
+                <span class="attachment-name">napkin.jpg</span>
+                <button class="icon-btn small" type="submit" formaction="#" formnovalidate aria-label="Remove napkin.jpg"><span class="icon icon-close" aria-hidden="true"></span></button>
+              </li>
+            </ul>
             <label class="sr-only" for="message">Message</label>
             <textarea id="message" name="message" rows="3" required placeholder="Describe what to design. Enter to send, Shift+Enter for a new line."></textarea>
             <div class="composer-foot">
-              <span></span>
+              <div class="composer-tools">
+                <label class="chip" title="Tells the agent which page you mean. Uncheck to leave it out.">
+                  <input type="checkbox" checked><span class="icon icon-screen" aria-hidden="true"></span><span class="chip-text">Sign up · Typical</span>
+                </label>
+                <label class="icon-btn small" title="Attach an image: or paste one, or drop it on the box">
+                  <span class="icon icon-attach" aria-hidden="true"></span><span class="sr-only">Attach an image</span>
+                  <input class="sr-only" type="file" name="image" accept="image/*" multiple>
+                </label>
+              </div>
               <button class="btn small primary" type="submit">Send</button>
             </div>
           </form>
@@ -511,6 +531,8 @@
       <div class="cluster"><span class="icon icon-push" aria-hidden="true"></span>push</div>
       <div class="cluster"><span class="icon icon-history" aria-hidden="true"></span>history</div>
       <div class="cluster"><span class="icon icon-question" aria-hidden="true"></span>question</div>
+      <div class="cluster"><span class="icon icon-dictate" aria-hidden="true"></span>dictate</div>
+      <div class="cluster"><span class="icon icon-capture" aria-hidden="true"></span>capture</div>
     </div>
   </div>
 </div>

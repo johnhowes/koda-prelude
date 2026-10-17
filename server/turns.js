@@ -11,10 +11,15 @@
 // it is saved and the live entry is replaced by the finished one, rendered as
 // markdown. Only finished messages are saved; the live text exists only on the
 // pages watching.
+//
+// Messages sent while the agent works wait (R-z4k): each session's in the
+// order written. When a turn ends, `onIdle` is told, and sends them together
+// as the next message.
 
 import { designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
-import { presentEntry, render } from './views.js';
+import { render } from './views.js';
+import { presentEntry, sinceWords, stepOf } from './workspace.js';
 
 const MAX_RESULT = 2000;
 const FLUSH_MS = 50;
@@ -22,11 +27,17 @@ const FLUSH_MS = 50;
 export const designKey = (folder, design) => `${folder.id}/${design.id}`;
 export const sessionKey = (folder, design, sessionId) => `${folder.id}/${design.id}/${sessionId}`;
 
-const entryHtml = entry => render('./_entry', { entry: presentEntry(entry) }).trim();
+/**
+ * How entries are shown on the pages watching: `present` readies an entry
+ * for _entry.eta, and `base` is the design's address, for its links.
+ */
+const plainView = { present: entry => presentEntry(entry, { base: '', routes: [], states: [], datasetOf: () => ({}) }), base: '' };
+
+const entryHtml = (entry, view = plainView) => render('./_entry', { entry: view.present(entry), base: view.base }).trim();
 
 /** Markup for one entry, added to the transcript; empty when the entry shows nothing. */
-export function entryMessage(entry) {
-  const html = entryHtml(entry);
+export function entryMessage(entry, view = plainView) {
+  const html = entryHtml(entry, view);
   return html ? render('./push-entry', { html }) : '';
 }
 
@@ -58,10 +69,13 @@ export function createTurns({ runner, live, onChange = () => {} }) {
   // What the last check found wrong with a design, told to the agent with the
   // next message on that design (the agent can't see the preview itself).
   const findings = new Map();  // designKey -> [{ state, path, error }]
+  // Messages waiting for a turn to end: designKey -> [{ id, sessionId, ... }]
+  const queues = new Map();
+  let queuedCount = 0;
 
   const record = (ctx, entry) => {
     appendEntry(ctx.designDir, ctx.session.id, entry);
-    const message = entryMessage(entry);
+    const message = entryMessage(entry, ctx.view);
     if (message) live.publish(ctx.key, message);
   };
 
@@ -89,29 +103,55 @@ export function createTurns({ runner, live, onChange = () => {} }) {
     ctx.block = null;
     const entry = { type: 'text', text };
     appendEntry(ctx.designDir, ctx.session.id, entry);
-    live.publish(ctx.key, render('./push-final', { id: block.id, html: entryHtml(entry) }));
+    live.publish(ctx.key, render('./push-final', { id: block.id, html: entryHtml(entry, ctx.view) }));
   };
 
-  return {
-    /** What this session's status line shows: 'working', 'busy' (another session) or 'idle'. */
+  const queueOf = dKey => {
+    if (!queues.has(dKey)) queues.set(dKey, []);
+    return queues.get(dKey);
+  };
+
+  const turns = {
+    /**
+     * What this session's status line shows: 'working' (with its latest step,
+     * when it started, and how many messages wait), 'checking' (Prelude checks
+     * the pages after the turn), 'busy' (another session) or 'idle'.
+     */
     state(folder, design, sessionId) {
-      const turn = running.get(designKey(folder, design));
+      const dKey = designKey(folder, design);
+      const turn = running.get(dKey);
       if (!turn) return { kind: 'idle' };
-      return turn.sessionId === sessionId ? { kind: 'working', stopUrl: turn.stopUrl } : { kind: 'busy' };
+      if (turn.sessionId !== sessionId) return { kind: 'busy' };
+      if (turn.ctx.checking) return { kind: 'checking' };
+      return {
+        kind: 'working',
+        stopUrl: turn.stopUrl,
+        step: turn.ctx.step,
+        startedAt: turn.ctx.startedAt,
+        since: sinceWords(Date.now() - Date.parse(turn.ctx.startedAt)),
+        waiting: queueOf(dKey).filter(item => item.sessionId === sessionId).length,
+      };
     },
+
+    /** Whether a turn is running on the design. */
+    busy: (folder, design) => running.has(designKey(folder, design)),
 
     /**
      * Start a turn. Returns an error message instead when one can't start.
-     * `references` are the folders the agent may also read ([{ name, path }]),
-     * and `system` the folder's design system, as designPrompt takes it.
+     * `message` is what the agent is told; `shown` the person's messages as
+     * the transcript keeps them ([{ text, images, lookingAt }]: several when
+     * waiting messages go together). `references` are the folders the agent
+     * may also read ([{ name, path }]), and `system` the folder's design
+     * system, as designPrompt takes it. `view` is how the pages show entries,
+     * and `onIdle` runs once the turn is over and the design is free.
      */
-    start({ folder, design, designDir, sessionId, message, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null }) {
+    start({ folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null, view = plainView, onIdle = null }) {
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
       if (!session) return { error: 'That session no longer exists.' };
 
-      const ctx = { designDir, session, key: sessionKey(folder, design, sessionId), block: null, timer: null };
+      const ctx = { designDir, session, key: sessionKey(folder, design, sessionId), block: null, timer: null, view, step: null, startedAt: new Date().toISOString(), checking: false };
       const designPath = `prelude/${design.id}`;
       const pending = new Map();   // tool id -> name, to label its result
 
@@ -122,7 +162,16 @@ export function createTurns({ runner, live, onChange = () => {} }) {
       const sinceCheck = lastCheck ? entries.slice(entries.lastIndexOf(lastCheck)) : [];
       const told = findings.get(dKey) ?? (lastCheck?.told && !sinceCheck.some(entry => entry.type === 'user') ? lastCheck.told : null);
 
-      record(ctx, { type: 'user', text: message });
+      for (const said of shown ?? [{ text: message }]) {
+        record(ctx, {
+          type: 'user',
+          text: said.text ?? '',
+          ...(said.images?.length ? { images: said.images } : {}),
+          ...(said.lookingAt ? { lookingAt: said.lookingAt } : {}),
+        });
+      }
+
+      const publishState = () => live.publish(ctx.key, statusMessage(turns.state(folder, design, sessionId)));
 
       const turn = runner.turn({
         cwd: folder.path,
@@ -150,7 +199,11 @@ ${withFindings(told, message)}` : withFindings(told, message),
             endText(ctx, event.text);
           } else if (event.type === 'tool') {
             pending.set(event.id, event.name);
-            record(ctx, { type: 'tool', id: event.id, name: event.name, summary: toolSummary(event.name, event.input, folder.path) });
+            const summary = toolSummary(event.name, event.input, folder.path);
+            record(ctx, { type: 'tool', id: event.id, name: event.name, summary });
+            // The status line says what it's doing now.
+            ctx.step = stepOf(event.name, summary);
+            publishState();
           } else if (event.type === 'tool-result') {
             record(ctx, {
               type: 'tool-result', id: event.id, name: pending.get(event.id) ?? null,
@@ -161,7 +214,7 @@ ${withFindings(told, message)}` : withFindings(told, message),
       });
 
       running.set(dKey, { sessionId, stop: turn.stop, stopUrl, ctx });
-      live.publish(ctx.key, statusMessage({ kind: 'working', stopUrl }));
+      publishState();
       changed({ key: ctx.key, finished: false, watched: false });
 
       findings.delete(dKey);
@@ -173,6 +226,8 @@ ${withFindings(told, message)}` : withFindings(told, message),
         // Render what the agent made, and say what doesn't: to the person now,
         // and to the agent with the next message.
         if (check && result.ok) {
+          ctx.checking = true;
+          publishState();
           try {
             // A page that doesn't render is the agent's to fix. One that renders
             // differently from its approved snapshot is the person's to judge
@@ -218,6 +273,9 @@ ${withFindings(told, message)}` : withFindings(told, message),
         running.delete(dKey);
         live.publish(ctx.key, statusMessage({ kind: 'idle' }));
         changed({ key: ctx.key, finished: true, watched: (live.listening?.(ctx.key) ?? 0) > 0 });
+        if (onIdle) {
+          try { onIdle(); } catch (error) { console.error(error); }
+        }
       };
       turn.done.then(finish, error => finish({ ok: false, error: String(error?.message ?? error) }));
       return { ok: true };
@@ -228,14 +286,45 @@ ${withFindings(told, message)}` : withFindings(told, message),
       if (turn?.sessionId === sessionId) turn.stop();
     },
 
+    /** A message to send when the turn ends: { id, sessionId, text, prompt, images, lookingAt }. */
+    enqueue(folder, design, item) {
+      const queued = { ...item, id: `q-${++queuedCount}` };
+      queueOf(designKey(folder, design)).push(queued);
+      return queued;
+    },
+
+    /** The messages waiting in a session, in the order written. */
+    queued(folder, design, sessionId) {
+      return queueOf(designKey(folder, design)).filter(item => item.sessionId === sessionId);
+    },
+
+    /** Take one waiting message back: it, or null. */
+    cancel(folder, design, id) {
+      const queue = queueOf(designKey(folder, design));
+      const at = queue.findIndex(item => item.id === id);
+      return at < 0 ? null : queue.splice(at, 1)[0];
+    },
+
+    /**
+     * Take the waiting messages of a session - or, with none named, of the
+     * session whose message has waited longest - out of the queue.
+     */
+    takeQueued(folder, design, sessionId = null) {
+      const queue = queueOf(designKey(folder, design));
+      const which = sessionId ?? queue[0]?.sessionId;
+      const taken = queue.filter(item => item.sessionId === which);
+      queues.set(designKey(folder, design), queue.filter(item => item.sessionId !== which));
+      return taken;
+    },
+
     /**
      * The messages a newly connected page needs: entries it hasn't rendered,
      * the message being written (as far as it has been published), then the
      * status.
      */
-    catchUp(folder, design, designDir, sessionId, from) {
+    catchUp(folder, design, designDir, sessionId, from, view = plainView) {
       const messages = readEntries(designDir, sessionId, from)
-        .map(entry => entryMessage(entry))
+        .map(entry => entryMessage(entry, view))
         .filter(Boolean);
       const turn = running.get(designKey(folder, design));
       const block = turn?.sessionId === sessionId ? turn.ctx.block : null;
@@ -247,4 +336,5 @@ ${withFindings(told, message)}` : withFindings(told, message),
       return messages;
     },
   };
+  return turns;
 }

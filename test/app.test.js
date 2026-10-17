@@ -125,7 +125,7 @@ test('another stack is described, and its app is built first, on the shell’s b
   const folder = await (await get(`/f/${fid}`)).text();
   assert.match(folder, /The app is being built on the shell’s branch/);
   const session = await (await get(`/f/${wid}/d/app-shell/sessions/${sid}`)).text();
-  assert.match(session, /A build session: it builds The app into the app, on this design’s branch/);
+  assert.match(session, /This session builds <strong>The app<\/strong> into the app, on this design’s branch/);
 });
 
 test('the app is built on the shell’s branch, merged into main and tidied up; a feature then updates from main and builds', async () => {

@@ -159,7 +159,7 @@ test('the first message starts a session; the agent runs in the folder', async (
   assert.equal((await get(designUrl)).headers.get('location'), sessionUrl);
   const html = await (await get(sessionUrl)).text();
   assert.match(html, /Design a sign-up screen/);
-  assert.match(html, /ko-connect="[^"]+\/live\?from=3"/);
+  assert.match(html, /ko-connect="[^"]+\/sessions\/[^/]+\/live\?from=3"/);
 });
 
 test('later messages resume the conversation; events stream to the page', async () => {
@@ -183,10 +183,16 @@ test('later messages resume the conversation; events stream to the page', async 
   assert.match(composer, /<textarea[^>]*><\/textarea>/, 'the box comes back empty');
   assert.equal(runner.turns[0].resume, true);
 
-  // While it works, another message is refused, and so is a new session.
+  assert.match(composer, /Send when it’s done/, 'while it works, a message waits');
+
+  // While it works, another message waits (R-z4k), and can be taken back; a
+  // new session is refused.
   const busy = await post(`${sessionUrl}/messages`, { message: 'Hurry' });
-  assert.equal(busy.status, 409);
-  assert.match(await busy.text(), /already working/);
+  assert.equal(busy.status, 200);
+  const waiting = await busy.text();
+  assert.match(waiting, /<div ko-into="queued"><li class="entry user">\s*<div class="bubble">Hurry<\/div>/);
+  const cancel = waiting.match(/action="([^"]+\/queued\/[^"]+\/cancel)"/)[1];
+  assert.doesNotMatch(await (await post(cancel, {})).text(), /Hurry/, 'cancelled');
   assert.equal((await post(`${designUrl}/sessions`, { message: 'Parallel' })).status, 409);
 
   const streaming = readStream(`${sessionUrl}/live?from=${from}`, ms => ms.some(m => m.includes('Made 01-sign-up.html')) && ms.at(-1).includes('ko-into="agent-status"></div>'));
@@ -229,20 +235,103 @@ test('words stream into a live entry, which becomes markdown when finished', asy
   await until(() => readEntries(designDir, id).at(-1)?.type === 'turn');
   assert.equal(readEntries(designDir, id).filter(e => e.text === 'Here is <i>**the plan** <b>x</b>').length, 1);
   const html = await (await get(sessionUrl)).text();
-  assert.ok(html.includes('<div class="say markdown"><p>Here is &lt;i&gt;<strong>the plan</strong>'));
+  assert.ok(html.includes('<div class="prose"><p>Here is &lt;i&gt;<strong>the plan</strong>'));
 });
 
-test('stop ends the turn', async () => {
+test('stop ends the turn; what waited goes back in the box, not to the agent', async () => {
   const id = readdirSync(join(designDir, 'sessions'))[0];
   const sessionUrl = `${designUrl}/sessions/${id}`;
   runner.queue([{ type: 'text-start' }, { type: 'text-delta', text: 'Half a' }, { type: 'wait' }, { type: 'text-delta', text: 'never said' }]);
   assert.equal((await post(`${sessionUrl}/messages`, { message: 'Long job' })).status, 200);
+  assert.equal((await post(`${sessionUrl}/queue`, { message: 'And then this' })).status, 200);
+  const turnsBefore = runner.turns.length;
   const stop = await post(`${sessionUrl}/stop`, {});
   assert.match(await stop.text(), /Stopping/);
   await until(() => readEntries(designDir, id).at(-1)?.type === 'turn');
   assert.equal(readEntries(designDir, id).at(-1).stopped, true);
   assert.equal(readEntries(designDir, id).at(-2).text, 'Half a', 'a message cut off by Stop is kept as far as it got');
   assert.ok(!readEntries(designDir, id).some(e => e.text?.includes('never said')));
+
+  // R-9cn: the waiting message wasn't sent; it's in the session's draft.
+  await new Promise(resolve => setTimeout(resolve, 100));
+  assert.equal(runner.turns.length, turnsBefore);
+  const page = await (await get(sessionUrl)).text();
+  assert.match(page, /<textarea[^>]*>And then this<\/textarea>/);
+});
+
+test('each session keeps its own draft; images only, kept until sent', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  const sessionUrl = `${designUrl}/sessions/${id}`;
+  assert.equal((await post(`${sessionUrl}/draft`, { message: 'Half-written' })).status, 200);
+  assert.match(await (await get(sessionUrl)).text(), /<textarea[^>]*>Half-written<\/textarea>/, 'kept after a reload (R-d3v)');
+  assert.match(await (await get(`${designUrl}/sessions/new`)).text(), /<textarea[^>]*><\/textarea>/, 'another session has its own');
+
+  // A PNG is taken; anything else isn't (R-m2s).
+  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d49444154789c63000100000500010d0a2db40000000049454e44ae426082', 'hex');
+  const upload = new FormData();
+  upload.append('image', new Blob([png], { type: 'image/png' }), 'sketch.png');
+  upload.append('image', new Blob(['not an image'], { type: 'image/png' }), 'notes.png');
+  const tray = await (await fetch(`${base}${sessionUrl}/attachments`, { method: 'POST', body: upload, headers: { 'x-koda-fragment': '1' } })).text();
+  assert.equal((tray.match(/<li class="attachment">/g) ?? []).length, 1);
+  const imageId = tray.match(/name="attachments" value="(img-[a-z0-9]+)"/)[1];
+  const file = await fetch(`${base}${designUrl}/images/${imageId}/file`);
+  assert.equal(file.headers.get('content-type'), 'image/png');
+  assert.match(await (await get(`${designUrl}/images/${imageId}`)).text(), /<h2 class="image-name">sketch\.png<\/h2>[\s\S]*Not sent yet/);
+
+  // Images alone are a message (R-b6d); the agent is told where they are.
+  runner.turns.length = 0;
+  const sent = await post(`${sessionUrl}/messages`, { message: '', attachments: imageId });
+  assert.equal(sent.status, 200);
+  await until(() => runner.turns.length === 1);
+  assert.match(runner.turns[0].prompt, new RegExp(`prelude/onboarding/sign-up/sessions/${id}/images/${imageId}-sketch\\.png`));
+  await until(() => readEntries(designDir, id).at(-1)?.type === 'turn');
+  assert.match(await (await get(`${designUrl}/images/${imageId}`)).text(), /Sent /, 'kept with the session');
+  assert.match(await (await get(sessionUrl)).text(), /<textarea[^>]*><\/textarea>/, 'sending empties the draft');
+});
+
+test('what the person is looking at goes with the message, unless they turn it off', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  const sessionUrl = `${designUrl}/sessions/${id}`;
+  runner.turns.length = 0;
+  await post(`${sessionUrl}/messages`, { message: 'Make this one shorter', 'lookingAt.include': 'true', 'lookingAt.page': '01-sign-up.html', 'lookingAt.state': '', 'lookingAt.size': 'Laptop' });
+  await until(() => runner.turns.length === 1);
+  assert.match(runner.turns[0].prompt, /looking at .*\(01-sign-up\.html\), shown as Laptop/);
+  await until(() => readEntries(designDir, id).at(-1)?.type === 'turn');
+  const told = readEntries(designDir, id).findLast(e => e.type === 'user');
+  assert.match(told.lookingAt, / · Laptop$/);
+
+  runner.turns.length = 0;
+  await post(`${sessionUrl}/messages`, { message: 'Something else', 'lookingAt.include': 'false', 'lookingAt.page': '01-sign-up.html' });
+  await until(() => runner.turns.length === 1);
+  assert.equal(runner.turns[0].prompt, 'Something else');
+  await until(() => readEntries(designDir, id).at(-1)?.type === 'turn');
+});
+
+test('messages written while the agent works go together, in order, when its turn ends', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  const sessionUrl = `${designUrl}/sessions/${id}`;
+  const turnsBefore = readEntries(designDir, id).filter(e => e.type === 'turn').length;
+  runner.turns.length = 0;
+  runner.queue([{ type: 'wait' }, { type: 'text', text: 'One.' }]);
+  await post(`${sessionUrl}/messages`, { message: 'Long job' });
+  await post(`${sessionUrl}/queue`, { message: 'First' });
+  await post(`${sessionUrl}/messages`, { message: 'Second' });
+  assert.equal(runner.turns.length, 1, 'nothing more goes while it works');
+  runner.release();
+  await until(() => runner.turns.length === 2);
+  assert.equal(runner.turns[1].prompt, 'First\n\nSecond');
+  await until(() => readEntries(designDir, id).filter(e => e.type === 'turn').length === turnsBefore + 2);
+  assert.deepEqual(readEntries(designDir, id).filter(e => e.type === 'user').slice(-2).map(e => e.text), ['First', 'Second'], 'each shown as written');
+});
+
+test('answering a question starts a message after what is typed, and sends nothing', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  const sessionUrl = `${designUrl}/sessions/${id}`;
+  await get(sessionUrl);   // the chat shows this session
+  await post(`${sessionUrl}/draft`, { message: 'First, thanks.' });
+  const answer = await (await post(`${designUrl}/questions/q-x/answer`, { message: 'About “Which colour?”: ' })).text();
+  assert.match(answer, /<textarea[^>]*>First, thanks\.\n\nAbout “Which colour\?”: <\/textarea>/);
+  assert.match(answer, /<div ko-into="drawer\?"><\/div>/, 'and the drawer closes');
 });
 
 test('a new session is listed in the switcher, newest first', async () => {

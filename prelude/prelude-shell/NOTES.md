@@ -73,6 +73,17 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 - **`[data-desktop-only]`** moved from `prelude.css` into the shell: it's about
   the window, not a page. The app's layout still needs `desktop.js`.
 - **Main region is `#main`** (was `#workspace`); nothing targets it by id.
+- **A wide modal**: a modal fragment whose root has `.modal-wide` gets the
+  reading width (`--measure`) instead of the narrow one, for something to
+  look at (an image). Gallery: `/gallery/modal-wide`. Added for "Design
+  Workspace" (prelude/design-workspace): a sent image, full size.
+- **Sizes and clients** (`clients.json`): what a design's preview offers
+  besides Fit the panel, the same for every design. A size is a title and
+  width × height; a client is a title, a line saying what differs, and the
+  attributes it sets on the page's root (the desktop app sets
+  `data-desktop`, which shows `[data-desktop-only]`). Prelude can't run a
+  client; these show what the page itself shows in it. Added for "Design
+  Workspace" (prelude/design-workspace).
 
 ## Connected to the app (2026-10-16)
 

@@ -1,0 +1,69 @@
+<%/* The design's rules (RULES.md), in the drawer, opened from Rules in the
+     design bar. What the views can't say: what's intended and general, and
+     what nothing on screen shows.
+
+     The rules for the page on show come first, then those shown on other
+     pages, then those no page shows (an email sent, a record locked). Each
+     says whether it's built yet: a proposed one is only in the design until
+     the app's code makes it true. A rule shown on a page has Show, which
+     puts that page, in that state, in the design surface. Retired rules
+     fold away at the end, each with why.
+
+     `it` is the design: `it.rules` as Prelude reads them from RULES.md, and
+     `it.surface.current`, the page on show. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; const current = it.surface?.current;
+   const live = (it.rules ?? []).filter(rule => rule.status !== 'retired');
+   const here = live.filter(rule => rule.shownOn?.page === current);
+   const elsewhere = live.filter(rule => rule.shownOn && rule.shownOn.page !== current);
+   const unseen = live.filter(rule => !rule.shownOn);
+   const retired = (it.rules ?? []).filter(rule => rule.status === 'retired');
+   const pageTitle = it.surface?.screens?.find(s => s.id === current)?.title; %>
+<div class="stack gap-6 rules">
+  <div class="stack gap-1">
+    <h2>Rules</h2>
+    <p class="secondary">What this design holds to that its pages can’t show on their own. Ask the agent to add, change or retire one.</p>
+  </div>
+  <% if (!live.length) { %>
+  <p class="empty">No rules yet. The agent writes one when something seen in a state is meant to hold everywhere, or when nothing on screen can show it.</p>
+  <% } %>
+  <% for (const [title, rules, says] of [
+       [pageTitle ? `On ${pageTitle}` : 'On this page', here, 'None on the page on show.'],
+       ['On other pages', elsewhere, null],
+       ['Not shown on any page', unseen, null]]) { %>
+  <% if (rules.length || says) { %>
+  <section class="stack gap-2">
+    <h3 class="group-label"><%= title %></h3>
+    <% if (!rules.length) { %><p class="muted"><%= says %></p><% } %>
+    <ul class="list">
+      <% for (const rule of rules) { %>
+      <li class="item rule">
+        <span class="item-text">
+          <span class="cluster gap-2"><code><%= rule.id %></code><span class="pill<%= rule.status === 'proposed' ? '' : ' good' %>"><%= rule.status === 'proposed' ? 'Proposed' : 'Built' %></span></span>
+          <span><%= rule.text %></span>
+          <% if (rule.shownOn) { %><span class="muted">Shown on <%= rule.shownOn.title %><% if (rule.shownOn.stateTitle) { %> · <%= rule.shownOn.stateTitle %><% } %></span><% } %>
+        </span>
+        <% if (rule.shownOn && !(rule.shownOn.page === current && rule.shownOn.state === it.surface?.state)) { %>
+        <%~ include('./_show', { base, page: { path: rule.shownOn.page, state: rule.shownOn.state } }) %>
+        <% } %>
+      </li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+  <% } %>
+  <% if (retired.length) { %>
+  <details class="disclosure">
+    <summary><%= retired.length === 1 ? '1 retired rule' : `${retired.length} retired rules` %></summary>
+    <ul class="list">
+      <% for (const rule of retired) { %>
+      <li class="item">
+        <span class="item-text">
+          <span><code><%= rule.id %></code> <s><%= rule.text %></s></span>
+          <span class="muted">Retired: <%= rule.retired %></span>
+        </span>
+      </li>
+      <% } %>
+    </ul>
+  </details>
+  <% } %>
+</div>

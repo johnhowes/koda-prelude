@@ -77,6 +77,10 @@
   /* The Close sits beside the content's heading, on its line: centred on a
      dialog heading's line (--text-lg at --leading), whatever follows below. */
   .shell-modal { inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5)); }
+  /* A modal for something to look at (an image, a long preview): its
+     fragment's root says .modal-wide, and the dialog takes the reading
+     width instead, as tall as the window allows. */
+  .shell-modal:has(> [ko-region] > .modal-wide) { inline-size: min(var(--measure), 100% - 2 * var(--space-5)); max-inline-size: none; }
   .shell-modal[open] { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: var(--space-3); }
   .shell-modal > [ko-region] { grid-area: 1 / 1; }
   .shell-modal > .icon-btn {

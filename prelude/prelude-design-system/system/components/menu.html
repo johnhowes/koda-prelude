@@ -1,7 +1,23 @@
 <!-- Menu: a button that opens a short list to pick from (sessions, screens, states).
      details/summary, so it needs no script. The summary shows the current choice;
      each row is a link or a submit button, with a title and a .muted line; the
-     current one has aria-current. Opens to the right edge; .start opens from the left. -->
+     current one has aria-current. Opens to the right edge; .start opens from the left.
+     .up opens it above its button, for a menu at the foot of a panel. A .menu-note
+     is a line that says something rather than offering it. An <hr> separates groups; a small form (a field and its .btn) may end the
+     list, and its .btn stays a button. -->
+<details class="menu">
+  <summary class="btn small ghost"><span class="icon icon-fit" aria-hidden="true"></span>Phone</summary>
+  <div class="menu-list">
+    <a href="#"><span class="item-title">Fit the panel</span><span class="muted">As wide and tall as the panel</span></a>
+    <a href="#" aria-current="true"><span class="item-title">Phone</span><span class="muted">390 × 844</span></a>
+    <hr>
+    <form class="stack gap-2" action="#" method="post">
+      <label class="label" for="custom-width">Custom size</label>
+      <div class="inline"><input id="custom-width" name="width" type="number" placeholder="Width"><button class="btn small" type="submit">Use this size</button></div>
+    </form>
+  </div>
+</details>
+
 <details class="menu start">
   <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</summary>
   <form class="menu-list" action="#" method="post">

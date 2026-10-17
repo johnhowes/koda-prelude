@@ -1,0 +1,9 @@
+<%/* A pop-out window: the design surface alone, filling the window. It
+     connects to the design's channel as a window, which is how the surface
+     beside the chat knows to step aside while it is open. Its size and
+     client are its own, so it can show another size than the panel. In the
+     desktop app it is a real window, which remembers its size and place; in
+     a browser, a tab the browser reuses. The page is the same in both. */%>
+<div class="stack design-page window-page">
+  <%~ include('./_surface', { ...it, view: 'window' }) %>
+</div>

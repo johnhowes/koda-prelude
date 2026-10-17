@@ -44,6 +44,8 @@
     --icon-push: url(icons/push.svg);
     --icon-history: url(icons/history.svg);
     --icon-question: url(icons/question.svg);
+    --icon-dictate: url(icons/dictate.svg);
+    --icon-capture: url(icons/capture.svg);
   }
 }
 
@@ -86,4 +88,6 @@
   .icon-push { --icon: var(--icon-push); }
   .icon-history { --icon: var(--icon-history); }
   .icon-question { --icon: var(--icon-question); }
+  .icon-dictate { --icon: var(--icon-dictate); }
+  .icon-capture { --icon: var(--icon-capture); }
 }

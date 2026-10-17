@@ -1,0 +1,6 @@
+<%/* Placeholder content for the wide modal: a heading (which names the
+   dialog), then something to look at, at the reading width. */%>
+<div class="stack gap-3 modal-wide">
+  <h2><span class="sr-only">Sample image</span><span class="skeleton" style="--w: 40%" aria-hidden="true"></span></h2>
+  <span class="skeleton block" aria-hidden="true"></span>
+</div>

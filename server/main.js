@@ -25,12 +25,16 @@ import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
+import { capture } from './capture.js';
+import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
+import { createDrafts, draftKey } from './drafts.js';
 import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
-import { createTurns, designKey, sessionKey } from './turns.js';
-import { presentEntry, render, shaped } from './views.js';
+import { createTurns, designKey, sessionKey, statusMessage } from './turns.js';
+import { render, shaped } from './views.js';
+import { lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const kodaDir = dirname(fileURLToPath(import.meta.resolve('@kodalang/core')));
@@ -40,11 +44,19 @@ const kodaPackage = canonical(dirname(kodaDir));
 const kodaVersion = JSON.parse(readFileSync(join(kodaPackage, 'package.json'), 'utf8')).version;
 
 // Prelude's own design system, in this repository's prelude/ folder: the pages
-// ported from a design (Home) are written in it, the rest still in ds/v1.
+// ported from a design (Home, a design's page) are written in it, the rest
+// still in ds/v1.
 const systemDir = (() => {
   const root = dirname(here);
   const system = findSystem(root);
   return system ? join(root, PRELUDE_DIR, ...system.id.split('/'), 'system') : join(here, 'public', 'ds', 'v1');
+})();
+
+// ...and its shell's chrome (shell.css), which a design's page renders in.
+const shellDir = (() => {
+  const root = dirname(here);
+  const shell = findShell(root);
+  return shell ? join(root, PRELUDE_DIR, ...shell.id.split('/'), 'layouts') : join(here, 'public');
 })();
 
 const STATIC = [
@@ -52,6 +64,7 @@ const STATIC = [
   { prefix: '/ds/', dir: join(here, 'public', 'ds') },
   { prefix: '/system/', dir: systemDir },
   { prefix: '/static/', dir: join(here, 'public') },
+  { prefix: '/shell/', dir: shellDir, only: /\.css$/ },
 ];
 
 const TYPES = {
@@ -62,6 +75,9 @@ const TYPES = {
   '.json': 'application/json; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
 };
+
+/** What an image the person attached is served as: only these. */
+const IMAGE_SERVED = { 'image/png': 'image/png', 'image/jpeg': 'image/jpeg', 'image/gif': 'image/gif', 'image/webp': 'image/webp' };
 
 export function defaultHome() {
   return process.env.PRELUDE_HOME ?? join(homedir(), '.prelude');
@@ -95,6 +111,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     hosts: createHosts({ home }),
     designs: createDesignState({ live }),
     channels: createChannels(),   // server events' live channels, per design (6e)
+    drafts: createDrafts({ home }),          // each session's unsent message
+    dictation: createDictation({ home, live }),   // the speech model, on this machine
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -112,7 +130,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 66000;
   // Renderer processes would outlive the server; stop them with it.
-  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.channels.closeAll(); });
+  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.channels.closeAll(); app.dictation.closeAll(); });
   return server;
 }
 
@@ -164,8 +182,10 @@ async function handle(req, res, app) {
   }
 
   if (req.method === 'GET') {
-    for (const { prefix, dir } of STATIC) {
-      if (path.startsWith(prefix)) return serveFile(res, dir, path.slice(prefix.length));
+    for (const { prefix, dir, only } of STATIC) {
+      if (!path.startsWith(prefix)) continue;
+      if (only && !only.test(path)) return notFoundText();
+      return serveFile(res, dir, path.slice(prefix.length));
     }
   }
 
@@ -774,62 +794,239 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const status = app.hosts.status(folder, config);
     return { url: config.url, running: status.running, approved: status.approved, start: `/f/${folder.id}/host/start` };
   };
-  const surface = (view, extra = {}) => {
+  // The folder this design's folder belongs to: itself, or (in a design's
+  // worktree) the repository it's a branch of. What the agent may read, and
+  // where finishing happens, are the folder's.
+  const parentId = folder.branch?.parentId ?? folder.id;
+  const entry = folder.branch?.design === design.id ? folder.branch : null;
+
+  // --- the design page's model (prelude/design-workspace; server/workspace.js)
+
+  const routes = hosted ? readRoutes(dir) : [];
+  const states = hosted ? listStates(dir) : [];
+  const stateOn = () => states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
+  const datasetFor = state => datasetOf(app, dKey, dir, state);
+  const context = { base, routes, states, datasetOf: datasetFor };
+  // How the pages show transcript entries, pushed or rendered.
+  const view = { present: item => presentEntry(item, context), base };
+
+  // A window's way of looking at the design (Design or App, its size and its
+  // client), from a form's fields or a URL's query: the design's forms post
+  // surface.view and the like; anything else may say view, mode, size, client.
+  const lookingOf = get => ({
+    view: viewOf(get('surface.view') ?? get('view')),
+    mode: modeOf(get('surface.mode') ?? get('mode')),
+    size: String(get('surface.size') ?? get('size') ?? 'fit'),
+    client: get('surface.client') ?? get('client') ?? null,
+  });
+  const fromForm = form => lookingOf(name => (form.has(name) ? String(form.get(name)) : null));
+  const fromQuery = () => lookingOf(name => url.searchParams.get(name));
+
+  /**
+   * The design surface, as one window shows it. The page and the state on
+   * show are the design's (R-c2m); Design or App, the size and the client
+   * are the window's. Sizes and clients are the shell's (R-h9x), the custom
+   * size the design's. `showing` takes the "a state's file changed" notice,
+   * which is said once.
+   */
+  const surfaceOf = ({ view: shown = 'inline', mode = 'design', size = 'fit', client = null, notice = null, showing = false } = {}) => {
+    const { sizes, clients } = sizesAndClients(folder.path);
+    const custom = designs.custom(dKey);
+    const built = hosted ? appHere() : null;
+    const reset = showing ? designs.takeReset(dKey) : null;
     const common = {
-      mode: 'design',
-      ...extra,
-      base,
-      view,
-      version: designs.version(dKey),
-      popped: view === 'inline' && designs.windows(dKey) > 0,
-      windowName: `prelude-${folder.id}-${design.id.replace(/[^a-z0-9]+/gi, '-')}`,
+      view: shown,
+      mode: built && mode === 'app' ? 'app' : 'design',
+      size,
+      client: clients.some(c => c.id === client) ? client : clients[0].id,
+      ...(custom ? { custom } : {}),
+      app: built,
       host: hostFor(),
+      popped: designs.windows(dKey) > 0,
+      notice,
+      ...(reset ? { reset } : {}),
+      sizes,
+      clients,
+      version: designs.version(dKey),
     };
     if (hosted) {
-      const routes = readRoutes(dir);
-      const states = listStates(dir);
-      const state = states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
+      const state = stateOn();
       // Every titled route, with sample ids from this state; overlays under
       // their page. A page followed to inside the frame may not be one of
-      // them (another record), and is shown by its route's title.
-      const screens = pickable(routes, datasetOf(app, dKey, dir, state)).map(pick => ({ ...pick, file: pick.id }));
+      // them (another record), and is listed by its route's title.
+      const screens = pickable(routes, datasetFor(state)).map(({ id, title: name, ported }) => ({ id, title: name, ...(ported ? { ported: true } : {}) }));
       const path = designs.current(dKey) ?? screens[0]?.id ?? null;
       const matched = path && matchRoute(routes, path);
-      const current = screens.find(screen => screen.id === path)
-        ?? (matched ? { id: path, title: matched.route.title ?? path, file: path } : screens[0] ?? null);
-      const origin = designOrigin(req, folder, design);
-      const changed = designs.copy(dKey)?.stateId === (state?.id ?? null);
-      // Ported routes render the app's own views; the rest are the design's.
-      const ported = { count: routes.filter(route => route.ported).length, of: routes.length };
-      const approved = readSnapshots(dir)?.size ?? 0;
-      const built = appHere();
-      const mode = built ? common.mode : 'design';
-      // In App mode the frame is the app itself, at the same path, with its own data.
-      const at = current && (mode === 'app' ? `${built.url}${current.id}` : `${origin}${current.id}`);
-      const events = readEvents(dir).map(event => ({ name: event.name, title: event.title }));
-      return { ...common, mode, app: built, hosted: true, screens, current, states, state, changed, ported, approved, events, frame: at, open: at };
+      if (matched && !screens.some(screen => screen.id === path)) screens.push({ id: path, title: matched.route.title ?? path });
+      return {
+        ...common,
+        origin: designOrigin(req, folder, design),
+        screens,
+        current: screens.some(screen => screen.id === path) ? path : screens[0]?.id ?? null,
+        states: states.map(({ id, title: name, file }) => ({ id, title: name, file })),
+        state: state?.id ?? null,
+        changed: designs.copy(dKey)?.stateId === (state?.id ?? null),
+        events: readEvents(dir).map(event => ({ name: event.name, title: event.title })),
+        approved: readSnapshots(dir)?.size ?? 0,
+        review: reviewOf(dir, context),
+      };
     }
+    // Plain screens/*.html (the design system's gallery): served as files.
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
     const current = screens.find(screen => screen.id === wanted) ?? screens[0] ?? null;
-    const files = `${previewOrigin(req)}/f/${folder.id}/p/${design.id}`;
-    const at = current && `${files}/screens/${encodeURIComponent(current.file)}`;
-    return { ...common, mode: 'design', app: null, hosted: false, screens, current, states: [], state: null, changed: false, events: [], frame: at, open: at };
+    return {
+      ...common,
+      origin: `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/`,
+      screens: screens.map(screen => ({ id: screen.file, title: screen.title })),
+      current: current?.file ?? null,
+      states: [], state: null, changed: false, events: [], approved: 0,
+      review: { failures: [], differ: [] },
+      screensOnly: true,
+    };
   };
 
+  /** What every part of the page knows: which design, where. */
+  const basics = () => ({
+    id: design.id,
+    title: design.title,
+    area: design.area || null,
+    kind: design.kind,
+    // In a design's worktree, the project is the repository it's a branch of.
+    folder: { id: folder.id, name: folder.branch?.parentName ?? folder.name, ...(folder.branch ? { parentId: folder.branch.parentId } : {}) },
+  });
+
+  /** A session's draft, at the session's own address (R-d3v). */
+  const draftOf = sessionId => {
+    const saved = app.drafts.read(folder, design, sessionId);
+    const at = `${base}/sessions/${draftKey(sessionId)}`;
+    return { base: at, message: saved.message, attachments: saved.attachments.map(image => ({ id: image.id, name: image.name, url: `${at}/images/${image.id}/file` })) };
+  };
+
+  /** The design's branch, as the header and the About drawer show it. */
+  const branchOf = () => {
+    if (!entry) return null;
+    const state = branchState(app, entry, design);
+    return {
+      id: state.id, branch: state.branch, into: state.into, check: state.check, failures: state.failures,
+      behind: state.behind, worked: state.worked, remote: state.remote,
+      building: state.building ? { title: state.building.title } : null,
+      alsoChanges: state.alsoChanges ?? [],
+      running: state.running ? { running: state.running.running, approved: state.running.approved, url: state.running.url, open: state.running.open, start: state.running.start } : null,
+      merging: state.merging ? { from: state.merging.from, unresolved: state.merging.unresolved } : null,
+      error: null,
+    };
+  };
+
+  /** The session's status line: its own turn, another session's, or nothing. */
+  const turnOf = session => (session ? turns.state(folder, design, session.id) : turns.busy(folder, design) ? { kind: 'busy' } : { kind: 'idle' });
+
+  const queuedOf = sessionId => (sessionId
+    ? turns.queued(folder, design, sessionId).map(item => ({ id: item.id, message: item.text, images: item.images.length }))
+    : []);
+
+  /**
+   * The design page's model (DesignPage, server/workspace.js), for a session
+   * or a new one. `surface` is the window's way of looking (surfaceOf).
+   */
+  const pageModel = ({ session = null, surface = {}, showing = false, extra = {} } = {}) => {
+    const all = listSessions(dir);
+    const notes = notesOf(folder.path, dir, design.id);
+    const system = systemFor();
+    const shell = shellFor();
+    const merged = app.branches.merged(parentId).find(note => note.design === design.id) ?? null;
+    return {
+      ...basics(),
+      system: system && { id: system.id, title: system.title },
+      shell: shell && { id: shell.id, title: shell.title },
+      references: app.references.of(parentId).map(({ name, path }) => ({ name, path })),
+      buildUrl: hosted && buildsPages(design) ? `${base}/build` : null,
+      merged: merged && { branch: merged.branch, into: merged.into, when: whenWords(merged.at) },
+      branch: branchOf(),
+      sessions: all.map((item, i) => ({
+        id: item.id,
+        title: item.title,
+        started: startedWords(item.startedAt),
+        ...(item.build ? { build: true } : {}),
+        // Where the latest session ended, for "Carry on from…" (R-e9t).
+        ...(i === 0 ? { lastLine: lastLineOf(readEntries(dir, item.id)) } : {}),
+      })),
+      session: session && { id: session.id, title: session.title, ...(session.build ? { build: { title: session.build.title } } : {}) },
+      state: turnOf(session),
+      entries: session ? readEntries(dir, session.id).map(view.present) : [],
+      rules: rulesOf(dir, context),
+      questions: notes.questions,
+      decisions: notes.decisions,
+      dictation: app.dictation.state(),
+      speechModels: SPEECH_MODELS,
+      queued: queuedOf(session?.id),
+      images: [],
+      draft: draftOf(session?.id ?? null),
+      surface: surfaceOf({ ...surface, showing }),
+      ...extra,
+    };
+  };
+
+  /** The session the chat shows, for what lands in its message box from elsewhere. */
+  const sessionOnShow = () => {
+    const shown = designs.session(dKey);
+    if (shown === 'new') return null;
+    return (shown && readSession(dir, shown)) || null;
+  };
+
+  const fragment = req.headers['x-koda-fragment'] === '1';
+  const sendView = (status, name, data, also = '') => send(res, status, render(`./${name}`, data) + also);
+  const envelope = (into, html = '') => `\n<div ko-into="${into}">${html}</div>`;
+
+  /**
+   * The page, in its layout for a cold load: the chat beside the surface,
+   * with any overlay already in its region, and the page's one live channel.
+   */
+  const designPage = (status, model, { session = null, regions = {}, path = url.pathname } = {}) => {
+    const live = session ? `${base}/sessions/${session.id}/live?from=${model.entries.length}` : `${base}/live`;
+    const body = render('./_session', { ...model, live });
+    if (fragment && !Object.keys(regions).length) return send(res, status, body);
+    return send(res, status, render('./workspace-layout', { body, path, title, regions }));
+  };
+
+  /**
+   * An overlay (a drawer or a modal over the page): alone for a fragment
+   * request; a cold load gets the page beneath - the latest session - with
+   * the overlay in its region.
+   */
+  const overlay = (name, data, region) => {
+    const html = render(`./${name}`, data);
+    if (fragment) return send(res, 200, html);
+    const latest = listSessions(dir)[0] ?? null;
+    designs.showSession(dKey, latest?.id ?? 'new');
+    return designPage(200, pageModel({ session: latest, showing: true }), {
+      session: latest,
+      regions: { [region]: { html, location: url.pathname } },
+      path: latest ? `${base}/sessions/${latest.id}` : base,
+    });
+  };
+
+  /** The design surface, answering a form in the design bar. */
+  const surfaceAnswer = (looking, notice = null) =>
+    sendView(200, '_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...looking, notice, showing: true }) });
+
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
-    return page(200, 'design', surface(viewOf(url.searchParams.get('view')), { mode: modeOf(url.searchParams.get('mode')) }), title);
+    const body = render('./_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }) });
+    if (fragment) return send(res, 200, body);
+    return send(res, 200, render('./workspace-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, live: `${base}/live`, bare: true }));
   }
 
+  // Show a page: in every window (R-c2m), and in the state named with it, as
+  // Show does for a page the check or a rule names (R-pk8).
   if (req.method === 'POST' && rest[0] === 'screen' && rest.length === 1) {
     const form = await readForm(req);
-    const view = viewOf(form.get('view'));
-    const wanted = String(form.get('screen') ?? '');
-    const known = hosted
-      ? Boolean(matchRoute(readRoutes(dir), wanted))
-      : listScreens(dir).some(screen => screen.id === wanted);
-    if (known) designs.show(dKey, wanted);
-    return send(res, 200, render('./_design', surface(view, { mode: modeOf(form.get('mode')) })));
+    const wanted = String(form.get('surface.current') ?? form.get('screen') ?? '');
+    const inState = form.get('surface.state') ?? form.get('state');
+    if (hosted && inState && states.some(state => state.id === inState)) designs.showState(dKey, String(inState));
+    const id = hosted ? wanted : wanted.replace(/\.html$/i, '');
+    const known = hosted ? Boolean(matchRoute(routes, id)) : listScreens(dir).some(screen => screen.id === id);
+    if (known) designs.show(dKey, id);
+    return surfaceAnswer(fromForm(form));
   }
 
   // "Send event" (6e): the server speaks first. Its change goes to the working
@@ -837,14 +1034,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // window showing the design.
   if (req.method === 'POST' && rest[0] === 'events' && rest.length === 1 && hosted) {
     const form = await readForm(req);
+    const name = String(form.get('event') ?? '');
     // The answer is a line for the bar's status region, never the surface: a
     // new frame would reload the page the event is meant to reach.
-    const sent = (notice, failed = false) => send(res, 200, render('./_event-sent', { notice, failed }));
-    const event = readEvents(dir).find(candidate => candidate.name === String(form.get('event') ?? ''));
+    const events = readEvents(dir);
+    const sent = (notice, failed = false) => sendView(200, '_event-sent', { ...basics(), surface: { events: events.map(event => ({ name: event.name, title: event.title })) }, event: name, sent: { notice, failed } });
+    const event = events.find(candidate => candidate.name === name);
     if (!event) return sent('That event is no longer in the design.', true);
-    const states = listStates(dir);
-    const state = states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
-    const working = structuredClone(datasetOf(app, dKey, dir, state));
+    const state = stateOn();
+    const working = structuredClone(datasetFor(state));
     const fired = await eventMessages(app, { folder, designDir: dir, event, dataset: working });
     if (fired.changed) designs.setCopy(dKey, state?.id ?? null, working);
     const heard = fired.messages.length ? app.channels.send(dKey, fired.messages) : 0;
@@ -856,14 +1054,25 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'POST' && rest[0] === 'reset' && rest.length === 1) {
     const form = await readForm(req);
     designs.resetCopy(dKey);
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { mode: modeOf(form.get('mode')) })));
+    return surfaceAnswer(fromForm(form));
   }
 
   if (req.method === 'POST' && rest[0] === 'state' && rest.length === 1) {
     const form = await readForm(req);
-    const wanted = String(form.get('state') ?? '');
-    if (listStates(dir).some(state => state.id === wanted)) designs.showState(dKey, wanted);
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { mode: modeOf(form.get('mode')) })));
+    const wanted = String(form.get('surface.state') ?? form.get('state') ?? '');
+    if (states.some(state => state.id === wanted)) designs.showState(dKey, wanted);
+    return surfaceAnswer(fromForm(form));
+  }
+
+  // A custom size (R-e5n, R-w3j): a width and a height from 200 to 4000
+  // pixels, remembered for the design in place of the last one, and shown in
+  // this window. Anything else shows the page fitting the panel.
+  if (req.method === 'POST' && rest[0] === 'size' && rest.length === 1) {
+    const form = await readForm(req);
+    const width = pixels(form.get('surface.custom.width') ?? form.get('width'));
+    const height = pixels(form.get('surface.custom.height') ?? form.get('height'));
+    if (width && height) designs.setCustom(dKey, { width, height });
+    return surfaceAnswer({ ...fromForm(form), size: width && height ? 'custom' : 'fit' });
   }
 
   // "Approve these screens": every page in every state, as it renders now,
@@ -872,25 +1081,71 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const form = await readForm(req);
     const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
     // Approving over pages that don't render would throw their approved versions away.
-    const states = Math.max(1, listStates(dir).length);
-    const count = review.failures.length ? 0 : writeSnapshots(dir, review.renders);
+    const count = Math.max(1, states.length);
+    const approved = review.failures.length ? 0 : writeSnapshots(dir, review.renders);
     // Approved pages may now be ready to build.
-    if (count) tell(app, { needs: true, projects: true });
+    if (approved) tell(app, { needs: true, projects: true });
     const notice = review.failures.length
       ? `Not approved: ${review.failures.length === 1 ? '1 page doesn’t' : `${review.failures.length} pages don’t`} render. Fix ${review.failures.length === 1 ? 'it' : 'them'} first.`
-      : `Approved ${count} ${count === 1 ? 'page' : 'pages'} in ${states} ${states === 1 ? 'state' : 'states'}.`;
-    return send(res, 200, render('./_design', surface(viewOf(form.get('view')), { notice, mode: modeOf(form.get('mode')) })));
+      : `Approved ${approved} ${approved === 1 ? 'page' : 'pages'} in ${count} ${count === 1 ? 'state' : 'states'}.`;
+    return surfaceAnswer(fromForm(form), notice);
+  }
+
+  // Capture (R-k7c): the page as this window shows it - its page, state,
+  // size and client, or the app - as a picture, into the message box of the
+  // session the chat shows. Every chat reloads its tray on draft-changed.
+  if (req.method === 'POST' && rest[0] === 'capture' && rest.length === 1) {
+    const form = await readForm(req);
+    const looking = fromForm(form);
+    const answer = (data, also = '') => sendView(200, '_captured', data, also);
+    const page = String(form.get('page') ?? '');
+    const built = hosted ? appHere() : null;
+    const inApp = Boolean(built) && looking.mode === 'app';
+    const known = hosted ? Boolean(matchRoute(routes, page)) : listScreens(dir).some(screen => screen.file === page);
+    if (!known) return answer({ error: 'That page is no longer in the design.' });
+    const { sizes, clients } = sizesAndClients(folder.path);
+    const size = looking.size === 'custom' ? designs.custom(dKey) : sizes.find(candidate => candidate.id === looking.size && candidate.width);
+    const measured = value => { const n = Math.round(Number(value)); return n >= 50 && n <= 8000 ? n : null; };
+    const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
+    const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
+    const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
+    const at = inApp ? `${built.url}${page}` : hosted ? `${designOrigin(req, folder, design)}${page}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+    let bytes;
+    try {
+      bytes = await capture({ url: at, width, height, whole: form.get('whole') === 'true', attributes: client.attributes ?? {} });
+    } catch (error) {
+      return answer({ error: `Couldn’t capture the page: ${error.message}` });
+    }
+    const session = sessionOnShow();
+    const name = String(form.get('name') ?? '').trim() || 'Capture.png';
+    const added = app.drafts.addImage(folder, design, session?.id ?? null, { name, bytes });
+    if (added.error) return answer({ error: added.error });
+    live.publish(designChannel(dKey), 'draft-changed');
+    const draft = draftOf(session?.id ?? null);
+    return answer(draft.attachments.at(-1), envelope('attachments?', render('./_attachments', draft)));
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
-    const data = { surface: surface('window'), live: `${base}/live?view=window` };
-    const body = render('./_window', data);
-    if (req.headers['x-koda-fragment'] === '1') return send(res, 200, body);
-    return send(res, 200, render('./layout', { body, path: url.pathname, title: `${design.title} · design`, bare: true }));
+    const body = render('./_window', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }) });
+    if (fragment) return send(res, 200, body);
+    return send(res, 200, render('./workspace-layout', { body, path: url.pathname, title: `${design.title} · design`, live: `${base}/live?view=window`, bare: true }));
   }
 
-  if (req.method === 'GET' && rest[0] === 'live' && rest.length === 1) {
-    const release = watches.acquire(dKey, dir, () => designs.filesChanged(dKey));
+  /**
+   * The page's one channel (server-sent events): the design's events
+   * (design-changed, draft-changed), dictation's (dictation-changed), and,
+   * on a session's page, the session's entries and status. While any page
+   * listens, the design's files are watched.
+   */
+  const openChannel = (keys, initial = []) => {
+    // A state's file changing drops what forms did to its data (R-a6x).
+    const filesChanged = paths => {
+      const copy = designs.copy(dKey);
+      const changedState = copy && Array.isArray(paths) && listStates(dir).find(state => state.id === copy.stateId && paths.includes(`states/${state.file}`));
+      if (changedState) designs.dropCopy(dKey, `${changedState.title}’s file changed, so what your forms did to its data was undone. The pages show the file as it is now.`);
+      designs.filesChanged(dKey);
+    };
+    const release = watches.acquire(dKey, dir, filesChanged);
     // A design's screens link its folder's design system, so they change when
     // the system does: watch that too, under a key of this design's own.
     const system = systemFor();
@@ -905,46 +1160,151 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // A pop-out window says so by how it connects, and the inline surface
     // shrinks while one is open - and grows back when its channel closes.
     const closed = url.searchParams.get('view') === 'window' ? designs.windowOpened(dKey) : () => {};
-    return live.open(designChannel(dKey), req, res, [], { onClose: () => { closed(); release(); releaseSystem(); releaseShell(); } });
+    return live.open([...keys, designChannel(dKey), DICTATION_KEY], req, res, initial, { onClose: () => { closed(); release(); releaseSystem(); releaseShell(); } });
+  };
+
+  if (req.method === 'GET' && rest[0] === 'live' && rest.length === 1) return openChannel([]);
+
+  // --- the chat's overlays and parts ------------------------------------------
+
+  if (req.method === 'GET' && rest.length === 1 && ['about', 'rules', 'questions'].includes(rest[0])) {
+    return overlay(`_${rest[0]}`, pageModel(), 'drawer');
   }
 
-  // The folder this design's folder belongs to: itself, or (in a design's
-  // worktree) the repository it's a branch of. What the agent may read, and
-  // where finishing happens, are the folder's.
-  const parentId = folder.branch?.parentId ?? folder.id;
-  const entry = folder.branch?.design === design.id ? folder.branch : null;
+  // What the person is looking at, for the message box's chip (R-r7h).
+  if (req.method === 'GET' && rest[0] === 'looking-at' && rest.length === 1) {
+    return sendView(200, '_looking-at', { ...basics(), surface: surfaceOf() });
+  }
 
-  const sessionView = (status, session, composer) => {
-    const entries = session ? readEntries(dir, session.id) : [];
-    const sessionUrl = session && `${base}/sessions/${session.id}`;
-    const branch = entry && (() => {
-      const state = branchState(app, entry, design);
-      return {
-        ...state,
-        finish: `/f/${parentId}/branches/${entry.id}`,
-        back: session ? sessionUrl : base,
-        building: session?.build ?? null,
-      };
-    })();
-    return page(status, 'session', {
-      folder,
-      design,
-      sessions: listSessions(dir),
-      session,
-      entries: entries.map(presentEntry),
-      state: session ? turns.state(folder, design, session.id) : { kind: 'idle' },
-      urls: { design: base, live: session && `${sessionUrl}/live?from=${entries.length}` },
-      composer: { action: session ? `${sessionUrl}/messages` : `${base}/sessions`, self: Boolean(session), ...composer },
-      surface: surface('inline'),
-      designLive: `${base}/live`,
-      system: systemFor(),
-      shell: shellFor(),
-      references: app.references.of(parentId),
-      buildUrl: hosted && buildsPages(design) ? `${base}/build` : null,
-      branch,
-      merged: app.branches.merged(parentId).find(note => note.design === design.id) ?? null,
-    }, title);
-  };
+  // Answer a question, or start with a starting point: the message starts in
+  // the box of the session the chat shows, after anything typed there, and
+  // nothing is sent (R-y3h).
+  if (req.method === 'POST' && ((rest[0] === 'start' && rest.length === 1) || (rest[0] === 'questions' && rest[2] === 'answer' && rest.length === 3))) {
+    const form = await readForm(req);
+    const start = String(form.get('message') ?? '');
+    const sessionId = sessionOnShow()?.id ?? null;
+    const typed = app.drafts.read(folder, design, sessionId).message.replace(/\s+$/, '');
+    app.drafts.setMessage(folder, design, sessionId, typed ? `${typed}\n\n${start}` : start);
+    return sendView(200, '_answering', draftOf(sessionId));
+  }
+
+  // An image the person attached, waiting or sent: full size, marked up, or
+  // its file. Found by its id, from the design's address or a session's.
+  const imagePath = rest[0] === 'sessions' && rest[2] === 'images' ? rest.slice(2) : rest[0] === 'images' ? rest : null;
+  if (imagePath && imagePath.length >= 2 && imagePath.length <= 3) {
+    const [, imageId, part] = imagePath;
+    const image = app.drafts.find(folder, design, dir, imageId);
+    if (!image) return notFound();
+    const model = { id: image.id, base, name: image.name, url: `${base}/images/${image.id}/file`, sent: image.sent ? whenWords(image.sent) : null };
+    if (req.method === 'GET' && part === 'file') {
+      const type = IMAGE_SERVED[image.type];
+      if (!type) return notFound();
+      res.writeHead(200, { 'content-type': type, 'cache-control': 'private, max-age=3600', 'x-content-type-options': 'nosniff', 'content-security-policy': "default-src 'none'" });
+      return createReadStream(image.path).pipe(res);
+    }
+    if (req.method === 'GET' && part === undefined) return overlay('_image', model, 'modal');
+    if (req.method === 'GET' && part === 'markup') return overlay('_markup', model, 'modal');
+    // The marked-up copy goes in the message box: in place of the original
+    // if that was waiting there, else beside what's there. The original
+    // never changes (R-u6p).
+    if (req.method === 'POST' && part === 'markup') {
+      const form = await readForm(req);
+      const file = form.get('image');
+      const sessionId = image.draft ? (image.draft === 'new' ? null : image.draft) : sessionOnShow()?.id ?? null;
+      if (file && typeof file === 'object' && typeof file.arrayBuffer === 'function') {
+        const added = app.drafts.addImage(folder, design, sessionId, { name: file.name || `${image.name.replace(/\.[^.]+$/, '')} (marked up).png`, bytes: Buffer.from(await file.arrayBuffer()) }, { replacing: image.draft ? image.id : null });
+        if (!added.error) live.publish(designChannel(dKey), 'draft-changed');
+      }
+      return sendView(200, '_attachments', draftOf(sessionId), envelope('modal?'));
+    }
+    return notFound();
+  }
+
+  // The session's draft (R-d3v): its images, what's typed, and adding or
+  // removing an image (R-m2s: only images; anything else leaves it as it
+  // was). At the session's address, or the design's for the session on show.
+  const draftPath = rest[0] === 'sessions' && rest.length >= 3 && ['draft', 'attachments'].includes(rest[2])
+    ? { sessionId: rest[1] === 'new' ? null : rest[1], parts: rest.slice(2) }
+    : ['draft', 'attachments'].includes(rest[0]) ? { sessionId: sessionOnShow()?.id ?? null, parts: rest } : null;
+  if (draftPath) {
+    const { sessionId, parts } = draftPath;
+    if (sessionId && !readSession(dir, sessionId)) return notFound();
+    if (parts[0] === 'draft' && parts.length === 1) {
+      if (req.method === 'GET') return sendView(200, '_attachments', draftOf(sessionId));
+      if (req.method === 'POST') {
+        const form = await readForm(req);
+        app.drafts.setMessage(folder, design, sessionId, String(form.get('message') ?? ''));
+        return sendView(200, '_draft-kept', draftOf(sessionId));
+      }
+    }
+    if (parts[0] === 'attachments' && parts.length === 1 && req.method === 'POST') {
+      const form = await readForm(req);
+      for (const file of form.getAll('image')) {
+        if (!file || typeof file !== 'object' || typeof file.arrayBuffer !== 'function' || !file.size) continue;
+        app.drafts.addImage(folder, design, sessionId, { name: file.name || 'Image', bytes: Buffer.from(await file.arrayBuffer()) });
+      }
+      return sendView(200, '_attachments', draftOf(sessionId));
+    }
+    if (parts[0] === 'attachments' && parts[2] === 'remove' && parts.length === 3 && req.method === 'POST') {
+      await readForm(req);
+      app.drafts.remove(folder, design, sessionId, parts[1]);
+      return sendView(200, '_attachments', draftOf(sessionId));
+    }
+    return notFound();
+  }
+
+  // Dictation (R-f2y, R-n5q, R-h4u): the person's set-up, on this machine.
+  const dictationModel = () => ({ ...basics(), dictation: app.dictation.state(), speechModels: SPEECH_MODELS });
+  if (rest[0] === 'dictation') {
+    const action = rest.slice(1).join('/');
+    if (req.method === 'GET' && action === '') return overlay('_dictation-ask', dictationModel(), 'modal');
+    if (req.method === 'GET' && action === 'button') return sendView(200, '_dictation', dictationModel());
+    if (req.method === 'POST' && action === '') {
+      const form = await readForm(req);
+      const switchTo = form.get('switchingTo');
+      const chosen = switchTo ? app.dictation.switchTo(String(switchTo)) : app.dictation.choose(String(form.get('model') ?? ''));
+      if (chosen.error) return sendView(422, '_dictation-ask', { ...dictationModel(), $errors: { model: chosen.error } });
+      return sendView(200, '_dictation', dictationModel(), envelope('modal?'));
+    }
+    if (req.method === 'POST' && (action === 'remove' || action === 'cancel')) {
+      await readForm(req);
+      if (action === 'remove') app.dictation.remove(); else app.dictation.cancel();
+      return sendView(200, '_dictation', dictationModel());
+    }
+    // What was said, added after what's typed - what was typed while it
+    // listened included - in the session the chat shows (R-n5q). Transcribed
+    // here; the recording goes nowhere else (R-f2y).
+    if (req.method === 'POST' && action === 'transcribe') {
+      const form = await readForm(req);
+      const typed = String(form.get('message') ?? '');
+      const audio = form.get('audio');
+      const sessionId = sessionOnShow()?.id ?? null;
+      let error = null;
+      let said = '';
+      try {
+        if (!audio || typeof audio !== 'object' || typeof audio.arrayBuffer !== 'function') throw new Error('Nothing was recorded.');
+        const words = [design.title, ...routes.filter(route => route.title).map(route => route.title), ...states.map(state => state.title)];
+        said = await app.dictation.transcribe(Buffer.from(await audio.arrayBuffer()), { prompt: [...new Set(words)].join(', ') });
+      } catch (failure) {
+        error = failure.message;
+      }
+      const message = said ? `${typed.replace(/\s+$/, '')}${typed.trim() ? ' ' : ''}${said}` : typed;
+      app.drafts.setMessage(folder, design, sessionId, message);
+      const model = dictationModel();
+      return sendView(200, '_dictation-ready', { ...model, dictation: { ...model.dictation, ...(error ? { error } : {}) }, draft: draftOf(sessionId) });
+    }
+    return notFound();
+  }
+
+  // A waiting message, taken back (it can't be edited: cancel and retype).
+  if (req.method === 'POST' && rest[0] === 'queued' && rest[2] === 'cancel' && rest.length === 3) {
+    await readForm(req);
+    const gone = turns.cancel(folder, design, rest[1]);
+    for (const image of gone?.images ?? []) rmSync(join(folder.path, ...image.file.split('/')), { force: true });
+    const sessionId = gone?.sessionId ?? sessionOnShow()?.id ?? null;
+    if (gone) live.publish(sessionKey(folder, design, gone.sessionId), statusMessage(turns.state(folder, design, gone.sessionId)));
+    return sendView(200, '_queued', { ...basics(), queued: queuedOf(sessionId) });
+  }
 
   // What the agent is told besides the design: what else it may read, the
   // folder's design system and shell, and which format the design is in. A
@@ -1151,6 +1511,32 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       ...extra,
     };
   };
+  /**
+   * Start a turn in a session with the person's messages: one, or those that
+   * waited, together in the order written (R-z4k). Each item: { text,
+   * images, lookingAt, prompt } (prompt: what the agent is told).
+   */
+  const startTurn = (session, items) => turns.start({
+    folder, design, designDir: dir, sessionId: session.id,
+    message: items.map(item => item.prompt).join('\n\n'),
+    shown: items.map(({ text, images, lookingAt }) => ({ text, images, lookingAt })),
+    stopUrl: `${base}/sessions/${session.id}/stop`,
+    view,
+    onIdle: sendWaiting,
+    ...agentContext(session),
+  });
+
+  /** When a turn ends, the messages that waited go, the longest-waiting session's first. */
+  function sendWaiting() {
+    const waiting = turns.takeQueued(folder, design);
+    if (!waiting.length) return;
+    const session = readSession(dir, waiting[0].sessionId);
+    if (!session) return sendWaiting();
+    live.publish(sessionKey(folder, design, session.id), envelope('queued').trim());
+    const started = startTurn(session, waiting);
+    if (started.error) appendEntry(dir, session.id, { type: 'note', failed: true, text: `The messages that waited couldn’t be sent: ${started.error}` });
+  }
+
   if (req.method === 'GET' && rest[0] === 'build' && rest.length === 1 && hosted && buildsPages(design)) {
     return page(200, 'build', buildView(), `Build · ${title}`);
   }
@@ -1179,7 +1565,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const connecting = isApp && appOf(folder.path).existing;
     const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : `Build ${group.title}.`;
     const session = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
-    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, ...agentContext(session) });
+    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, view, onIdle: sendWaiting, ...agentContext(session) });
     if (started.error) return refuse(started.error);
     return redirect(res, `${base}/sessions/${session.id}`);
   }
@@ -1187,55 +1573,140 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const [section, sessionId, action, ...extra] = rest;
   if (extra.length > 0) return notFound();
 
+  // The page: a session, or - with none yet, or asked for - a new one.
+  const sessionPage = (status, session, extraModel = {}) => {
+    designs.showSession(dKey, session?.id ?? 'new');
+    return designPage(status, pageModel({ session, showing: true, extra: extraModel }), { session });
+  };
+
   if (section === undefined && req.method === 'GET') {
     const latest = listSessions(dir)[0];
-    return latest ? redirect(res, `${base}/sessions/${latest.id}`) : sessionView(200, null, {});
+    return latest ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
   }
 
   if (section !== 'sessions') return notFound();
 
-  if (sessionId === 'new' && action === undefined && req.method === 'GET') return sessionView(200, null, {});
+  if (sessionId === 'new' && action === undefined && req.method === 'GET') return sessionPage(200, null);
 
+  /**
+   * A message as the person sent it, from the composer's fields and the
+   * session's draft: its words, the images in the tray (only those in the
+   * draft), and what they were looking at, unless they turned that off
+   * (R-r7h). { text, ids, lookingAt: { words, said } | null, include }.
+   */
+  const messageOf = (form, sessionId) => {
+    const text = String(form.get('message') ?? '').trim();
+    const draft = app.drafts.read(folder, design, sessionId);
+    const ids = form.getAll('attachments').map(String).filter(id => draft.attachments.some(image => image.id === id));
+    const include = form.getAll('lookingAt.include').map(String).at(-1) ?? null;
+    const page = String(form.get('lookingAt.page') ?? '');
+    let lookingAt = null;
+    if (include === 'true' && page) {
+      const state = states.find(candidate => candidate.id === String(form.get('lookingAt.state') ?? '')) ?? null;
+      const screen = hosted
+        ? pickable(routes, datasetFor(state ?? stateOn())).find(pick => pick.id === page) ?? { title: matchRoute(routes, page)?.route.title ?? page }
+        : listScreens(dir).find(candidate => candidate.file === page) ?? { title: page };
+      const size = String(form.get('lookingAt.size') ?? '').trim();
+      lookingAt = {
+        // As the transcript shows it, under the bubble.
+        words: [screen.title, state?.title, size].filter(Boolean).join(' · '),
+        // As the agent is told it: the page, the state, and the size and client
+        // when they aren't the defaults.
+        said: `(The person was looking at ${screen.title} (${page})${state ? `, in the "${state.title}" state` : ''}${size ? `, shown as ${size.split(' · ').join(', ')}` : ''} when they wrote this.)`,
+      };
+    }
+    return { text, ids, lookingAt, include };
+  };
+
+  /** What the agent is told: the words, where the images are, and what the person was looking at. */
+  const promptOf = (text, images, lookingAt) => [
+    text,
+    images.length ? `(The person attached ${images.length === 1 ? 'an image' : `${images.length} images`} to this message. Read ${images.length === 1 ? 'it' : 'them'}: ${images.map(image => image.file).join(', ')}.)` : null,
+    lookingAt?.said ?? null,
+  ].filter(Boolean).join('\n\n');
+
+  // The first message starts a session. Words, images, or both (R-b6d).
   if (sessionId === undefined && req.method === 'POST') {
-    const message = String((await readForm(req)).get('message') ?? '').trim();
-    if (!message) return sessionView(422, null, { error: 'Write a message to start the session.' });
-    const busy = turns.state(folder, design, null);
-    if (busy.kind !== 'idle') return sessionView(409, null, { value: message, error: 'The agent is working on this design in another session. Wait for it to finish.' });
-    const session = createSession(dir, { title: titleFrom(message) });
-    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, ...agentContext(session) });
-    if (started.error) return sessionView(409, null, { value: message, error: started.error });
+    const form = await readForm(req);
+    const said = messageOf(form, null);
+    const refuse = (status, error) => sessionPageComposer(status, null, { message: said.text, lookingAt: { include: said.include }, $errors: { message: error } });
+    if (!said.text && !said.ids.length) return refuse(422, 'Write a message, or attach an image.');
+    if (turns.busy(folder, design)) return refuse(409, 'The agent is working on this design in another session. Wait for it to finish.');
+    const session = createSession(dir, { title: said.text ? titleFrom(said.text) : 'Images' });
+    const images = app.drafts.send(folder, design, dir, null, session.id, said.ids);
+    const started = startTurn(session, [{ text: said.text, images, lookingAt: said.lookingAt?.words ?? null, prompt: promptOf(said.text, images, said.lookingAt) }]);
+    if (started.error) return refuse(409, started.error);
     return redirect(res, `${base}/sessions/${session.id}`);
+  }
+
+  /** The message box, answering a form: refused, or afresh. */
+  function sessionPageComposer(status, session, extraModel = {}, also = '') {
+    return sendView(status, '_composer', pageModel({ session, extra: extraModel }), also);
   }
 
   const session = sessionId && readSession(dir, sessionId);
   if (!session) return notFound();
-  const sessionUrl = `${base}/sessions/${session.id}`;
 
   if (action === undefined && req.method === 'GET') {
     // Opened: a turn it finished no longer needs the person (R-8hc).
     app.seen.mark(sessionKey(folder, design, session.id));
     tell(app, { needs: true });
-    return sessionView(200, session, {});
+    return sessionPage(200, session);
   }
 
-  if (action === 'messages' && req.method === 'POST') {
-    const message = String((await readForm(req)).get('message') ?? '').trim();
-    const composer = (status, data) => send(res, status, render('./_composer', { action: `${sessionUrl}/messages`, self: true, ...data }));
-    if (!message) return composer(422, { error: 'Write a message first.' });
-    const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${sessionUrl}/stop`, ...agentContext(session) });
-    if (started.error) return composer(409, { value: message, error: started.error });
-    return composer(200, {});
+  // A message: sent now, or - while the agent works - waiting to go when its
+  // turn ends, with the others written meanwhile (R-z4k). At …/messages or
+  // …/queue alike; the answer says which happened.
+  if ((action === 'messages' || action === 'queue') && req.method === 'POST') {
+    const form = await readForm(req);
+    const said = messageOf(form, session.id);
+    if (!said.text && !said.ids.length) {
+      return sessionPageComposer(422, session, { message: '', lookingAt: { include: said.include }, $errors: { message: 'Write a message, or attach an image.' } });
+    }
+    // Sending empties the draft: its images move into the session's folder.
+    const images = app.drafts.send(folder, design, dir, session.id, session.id, said.ids);
+    const item = { sessionId: session.id, text: said.text, images, lookingAt: said.lookingAt?.words ?? null, prompt: promptOf(said.text, images, said.lookingAt) };
+    if (turns.busy(folder, design)) {
+      turns.enqueue(folder, design, item);
+      live.publish(sessionKey(folder, design, session.id), statusMessage(turns.state(folder, design, session.id)));
+      const model = pageModel({ session });
+      return sendView(200, '_composer', model, envelope('queued', render('./_queued', model)));
+    }
+    const started = startTurn(session, [item]);
+    if (started.error) {
+      app.drafts.restore(folder, design, session.id, { message: said.text, images: images.map(image => ({ id: image.id, name: image.name, path: join(folder.path, ...image.file.split('/')) })) });
+      return sessionPageComposer(409, session, { $errors: { message: started.error } });
+    }
+    // The transcript afresh: the message is in it, and the starting points
+    // have gone (R-e9t).
+    const model = pageModel({ session });
+    return sendView(200, '_composer', model, envelope('transcript', render('./_transcript', model)));
   }
 
+  // Stop: nothing that waited is sent; it goes back in the box, to send or
+  // change (R-9cn).
   if (action === 'stop' && req.method === 'POST') {
+    await readForm(req);
+    const waiting = turns.takeQueued(folder, design, session.id);
     turns.stop(folder, design, session.id);
-    return send(res, 200, render('./_status', { state: { kind: 'stopping' } }));
+    if (waiting.length) {
+      const draft = app.drafts.restore(folder, design, session.id, {
+        message: waiting.map(item => item.text).filter(Boolean).join('\n\n'),
+        images: waiting.flatMap(item => item.images.map(image => ({ id: image.id, name: image.name, path: join(folder.path, ...image.file.split('/')) }))),
+      });
+      live.publish(sessionKey(folder, design, session.id), [
+        envelope('queued').trim(),
+        envelope('message-box', render('./_message-box', { message: draft.message })).trim(),
+      ].join('\n'));
+      live.publish(designChannel(dKey), 'draft-changed');
+    }
+    return sendView(200, '_status', { kind: 'stopping' });
   }
 
   if (action === 'live' && req.method === 'GET') {
     const from = Math.max(0, Number.parseInt(url.searchParams.get('from') ?? '0', 10) || 0);
     // Catch up and subscribe in the same tick, so nothing published in between is missed.
-    return live.open(sessionKey(folder, design, session.id), req, res, turns.catchUp(folder, design, dir, session.id, from));
+    return openChannel([sessionKey(folder, design, session.id)], turns.catchUp(folder, design, dir, session.id, from, view));
   }
 
   return notFound();

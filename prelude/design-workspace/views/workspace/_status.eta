@@ -1,0 +1,36 @@
+<%/* What the agent is doing, for the session's status line. Idle shows
+     nothing. `it` is the session's state.
+
+     While it works: what it's doing now, in words (its latest step: "Editing
+     compare.eta", the whole path in the title), how long the turn has been
+     going, how many messages are waiting for it, and Stop. The step is the
+     server's, pushed afresh as each tool starts (the region is #agent-status);
+     the time is a binding on when the turn started, so it moves on its own.
+
+     After the agent finishes, Prelude checks every page in every state,
+     which takes a moment and can't be stopped: the line says so. */%>
+<% if (it.kind === 'working') { %>
+<div class="status" role="status" ko-item>
+  <span class="pulse" aria-hidden="true"></span>
+  <span class="status-step" <% if (it.step?.path) { %>title="<%= it.step.path %>"<% } %>><%= it.step ? it.step.says : 'Working…' %></span>
+  <% if (it.startedAt) { %>
+  <span class="muted">· <time ko-as="startedAt" datetime="<%= it.startedAt %>" calc-text="duration(now(1000) - startedAt.time)"><%= it.since %></time></span>
+  <% } %>
+  <% if (it.waiting) { %><span class="muted">· <%= it.waiting === 1 ? '1 message waiting' : `${it.waiting} messages waiting` %></span><% } %>
+  <% if (it.stopUrl) { %>
+  <form action="<%= it.stopUrl %>" method="post" ko-target="agent-status">
+    <input type="hidden" name="kind" value="stopping">
+    <button class="btn small ghost" type="submit" title="Stop the agent’s turn. What it has written stays; messages waiting go back into the box.">Stop</button>
+  </form>
+  <% } %>
+</div>
+<% } else if (it.kind === 'checking') { %>
+<div class="status" role="status">
+  <span class="pulse" aria-hidden="true"></span>
+  <span>Checking every page in every state…</span>
+</div>
+<% } else if (it.kind === 'stopping') { %>
+<div class="status" role="status"><span>Stopping…</span></div>
+<% } else if (it.kind === 'busy') { %>
+<div class="status" role="status"><span>Another session on this design is working. You can send a message when it’s done.</span></div>
+<% } %>

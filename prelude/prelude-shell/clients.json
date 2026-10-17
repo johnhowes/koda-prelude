@@ -1,0 +1,16 @@
+{
+  "sizes": [
+    { "id": "small-window", "title": "Small window", "width": 1024, "height": 700 },
+    { "id": "laptop", "title": "Laptop", "width": 1440, "height": 900 },
+    { "id": "desktop", "title": "Desktop", "width": 1920, "height": 1080 }
+  ],
+  "clients": [
+    { "id": "browser", "title": "Browser", "says": "As a browser shows it", "attributes": {} },
+    {
+      "id": "desktop-app",
+      "title": "Desktop app",
+      "says": "In Prelude’s desktop app: Choose… picks a folder, and Pop out opens a real window",
+      "attributes": { "data-desktop": "" }
+    }
+  ]
+}

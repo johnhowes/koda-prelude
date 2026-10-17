@@ -1,0 +1,2 @@
+<%/* The quiet line beside the message box's tools, after its draft is kept. */%>
+<% if (it.message) { %>Draft kept<% } %>
