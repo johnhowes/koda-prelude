@@ -28,10 +28,13 @@
    const base = `/f/${it.folder.id}/d/${it.id}`;
    const view = it.view ?? q.view ?? s.view ?? 'inline';
    const appMode = Boolean(s.app) && (q.mode ?? s.mode) === 'app';
-   const size = s.sizes.find(x => x.id === (q.size ?? s.size)) ?? s.sizes[0];
+   const pixels = value => { const n = Math.round(Number(value)); return n >= 200 && n <= 4000 ? n : null; };
+   const custom = (q.size ?? s.size) === 'custom' && pixels(q.width ?? s.width) && pixels(q.height ?? s.height)
+     ? { id: 'custom', title: 'Custom', width: pixels(q.width ?? s.width), height: pixels(q.height ?? s.height) } : null;
+   const size = custom ?? s.sizes.find(x => x.id === (q.size ?? s.size)) ?? s.sizes[0];
    const client = s.clients.find(x => x.id === (q.client ?? s.client)) ?? s.clients[0];
-   const here = { view, mode: appMode ? 'app' : 'design', size: size.id, client: client.id };
-   const surfaceUrl = change => `${base}/preview?${new URLSearchParams({ ...here, ...change })}`;
+   const here = { view, mode: appMode ? 'app' : 'design', size: size.id, client: client.id, ...(custom ? { width: custom.width, height: custom.height } : {}) };
+   const surfaceUrl = change => `${base}/preview?${new URLSearchParams(Object.entries({ ...here, ...change }).filter(([, value]) => value !== ''))}`;
    const url = surfaceUrl({});
    const cur = s.screens.find(x => x.id === s.current) ?? s.screens[0] ?? null;
    const state = s.states.find(x => x.id === s.state) ?? s.states[0] ?? null;
@@ -123,11 +126,27 @@
       <summary class="btn small ghost" title="The size this window lays the page out at."><span class="icon icon-fit" aria-hidden="true"></span><%= size.width ? `${size.width} × ${size.height}` : size.title %></summary>
       <ul class="menu-list">
         <% for (const option of s.sizes) { %>
-        <li><a href="<%= surfaceUrl({ size: option.id }) %>" ko-target="design" <% if (option.id === size.id) { %>aria-current="true"<% } %>>
+        <li><a href="<%= surfaceUrl({ size: option.id, width: '', height: '' }) %>" ko-target="design" <% if (option.id === size.id) { %>aria-current="true"<% } %>>
           <span class="item-title"><%= option.title %></span>
           <span class="muted"><%= option.width ? `${option.width} × ${option.height}` : option.says %></span>
         </a></li>
         <% } %>
+        <%/* Any other size: width and height in pixels, this window's own. */%>
+        <li>
+          <form class="stack gap-2 custom-size" action="<%= base %>/preview" method="get" ko-target="design" <% if (custom) { %>aria-current="true"<% } %>>
+            <input type="hidden" name="view" value="<%= view %>"><input type="hidden" name="mode" value="<%= here.mode %>"><input type="hidden" name="client" value="<%= client.id %>">
+            <input type="hidden" name="size" value="custom">
+            <span class="item-title">Custom</span>
+            <div class="inline">
+              <label class="sr-only" for="size-width-<%= view %>">Width in pixels</label>
+              <input id="size-width-<%= view %>" name="width" type="number" min="200" max="4000" required placeholder="Width" value="<%= size.width ?? '' %>">
+              <span class="muted" aria-hidden="true">×</span>
+              <label class="sr-only" for="size-height-<%= view %>">Height in pixels</label>
+              <input id="size-height-<%= view %>" name="height" type="number" min="200" max="4000" required placeholder="Height" value="<%= size.height ?? '' %>">
+              <button class="btn small" type="submit">Use this size</button>
+            </div>
+          </form>
+        </li>
       </ul>
     </details>
     <% if (s.clients.length > 1) { %>

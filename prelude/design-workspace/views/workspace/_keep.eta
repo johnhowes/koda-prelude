@@ -4,3 +4,4 @@
 <input type="hidden" name="surface.mode" value="<%= it.mode %>">
 <input type="hidden" name="surface.size" value="<%= it.size %>">
 <input type="hidden" name="surface.client" value="<%= it.client %>">
+<% if (it.size === 'custom') { %><input type="hidden" name="surface.width" value="<%= it.width %>"><input type="hidden" name="surface.height" value="<%= it.height %>"><% } %>

@@ -24,7 +24,7 @@
     "answer": { "view": "workspace/_event-sent", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/sessions": {
-    "add": "folders/:folder/designs/:design/entries",
+    "update": "folders/:folder/designs/:design",
     "require": ["message"],
     "form": "workspace/_composer",
     "answer": { "redirect": "/f/:folder/d/:design" }

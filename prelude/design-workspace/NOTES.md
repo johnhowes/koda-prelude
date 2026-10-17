@@ -34,9 +34,16 @@ doesn't render, building, new design, update clashed, popped out.
   are data; size and client are how one window looks at it. They're per
   window (in the surface's URL, like Design/App), so the pop-out can show a
   phone while the panel fits. Page and state stay shared, as today.
-- **Sizes**: Fit the panel (default), then fixed sizes. At a size the frame
-  keeps that shape, scaled down to fit (container units in the design; the
-  app's iframe needs a transform from its measured size).
+- **Sizes**: Fit the panel (default), then fixed sizes, then Custom (width
+  and height fields, 200-4000 px; the person, 2026-10-17). One size at a
+  time, not several side by side (the person, 2026-10-17). At a size the
+  frame keeps that shape, scaled down to fit (container units in the
+  design; the app's iframe needs a transform from its measured size).
+- **Sizes and clients are declared by the app shell** (the person agreed,
+  2026-10-17): `prelude-shell/clients.json`, the same for every design.
+  Prelude's: Small window, Laptop, Desktop; Browser and Desktop app. The
+  states here show a borrower portal's own (Phone, Tablet; its mobile app),
+  as its shell would declare them.
 - **Clients**: what the page runs in. The desktop app's whole difference is
   a root attribute (`data-desktop`, which shows `[data-desktop-only]`) plus
   native windows and the system browser. So a client is attributes on the
@@ -47,17 +54,14 @@ doesn't render, building, new design, update clashed, popped out.
   `surface.state`) so the preview works; the app posts `screen` and `state`.
   The composer posts hidden `type` and `action` for the same reason: a
   refused message re-renders from the posted fields alone, so the form must
-  carry its own action. The app's composer posts only `message`.
+  carry its own action. The app's composer posts only `message`. Starting
+  a session is an `update` of the design in the design, so its refusal
+  re-renders with the design's data.
 
 ## Open questions
 
-- Where are sizes and clients declared? Proposed: the app shell (a
-  `clients.json` beside `layouts/`: each client's title, what it says, the
-  root attributes it sets; and the sizes), since they're the app's, the same
-  for every design. Prelude's would be Browser and Desktop app. Not written
-  yet: confirm first.
-- Viewing several sizes side by side, as well as one at a time?
-- A custom size (width × height fields)?
+- Should a custom size be remembered for the design, or only the window?
+  Today it's the window's, in its URL, like the other sizes.
 - In the preview, session links, New session and the branch actions lead
   nowhere (the design shows one session at the design's URL).
 - Not taken on yet from the review: rules and open questions on the page,

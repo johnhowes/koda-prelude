@@ -24,6 +24,11 @@
   .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
   .show-page { display: inline; }
 
+  /* Custom size, at the foot of the size menu: two short number fields. */
+  .custom-size { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
+  .custom-size .inline { align-items: center; }
+  .custom-size .inline > input { flex: 1 1 5rem; }
+
   /* The frame: the page fills it at Fit. At a size, the page keeps that
      shape, as large as fits the panel and never larger than itself. */
   .design-frame {
