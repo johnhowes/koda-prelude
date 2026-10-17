@@ -101,6 +101,8 @@ doesn't render, building, new design, update clashed, popped out.
   to the message box (in place of the original if it was waiting there);
   the original never changes. Not a desktop-only feature: a canvas works in
   any browser. Canvas drawing is the script; it reads the colour from CSS.
+  Pointer-only is fine: words say the same (the person, 2026-10-17). No
+  text tool for now (the person, 2026-10-17).
   The tray has an id now, so the modal can aim at it. Added radio options
   to the design system's `.segmented` for the tools.
 - In the design, a message refused while images are attached comes back
@@ -115,7 +117,12 @@ doesn't render, building, new design, update clashed, popped out.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; capturing the preview as an image; up-arrow to edit the
   last message; dictation.
-- Mark up is pointer-only. Text labels on an image? A keyboard way to mark?
+- When a state's file changes, should its working copy (what forms changed)
+  be dropped? Today it's kept until Reset data, so a page needing data the
+  file has since gained fails with "There's nothing at …" (found
+  2026-10-17: the images route, after the states gained `images`).
+  Proposed: drop it, and say so in the design bar ("The state changed, so
+  what forms did was reset").
 - In the design, a marked-up copy shows no thumbnail (the fake route can't
   store the file), and Mark up on a just-uploaded image has nothing to open.
 - An image added in the preview (a real upload) has no full-size view: the
