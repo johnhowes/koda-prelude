@@ -28,7 +28,7 @@ import { createDesignState, designChannel } from './design-state.js';
 import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
-import { appendEntry, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
+import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
 import { createTurns, designKey, sessionKey } from './turns.js';
 import { presentEntry, render, shaped } from './views.js';
 
@@ -281,9 +281,14 @@ async function handle(req, res, app) {
       // its new and changed groups, or those still to build.
       const inProgress = designs.filter(design => design.work).map(design => {
         const dir = join(design.work.path, PRELUDE_DIR, ...design.id.split('/'));
+        const built = buildSessions(dir);
+        const sessionOf = group => {
+          const session = built.get(group.key);
+          return session && { title: session.title, url: `${design.work.url}/sessions/${session.id}` };
+        };
         const stories = isHosted(dir) && buildsPages(design)
           ? groupsOf(app, { entry: design.work, design, dir }).groups.filter(group => group.kind !== 'unchanged')
-            .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: group.story }))
+            .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: group.story, session: sessionOf(group) }))
           : [];
         return { design, work: design.work, stories, buildUrl: `${design.work.url}/build` };
       });
@@ -1122,10 +1127,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const appHere = appOf(folder.path);
     let appOnMain = appHere.built;
     try { appOnMain = entry ? appOf(app.folders.get(parentId).path).built : appHere.built; } catch { /* the folder's gone */ }
+    // Each group's newest build session, to get back to it.
+    const built = buildSessions(dir);
+    const withSession = group => {
+      const session = built.get(group.key);
+      return { ...group, session: session && { title: session.title, url: `${base}/sessions/${session.id}` } };
+    };
     return {
       folder, design, base, designPath, designWide,
       // What's to build shows; what's built and unchanged folds away (step 10).
-      groups: groups.filter(group => group.kind !== 'unchanged'),
+      groups: groups.filter(group => group.kind !== 'unchanged').map(withSession),
       unchanged: groups.filter(group => group.kind === 'unchanged'),
       // Building happens on the design's branch, into the app, one group at a time.
       // (A design with no branch yet builds too: starting makes its branch.)

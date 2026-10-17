@@ -47,7 +47,7 @@
         <% if (item.stories.length) { %>
         <ul class="build-routes">
           <% for (const story of item.stories) { %>
-          <li><a href="<%= item.buildUrl %>"><%= story.title %></a> <span class="muted">· <%= story.toBuild ? (item.work.building?.title === story.title ? 'building' : 'to build') : 'built' %><%= story.kind === 'changed' ? ' · a change' : story.kind === 'new' ? ' · new' : '' %></span><% if (story.summary) { %><br><span class="muted"><%= story.summary %></span><% } %></li>
+          <li><a href="<%= item.buildUrl %>"><%= story.title %></a> <span class="muted">· <%= story.toBuild ? (item.work.building?.title === story.title ? 'building' : 'to build') : 'built' %><%= story.kind === 'changed' ? ' · a change' : story.kind === 'new' ? ' · new' : '' %></span><% if (story.session) { %> · <a href="<%= story.session.url %>">build session</a><% } %><% if (story.summary) { %><br><span class="muted"><%= story.summary %></span><% } %></li>
           <% } %>
         </ul>
         <% } %>

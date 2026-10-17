@@ -79,6 +79,15 @@ export function listSessions(designDir) {
     .sort((a, b) => b.id.localeCompare(a.id));
 }
 
+/** A design's build sessions by the group each builds: the newest of each. */
+export function buildSessions(designDir) {
+  const byGroup = new Map();
+  for (const session of listSessions(designDir)) {
+    if (session.build && !byGroup.has(session.build.group)) byGroup.set(session.build.group, session);
+  }
+  return byGroup;
+}
+
 export function appendEntry(designDir, id, entry) {
   const line = JSON.stringify({ at: new Date().toISOString(), ...entry });
   appendFileSync(join(sessionsDir(designDir), id, 'transcript.jsonl'), line + '\n');

@@ -40,7 +40,7 @@
         <ul class="menu-list">
           <% for (const s of it.sessions) { %>
           <li><a href="<%= it.urls.design %>/sessions/<%= s.id %>" <% if (it.session && s.id === it.session.id) { %>aria-current="page"<% } %>>
-            <span class="item-title"><%= s.title %></span>
+            <span class="item-title"><%= s.title %><% if (s.build) { %> <span class="pill">Build</span><% } %></span>
             <span class="muted"><%= new Date(s.startedAt).toLocaleString() %></span>
           </a></li>
           <% } %>
