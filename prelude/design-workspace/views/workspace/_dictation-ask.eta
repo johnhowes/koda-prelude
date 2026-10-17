@@ -1,0 +1,18 @@
+<%/* Asked once, before dictating for the first time: what happens, and
+     where what's said goes. Turning it on answers the microphone, on, into
+     the message box (#dictation), and closes the modal. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; %>
+<div class="stack gap-4">
+  <h2>Dictate your messages?</h2>
+  <p class="secondary">Press the microphone, then speak: what you say is typed into the message box, for you to check and send. Press it again, or pause, to stop.</p>
+  <div class="notice warn">
+    <p>Your browser turns speech into text with its own speech service. In Chrome and Edge, what you say is sent to Google or Microsoft to be transcribed. Nothing is sent until you press the microphone.</p>
+  </div>
+  <form action="<%= base %>/dictation" method="post" ko-target="dictation">
+    <input type="hidden" name="allowed" value="true">
+    <div class="cluster actions">
+      <button class="btn primary" type="submit">Turn on dictation</button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+</div>

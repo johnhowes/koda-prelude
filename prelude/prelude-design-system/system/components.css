@@ -159,6 +159,9 @@
   }
   .icon-btn:hover { background: var(--surface-sunken); color: var(--fg); }
   .icon-btn.small { min-width: var(--control-sm); min-height: var(--control-sm); }
+  /* On, and doing something while it's on (dictating): accent, its glyph pulsing. */
+  .icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .icon-btn[aria-pressed="true"] > .icon { animation: pulse var(--duration-pulse) var(--ease) infinite; }
   .icon-btn.danger { color: var(--danger); }
   .icon-btn:disabled { opacity: 0.35; cursor: default; }
 
@@ -355,7 +358,7 @@
   /* The box grows with what's typed, up to a third of the window, then scrolls. */
   .composer textarea { min-height: 4.5rem; max-block-size: 33vh; field-sizing: content; resize: none; }
   .composer-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
-  .composer-tools { display: flex; align-items: center; gap: var(--space-1); min-inline-size: 0; }
+  .composer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-inline-size: 0; }
   /* Something dragged over the box that it can take: say so where it lands. */
   .composer[data-dropping] textarea { border-color: var(--accent); border-style: dashed; background: var(--accent-soft); }
 

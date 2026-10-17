@@ -43,6 +43,7 @@
             { "id": 3, "type": "text", "html": "<p>The comparison is a <code>.grid</code> already, so it stacks when narrow; the order is what needs changing. I’ll have the controller put the cheaper offer first, so the view doesn’t sort.</p>" },
             { "id": 4, "type": "tool", "name": "Edit", "summary": "prelude/loan-offers/routes.json" }
           ],
+          "dictation": { "allowed": true },
           "queued": [
             { "id": "q-1", "message": "Also, the Accept button should stay in view on a phone while you scroll the comparison.", "images": 0 },
             { "id": "q-2", "message": "Like this one, from the Figma file.", "images": 1 }

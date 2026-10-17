@@ -34,6 +34,7 @@
           "session": null,
           "state": { "kind": "idle" },
           "entries": [],
+          "dictation": { "allowed": false },
           "queued": [],
           "images": [
             { "id": "img-7pa", "base": "/f/borrower-portal/d/loan-offers", "name": "IMG_2041.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null }

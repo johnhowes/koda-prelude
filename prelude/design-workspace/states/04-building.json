@@ -54,6 +54,7 @@
             { "id": 7, "type": "tool-result", "name": "Bash", "error": true, "text": "npm test -- offers\n\n✖ compare shows the cheaper offer first (4.2ms)\n  AssertionError: expected 'off-2291' to equal 'off-2307'" },
             { "id": 8, "type": "tool", "name": "Edit", "summary": "src/views/offers/compare.eta" }
           ],
+          "dictation": { "allowed": false },
           "queued": [
             { "id": "q-1", "message": "When that’s done, check the compare page still works with two offers from the same lender.", "images": 0 }
           ],

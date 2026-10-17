@@ -105,6 +105,24 @@ doesn't render, building, new design, update clashed, popped out.
   text tool for now (the person, 2026-10-17).
   The tray has an id now, so the modal can aim at it. Added radio options
   to the design system's `.segmented` for the tools.
+- **Capture the page** (the person, 2026-10-17): Capture in the design bar
+  (after Reset data: it acts on what's on show), a menu of What's in view
+  or The whole page. The server renders the page as that window shows it
+  (page, state, size, client, or the app) and adds the PNG to the message
+  box (`POST …/capture`); a line beside it says so, and the tray reloads on
+  `draft-changed`, so a capture from the pop-out reaches the chat. At Fit,
+  "in view" is the frame's size, measured by a ResizeObserver script. The
+  server renders it (a headless browser), not the client: a cross-origin
+  frame can't be read from the page, and it works the same in both
+  clients. Captures are named "Page – State – 390×844.png".
+- **Dictation** (the person, 2026-10-17): a microphone beside Attach. The
+  first press asks once (a modal: the browser's speech service may send
+  what's said to Google or Microsoft), kept as the person's choice. On, it
+  listens and types into the box after what's there, pulsing while it
+  listens; again, or a pause, stops it. It's the browser's Web Speech API.
+  Where there's none (Firefox; probably the desktop app's WebView2), the
+  button says to use the system's dictation (Windows key + H). Added
+  `dictate` and `capture` icons, and a pressed `.icon-btn`, to the system.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -115,8 +133,12 @@ doesn't render, building, new design, update clashed, popped out.
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
-  rules and files; capturing the preview as an image; up-arrow to edit the
-  last message; dictation.
+  rules and files; up-arrow to edit the last message.
+- Does the desktop app's WebView2 offer speech recognition? If not, the
+  desktop app could dictate natively (Windows speech) through
+  `preludeDesktop`, the same button. To check when building.
+- Capture needs a headless browser in Prelude (a new dependency), or the
+  desktop app's own capture. To decide when building.
 - When a state's file changes, should its working copy (what forms changed)
   be dropped? Today it's kept until Reset data, so a page needing data the
   file has since gained fails with "There's nothing at …" (found

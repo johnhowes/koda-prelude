@@ -1,0 +1,57 @@
+<%/* Dictate: the microphone beside Attach. `it` is the design (its
+     `dictation` is the person's choice, kept for them, not for the design).
+
+     The first time, it asks (the modal): dictation uses the browser's own
+     speech service, which may send what's said to Google or Microsoft, so
+     the person agrees once before anything is sent.
+
+     Once on, pressing it listens and types what's said into the message
+     box, after what's there, words appearing as they're recognised; it's
+     pressed (and pulses) while listening. Pressing again, or a pause in
+     speaking, stops it. What's typed this way is kept as a draft like any.
+
+     Where the browser can't turn speech into text (the desktop app's window
+     among them), pressing it says so, and how to use the system's own
+     dictation instead. The script is the browser's speech API, which no
+     attribute expresses. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; %>
+<% if (!it.dictation?.allowed) { %>
+<a class="icon-btn small" href="<%= base %>/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it"><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></a>
+<% } else { %>
+<span class="cluster gap-2 dictation" ko-item>
+  <button class="icon-btn small" type="button" ko-as="dictate" aria-pressed="false" title="Dictate: press, then speak. Press again to stop."><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></button>
+  <span class="muted" ko-as="heard" role="status" hidden></span>
+  <script type="koda">
+    const { dictate, heard, onRemove } = koda.scope();
+    const box = document.getElementById('message');
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    const say = text => { heard.element.textContent = text; heard.element.hidden = !text; };
+    let listening = null;
+    dictate.element.addEventListener('click', () => {
+      if (listening) { listening.stop(); return; }
+      if (!Recognition) {
+        say('This window can’t dictate. Your system can: on Windows press Windows key + H, on a Mac press the microphone key, then speak into the box.');
+        box.focus();
+        return;
+      }
+      const recognition = new Recognition();
+      recognition.lang = document.documentElement.lang || navigator.language;
+      recognition.interimResults = true;
+      const before = box.value ? box.value.replace(/\s*$/, ' ') : '';
+      recognition.onresult = event => {
+        box.value = before + [...event.results].map(result => result[0].transcript).join('');
+        box.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      recognition.onerror = event => say(event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? 'Prelude can’t use the microphone. Allow it in the browser’s settings for this site, then try again.'
+        : event.error === 'no-speech' ? 'Nothing was heard. Press the microphone and speak.' : 'Dictation stopped. Press the microphone to start again.');
+      recognition.onend = () => { listening = null; dictate.element.setAttribute('aria-pressed', 'false'); box.focus(); };
+      say('');
+      recognition.start();
+      listening = recognition;
+      dictate.element.setAttribute('aria-pressed', 'true');
+    });
+    onRemove(() => listening?.abort());
+  </script>
+</span>
+<% } %>

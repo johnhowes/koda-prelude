@@ -65,6 +65,19 @@
     "remove": "folders/:folder/designs/:design/queued/:queued",
     "answer": { "view": "workspace/_queued", "data": "folders/:folder/designs/:design" }
   },
+  "/f/:folder/d/:design/draft": { "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" },
+  "POST /f/:folder/d/:design/capture": {
+    "add": "folders/:folder/designs/:design/draft/attachments",
+    "answer": {
+      "view": "workspace/_captured", "data": "folders/:folder/designs/:design/draft/attachments/:new",
+      "also": [{ "into": "attachments?", "view": "workspace/_attachments", "data": "folders/:folder/designs/:design/draft" }]
+    }
+  },
+  "/f/:folder/d/:design/dictation": { "view": "workspace/_dictation-ask", "title": "Turn on dictation", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "modal" },
+  "POST /f/:folder/d/:design/dictation": {
+    "update": "folders/:folder/designs/:design/dictation",
+    "answer": { "view": "workspace/_dictation", "data": "folders/:folder/designs/:design", "also": [{ "into": "modal?" }] }
+  },
   "POST /f/:folder/d/:design/draft": {
     "update": "folders/:folder/designs/:design/draft",
     "answer": { "view": "workspace/_draft-kept", "data": "folders/:folder/designs/:design/draft" }

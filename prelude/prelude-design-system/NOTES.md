@@ -68,6 +68,11 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   radios, the checked one current, for a choice made in a form. Added for
   "Design Workspace" (prelude/design-workspace): the drawing tools when
   marking up an image.
+- **Icons `dictate` and `capture`**, drawn for Prelude until Material's
+  are copied in (icons/NOTICE.md); and a pressed `.icon-btn`
+  (`aria-pressed="true"`): accent, glyph pulsing, for something on and
+  working (listening). Added for "Design Workspace"
+  (prelude/design-workspace): dictation, and capturing the preview.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
 
 ## Open questions

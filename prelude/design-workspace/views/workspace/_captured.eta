@@ -1,0 +1,4 @@
+<%/* The line beside Capture, once the picture is in the message box. `it` is
+     the new attachment. In the app the server also sends draft-changed, so
+     the message box's tray shows it wherever the chat is. */%>
+<span class="muted">Captured: it’s in the message box.</span>

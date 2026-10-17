@@ -31,7 +31,7 @@
   <input type="hidden" name="type" value="user">
   <input type="hidden" name="action" value="<%= action %>">
   <%/* An id, not a name: marking up an image, in the modal, sends its copy here. */%>
-  <ul class="attachments" id="attachments" ko-region aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
+  <ul class="attachments" id="attachments" ko-source="<%= draft.base %>/draft" ko-invoke="event:draft-changed" aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
   <label class="sr-only" for="message">Message</label>
   <textarea id="message" name="message" ko-as="message" rows="3" required
             placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line."
@@ -64,6 +64,7 @@
           <input class="sr-only" type="file" name="image" ko-as="upload" accept="image/png, image/jpeg, image/gif, image/webp" multiple>
         </label>
       </div>
+      <% if (it.folder) { %><span id="dictation" ko-region><%~ include('./_dictation', it) %></span><% } %>
       <% if (error) { %><span class="error" id="message-error"><%= error %></span><% } %>
       <span class="muted" ko-as="draftKept" ko-region role="status"><% if (!error && draft.message) { %>Draft kept<% } %></span>
     </div>

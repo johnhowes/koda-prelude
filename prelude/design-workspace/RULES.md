@@ -34,6 +34,11 @@
 - **R-u6p.** Marking up an image never changes it: the marked-up copy goes in the message box, in place of the original only if the original was waiting there to be sent.
   *shown-on: /f/:folder/d/:design/images/:image/markup @ typical*
   *proposed*
+- **R-k7c.** A capture is the page exactly as the window that captured it shows it: its page, state, size and client, or the app.
+  *proposed*
+- **R-f2y.** Nothing said is sent anywhere until the person has agreed to dictation once and pressed the microphone; they’re asked only the first time.
+  *shown-on: /f/:folder/d/:design/dictation @ pages-differ*
+  *proposed*
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
   *proposed*
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.

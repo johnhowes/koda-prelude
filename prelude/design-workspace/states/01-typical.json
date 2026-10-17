@@ -61,6 +61,7 @@
             { "id": 15, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] },
             { "id": 16, "type": "note", "text": "Committed to prelude/loan-offers (b71d03e)." }
           ],
+          "dictation": { "allowed": true },
           "queued": [],
           "images": [
             { "id": "img-4k2", "base": "/f/borrower-portal/d/loan-offers", "name": "napkin-compare.jpg", "url": "/_prelude/design/assets/napkin-compare.svg", "sent": null },

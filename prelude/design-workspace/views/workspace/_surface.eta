@@ -46,7 +46,7 @@
    const origin = appMode ? s.app.url : s.origin;
    const keep = include('./_keep', here);
    const windowName = `prelude-${it.folder.id}-${it.id}`; %>
-<section id="design" class="panel design<%= popped ? ' popped' : '' %>" aria-label="Design" ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
+<section id="design" class="panel design<%= popped ? ' popped' : '' %>" aria-label="Design" ko-item ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
   <%/* How the surface beside the chat is looking, for the message box's
        "looking at" chip: its size and client, when they aren't the
        defaults. Only this window's; a pop-out's are its own. */%>
@@ -123,6 +123,37 @@
       <button class="btn small ghost" type="submit" title="Forms have changed this state’s data. Start again from its file.">Reset data</button>
     </form>
     <% } %>
+    <% } %>
+
+    <%/* Capture the page: the server renders it as this window shows it
+         (page, state, size, client; or the app) and puts the picture in the
+         message box, to send or mark up. What's in view, or the whole page
+         scrolled to its end. At Fit, "in view" is the frame's own size,
+         which the frame reports (frameWidth, frameHeight). The line beside
+         it says where the picture went; the tray in the chat reloads on
+         draft-changed, so a capture from the pop-out lands there too. */%>
+    <% if (cur && !popped && !(appMode && !s.app.running)) { %>
+    <% const shot = `${cur.title} – ${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`; %>
+    <details class="menu start" ko-as="captureMenu">
+      <summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</summary>
+      <form class="menu-list" action="<%= base %>/capture" method="post" ko-target="capture-status">
+        <%~ keep %>
+        <input type="hidden" name="name" value="<%= shot %>">
+        <input type="hidden" name="page" value="<%= cur.id %>">
+        <input type="hidden" name="state" value="<%= appMode ? '' : state?.id ?? '' %>">
+        <input type="hidden" name="frame.width" ko-as="frameWidth" value="<%= size.width ?? '' %>">
+        <input type="hidden" name="frame.height" ko-as="frameHeight" value="<%= size.height ?? '' %>">
+        <button type="submit" name="whole" value="false" ko-set="captureMenu.open = false">
+          <span class="item-title">What’s in view</span>
+          <span class="muted"><%= size.width ? `${size.width} × ${size.height}, as the frame shows it` : 'As much as fits the frame now' %></span>
+        </button>
+        <button type="submit" name="whole" value="true" ko-set="captureMenu.open = false">
+          <span class="item-title">The whole page</span>
+          <span class="muted">Scrolled to its end, <%= size.width ? `${size.width} wide` : 'as wide as the frame' %></span>
+        </button>
+      </form>
+    </details>
+    <span id="capture-status" ko-region role="status"></span>
     <% } %>
 
     <span class="spacer"></span>
@@ -228,7 +259,7 @@
   <% } %>
 
   <% if (!popped) { %>
-  <div class="design-frame<%= size.width ? ' sized' : '' %>">
+  <div class="design-frame<%= size.width ? ' sized' : '' %>" ko-as="frame">
     <% if (cur && appMode && !s.app.running) { %>
     <% if (s.app.approved) { %>
     <form class="empty stack gap-3" action="<%= s.app.start %>" method="post" ko-target="design">
@@ -245,5 +276,18 @@
     <p class="empty">No pages yet: give a route in routes.json a title, and it appears here.</p>
     <% } %>
   </div>
+  <% if (!size.width && cur && !(appMode && !s.app.running)) { %>
+  <script type="koda">
+    // At Fit, a capture of what's in view is the frame's own size, which
+    // only the page knows: geometry a ResizeObserver reports.
+    const { frame, frameWidth, frameHeight, onRemove } = koda.scope();
+    const observer = new ResizeObserver(([entry]) => {
+      frameWidth.element.value = Math.round(entry.contentRect.width);
+      frameHeight.element.value = Math.round(entry.contentRect.height);
+    });
+    observer.observe(frame.element);
+    onRemove(() => observer.disconnect());
+  </script>
+  <% } %>
   <% } %>
 </section>
