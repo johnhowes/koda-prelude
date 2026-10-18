@@ -44,6 +44,13 @@ test('one URL, two shapes, with the Koda headers', async () => {
   assert.ok(html.includes(fragment.trim()), 'the page contains the fragment');
 });
 
+test('asked for from a page in another layout, a page comes whole, so the browser lays it out in its own', async () => {
+  const from = referer => fetch(`${base}/`, { headers: { 'x-koda-fragment': '1', referer: `${base}${referer}` } }).then(res => res.text());
+  assert.doesNotMatch(await from('/f/0123456789'), /<html/, 'from another app page: the fragment');
+  assert.match(await from('/f/0123456789/d/loans/sessions/new'), /^<!doctype html>/, 'from a design page (the workspace layout): whole');
+  assert.doesNotMatch(await from('/f/0123456789/d/loans/build'), /<html/, 'the Build page is in the app layout');
+});
+
 test('Koda and the design system are served', async () => {
   const koda = await get('/koda/koda.js');
   assert.equal(koda.status, 200);

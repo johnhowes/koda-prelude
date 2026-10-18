@@ -130,6 +130,16 @@ test('once approved, it starts, renders through the host, and serves the app’s
   assert.match(surface, /Design host log/);
 });
 
+test('a design’s page comes whole from a project page, and alone from itself', async () => {
+  const designPage = `/f/${fid}/d/loans/sessions/new`;
+  const from = referer => fetch(`${base}${designPage}`, { headers: { 'x-koda-fragment': '1', referer: `${base}${referer}` } }).then(res => res.text());
+  const whole = await from(`/f/${fid}`);
+  assert.match(whole, /^<!doctype html>/, 'clicked from the project page: the whole page, in the workspace layout');
+  assert.match(whole, /<body class="shell fill">/);
+  assert.match(whole, /href="\/static\/workspace\.css"/);
+  assert.doesNotMatch(await from(`/f/${fid}/d/loans/sessions/new`), /<html/, 'from the design page itself (a session switch): the fragment');
+});
+
 test('the real app in the design surface (10.8): Design or App, the same screen, each window its own', async () => {
   // The app is built here (its host is the repository's own), so the switch shows.
   const design = await (await get(`/f/${fid}/d/loans/preview?view=inline`)).text();
