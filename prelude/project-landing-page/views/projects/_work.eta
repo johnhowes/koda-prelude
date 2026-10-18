@@ -16,6 +16,8 @@
    const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built').map(story => story.story)).join('\n\n---\n\n');
    // Designs by area, those with none first (the design system and the shell).
    const areas = [...new Set(designs.map(design => design.area ?? ''))].sort((a, b) => (a !== '') - (b !== ''));
+   // Approved pages not yet built, once there's an app to build them into.
+   const readyToBuild = design => p.app?.status === 'built' && (design.approved ?? 0) > (design.built ?? 0);
    const progress = design => {
      const pages = design.pages ?? 0, approved = design.approved ?? 0, built = design.built ?? 0;
      if (!pages) return 'nothing designed yet';
@@ -115,7 +117,7 @@
         <a class="item" href="/f/<%= p.id %>/d/<%= design.id %>">
           <span class="icon icon-<%= kindIcon(design.kind) %>" aria-hidden="true"></span>
           <span class="item-text">
-            <span class="item-title"><%= design.title %><% if (kindPill(design.kind)) { %><span class="pill"><%= kindPill(design.kind) %></span><% } %></span>
+            <span class="item-title"><%= design.title %><% if (kindPill(design.kind)) { %><span class="pill"><%= kindPill(design.kind) %></span><% } %><% if (readyToBuild(design)) { %><span class="pill">Ready to build</span><% } %></span>
             <span class="muted"><%= progress(design) %><% if (design.changed) { %> · changed <%= design.changed %><% } %></span>
           </span>
         </a>

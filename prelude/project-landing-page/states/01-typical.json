@@ -180,6 +180,7 @@
         { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "changed": "2 weeks ago" },
         { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "changed": "2 weeks ago" },
         { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "changed": "last week" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "changed": "yesterday" },
         { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "changed": "2 days ago" },
         { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "changed": "last week" }
       ],

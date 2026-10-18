@@ -29,6 +29,8 @@ and a failed push), long names (an existing app to connect, no remote).
    full list.
 6. **Designs show progress**: pages and how many approved or built, and when
    they last changed. Grouped by area, those with none (system, shell) first.
+   A plain "Ready to build" pill when approved pages aren't built yet, once
+   the app exists (the person, 2026-10-18; R-r6b). Plain, as on Home.
 7. **Needs you, here**: Home's rows for this project alone, newest first, and
    no card when nothing's waiting (R-v7q).
 8. **Push asks in a modal** (`GET …/publish`), not a card at the top of the
@@ -63,8 +65,12 @@ use moved from the New design form to the app card.
 - In the design, Merge just removes the branch from In progress; the app
   redirects to the design's page.
 
+## Also decided
+
+- **Finishing a branch stays on this page**, as well as on the design's (the
+  person had no strong view, 2026-10-18): it's where every branch is seen
+  together.
+
 ## Open questions
 
-- Should finishing a branch from here stay, or move to the design's page only?
-- Pills for a design in Designs (e.g. "Ready to build") would duplicate Needs
-  you; left as a quiet line for now.
+(none)

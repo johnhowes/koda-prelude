@@ -14,6 +14,9 @@
 - **R-wm3.** New design offers the design system and the app shell as kinds only until the project has one of each.
   *shown-on: /f/:project/designs/new @ new-project*
   *proposed*
+- **R-r6b.** A design under Designs says it's ready to build when it has approved pages not yet built, and only once the project's app exists.
+  *shown-on: /f/:project @ typical*
+  *proposed*
 - **R-f0c.** Merged lately shows the project's last five merged branches.
   *shown-on: /f/:project @ typical*
   *proposed*
