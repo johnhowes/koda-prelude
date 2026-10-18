@@ -8,6 +8,9 @@
 <html lang="en">
 <head>
 <%~ include('./_head', { ...it, system: it.system ?? true, styles: '/static/prelude.css' }) %>
+<%/* A design's page links this itself; loaded here too, so it's ready when one
+     is swapped in, with no unstyled moment. It styles only .design-page. */%>
+<link rel="stylesheet" href="/static/workspace.css">
 </head>
 <body class="shell prelude">
 <%~ include('./_bar', it.layout ?? {}) %>
