@@ -878,6 +878,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       // them (another record), and is listed by its route's title.
       const screens = pickable(routes, datasetFor(state)).map(({ id, title: name, ported }) => ({ id, title: name, ...(ported ? { ported: true } : {}) }));
       const path = designs.current(dKey) ?? screens[0]?.id ?? null;
+      const review = reviewOf(dir, context);
       const matched = path && matchRoute(routes, path);
       if (matched && !screens.some(screen => screen.id === path)) screens.push({ id: path, title: matched.route.title ?? path });
       return {
@@ -890,7 +891,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         changed: designs.copy(dKey)?.stateId === (state?.id ?? null),
         events: readEvents(dir).map(event => ({ name: event.name, title: event.title })),
         approved: readSnapshots(dir)?.size ?? 0,
-        review: reviewOf(dir, context),
+        review,
+        stage: stageOf(review),
       };
     }
     // Plain screens/*.html (the design system's gallery): served as files.
@@ -905,6 +907,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       states: [], state: null, changed: false, events: [], approved: 0,
       review: { failures: [], differ: [] },
       screensOnly: true,
+      stage: null,
     };
   };
 
@@ -940,6 +943,24 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     };
   };
 
+  /**
+   * Where the design stands, and the one next step (10.9): designing, changed
+   * since approved, approved, building, built. Null for what isn't built
+   * (the design system's gallery). { step, label, next }.
+   */
+  const stageOf = (review, branch = branchOf()) => {
+    if (!hosted || design.kind === 'system') return null;
+    const groups = backlogOf(dir).groups.filter(group => !isGallery(design, group));
+    const approved = Boolean(readSnapshots(dir)?.size);
+    if (branch?.building) return { step: 'building', label: `Building ${branch.building.title}`, next: 'checked against the approved design' };
+    if (groups.length && groups.every(group => group.built)) {
+      return { step: 'built', label: 'Built', next: !branch ? 'nothing left to build' : branch.remote ? 'push and open a pull request' : `merge into ${branch.into}` };
+    }
+    if (approved && review.differ.length) return { step: 'changed', label: 'The design changed since you approved it', next: 'approve again when it’s ready' };
+    if (approved) return { step: 'approved', label: 'Approved', next: 'ready to build' };
+    return { step: 'designing', label: 'Designing', next: 'approve it when it’s what you want built' };
+  };
+
   /** The session's status line: its own turn, another session's, or nothing. */
   const turnOf = session => (session ? turns.state(folder, design, session.id) : turns.busy(folder, design) ? { kind: 'busy' } : { kind: 'idle' });
 
@@ -957,6 +978,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const system = systemFor();
     const shell = shellFor();
     const merged = app.branches.merged(parentId).find(note => note.design === design.id) ?? null;
+    const surfaceModel = surfaceOf({ ...surface, showing });
     return {
       ...basics(),
       system: system && { id: system.id, title: system.title },
@@ -984,7 +1006,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       queued: queuedOf(session?.id),
       images: [],
       draft: draftOf(session?.id ?? null),
-      surface: surfaceOf({ ...surface, showing }),
+      surface: surfaceModel,
+      stage: surfaceModel.stage,   // where the design stands, for the header (10.9)
       ...extra,
     };
   };
@@ -1110,6 +1133,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const notice = review.failures.length
       ? `Not approved: ${review.failures.length === 1 ? '1 page doesn’t' : `${review.failures.length} pages don’t`} render. Fix ${review.failures.length === 1 ? 'it' : 'them'} first.`
       : `Approved ${approved} ${approved === 1 ? 'page' : 'pages'} in ${count} ${count === 1 ? 'state' : 'states'}.`;
+    // From the Build page (10.9): back to it, which says what happened. (Posted
+    // on main, the design's branch was just made: its Build page is the worktree's.)
+    if (/^\/f\/[0-9a-f]+\/d\/.+\/build$/.test(String(form.get('back') ?? ''))) {
+      return review.failures.length ? page(409, 'build', buildView({ error: notice }), `Build · ${title}`) : redirect(res, `${base}/build`);
+    }
     return surfaceAnswer(fromForm(form), notice);
   }
 
@@ -1536,6 +1564,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       appOnMain,
       updateUrl: entry && `/f/${parentId}/branches/${entry.id}/update`,
       appUrl: `/f/${parentId}#app`,
+      // Builds wait for approved screens (10.9); the Build page offers Approve.
+      approved: Boolean(readSnapshots(dir)?.size),
+      approveUrl: `${base}/approve`,
+      buildUrl: `${base}/build`,
       // Where the shell's Layouts group is built, for a page waiting on it (8c).
       shellBuildUrl: (() => { const shell = design.kind === 'shell' ? null : findShell(folder.path); return shell ? `/f/${parentId}/d/${shell.id}/build` : null; })(),
       error: null,
@@ -1591,6 +1623,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // A page renders in its layout, so the shell's layouts it uses come first (8c).
     if (group.needsLayouts?.length) {
       return refuse(`These pages render in the shell’s ${group.needsLayouts.map(name => `“${name}”`).join(' and ')} ${group.needsLayouts.length === 1 ? 'layout' : 'layouts'}, which the app hasn’t got yet. Build the shell’s layouts first, from the shell’s Build page.`);
+    }
+    // A build is checked against the approved screens, so they come first (10.9).
+    // The app build and the shell's layouts aren't checked against screens.
+    if (![APP_GROUP.key, LAYOUTS_GROUP.key].includes(group.key) && !readSnapshots(dir)?.size) {
+      return refuse('Approve the design first: a build is checked against its approved screens, so there has to be something to check against.');
     }
     if (!isApp && entry.building && entry.building.group !== key && work.some(g => g.key === entry.building.group && g.toBuild)) {
       return refuse(`This design is building ${entry.building.title} now. Groups are built one at a time.`);

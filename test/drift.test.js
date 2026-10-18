@@ -143,7 +143,7 @@ test('snapshots compare normalised HTML: whitespace and attribute order don’t 
 test('the design bar marks ported routes and approves screens; the check then notices a change', async () => {
   const surface = await (await fetch(`${base}/f/${fid}/d/loans/preview`, { headers: { 'x-koda-fragment': '1' } })).text();
   assert.match(surface, /the app’s own view/);
-  assert.match(surface, /These pages aren’t approved yet/);
+  assert.match(surface, /When the design is what you want built, approve it/);
   assert.match(surface, /Approve these screens/);
 
   // /gone and /escape don't render, so approving is refused until they do.
@@ -157,7 +157,7 @@ test('the design bar marks ported routes and approves screens; the check then no
   write('prelude/loans/routes.json', table);
   const approved = await (await post(`/f/${fid}/d/loans/approve`, { view: 'inline' })).text();
   assert.match(approved, /Approved 4 pages in 1 state\./);
-  assert.doesNotMatch(approved, /These pages aren’t approved yet/);
+  assert.doesNotMatch(approved, /When the design is what you want built, approve it/);
   assert.ok(existsSync(join(designDir, 'snapshots', 'typical', 'loans_1_edit.html')));
   assert.ok(existsSync(join(designDir, 'snapshots', 'typical', 'POST_loans_1.html')), 'a refused form is kept too');
 

@@ -11,6 +11,8 @@
       <% if (it.area) { %><span aria-hidden="true">›</span><span><%= it.area %></span><% } %>
     </nav>
     <h1><%= it.title %></h1>
+    <%/* Where the design stands, and the one next step (10.9). */%>
+    <% if (it.stage && !(it.merged && !it.branch)) { %><p class="stage secondary"><strong><%= it.stage.label %></strong> · <%= it.stage.next %></p><% } %>
   </div>
   <span class="spacer"></span>
   <div class="cluster">

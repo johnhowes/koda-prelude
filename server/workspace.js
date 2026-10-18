@@ -344,10 +344,12 @@ export function reviewOf(designDir, context) {
       if (entry.type === 'check' && (!last || entry.at > last.at)) last = entry;
     }
   }
-  if (!last) return { failures: [], differ: [] };
+  if (!last) return { failures: [], differ: [], rendered: 0 };
   const check = presentCheck(last, context);
   const stale = Date.parse(last.at) < approvedAt(designDir);
-  return { failures: check.failures, differ: stale ? [] : check.differ };
+  // rendered: how many pages the check compared with the approved screens,
+  // for "all match" (10.9); none when it ran before the last approval.
+  return { failures: check.failures, differ: stale ? [] : check.differ, rendered: stale ? 0 : last.rendered ?? 0 };
 }
 
 // --- transcript entries -----------------------------------------------------

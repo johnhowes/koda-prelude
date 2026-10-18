@@ -44,6 +44,9 @@
    const state = s.states.find(x => x.id === s.state) ?? s.states[0] ?? null;
    const popped = view === 'inline' && s.popped;
    const review = s.review ?? { failures: [], differ: [] };
+   /* Building or built (10.9): the check is the build's, against the approved
+      design, so the strip reports it and never offers a first approval. */
+   const building = ['building', 'built'].includes(s.stage?.step);
    const origin = appMode ? s.app.url : s.origin;
    /* The frame's address: the page, and the design's version, so it loads
       afresh when the design's files change. */
@@ -236,7 +239,11 @@
   <% } else if (!appMode && review.differ.length) { %>
   <div class="notice warn review" role="status">
     <div class="cluster">
-      <p><strong><%= review.differ.length === 1 ? '1 page differs' : `${review.differ.length} pages differ` %> from the approved screens.</strong> Look at <%= review.differ.length === 1 ? 'it' : 'each' %>; if it’s what you asked for, approve again.</p>
+      <% if (building) { %>
+      <p><strong>The build changed how <%= review.differ.length === 1 ? '1 page looks' : `${review.differ.length} pages look` %></strong> against the approved design. Tell the agent to fix <%= review.differ.length === 1 ? 'it' : 'them' %>, or approve again if the change is intended.</p>
+      <% } else { %>
+      <p><strong>The design changed since you approved it:</strong> <%= review.differ.length === 1 ? '1 page differs' : `${review.differ.length} pages differ` %>. Look at <%= review.differ.length === 1 ? 'it' : 'each' %>, and approve again when it’s what you want built.</p>
+      <% } %>
       <span class="spacer"></span>
       <div class="cluster actions">
         <%~ include('./_review-menu', { base, keep, pages: review.differ, current, state, label: review.differ.length === 1 ? 'Show it' : 'Show one' }) %>
@@ -247,10 +254,19 @@
       </div>
     </div>
   </div>
+  <% } else if (!appMode && building && s.approved && review.rendered) { %>
+  <div class="notice good review" role="status">
+    <p><strong><%= review.rendered === 1 ? 'The page matches' : `All ${review.rendered} pages match` %></strong> the approved design.</p>
+  </div>
   <% } else if (!appMode && cur && !s.approved && !s.screensOnly) { %>
   <div class="notice review" role="status">
     <div class="cluster">
-      <p>These pages aren’t approved yet. Approving saves how each renders, so the check can say when one changes.</p>
+      <% if (building) { %>
+      <%/* Built before anything was approved (a design from before 10.9, or ported by hand). */%>
+      <p>Nothing is approved to check these pages against. Approve how they render now, and the check says when one changes.</p>
+      <% } else { %>
+      <p>When the design is what you want built, approve it: that saves how every page looks, and builds are checked against those screens.</p>
+      <% } %>
       <span class="spacer"></span>
       <form action="<%= base %>/approve" method="post" ko-target="design">
         <%~ keep %>
