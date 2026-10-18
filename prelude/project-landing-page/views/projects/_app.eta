@@ -11,12 +11,13 @@
 <p class="secondary">The app is built on the app shell’s branch, <code><%= app.branch %></code>. Once that branch is in your main branch, features can be built on top of it: check what the build made in <a href="<%= app.url %>">the app shell</a>, then finish its branch under In progress.</p>
 <% } else if (app.status === 'building') { %>
 <p class="cluster gap-2 secondary" role="status"><span class="pulse" aria-hidden="true"></span><span>The app is being <%= app.existing ? 'connected' : 'built' %> on the app shell’s branch, as <%= stack %>.</span></p>
-<div class="cluster actions"><a class="btn small" href="<%= app.url %>">Follow the build</a></div>
+<% if (app.url) { %><div class="cluster actions"><a class="btn small" href="<%= app.url %>">Follow the build</a></div><% } %>
 <% } else if (app.status === 'existing') { %>
 <p class="secondary">This project already has an app. Connecting it finds the app and its stack, and points the app shell at the app’s own layouts, changing as little as it can, so designs render as the app’s own views and features are built into it.</p>
 <% if (p.canBuild) { %>
 <form class="cluster actions" action="/f/<%= p.id %>/app/build" method="post" ko-target="app">
   <input type="hidden" name="status" value="building">
+  <% if (p.shell) { %><input type="hidden" name="url" value="/f/<%= p.id %>/d/<%= p.shell.id %>/build"><% } %>
   <button class="btn small" type="submit">Connect the app</button>
 </form>
 <% } %>
@@ -25,6 +26,7 @@
 <% if (p.canBuild) { %>
 <form class="stack gap-3" action="/f/<%= p.id %>/app/build" method="post" ko-target="app">
   <input type="hidden" name="status" value="building">
+  <% if (p.shell) { %><input type="hidden" name="url" value="/f/<%= p.id %>/d/<%= p.shell.id %>/build"><% } %>
   <% if (!app.stack) { %>
   <details class="disclosure">
     <summary>Choose another stack</summary>

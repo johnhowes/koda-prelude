@@ -62,6 +62,10 @@ use moved from the New design form to the app card.
 - `branchState()` gains `building.stopped`, `pushed`, `remote.pulls`, and the
   model gains `needs` (this project's), each design's `pages`/`approved`/
   `built`/`changed`, and `app.status`.
+- The app's layout (`server/views/layout.eta`) has the modal region and the
+  live channel (from Home's build) but not `notice?`: "Pushed …" is dropped
+  until it does (it's optional; the row says "Pull request open" anyway).
+- The page needs the design system (`system: true`), as Home does.
 - In the design, Merge just removes the branch from In progress; the app
   redirects to the design's page.
 
