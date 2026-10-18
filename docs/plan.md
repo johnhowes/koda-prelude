@@ -2306,6 +2306,14 @@ approve with `test/approve.js` (Prelude's check, `--approve`).
 - Ending a session with a summary appended to `NOTES.md`, optionally committing.
 - **Walks:** executable steps on a rule (given a route in a state, click, fill, expect),
   run against the design and against the real app.
+- **A layout check** (considered 2026-10-18, held). The HTML check can't see layout:
+  Prelude's own design page wrapped its two panels at about 980 CSS pixels and its
+  surface collapsed, while every screen matched. A check could lay each page out in
+  headless Edge or Chrome (no dependency, over the DevTools protocol) at the shell's sizes,
+  and flag sideways scroll, a window that scrolls where the layout fills it, regions with
+  no room and clipped content. Held because the cause was one design mistake, fixed in CSS
+  and now covered by the agents' guidance on layouts that fill the window. Worth building
+  if "fine in the preview, broken at the real size" turns up again elsewhere.
 
 ## Explicitly not now
 
