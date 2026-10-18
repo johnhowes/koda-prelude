@@ -1,0 +1,96 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" }
+    ],
+    "needsYou": 1,
+    "agents": [
+      { "design": "Borrower Portal Shell", "project": "borrower-portal", "url": "/f/borrower-portal/d/borrower-shell/build" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "path": "C:\\Projects\\borrower-portal",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": {
+        "status": "building",
+        "stack": "ASP.NET Core MVC with Razor",
+        "path": null,
+        "existing": false,
+        "branch": "prelude/borrower-shell",
+        "url": "/f/borrower-portal/d/borrower-shell/build"
+      },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "borrower-design-system", "title": "Borrower Design System" },
+      "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+      "needs": [
+        {
+          "id": "n-7k2",
+          "kind": "question",
+          "design": "Payment methods",
+          "says": "The agent asked whether a saved card can be removed while a payment is scheduled on it.",
+          "when": "4 minutes ago",
+          "url": "/f/borrower-portal/d/payment-methods"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "e03b51",
+          "design": { "id": "borrower-shell", "title": "Borrower Portal Shell", "kind": "shell", "area": null },
+          "url": "/f/borrower-portal/d/borrower-shell",
+          "buildUrl": "/f/borrower-portal/d/borrower-shell/build",
+          "finish": "/f/borrower-portal/branches/e03b51",
+          "branch": "prelude/borrower-shell",
+          "into": "main",
+          "check": "unchecked",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/borrower-portal/pulls" },
+          "pushed": false,
+          "building": { "title": "the app", "stopped": false },
+          "alsoChanges": ["package.json", "src/server.js", "src/views/layout.eta"],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "92fd40",
+          "design": { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Payments" },
+          "url": "/f/borrower-portal/d/payment-methods",
+          "buildUrl": "/f/borrower-portal/d/payment-methods/build",
+          "finish": "/f/borrower-portal/branches/92fd40",
+          "branch": "prelude/payment-methods",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/borrower-portal/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        }
+      ],
+      "designs": [
+        { "id": "borrower-design-system", "title": "Borrower Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
+        { "id": "sign-in", "title": "Sign in", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
+        { "id": "document-upload", "title": "Document upload", "kind": "design", "area": "Applications", "pages": 4, "approved": 2, "built": 0, "changed": "3 days ago" }
+      ],
+      "merged": [],
+      "references": [
+        { "id": "r-1", "name": "Spark.Web", "path": "C:\\Projects\\Spark.Web" }
+      ]
+    }
+  ]
+}

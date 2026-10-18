@@ -80,7 +80,13 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   at the foot of a panel would open off the bottom), and a line in a menu
   that says something. Added for "Design Workspace" (prelude/design-workspace):
   the speech model's menu beside the microphone.
+- **Wide center** (`.center.wide`, `--measure-wide: 72rem`): a page with a
+  side column, whose main column keeps a readable width beside it (46rem
+  can't hold a `.split`). Added for "Project Landing Page"
+  (prelude/project-landing-page): the project's page, its work beside its setup.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
+  "Project", not "folder" (the person's decision, 2026-10-16); the table was
+  changed for "Project Landing Page" (prelude/project-landing-page).
 
 ## Open questions
 

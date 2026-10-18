@@ -1,0 +1,19 @@
+# Rules: Project Landing Page
+
+- **R-v7q.** A project's Needs you lists the same things Home does, for that project alone, newest first, and isn't shown when nothing needs the person there.
+  *shown-on: /f/:project @ typical*
+  *proposed*
+- **R-2hx.** A design with a branch is listed under In progress and not under Designs; once its branch is finished, it's listed under Designs again.
+  *shown-on: /f/:project @ typical*
+  *proposed*
+- **R-k4n.** Pushing a branch is always asked first, saying which branch goes to which remote, and nothing is pushed until the person says yes.
+  *shown-on: /f/:project/branches/:branch/publish @ typical*
+  *proposed*
+- **R-8dz.** The page's work and its app follow what happens elsewhere without a reload: a turn, a build, a push or a merge changes them as it happens, and they're read again every five minutes for what Prelude can't see, such as a pull request merged on the Git server.
+  *proposed*
+- **R-wm3.** New design offers the design system and the app shell as kinds only until the project has one of each.
+  *shown-on: /f/:project/designs/new @ new-project*
+  *proposed*
+- **R-f0c.** Merged lately shows the project's last five merged branches.
+  *shown-on: /f/:project @ typical*
+  *proposed*

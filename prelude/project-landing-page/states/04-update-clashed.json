@@ -1,0 +1,95 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" }
+    ],
+    "needsYou": 2,
+    "agents": []
+  },
+  "projects": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "path": "C:\\Projects\\borrower-portal",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": {
+        "status": "on-branch",
+        "stack": "ASP.NET Core MVC with Razor",
+        "path": "src/Borrower.Web",
+        "existing": false,
+        "branch": "prelude/borrower-shell",
+        "url": "/f/borrower-portal/d/borrower-shell"
+      },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "borrower-design-system", "title": "Borrower Design System" },
+      "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+      "needs": [
+        {
+          "id": "n-3fd",
+          "kind": "finished",
+          "design": "Document upload",
+          "says": "The agent finished its turn: the upload page now shows each file’s progress.",
+          "when": "40 minutes ago",
+          "url": "/f/borrower-portal/d/document-upload"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "e03b51",
+          "design": { "id": "borrower-shell", "title": "Borrower Portal Shell", "kind": "shell", "area": null },
+          "url": "/f/borrower-portal/d/borrower-shell",
+          "buildUrl": "/f/borrower-portal/d/borrower-shell/build",
+          "finish": "/f/borrower-portal/branches/e03b51",
+          "branch": "prelude/borrower-shell",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/borrower-portal/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": ["src/Borrower.Web/Program.cs", "src/Borrower.Web/Views/Shared/_Layout.cshtml", "src/Borrower.Web/wwwroot/css/site.css"],
+          "running": { "running": false, "approved": false, "url": "https://localhost:7180", "open": "/f/borrower-portal/branches/e03b51/app" },
+          "merging": null,
+          "finishError": "git couldn’t push prelude/borrower-shell: origin refused it (authentication failed). Check your Git credentials, then try again.",
+          "stories": []
+        },
+        {
+          "id": "4c7e19",
+          "design": { "id": "document-upload", "title": "Document upload", "kind": "design", "area": "Applications" },
+          "url": "/f/borrower-portal/d/document-upload",
+          "buildUrl": "/f/borrower-portal/d/document-upload/build",
+          "finish": "/f/borrower-portal/branches/4c7e19",
+          "branch": "prelude/document-upload",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 3,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/borrower-portal/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": {
+            "from": "main",
+            "unresolved": ["prelude/borrower-design-system/system/components.css", "prelude/document-upload/views/uploads/list.eta"]
+          },
+          "finishError": null,
+          "stories": []
+        }
+      ],
+      "designs": [
+        { "id": "borrower-design-system", "title": "Borrower Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
+        { "id": "sign-in", "title": "Sign in", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
+        { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Payments", "pages": 5, "approved": 1, "built": 0, "changed": "4 days ago" }
+      ],
+      "merged": [],
+      "references": []
+    }
+  ]
+}

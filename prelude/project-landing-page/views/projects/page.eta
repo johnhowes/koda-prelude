@@ -1,0 +1,43 @@
+<%/* A project's page: the work (what needs the person here, what's in
+     progress on branches, and every design) beside the project's setup (the
+     app, and what the agent can read). The work and the app reload whenever
+     the server says something changed, down the app's live channel, and
+     every five minutes for what Prelude can't see happen (a pull request
+     merged on the Git server). New design is the page's one primary action,
+     and opens in the modal. */%>
+<% const p = it, started = (p.designs ?? []).length + (p.inProgress ?? []).length > 0; %>
+<div class="center wide project" ko-item>
+  <div class="stack gap-8">
+    <div class="cluster gap-4">
+      <div class="stack gap-1">
+        <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a></nav>
+        <h1><%= p.name %></h1>
+        <span class="muted project-path"><%= p.path %></span>
+      </div>
+      <% if (started) { %>
+      <span class="spacer"></span>
+      <a class="btn primary" href="/f/<%= p.id %>/designs/new" ko-target="modal?"><span class="icon icon-add" aria-hidden="true"></span>New design…</a>
+      <% } %>
+    </div>
+
+    <% if (p.appError) { %>
+    <div class="notice danger" role="alert"><p><%= p.appError %></p></div>
+    <% } %>
+
+    <div class="split" style="--side: 20rem">
+      <div class="stack gap-6">
+        <div class="stack gap-6" ko-as="work" ko-source="/f/<%= p.id %>/work" ko-invoke="event:needs-changed event:projects-changed every:300000"><%~ include('./_work', p) %></div>
+        <div class="notice danger" role="alert" visible-when-unreachable="work">
+          <p>Prelude couldn’t read this project’s branches. What’s shown may be out of date; try again in a moment.</p>
+          <div class="cluster actions"><button class="btn small" type="button" command="--koda-retry" ko-for="work">Try again</button></div>
+        </div>
+      </div>
+      <aside class="side stack gap-6" aria-label="The project’s setup">
+        <% if (started || p.app.status !== 'none') { %>
+        <section class="card" id="app" aria-labelledby="app-title" ko-as="app" ko-source="/f/<%= p.id %>/app" ko-invoke="event:projects-changed"><%~ include('./_app', p) %></section>
+        <% } %>
+        <%~ include('./_reading', p) %>
+      </aside>
+    </div>
+  </div>
+</div>

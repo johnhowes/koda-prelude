@@ -1,0 +1,11 @@
+/* A project's page: what the design system can't say. */
+@scope (.project) {
+  /* A path is one long word; let it wrap rather than push the column. */
+  .project-path, code { overflow-wrap: anywhere; }
+
+  /* Lists that are only lines of text, not rows to open. */
+  .in-progress, .stories, .merged, .also-changes { list-style: none; padding: 0; }
+
+  /* The stories to copy, in full. */
+  .story { inline-size: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
+}

@@ -1,0 +1,17 @@
+<%/* New design's title and area: empty at first, and with what was typed and
+     why when it's refused. */%>
+<% const errors = it.$errors ?? {}; %>
+<div class="fields">
+  <label class="field">
+    <span class="label">Title</span>
+    <input name="title" value="<%= it.title ?? '' %>" placeholder="Sign up" autocomplete="off"
+           <% if (errors.title) { %>ko-invalid-server="<%= errors.title %>" aria-describedby="new-design-title-error"<% } %>>
+    <% if (errors.title) { %><span class="error" id="new-design-title-error"><%= errors.title %></span><% } %>
+  </label>
+  <label class="field">
+    <span class="label">Area <span class="muted">(optional)</span></span>
+    <input name="area" value="<%= it.area ?? '' %>" placeholder="Onboarding" autocomplete="off" list="new-design-areas"
+           <% if (errors.area) { %>ko-invalid-server="<%= errors.area %>" aria-describedby="new-design-area-error"<% } %>>
+    <% if (errors.area) { %><span class="error" id="new-design-area-error"><%= errors.area %></span><% } else { %><span class="hint">Designs in the same area are listed together.</span><% } %>
+  </label>
+</div>

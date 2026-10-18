@@ -1,0 +1,3 @@
+<%/* Said in the notice once a branch is pushed: what happened, and where the
+     pull request is. The page's own row says so too. `it` is the branch. */%>
+<p role="status">Pushed <code><%= it.branch %></code> and opened its pull request. Once it’s merged there, Prelude tidies up the branch here. <a href="<%= it.remote.pulls %>" target="_blank" rel="noopener">Open the pull request<span class="icon icon-external" aria-hidden="true"></span></a></p>
