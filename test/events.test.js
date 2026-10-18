@@ -139,6 +139,29 @@ test('the check renders each event’s markup in every state', async () => {
   }
 });
 
+test('an event’s fields are JSON: numbers, booleans and objects arrive as they are, in the check and when sent', async () => {
+  const { checkDesign, eventMessages } = await import('../server/host.js');
+  const { parseEvents } = await import('../server/events.js');
+  const { createRenderers } = await import('../server/renderers.js');
+  const { fileURLToPath } = await import('node:url');
+  const renderers = createRenderers({ appRoot: fileURLToPath(new URL('..', import.meta.url)) });
+  // An update of fields that already hold a number and a boolean: typing them
+  // as posted strings called .trim() on a number, and approving failed.
+  const typedEvent = { title: 'A typed one', update: 'settings', with: { count: 3, urgent: true, by: { name: 'Dana' } }, send: 'settings-changed' };
+  write('home/events.json', { typed: typedEvent });
+  write('home/states/01-typical.json', { needs: [{ id: 1, summary: 'Apiary needs review' }], settings: { count: 1, urgent: false } });
+  try {
+    assert.deepEqual(await checkDesign({ renderers }, { folder: { path: repo }, design: { id: 'home' }, designDir }), [], 'approving runs the check, which tries every event');
+    const dataset = { settings: { count: 1, urgent: false } };
+    await eventMessages({ renderers }, { folder: { path: repo }, designDir, event: parseEvents({ typed: typedEvent })[0], dataset });
+    assert.deepEqual(dataset.settings, { count: 3, urgent: true, by: { name: 'Dana' } });
+  } finally {
+    renderers.closeAll();
+    write('home/states/01-typical.json', { needs: [{ id: 1, summary: 'Apiary needs review' }] });
+    write('home/events.json', { 'needs-changed': { title: 'A pull request needs review', add: 'needs', with: { summary: 'Landing Page is ready to merge' }, send: 'needs-changed', push: [{ into: 'notice?', view: '_notice', data: 'needs/:new' }] }, 'projects-changed': { title: 'A branch was merged elsewhere', send: 'projects-changed' } });
+  }
+});
+
 test('stories and build briefs say what the server sends, and when', () => {
   const { groups, events } = backlogOf(designDir);
   assert.deepEqual(groups[0].events.map(event => event.name), ['needs-changed'], 'it pushes into, and is listened for on, the Home page');
