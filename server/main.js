@@ -141,10 +141,11 @@ async function handle(req, res, app) {
   const fragment = req.headers['x-koda-fragment'] === '1';
   // Every layout gets the app's live channel and the bar's count.
   const layout = () => ({ live: APP_LIVE, needsYou: waitingOf(app) });
-  // Asked for from a page in another layout (a design's page), the page comes
-  // whole, so the browser loads it in its own layout (layoutOfPath).
+  // These pages are still in ds/v1 (shaped's default). Asked for from a page
+  // in another document (Home, a design's page), one comes whole, so the
+  // browser loads it with its own stylesheets (layoutOfPath).
   const page = (status, view, data, title) => {
-    const alone = fragment && askedFromLayout(req, 'app');
+    const alone = fragment && askedFromLayout(req, 'ds-v1');
     return send(res, status, shaped(view, data, { fragment: alone, path, title, layout: alone ? {} : layout() }));
   };
   const notFoundText = () => send(res, 404, 'Not found', 'text/plain; charset=utf-8');
@@ -647,14 +648,19 @@ function noteOnBranch(entry, text, failed = false) {
 const mainOf = folder => mainBranch(folder.path);
 
 /**
- * The layout a Prelude page renders in, by its path: a design's page and its
- * overlays in the shell's workspace layout ('workspace'), its pop-out in the
- * window layout ('window'), every other page in the app layout ('app').
+ * The document a Prelude page renders in, by its path: what has to be the
+ * same for Koda to swap one page into another's main region.
+ *   'app'     the app layout with the design system: Home, a design's page
+ *   'ds-v1'   the app layout with the older ds/v1 stylesheets, for the pages
+ *             not moved onto the design system yet (a project, Build, the rest)
+ *   'window'  a design's pop-out, a window of its own
+ * A page moved onto the design system leaves the ds-v1 list.
  */
 function layoutOfPath(pathname) {
-  if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'app';
+  if (pathname === '/' || pathname === '/open') return 'app';
+  if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   if (pathname.endsWith('/window')) return 'window';
-  return pathname.endsWith('/build') ? 'app' : 'workspace';
+  return pathname.endsWith('/build') ? 'ds-v1' : 'app';
 }
 
 /**
@@ -1062,10 +1068,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const designPage = (status, model, { session = null, regions = {}, path = url.pathname } = {}) => {
     const live = session ? `${base}/sessions/${session.id}/live?from=${model.entries.length}` : `${base}/live`;
     const body = render('./_session', { ...model, live });
-    // Alone only for a page already in the workspace layout: from Projects or
-    // a project page it comes whole, so the browser lays it out in its own.
-    if (fragment && askedFromLayout(req, 'workspace') && !Object.keys(regions).length) return send(res, status, body);
-    return send(res, status, render('./workspace-layout', { body, path, title, regions }));
+    // In the app layout, like Prelude's other pages: the page brings its own
+    // stylesheet and asks to fill the window, so Koda swaps it in from Home
+    // as a fragment. From a page still in ds/v1 it comes whole (askedFromLayout).
+    if (fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length) return send(res, status, body);
+    return send(res, status, render('./layout', { body, path, title, regions, system: true }));
   };
 
   /**

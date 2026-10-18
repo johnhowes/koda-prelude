@@ -9,7 +9,11 @@
      redirects to its latest session, or shows a new one). `it` is the
      design (DesignPage, server/workspace.js). */%>
 <% const base = `/f/${it.folder.id}/d/${it.id}`; %>
-<div class="stack gap-3 design-page">
+<%/* The page brings what it needs, so it works swapped into the app layout's
+     main region as well as loaded cold: its own stylesheet, and .fills, which
+     the shell reads to fill the window with it (koda-styling). */%>
+<link rel="stylesheet" href="/static/workspace.css">
+<div class="stack gap-3 design-page fills">
   <%~ include('./_header', it) %>
   <% if (it.branch?.merging?.unresolved?.length) { %>
   <% const m = it.branch.merging; %>

@@ -119,6 +119,7 @@ test('the design agent is told how to write rules; the system and shell aren’t
   const shell = designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell' });
   assert.doesNotMatch(shell, /RULES\.md/);
   assert.match(shell, /The layout's own parts[^.]*are real, rendered from the layout's sample data/);
+  assert.match(shell, /A layout is the document around the page, and in a Koda app a click swaps only the main region, never the document\./, 'pages that share the chrome share a layout');
   assert.match(shell, /What a design will put in a region[^.]*is skeleton content: grey bars and blocks in the shape of a typical page/, 'the gallery shows which part is the layout');
   assert.match(shell, /Keep the gallery's views in prelude\/shell\/views\/gallery\/\. A page the shell itself owns[^.]*\(Settings, say/, 'a shell’s own pages are built; its gallery isn’t');
 });
