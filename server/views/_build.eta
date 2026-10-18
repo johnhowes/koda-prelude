@@ -20,6 +20,12 @@
   </div>
   <% } else if (!it.app.built) { %>
   <p class="card">Features are built into the app, and there isn’t one yet. <a href="<%= it.appUrl %>">Build the app first</a><% if (it.app.stack) { %> (<%= it.app.stack %>)<% } %>; then build these on top of it. You can copy them as stories now.</p>
+  <% } else if (!it.approved && it.groups.some(group => group.toBuild && !group.layouts)) { %>
+  <%/* A build is checked against the approved screens, so they come first (10.9). */%>
+  <div class="card">
+    <p class="sec">Approve the design before building it. Approving saves how every page looks in every state; each build is then checked against those screens, so you'll know whether it matches the design.</p>
+    <form action="<%= it.approveUrl %>" method="post"><input type="hidden" name="back" value="<%= it.buildUrl %>"><button class="btn small primary" type="submit">Approve the design</button></form>
+  </div>
   <% } else if (it.building) { %>
   <% const buildingSession = it.groups.find(group => group.key === it.building.group)?.session; %>
   <p class="card">Building <strong><%= it.building.title %></strong> on this design’s branch<% if (buildingSession) { %>, in <a href="<%= buildingSession.url %>"><%= buildingSession.title %></a><% } %>. Groups are built one at a time, so the others wait until it’s built.</p>
@@ -72,7 +78,7 @@
     <% if (group.toBuild && group.needsLayouts?.length) { %>
     <%/* A page renders in its layout, so the shell's layouts it uses come first (8c). */%>
     <p class="muted">Its pages render in the shell’s <%= group.needsLayouts.map(name => `“${name}”`).join(' and ') %> <%= group.needsLayouts.length === 1 ? 'layout' : 'layouts' %>, which the app hasn’t got yet. <% if (it.shellBuildUrl) { %><a href="<%= it.shellBuildUrl %>">Build the shell’s layouts first</a>.<% } else { %>Build the shell’s layouts first.<% } %></p>
-    <% } else if (group.toBuild && it.canBuild) { %>
+    <% } else if (group.toBuild && it.canBuild && (it.approved || group.layouts)) { %>
     <form action="<%= it.base %>/builds" method="post">
       <input type="hidden" name="group" value="<%= group.key %>">
       <button class="btn small primary" type="submit" title="Builds this group on the design's branch, in a build session.">Start a build session</button>

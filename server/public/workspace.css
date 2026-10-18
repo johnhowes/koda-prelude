@@ -15,6 +15,7 @@
 
   /* A one-line header: the title at a section's size, not a page's. */
   .design-head h1 { font-size: var(--text-xl); }
+  .design-head .stage { margin: 0; }
   .branch-summary code { background: none; padding: 0; }
 
   /* A long session or page title is cut short in its menu button. */
