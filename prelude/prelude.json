@@ -2,6 +2,12 @@
   "app": {
     "existing": true,
     "path": "server",
-    "stack": "Node, node:http, Eta and Koda"
+    "stack": "Node, node:http, Eta and Koda",
+    "assets": {
+      "/static/": "server/public/",
+      "/ds/": "server/public/ds/",
+      "/system/": "prelude/prelude-design-system/system/",
+      "/koda/": "node_modules/@kodalang/core/src/"
+    }
   }
 }

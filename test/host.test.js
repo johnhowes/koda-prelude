@@ -185,7 +185,8 @@ test('/_prelude/ serves Koda, the system, the shell and the design, never sessio
 
 test('the preview offers the design’s pages and states, framed on its own origin', async () => {
   const surface = await (await get(`/f/${fid}/d/orders/preview`)).text();
-  assert.match(surface, /7 pages/, 'every titled route, overlays included');
+  // The page count is gone (the Design Workspace's design); the picker still lists them all.
+  assert.equal(surface.match(/name="surface.current" value="/g)?.length, 7, 'every titled route, overlays included');
   assert.ok(surface.includes('value="/orders/1"'), 'a route with :id is pickable, with the first record’s id');
   assert.ok(surface.includes(`src="http://orders.${fid}.preview.localhost:${port}/orders?v=`));
   assert.match(surface, /State: Typical/);
@@ -195,7 +196,7 @@ test('the preview offers the design’s pages and states, framed on its own orig
   await hostGet('orders', '/orders/2', { 'sec-fetch-dest': 'iframe' });
   const moved = await (await get(`/f/${fid}/d/orders/preview`)).text();
   assert.ok(moved.includes(`preview.localhost:${port}/orders/2?v=`));
-  assert.match(moved, /<summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"><\/span>Order<\/summary>/);
+  assert.match(moved, /<summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"><\/span><span class="clip">Order<\/span><\/summary>/);
   // A region loading a fragment changes nothing.
   await hostGet('orders', '/orders/1/row', { 'sec-fetch-dest': 'empty', 'x-koda-fragment': '1' });
   assert.ok((await (await get(`/f/${fid}/d/orders/preview`)).text()).includes('/orders/2?v='));

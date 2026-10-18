@@ -92,26 +92,67 @@ Its views are plain Eta with no helpers of its own (data such as an entry's
 `html` is prepared before rendering), so Prelude renders them itself: no
 design host.
 
-- **All three layouts stay the shell's** (the person's decision, 2026-10-16):
-  they're a redesign of the app's `server/views/layout.eta`, not the app's
-  own, so no shell layout names an app file. The app builds them later. Today
-  that one file makes all three: the window with `it.bare`, and the workspace
-  through `:has(.session-page)` rules in `prelude.css`.
+## Built into the app (2026-10-17)
 
-Where the app's layout differs from the redesign (what building it will
-change):
+The three layouts are the app's now, named in `layouts.json`:
 
-- **No regions.** `layout.eta` prints no `notice?`, `drawer?` or `modal?`.
-- **The bar** is the brand alone: no Projects menu and no agents status
-  (`it.layout.projects`, `it.layout.agents` go unused).
-- **The main region** is `#workspace` (the design says `#main`), and its
-  location comes from `it.path` (the host passes both `path` and `location`).
-- **Styles.** The layout links the app's own CSS at `/ds/v1/…` (KodaDesign's
-  `packages/design/v1`, not this project's design system) and
-  `/static/prelude.css`, with Koda at `/koda/koda.js`; the shell's
-  `shell.css` and this project's design system aren't linked at all.
-- **`desktop.js`** is loaded by the layout, as the notes above already say it
-  must be.
+- **app** → `server/views/layout.eta` (the app's main layout, redesigned).
+- **workspace** → `server/views/workspace-layout.eta` (the design page's,
+  redesigned; it already had most of it).
+- **window** → `server/views/window-layout.eta` (new). The pop-out used to be
+  `workspace-layout` with `bare: true`; the two pop-out routes in `main.js`
+  (`…/preview`, `…/window`) now render `window-layout`, and give their live
+  channel as `layout.live` instead of `live`. Nothing passes `bare` any more.
+
+The partials are in `server/views/`: `_head`, `_bar`, `_agents`, `_regions`,
+and the app's own `_waiting` (the same element; `home.js` pushes it down the
+channel). The chrome is `server/public/shell.css` (the shell's `shell.css`,
+unchanged), linked at `/static/shell.css`, so the app no longer reads it from
+this folder (`/shell/`). `styles.css` isn't ported: it's the gallery's
+placeholders, not the layouts'.
+
+What changed from the design, because real code requires it:
+
+- **URLs**: the app's own: `/system/…` (Prelude's design system), `/ds/v1/…`,
+  `/static/shell.css`, `/static/<page>.css`, `/koda/koda.js`, plus the app's
+  icon. The design's `/_prelude/design/styles.css` is the page's own
+  stylesheet in the app: `prelude.css` on app, `workspace.css` on workspace
+  and window. `prelude/prelude.json` now names those folders (`app.assets`),
+  so a design's origin serves them at the same paths when it renders a design
+  in the app's layouts.
+- **Data**: the location is `it.path` (the app passes `path`; the design
+  host passes both). The title is the app's whole title (`it.title ??
+  'Prelude'`), since the app's titles already end in what they are.
+- **`desktop.js`** is loaded by `_regions`, before Koda starts.
+
+What `layout.eta` kept, and why:
+
+- **The main region's id, `#workspace`** (the design says `#main`): asked to
+  keep it. Nothing targets it by id. The workspace and window layouts were
+  already `#main`.
+- **`.prelude` on the root** (now the `<body>`, beside `.shell`, instead of a
+  wrapping `div`): `prelude.css` scopes every page rule to it, and
+  `desktop.js` marks it with `data-desktop`.
+- **`system`**: pages not yet ported from a design are written in ds/v1, so
+  `_head` links ds/v1's components for them. It links Prelude's
+  `tokens.css` first in every layout: the shell's chrome is drawn with tokens
+  ds/v1 hasn't got (`--border-width`, `--measure-narrow`, `--control-sm`,
+  `--leading`, `--weight-heading`), and ds/v1's tokens override the rest. A
+  design rendered in the layout (no `system`) gets Prelude's system.
+- **The modal closes when the main region moves** (a form in it that goes to
+  another page, such as Open a project). It's in `_regions` now, so every
+  layout does it; it finds the main region as `body > main`.
+
+And in `prelude.css`: the old bar, `.waiting` and `.modal-dialog` rules, and
+`[data-desktop-only]`, are gone (the shell draws them). The room above and
+below a page is the shell's (`.shell-main`), so `.page` keeps only its
+inline padding and `main > .center`'s padding went. `home.test.js` matches
+the bar's count by its new class, `shell-waiting`.
+
+Not given yet by the app: `layout.projects` and `layout.agents`, so its bar
+shows no Projects menu and no agent status (each is left out when empty);
+the workspace layout is given no layout data at all, since its page opens its
+own live channel. Giving them is a feature's work, not the layout's.
 
 ## Open questions
 

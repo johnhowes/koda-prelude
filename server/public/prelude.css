@@ -5,19 +5,12 @@
 @layer tokens, base, components, host;
 
 @scope (.prelude) {
+  /* The root is the layout's body (.shell); the bar and the page's room
+     above and below are the shell's (shell.css). */
   :scope { min-height: 100vh; display: flex; flex-direction: column; container-type: inline-size; }
 
-  .bar {
-    display: flex; align-items: center; gap: var(--space-4);
-    padding: var(--space-3) var(--space-6);
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .brand { color: var(--fg); font-weight: 700; letter-spacing: -0.01em; text-decoration: none; }
-  .brand:hover { color: var(--accent); }
-
   main { flex: 1; }
-  .page { max-width: 46rem; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+  .page { max-width: 46rem; margin: 0 auto; padding-inline: var(--space-6); }
   .page > .sec, .page > .muted { margin: 0 0 var(--space-6); }
   .crumbs { margin: 0 0 var(--space-2); font-size: var(--text-sm); }
 
@@ -52,10 +45,6 @@
   .check { display: flex; gap: var(--space-2); align-items: baseline; margin-top: var(--space-4); font-size: var(--text-sm); }
   .session-head p.muted { margin: var(--space-1) 0 0; }
   .add-reference { margin-top: var(--space-4); }
-
-  /* What only the desktop app can do is shown only in it (desktop.js). */
-  [data-desktop-only] { display: none; }
-  :scope[data-desktop] [data-desktop-only] { display: inline-flex; }
 
   /* A design's chat. The page fills the window below the bar; the transcript
      scrolls and the message box stays put. */
@@ -208,7 +197,7 @@
   .window-page .design { flex: 1; }
 
   @container (width < 32rem) {
-    .page { padding: var(--space-6) var(--space-4); }
+    .page { padding-inline: var(--space-4); }
     .inline { flex-direction: column; }
   }
 
@@ -217,21 +206,6 @@
   .build-routes, .build-rules { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
   .build-group details, .in-progress details { margin-block: var(--space-2); }
   .build-group .story, .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
-
-  /* The bar's count of what needs the person (R-z3g). */
-  .waiting { display: flex; }
-
-  /* The modal (ko-target="modal?"): its region beside its Close, as the
-     shell draws it. Hidden while empty: closed. */
-  .modal-dialog { inline-size: min(34rem, 100% - 2 * var(--space-5)); padding: var(--space-5); }
-  .modal-dialog[open] { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: var(--space-3); }
-  .modal-dialog > [ko-region] { grid-area: 1 / 1; }
-  .modal-dialog > [ko-region]:focus-visible { box-shadow: none; outline: none; }
-  .modal-dialog > .icon-btn { grid-area: 1 / 2; }
-
-  /* Pages ported from a design hold their own width (.center); the page gives
-     them room above and below, as the shell does. */
-  main > .center { padding-block: var(--space-8); }
 }
 
 /* Home's own rules (prelude/landing-page): what the design system can't say. */
