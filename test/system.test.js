@@ -116,6 +116,12 @@ test('layout primitives (5e): the system provides its own, spaced by gaps; desig
   assert.match(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', format: 'views', system: acme }), compose, 'views');
   assert.match(designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell', system: acme }), compose, 'the shell’s layouts');
   assert.doesNotMatch(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', format: 'views' }), compose, 'no system, nothing to compose from');
+  // A layout that fills the window never wraps its panels: said once to each agent that lays one out.
+  const fills = /never lay the panels out with something that wraps/g;
+  assert.equal(system.match(fills)?.length, 1, 'the system, about its wrapping primitives');
+  assert.equal(designPrompt({ title: 'Sign up', designPath: 'prelude/sign-up', format: 'views', system: acme }).match(fills)?.length, 1, 'a design');
+  assert.equal(designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell', system: acme }).match(fills)?.length, 1, 'the shell, with a system');
+  assert.equal(designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell' }).match(fills)?.length, 1, 'the shell, without one');
 });
 
 test('the link the agent is told resolves to the system on the preview host', () => {
