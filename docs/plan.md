@@ -2255,6 +2255,48 @@ it brought it up. Found while testing it, and fixed: requests now and then reset
 reached a connection the server was just closing, as git blocks the server; idle
 connections are now kept for 65 seconds.
 
+#### 10.9: A design's flow, said once, where it applies
+
+In a build session the design surface kept saying "Approve these screens", and nothing
+said whether that mattered. Approving there would save how the *built* pages look,
+blessing the build instead of checking it, and a build that matched said nothing, so
+"fine" looked like "not checked".
+
+**A design moves through Designing → Approved → Building → Built → Merged.** The design
+page's header says where it is and the one next step:
+- "Designing · approve it when it's what you want built"
+- "The design changed since you approved it · approve again when it's ready"
+- "Approved · ready to build"
+- "Building Home · checked against the approved design"
+- "Built · merge into main" (or "push and open a pull request")
+- Merged, as the header says today.
+
+**Approving means "this is what to build":**
+- **Building needs it.** A feature group (or a shell's own pages) can't start a build
+  until the design's screens are approved. The Build page says why and offers Approve
+  there. The app build and the shell's layouts aren't checked against screens, so they
+  don't wait.
+- **While designing**, the review strip asks for approval in those words, and after a
+  later change says the design changed since it was approved.
+- **While building or built**, the strip never offers a first approval. It reports the
+  last check against the design: all pages match (said, with how many), some differ
+  ("tell the agent to fix them, or approve again if the change is intended"), or some
+  don't render (as before).
+
+Decided 2026-10-17:
+- Approval is required before a build, not just suggested.
+- The flow is shown in the header; no page or panel of its own.
+
+**As built (10.9):** `stageOf` (main.js) gives `{ step, label, next }` from the branch's
+`building`, whether every group is built, the approved screens and the last check
+(`reviewOf`, which now also says how many pages it `rendered`). The header prints it under
+the title; a design with no pages yet, or merged, shows none. The builds route refuses a
+feature group (not the app or the shell's layouts) without approved screens, after the
+layout check; the Build page offers "Approve the design" (`back` returns to it). The strip
+words approval by stage, says "All n pages match the approved design" once a build's check
+matches, and still offers a first approval for a design built before any was made. Tests
+approve with `test/approve.js` (Prelude's check, `--approve`).
+
 ### Step 11 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only

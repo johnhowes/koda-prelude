@@ -206,6 +206,9 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
   assert.match(shellBuild, /<h2>Settings <span class="pill">/);
   assert.doesNotMatch(shellBuild, /<h2>Home /, 'the gallery isn’t built');
+  // Approved first (10.9). This app's design host is a stand-in that never runs,
+  // so its pages can't render here to be approved: an approved screen is written.
+  write(repo, 'prelude/shell/snapshots/_/settings.html', '<h1>Settings</h1>');
   const settings = await post(`/f/${fid}/d/shell/builds`, { group: '/settings' });
   assert.equal(settings.status, 303, await settings.text());
   const [, swid, ssid] = location(settings).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
@@ -224,6 +227,7 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   const updated = await post(`/f/${fid}/branches/${lid}/update`, { back: `/f/${lid}/d/loans/build` });
   assert.equal(updated.status, 303);
   assert.equal(appOf(loans).built, true, 'main came in');
+  write(loans, 'prelude/loans/snapshots/_/loans.html', '<h1>Loans</h1>');   // approved first (10.9), as for Settings above
   const build = await post(`/f/${lid}/d/loans/builds`, { group: '/loans' });
   assert.equal(build.status, 303, await build.text());
   const [, bsid] = location(build).match(/\/sessions\/(.+)$/);
