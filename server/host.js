@@ -454,8 +454,13 @@ export async function handleDesignHost(req, res, app, host) {
   }
   // An app connected without a host (8b) names its own files' URLs in
   // prelude.json, so the pages it renders load them here at the same paths.
+  // In a design's worktree, what isn't committed (node_modules, where an app
+  // may name Koda) isn't there: it comes from the repository it's a branch of.
   if (!external && req.method === 'GET' && !matchRoute(readRoutes(designDir), path)) {
-    const asset = appAssets(folder.path).find(({ prefix }) => path.startsWith(prefix));
+    const parent = folder.branch && app.folders.get(folder.branch.parentId);
+    const asset = [folder, parent].filter(Boolean)
+      .map(owner => appAssets(owner.path).find(({ prefix }) => path.startsWith(prefix)))
+      .find(found => found && existsSync(found.root));
     if (asset) return sendFile(res, asset.root, path.slice(asset.prefix.length), notFound);
   }
 
