@@ -23,6 +23,8 @@
     .workspace > .design { flex: 3 1 0; }
   }
   .window-page > .design { flex: 1; }
+  /* A fix (step 11) has no design surface: the chat takes the page. */
+  .workspace > .chat:only-child { flex: 1 1 auto; }
 
   /* A one-line header: the title at a section's size, not a page's. */
   .design-head h1 { font-size: var(--text-xl); }

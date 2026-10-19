@@ -10,8 +10,8 @@
      'to-build': { label: 'Ready to build', icon: 'code', tone: '' },
      'pull-request': { label: 'Pull request open', icon: 'push', tone: '' },
    };
-   const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
-   const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
+   const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : kind === 'fix' ? 'Fix' : null;
+   const kindIcon = kind => kind === 'system' ? 'design-system' : kind === 'fix' ? 'agent' : 'screen';
    /* Only the stories the agent has written: one is written when asked for (R-w3n). */
    const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built' && story.story).map(story => story.story)).join('\n\n---\n\n'); %>
 <% if (needs.length) { %>

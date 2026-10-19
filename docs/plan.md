@@ -7,14 +7,15 @@ in that model.
 
 ## The model
 
-There are four nouns, and nothing else until a new one earns its place.
+There are five nouns, and nothing else until a new one earns its place (the fifth, Fix, earned its place in step 11).
 
 | Noun | What it is | Where it lives |
 | --- | --- | --- |
 | **Project** | What you're designing (and later building), kept in a folder you chose, usually a repo | anywhere on disk |
 | **Design** | A named body of work (screens + notes) built up over many sessions; usually one feature | `prelude/<design>/` |
-| **Session** | One conversation with the agent, contributing to one design | `prelude/<design>/sessions/<id>/` |
+| **Session** | One conversation with the agent, contributing to one design or one fix | `prelude/<design>/sessions/<id>/` |
 | **Screen** | One page of the design | `prelude/<design>/screens/NN-name.html` |
+| **Fix** | One problem in a project, outside any one design, worked on in sessions on a branch of its own | `prelude/fixes/<slug>/` |
 
 The interface has two surfaces, modeled on OrchestratR's design session:
 
@@ -2297,7 +2298,114 @@ words approval by stage, says "All n pages match the approved design" once a bui
 matches, and still offers a first approval for a design built before any was made. Tests
 approve with `test/approve.js` (Prelude's check, `--approve`).
 
-### Step 11 and later: candidates, each to be fitted into the model first
+### Step 11: Fix (planned and built 2026-10-19)
+
+Every session belongs to one design. A defect that doesn't map to a single design has
+nowhere to go: a page that breaks only when clicked into from another, a layout the app
+never got, a crash in the check approving runs, a pull request whose branch clashes with
+main. Each of these has been found in Prelude's own use, and fixed outside Prelude, by
+asking an agent to find the cause and fix whatever needed fixing. A **Fix** is that, in
+Prelude: a session about the **project**, not a design.
+
+**In the model** it's a fifth noun, so it has to earn its place: a **Fix** is one problem
+in a project, worked on in sessions, outside any one design (`prelude/fixes/<slug>/`). A
+session then contributes to one design or one fix. It earns its place because the
+alternative, a design per problem, would give a defect screens, states and a Build page it
+doesn't have, and still couldn't change the other designs it reaches. Once built, the
+model's table gains the row.
+
+**What a fix is:**
+- **One problem, described by the person**, in the same chat as a design session, with
+  screenshots and captures.
+- **Its own branch and worktree**, `prelude/fix-<slug>`, made from main when the fix
+  starts. Every turn is committed, and it's finished the same way as a design's branch:
+  Merge into main, or Push and open a pull request (asked first). Merged fixes are tidied
+  up as branches are.
+- **Its own folder**, `prelude/fixes/<slug>/`: `fix.json` (its title, when it started),
+  `NOTES.md` (what was wrong, the cause, what changed, what to look at), and its
+  `sessions/`. One fix may have more than one session.
+- **Not a design:** no screens, states, rules, Build page or approval of its own.
+
+**Where it's started and found:**
+- The project page gets **Fix something**, beside New design. It asks for a title and the
+  first message, and opens the fix's session.
+- Open fixes are listed under **In progress** with the designs' branches, each with its
+  branch state and its Finish buttons. A merged fix is listed under Merged lately.
+- A fix's page is the design page without the design surface: the chat, its sessions, and
+  the branch in the header. A fix that changed designs links to each of them.
+
+**What its agent is told** (`fixPrompt` in `server/agent.js`):
+- Read the project first: its designs (views, routes, states, rules, notes), the design
+  system, the shell, the app, and `HOST.md` or the app's own guidance. Find the cause, and
+  say what it is, before changing anything.
+- Fix it where it really lives, across designs and the app if that's where it is. Change
+  nothing the problem doesn't need.
+- **The designs stay the specification.** When a fix changes how a built page looks or
+  behaves, change the design too (its views, styles, states or routes), and add a line to
+  that design's `NOTES.md` saying what changed and why. A fix to a page still being
+  designed is made in the design.
+- No redesigning. When the fix needs a decision about how something should look or work,
+  ask the person, and leave it to a design session if they'd rather.
+- Write `prelude/fixes/<slug>/NOTES.md` as it goes: the problem, the cause, the change,
+  and what the person should check.
+- Add or change tests where the app has them, and say when it couldn't run them.
+
+**What it may change:** everything a build session may (the app and its tests), plus the
+files of any design, the design system and the shell: views, styles, states, routes,
+rules and notes. Never a design's sessions or approved screens, and never `.git`
+(`permissionArgs` in mode `fix`).
+
+**The check after each turn:**
+- Prelude runs the check on every design whose files the fix has changed so far, and on
+  every design whose routes name an `@app/` file the fix has changed.
+- Pages that don't render are told to the agent with the next message, as for a design.
+- Pages that now differ from their approved screens are listed for the person, per
+  design, with a link to that design to look and approve again. They aren't told to the
+  agent: a fix may change a page on purpose.
+
+**Stories and builds:** a fix needs no build session, since it changes the app itself. A
+design it changed shows the change on its Build page as it would any other change on main,
+once the fix is merged and the design's branch updates from main.
+
+**Not now:** a fix started from a design's page with that design preselected, fixes found
+by Prelude itself (a failing check, a crash in the log), and more than one problem per
+fix.
+
+Decided 2026-10-19:
+- It's called a Fix.
+- A fix may change design files as well as the app, keeping the two in step.
+- One branch per fix.
+
+**Done when:** on Prelude itself, a fix described as "Approve these screens says Something
+went wrong" finds the cause in the server log and the code, fixes it with a test, notes it,
+and is merged from the project page; and a fix that changes a built page's styles changes
+the design's styles too, with a note in its `NOTES.md`, and lists that design's pages that
+differ.
+
+**As built:**
+- `server/fixes.js` keeps fixes: `createFix`, `listFixes`, and `findFix`, which
+  `findDesign` asks first, so a fix is a design of kind `fix` with the id `fixes/<slug>`
+  and its page, sessions, turns and branch are a design's. `fixes` is a reserved name, so
+  it's never listed with the designs. Its branch is `prelude/fix-<slug>`.
+- Fix something (`GET /f/<id>/fixes/new`, in the modal) posts to `/f/<id>/fixes`: the
+  branch and worktree first, then the fix's folder, committed, then its first session
+  with the person's message.
+- `fixPrompt` (agent.js) and `fixContext` (main.js, in `agentContext`): mode `fix`, no
+  `shared`. The check after each turn renders every hosted design whose files changed
+  since the branch left main (`changedSince` in branches.js: committed, uncommitted and
+  new files), and each whose routes name a changed `@app/` file. Failures are named by
+  design, told to the agent, and shown with Open (that design's page). The check entry
+  also keeps `designs` (what it rendered) and `differDesigns` (title, url and how many
+  pages differ), which the chat shows to the person only.
+- The fix's page is the design page without the design surface; under its title,
+  "Changes" links to each design its committed work touched. On the project page a fix
+  is listed under In progress with a Fix pill, its branch state and Finish buttons;
+  merged, it's in Merged lately like any branch.
+- Not built: a fix shows no check pill until it touches a design (there's nothing to
+  check before), and approving a design's pages from a fix's link approves them on the
+  fix's branch, committed with its next turn or when it's merged.
+
+### Step 12 and later: candidates, each to be fitted into the model first
 - **Sharing:** publish a snapshot of `prelude/<design>/` + its design system as static
   files (an Artifact, a static host, or a tunnel to the preview route). It needs only
   read-only viewer routes, which step 2 already shapes.

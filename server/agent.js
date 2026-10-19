@@ -41,11 +41,15 @@ export function permissionArgs(designPath, references = [], mode = 'design', sha
   // a rule's *proposed* marker) and NOTES.md.
   // On its branch (step 9), a design may also change the design system and
   // the shell (`shared`), when it needs to; never their sessions or approved screens.
-  const scopes = mode === 'build' ? ['**'] : [`${designPath}/**`, ...shared.map(path => `${path}/**`)];
+  // A fix (step 11) writes the app and any design, system or shell, keeping
+  // them in step; never anyone's sessions or approved screens.
+  const scopes = mode === 'build' || mode === 'fix' ? ['**'] : [`${designPath}/**`, ...shared.map(path => `${path}/**`)];
   // Its sessions are Prelude's record, and its snapshots are what the person approved.
-  const kept = [`${designPath}/sessions/**`, `${designPath}/snapshots/**`,
-    ...shared.flatMap(path => [`${path}/sessions/**`, `${path}/snapshots/**`]),
-    ...(mode === 'build' ? [`${designPath}/views/**`, `${designPath}/states/**`, '.git/**'] : [])];
+  const kept = mode === 'fix'
+    ? ['prelude/**/sessions/**', 'prelude/**/snapshots/**', '.git/**']
+    : [`${designPath}/sessions/**`, `${designPath}/snapshots/**`,
+      ...shared.flatMap(path => [`${path}/sessions/**`, `${path}/snapshots/**`]),
+      ...(mode === 'build' ? [`${designPath}/views/**`, `${designPath}/states/**`, '.git/**'] : [])];
   return [
     '--tools', TOOLS.join(','),
     '--allowedTools', scopes.flatMap(scope => [`Edit(${scope})`, `Write(${scope})`]).join(','),
@@ -495,6 +499,34 @@ For each of them:
 Never change the design's views, states, approved screens (${designPath}/snapshots/) or sessions; Prelude refuses those writes. If the design is wrong, incomplete or can't be built as it is, don't redesign it: say what and why in ${designPath}/NOTES.md, build the rest, and tell the person.
 
 You can't run commands. After each turn Prelude renders every route of the design in every state through the app's own views, which builds the app, and tells you with the next message what fails, a state that no longer fits a model included. It also shows the person how each page differs from its approved screen. When the group is built, say what you changed, and what the person should look at before approving the screens and opening the pull request.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/**
+ * The instructions for a fix (plan: step 11): one problem in the project,
+ * found and fixed wherever it lives - the app, any design, the design system,
+ * the shell - on a branch of its own, keeping the designs the specification.
+ * `designs` are the project's designs, `app` its app (app-config.js).
+ */
+export function fixPrompt({ title, fixPath, designs = [], app = null, branch, references = [], stack = null, kodaPath = null }) {
+  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : ''})`).join('\n') || '  (none yet)';
+  return `You are fixing one problem in this project: "${title}". The person describes it in the chat. It isn't one design's: find where it really lives, and fix it there. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and merges it.
+
+The project:
+- Its designs, in prelude/: each has views, routes.json, states/, RULES.md and NOTES.md.
+${list}
+- ${app?.path ? `The app, in ${app.path}/${app.stack ? ` (${app.stack})` : ''}. A design's route whose view is "@app/<path>" is already built: the view is the app's file.` : 'No app yet: the designs are all there is.'}${stack?.guide ? `\n- ${stack.guide}: how views are written here.` : ''}${kodaPath ? `\n- Koda's attribute reference: ${kodaPath}/docs/reference.md.` : ''}
+
+How to fix it:
+1. **Read first.** Read what the problem touches: the designs, the design system, the shell, the app and its guidance. Find the cause, and say what it is in the chat, before changing anything.
+2. **Fix it where it lives**, across designs and the app if that's where it is. Change nothing the problem doesn't need.
+3. **The designs stay the specification.** When the fix changes how a built page looks or behaves, change its design too (its views, styles, states or routes), and add a line to that design's NOTES.md saying what changed and why. A fix to a page still being designed is made in the design.
+4. **No redesigning.** When the fix needs a decision about how something should look or work, ask the person, and leave it to a design session if they'd rather.
+5. **Write ${fixPath}/NOTES.md as you go:** the problem, the cause, the change, and what the person should check.
+6. **Tests:** add or change tests where the app has them. You can't run commands, so say which tests to run.
+
+Never change anyone's sessions or approved screens (snapshots/), or .git; Prelude refuses those writes.
+
+After each turn Prelude renders every page of each design whose files you've changed, and of each design whose built pages use an app file you've changed, and tells you with the next message what doesn't render. It shows the person, not you, which pages now differ from their approved screens: a fix may change a page on purpose.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
 }
 
 /**

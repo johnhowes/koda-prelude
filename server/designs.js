@@ -15,10 +15,12 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { findFix } from './fixes.js';
+
 export const PRELUDE_DIR = 'prelude';
 
 // Names inside prelude/ that are never areas or designs.
-const RESERVED = new Set(['sessions', 'screens', 'node_modules']);
+const RESERVED = new Set(['sessions', 'screens', 'node_modules', 'fixes']);   // fixes: a project's fixes (fixes.js), never a design
 
 export function slugify(text) {
   return String(text ?? '')
@@ -89,6 +91,9 @@ export function listDesigns(folderPath) {
  * Designs don't nest, so the first folder with a design.json is the design.
  */
 export function findDesign(folderPath, segments) {
+  // A fix (fixes/<slug>) is looked up as a design of kind "fix" (step 11).
+  const fix = findFix(folderPath, segments);
+  if (fix) return fix;
   const root = join(folderPath, PRELUDE_DIR);
   for (let i = 1; i <= segments.length; i++) {
     const here = segments.slice(0, i);

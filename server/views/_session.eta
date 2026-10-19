@@ -30,7 +30,8 @@
   <% } %>
   <div class="split gap-3 workspace" style="--side: 26rem">
     <%~ include('./_chat', it) %>
-    <%~ include('./_surface', { ...it, view: 'inline' }) %>
+    <%/* A fix (step 11) has no design surface: the chat takes the page. */%>
+    <% if (it.kind !== 'fix') { %><%~ include('./_surface', { ...it, view: 'inline' }) %><% } %>
   </div>
   <%/* The page's channel (`it.live`, the app's): in the page, not the layout,
        since going to another session swaps only the page, and the channel

@@ -1,0 +1,17 @@
+<%/* Fix something's title and first message: empty at first, and with what
+     was typed and why when it's refused. */%>
+<% const errors = it.$errors ?? {}; %>
+<div class="fields">
+  <label class="field">
+    <span class="label">What’s wrong</span>
+    <input name="title" value="<%= it.title ?? '' %>" placeholder="Approving says Something went wrong" autocomplete="off"
+           <% if (errors.title) { %>ko-invalid-server="<%= errors.title %>" aria-describedby="new-fix-title-error"<% } %>>
+    <% if (errors.title) { %><span class="error" id="new-fix-title-error"><%= errors.title %></span><% } else { %><span class="hint">A few words: the fix’s name, and its branch’s.</span><% } %>
+  </label>
+  <label class="field">
+    <span class="label">Tell the agent</span>
+    <textarea name="message" rows="5" placeholder="What you saw, where, and what you expected. A screenshot can follow in the chat."
+              <% if (errors.message) { %>ko-invalid-server="<%= errors.message %>" aria-describedby="new-fix-message-error"<% } %>><%= it.message ?? '' %></textarea>
+    <% if (errors.message) { %><span class="error" id="new-fix-message-error"><%= errors.message %></span><% } %>
+  </label>
+</div>

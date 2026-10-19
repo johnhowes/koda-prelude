@@ -296,11 +296,12 @@ export function rulesOf(designDir, { routes, states, datasetOf }) {
 // --- the check's findings ---------------------------------------------------
 
 /** A page the check named, as the page can show it: its path, title and state. */
-function namedPage({ path, stateName, error }, { routes, states }) {
+function namedPage({ path, stateName, error, url }, { routes, states }) {
   const clean = String(path).replace(/\s+\(alone\)$/, '');
   const state = findState(states, stateName);
   const route = matchRoute(routes, clean)?.route;
-  return { path: clean, title: route?.title ?? clean, state: state?.id ?? null, stateTitle: state?.title ?? stateName ?? null, ...(error !== undefined ? { error } : {}) };
+  // `url`: a page of another design, as a fix's check names it (step 11).
+  return { path: clean, title: route?.title ?? clean, state: state?.id ?? null, stateTitle: state?.title ?? stateName ?? null, ...(error !== undefined ? { error } : {}), ...(url ? { url } : {}) };
 }
 
 /**
@@ -322,7 +323,7 @@ function differPage(name, { routes, states, datasetOf }) {
 export function presentCheck(entry, context) {
   return {
     ...entry,
-    failures: (entry.failures ?? []).map(failure => namedPage({ path: failure.path, stateName: failure.state, error: failure.error }, context)),
+    failures: (entry.failures ?? []).map(failure => namedPage({ path: failure.path, stateName: failure.state, error: failure.error, url: failure.url }, context)),
     differ: (entry.differ ?? []).map(name => differPage(name, context)),
   };
 }

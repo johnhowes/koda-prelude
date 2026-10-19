@@ -20,7 +20,7 @@ import { join } from 'node:path';
 
 import { appOf } from './app-config.js';
 import { backlogOf } from './backlog.js';
-import { PRELUDE_DIR, listDesigns } from './designs.js';
+import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { refuseFolder } from './folders.js';
 import { isHosted, readRoutes } from './host.js';
 import { listSessions, readEntries } from './sessions.js';
@@ -121,7 +121,8 @@ function worksOf(app, folder) {
   const dirOf = (path, design) => join(path, PRELUDE_DIR, ...design.id.split('/'));
   const works = new Map(listDesigns(folder.path).map(design => [design.id, { design, dir: dirOf(folder.path, design), at: folder, entry: null }]));
   for (const entry of app.branches.of(folder.id)) {
-    const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design);
+    // A fix (step 11) is found as a design, though it isn't listed with them.
+    const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design) ?? findDesign(entry.path, entry.design.split('/'))?.design;
     if (design) works.set(design.id, { design, dir: dirOf(entry.path, design), at: { id: entry.id, path: entry.path }, entry });
   }
   return [...works.values()].map(work => ({ ...work, sessions: listSessions(work.dir) }));

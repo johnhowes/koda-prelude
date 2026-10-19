@@ -248,7 +248,9 @@ ${withFindings(told, message)}` : withFindings(told, message),
               ];
               if (told.length) findings.set(dKey, told);
               // Kept with the check, so a restarted Prelude still tells the agent.
-              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name), warnings, ahead, ...(told.length ? { told } : {}) });
+              // A fix's check (step 11) also names the designs it rendered, and those whose pages differ.
+              const across = result.designs ? { designs: result.designs, differDesigns: result.differDesigns ?? [] } : {};
+              record(ctx, { type: 'check', failures, rendered, differ: differ.map(d => d.name), warnings, ahead, ...across, ...(told.length ? { told } : {}) });
             }
           } catch { /* a failed check is no reason to lose the turn */ }
         }

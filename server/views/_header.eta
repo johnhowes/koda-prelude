@@ -12,6 +12,8 @@
     </nav>
     <h1><%= it.title %></h1>
     <%/* Where the design stands, and the one next step (10.9). */%>
+    <%/* A fix (step 11): the designs it has changed, each to look at and approve there. */%>
+    <% if (it.changes?.length) { %><p class="stage secondary">Changes <% it.changes.forEach((d, i) => { %><%= i ? ', ' : '' %><a href="<%= d.url %>"><%= d.title %></a><% }) %></p><% } %>
     <% if (it.stage && !(it.merged && !it.branch)) { %><p class="stage secondary"><strong><%= it.stage.label %></strong> · <%= it.stage.next %></p><% } %>
   </div>
   <span class="spacer"></span>
@@ -23,7 +25,7 @@
       <% } else if (w.check === 'failing') { %><span class="pill danger"><%= w.failures === 1 ? '1 page doesn’t render' : `${w.failures} pages don’t render` %></span>
       <% } else if (w.check === 'waiting') { %><span class="pill warn">Host needs approval</span>
       <% } else if (w.check === 'passing') { %><span class="pill good">Check passes</span>
-      <% } else { %><span class="pill">Not checked yet</span><% } %>
+      <% } else if (it.kind !== 'fix') { %><span class="pill">Not checked yet</span><% } %>
       <% if (w.behind) { %><span class="pill warn"><%= w.behind %> behind <%= w.into %></span><% } %>
       <% } else if (it.merged) { %>
       <span class="icon icon-done" aria-hidden="true"></span>Merged into <%= it.merged.into %>

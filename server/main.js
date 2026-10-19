@@ -12,14 +12,15 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, layoutsBuildPrompt, storyPrompt } from './agent.js';
+import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
+import { createFix, fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief } from './build.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -305,8 +306,10 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/designs                   the designs, as ?q= and ?stage= leave them, a region
     //   GET  /f/<id>/app                       the app, a region
     //   GET  /f/<id>/designs/new               New design, in the modal over the page
+    //   GET  /f/<id>/fixes/new                 Fix something (step 11), in the modal
     //   GET  /f/<id>/branches/<b>/publish      Push a branch: asked first, in the modal (R-k4n)
     //   POST /f/<id>/designs                   make one: its page, or the fields refused
+    //   POST /f/<id>/fixes                     start a fix on its branch: its session, or the fields refused
     //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
     //   POST /f/<id>/app/build                 start the app build: the app
     //   POST /f/<id>/references                add a folder: the field, and the list
@@ -383,7 +386,7 @@ async function handle(req, res, app) {
       if (req.method === 'GET') return ask();
 
       const form = await readForm(req);
-      const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design) ?? { id: entry.design, title: entry.design };
+      const design = findDesign(entry.path, entry.design.split('/'))?.design ?? { id: entry.design, title: entry.design };
       // The work, with why finishing the branch failed beside it, where the
       // person clicked, and logged: the top of a long page is easily out of sight.
       const work = (status, failed = null) => {
@@ -501,6 +504,40 @@ async function handle(req, res, app) {
     // New design, in the modal; ?kind= picks the design system or the shell.
     if (rest === '/designs/new' && req.method === 'GET' && !folder.branch) {
       return overlay(200, render('./projects/_new-design', projectModel()));
+    }
+
+    // Fix something (step 11), in the modal: a problem that isn't one design's.
+    if (rest === '/fixes/new' && req.method === 'GET' && !folder.branch) {
+      return overlay(200, render('./projects/_new-fix', projectModel()));
+    }
+
+    // Start a fix: its folder on a branch of its own (made from main; a folder
+    // that isn't a repository becomes one), then its first session, started
+    // with the message. Refused, the fields come back with what was typed.
+    if (rest === '/fixes' && req.method === 'POST' && !folder.branch) {
+      const form = await readForm(req);
+      const input = { title: String(form.get('title') ?? ''), message: String(form.get('message') ?? '') };
+      const refused = (status, errors) => {
+        const fields = { ...input, $errors: errors };
+        if (fragment) return send(res, status, render('./projects/_new-fix-fields', fields));
+        const model = projectModel();
+        return projectPage(status, { model, regions: { modal: { html: render('./projects/_new-fix', { ...model, $fields: fields }), location: `${here}/fixes/new` } } });
+      };
+      // A fix's slug is unique among the fixes on main and on every branch.
+      const taken = new Set([...listFixes(folder.path), ...app.branches.of(folder.id).filter(entry => entry.design.startsWith('fixes/')).map(entry => ({ slug: entry.design.slice(6) }))].map(fix => fix.slug));
+      const slug = fixSlug(input.title, taken);
+      const errors = {};
+      if (!input.title.trim()) errors.title = 'Say what’s wrong, in a few words.';
+      else if (!slug) errors.title = 'The title needs at least one letter or digit.';
+      if (!input.message.trim()) errors.message = 'Tell the agent what you saw.';
+      if (Object.keys(errors).length) return refused(422, errors);
+      const made = branchFor(`fixes/${slug}`, input.title.trim());
+      if (made.error) return refused(409, { title: made.error });
+      const created = createFix(made.entry.path, { title: input.title, slug });
+      if (created.errors) return refused(422, created.errors);
+      app.branches.commit(made.entry, `${created.fix.title}: a new fix (committed by Prelude)`);
+      tell(app, { projects: true });
+      return startFixSession({ req, res, page, app, folder: made.worktree, fixId: created.fix.id, message: input.message });
     }
 
     // Approving the repository's design host: it runs the design's views as
@@ -894,6 +931,18 @@ function pullRequestBody(app, entry, design) {
  * design's worktree): the build route answers the request, as if the person
  * had pressed "Start a build session" on the design's Build page.
  */
+/**
+ * Start a fix's first session with the person's message (step 11), as the
+ * fix's page does when its first message is sent (`folder` is its worktree).
+ */
+async function startFixSession({ req, res, page, app, folder, fixId, message }) {
+  const found = findDesign(folder.path, fixId.split('/'));
+  const sessionsUrl = `/f/${folder.id}/d/${fixId}/sessions`;
+  const body = Readable.from([Buffer.from(new URLSearchParams({ message }).toString())]);
+  const first = Object.assign(body, { method: 'POST', url: sessionsUrl, headers: { ...req.headers, 'content-type': 'application/x-www-form-urlencoded' } });
+  return handleDesign({ req: first, res, url: new URL(sessionsUrl, 'http://localhost'), page, app, folder, ...found, rest: ['sessions'] });
+}
+
 async function startGroupBuild({ req, res, page, app, folder, designId, groupKey }) {
   const found = findDesign(folder.path, designId.split('/'));
   const buildsUrl = `/f/${folder.id}/d/${designId}/builds`;
@@ -1151,6 +1200,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       shell: shell && { id: shell.id, title: shell.title },
       references: app.references.of(parentId).map(({ name, path }) => ({ name, path })),
       buildUrl: hosted && buildsPages(design) ? `${base}/build` : null,
+      // A fix's changed designs (step 11), from what's committed on its branch.
+      changes: design.kind === 'fix' ? (() => {
+        const changed = branchOf()?.alsoChanges ?? [];
+        return listDesigns(folder.path).filter(other => changed.some(path => path.startsWith(`${PRELUDE_DIR}/${other.id}/`)))
+          .map(other => ({ title: other.title, url: `/f/${folder.id}/d/${other.id}` }));
+      })() : null,
       merged: merged && { branch: merged.branch, into: merged.into, when: whenWords(merged.at) },
       branch: branchOf(),
       sessions: all.map((item, i) => ({
@@ -1586,6 +1641,55 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       })() : null,
       afterTurn: entry ? ({ message, check }) => afterBranchTurn(session, message, check) : null,
       ...buildContext(session, references),
+      ...fixContext(references),
+    };
+  };
+
+  // A fix (step 11): its own instructions, the app and every design to
+  // change, and a check over the designs it has touched so far - those whose
+  // files changed, and those whose built pages use an app file that changed.
+  // Pages that don't render are told to the agent; pages that differ are
+  // listed per design, for the person to look at there and approve again.
+  const fixContext = references => {
+    if (design.kind !== 'fix' || !entry) return {};
+    const config = readHostConfig(folder.path);
+    const project = appOf(folder.path);
+    const designs = listDesigns(folder.path);
+    return {
+      mode: 'fix',
+      shared: [],
+      systemPrompt: fixPrompt({ title: design.title, fixPath: `${PRELUDE_DIR}/${design.id}`, designs, app: project, branch: entry.branch, references, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaPackage }),
+      check: async () => {
+        const changed = changedSince(entry.path, entry.base);
+        const designFile = path => !/\/(sessions|snapshots)\//.test(path);
+        const touched = listDesigns(folder.path).filter(other => {
+          const otherDir = join(folder.path, PRELUDE_DIR, ...other.id.split('/'));
+          if (!isHosted(otherDir)) return false;
+          if (changed.some(path => path.startsWith(`${PRELUDE_DIR}/${other.id}/`) && designFile(path))) return true;
+          const appViews = [...readRoutes(otherDir).map(route => route.view), ...readPostRoutes(otherDir).flatMap(post => [post.form, post.answer.view, ...post.answer.also.map(also => also.view)])]
+            .filter(view => typeof view === 'string' && view.startsWith('@app/')).map(view => view.slice(5));
+          return appViews.some(view => changed.some(path => path === view || path.startsWith(`${view}.`)));
+        });
+        if (!touched.length) return null;
+        // The app's code may have changed: its host starts afresh.
+        if (config) {
+          app.hosts.stop(folder);
+          if (!app.hosts.approved(folder, config)) {
+            return { blocked: 'Prelude didn’t check the pages: this repository’s design host needs your approval first. Approve it on a design’s page, then send the next message.' };
+          }
+        }
+        const result = { failures: [], rendered: 0, differ: [], warnings: [], ahead: [], designs: [], differDesigns: [] };
+        for (const other of touched) {
+          const otherDir = join(folder.path, PRELUDE_DIR, ...other.id.split('/'));
+          const url = `/f/${folder.id}/d/${other.id}`;
+          const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design: other, designDir: otherDir });
+          result.designs.push({ title: other.title, url });
+          result.failures.push(...review.failures.map(failure => ({ ...failure, path: `${other.title} (prelude/${other.id}): ${failure.path}`, url })));
+          result.rendered += [...review.renders.values()].filter(Boolean).length;
+          if (review.differ.length) result.differDesigns.push({ title: other.title, url, count: review.differ.length });
+        }
+        return result;
+      },
     };
   };
 

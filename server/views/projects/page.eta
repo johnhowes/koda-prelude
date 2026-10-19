@@ -20,6 +20,8 @@
       </div>
       <% if (started) { %>
       <span class="spacer"></span>
+      <%/* Fix something (step 11): a problem that isn't one design's. Secondary: New design stays the page's one primary action. */%>
+      <a class="btn" href="/f/<%= p.id %>/fixes/new" ko-target="modal?"><span class="icon icon-agent" aria-hidden="true"></span>Fix something…</a>
       <a class="btn primary" href="/f/<%= p.id %>/designs/new" ko-target="modal?"><span class="icon icon-add" aria-hidden="true"></span>New design…</a>
       <% } %>
     </div>

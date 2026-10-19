@@ -1,0 +1,16 @@
+<%/* Fix something (step 11), in the modal: a problem in the project that
+     doesn't belong to one design. Its title and first message start the fix
+     on a branch of its own, and its session opens with the agent at work.
+     Refused, the fields come back alone, with what was typed and why.
+     `it` is the project; `it.$fields` the fields as refused, on a cold load. */%>
+<% const p = it; %>
+<div class="stack gap-4" ko-item>
+  <h2>Fix something</h2>
+  <p class="secondary">Describe a problem that isn’t one design’s. The agent finds its cause, fixes it wherever it lives, in the app or the designs, and keeps the designs in step, on a branch of its own.</p>
+  <form class="stack" action="/f/<%= p.id %>/fixes" method="post" ko-target="fields">
+    <div ko-as="fields"><%~ include('./_new-fix-fields', it.$fields ?? {}) %></div>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit"><span class="icon icon-add" aria-hidden="true"></span>Start the fix</button>
+    </div>
+  </form>
+</div>

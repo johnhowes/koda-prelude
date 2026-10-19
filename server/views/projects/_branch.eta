@@ -4,9 +4,9 @@
      its actions: bring main in, and finish (merge here, or push for a pull
      request, which asks first in the modal). An update from main that
      clashed holds the branch until the agent resolves it or it's abandoned.
-     `it` is one of the project's inProgress; `it.finish` its
+     A fix's branch (step 11) is shown the same way. `it` is one of the project's inProgress; `it.finish` its
      /branches/<id> URL. Its forms answer with the project's work. */%>
-<% const w = it, stories = w.stories ?? [];
+<% const w = it, stories = w.stories ?? [], fix = w.design?.kind === 'fix';
    const storyState = { built: { label: 'Built', tone: '' }, 'to-build': { label: 'To build', tone: '' }, building: { label: w.building?.stopped ? 'Build stopped' : 'Building', tone: w.building?.stopped ? 'warn' : 'accent' } }; %>
 <div class="stack gap-3">
   <div class="cluster gap-2">
@@ -14,7 +14,7 @@
     <% if (w.check === 'passing') { %><span class="pill good">Check passes</span>
     <% } else if (w.check === 'failing') { %><span class="pill danger"><%= w.failures === 1 ? '1 page doesn’t render' : `${w.failures} pages don’t render` %></span>
     <% } else if (w.check === 'waiting') { %><span class="pill warn">Design host needs approval</span>
-    <% } else { %><span class="pill">Not checked yet</span><% } %>
+    <% } else if (!fix) { %><span class="pill">Not checked yet</span><% } %>
     <% if (w.building && !w.building.stopped) { %><span class="pill accent"><span class="pulse" aria-hidden="true"></span>Building <%= w.building.title %></span><% } %>
     <% if (w.building?.stopped) { %><span class="pill warn">Build stopped</span><% } %>
     <% if (w.behind) { %><span class="pill warn"><%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %></span><% } %>
@@ -55,7 +55,7 @@
 
   <% if (w.alsoChanges.length) { %>
   <details class="disclosure">
-    <summary>Also changes <%= w.alsoChanges.length === 1 ? '1 file' : `${w.alsoChanges.length} files` %> outside the design</summary>
+    <summary><%= fix ? 'Changes' : 'Also changes' %> <%= w.alsoChanges.length === 1 ? '1 file' : `${w.alsoChanges.length} files` %><%= fix ? '' : ' outside the design' %></summary>
     <ul class="stack gap-1 also-changes">
       <% for (const path of w.alsoChanges) { %><li class="muted"><code><%= path %></code></li><% } %>
     </ul>
@@ -69,7 +69,7 @@
   <% if (w.merging?.unresolved?.length) { %>
   <div class="notice danger" role="alert">
     <strong><%= w.merging.from %> is half brought in.</strong>
-    <p><%= w.merging.unresolved.length === 1 ? 'This file clashes' : 'These files clash' %>: <% for (const [i, path] of w.merging.unresolved.entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %>. Send the agent a message on <a href="<%= w.url %>">the design’s page</a> and it resolves <%= w.merging.unresolved.length === 1 ? 'it' : 'them' %> first; nothing is committed until it has.</p>
+    <p><%= w.merging.unresolved.length === 1 ? 'This file clashes' : 'These files clash' %>: <% for (const [i, path] of w.merging.unresolved.entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %>. Send the agent a message on <a href="<%= w.url %>"><%= fix ? 'the fix’s page' : 'the design’s page' %></a> and it resolves <%= w.merging.unresolved.length === 1 ? 'it' : 'them' %> first; nothing is committed until it has.</p>
     <form class="cluster actions" action="<%= w.finish %>/abandon" method="post" ko-target="work">
       <input type="hidden" name="merging" value="">
       <button class="btn small" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
@@ -89,7 +89,7 @@
     <a class="btn small" href="<%= w.finish %>/publish" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
     <% } else if (w.worked) { %>
     <form action="<%= w.finish %>/merge" method="post" ko-target="work">
-      <button class="btn small" type="submit" title="Merge <%= w.branch %> into <%= w.into %>: the design and anything built, together. Its worktree and branch are tidied up after.">Merge into <%= w.into %></button>
+      <button class="btn small" type="submit" title="Merge <%= w.branch %> into <%= w.into %>: <%= fix ? 'the fix' : 'the design and anything built, together' %>. Its worktree and branch are tidied up after.">Merge into <%= w.into %></button>
     </form>
     <% } %>
   </div>
