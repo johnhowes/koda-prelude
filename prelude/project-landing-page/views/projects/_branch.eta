@@ -83,7 +83,7 @@
       <button class="btn small" type="submit" title="Merge <%= w.into %> into this branch, so it carries on from what’s there now.">Update from <%= w.into %></button>
     </form>
     <% } %>
-    <% if (w.pushed) { %>
+    <% if (w.pushed && w.remote) { %>
     <a class="btn small ghost" href="<%= w.remote.pulls %>" target="_blank" rel="noopener">Open the pull request<span class="icon icon-external" aria-hidden="true"></span></a>
     <% } else if (w.worked && w.remote) { %>
     <a class="btn small" href="<%= w.finish %>/publish" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>

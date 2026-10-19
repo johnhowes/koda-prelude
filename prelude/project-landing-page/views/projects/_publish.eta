@@ -1,9 +1,12 @@
 <%/* Push a design's branch, asked first in the modal: pushing publishes it
      (step 9). It says exactly what goes where. Pushed, the modal closes, the
-     page shows the pull request open, and a notice says so. `it` is one of
-     the project's inProgress. */%>
+     page shows the pull request open, and a notice says so. A project with
+     no remote has nowhere to push: reached anyway (an old link), it says so
+     and offers to merge here instead. `it` is one of the project's
+     inProgress. */%>
 <% const w = it; %>
 <div class="stack gap-4">
+<% if (w.remote) { %>
   <h2>Push <%= w.design.title %>?</h2>
   <div class="notice warn">
     <p>This pushes <code><%= w.branch %></code> to <code><%= w.remote.name %></code>, where others can see it, and opens a pull request for it into <%= w.into %>.</p>
@@ -15,4 +18,11 @@
     <button class="btn primary" type="submit"><span class="icon icon-push" aria-hidden="true"></span>Push and open the pull request</button>
     <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
   </form>
+<% } else { %>
+  <h2>There’s nowhere to push <%= w.design.title %></h2>
+  <p class="secondary">This project’s repository has no remote, so <code><%= w.branch %></code> can’t be pushed for a pull request. You can merge it into <%= w.into %> here instead, from the project’s page.</p>
+  <div class="cluster actions">
+    <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
+  </div>
+<% } %>
 </div>
