@@ -32,12 +32,12 @@ import { capture } from './capture.js';
 import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
 import { createDrafts, draftKey, sentFile } from './drafts.js';
 import { createAsked } from './asked.js';
-import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, tell, waitingOf } from './home.js';
+import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, seenAt, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { branchesOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
-import { createTurns, designKey, sessionKey, statusMessage } from './turns.js';
+import { createTurns, designKey, seenKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
 import { lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
 
@@ -105,8 +105,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     live,
     // A turn starting or ending changes what needs the person and what's in
     // its project; one that ended while its session was on screen was seen.
-    turns: createTurns({ runner, live, onChange: ({ key, finished, watched }) => {
-      if (finished && watched) app.seen.mark(key);
+    turns: createTurns({ runner, live, onChange: ({ seen, finished, watched }) => {
+      if (finished && watched) app.seen.mark(seen);
       tell(app, { needs: true, projects: true });
     } }),
     seen: createSeen(home),   // the sessions the person has opened (home.js)
@@ -2144,8 +2144,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (['working', 'checking'].includes(turns.state(folder, design, session.id).kind)) return true;
     const turn = readEntries(dir, session.id).findLast(item => item.type === 'turn');
     if (!turn || turn.stopped || !(Date.parse(turn.at) > Date.now() - 7 * 24 * 60 * 60 * 1000)) return false;
-    const seenAt = app.seen.all()[sessionKey(folder, design, session.id)];
-    return !(seenAt && seenAt >= turn.at);
+    const seenWhen = seenAt(app.seen.all(), folder, design, session.id);
+    return !(seenWhen && seenWhen >= turn.at);
   };
 
   // A fix's page is at its own address (prelude/fix-something): its latest
@@ -2158,7 +2158,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       return stillOpen(latest) ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
     }
     if (latest) {
-      app.seen.mark(sessionKey(folder, design, latest.id));
+      app.seen.mark(seenKey(folder, design, latest.id));
       tell(app, { needs: true });
     }
     return sessionPage(200, latest ?? null);
@@ -2323,7 +2323,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   if (action === undefined && req.method === 'GET') {
     // Opened: a turn it finished no longer needs the person (R-8hc).
-    app.seen.mark(sessionKey(folder, design, session.id));
+    app.seen.mark(seenKey(folder, design, session.id));
     tell(app, { needs: true });
     return sessionPage(200, session);
   }

@@ -273,6 +273,11 @@ Where the app differs from the screens, on purpose:
   its starting points, "Carry on from…" among them (R-o4s). Before this, it
   always went to the latest session, even one long finished or a finished
   build (the person, 2026-10-19; prelude/fixes/from-the-project-landing-page-when-i-click-on-a-design-it).
+  "Seen" is the project's, not the branch's: a session opened on a
+  design's branch stays seen once the branch is merged. Before this, every
+  design merged in the last week opened its old session again, because the
+  person had seen it under the branch's worktree, not the project
+  (2026-10-19; prelude/fixes/when-i-try-to-open-an-existing-design-the-preview-pane).
 
 ## Open questions
 
