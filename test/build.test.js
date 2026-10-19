@@ -147,11 +147,22 @@ const worktreeOf = branch => canonical(git(repo, 'worktree', 'list').split('\n')
 const settled = (designDir, sid, count = 1) => until(() => readEntries(designDir, sid).filter(e => e.type === 'turn').length >= count
   && readEntries(designDir, sid).filter(e => e.type === 'note' && /^Committed to/.test(e.text)).length >= count);
 
-test('the Build view lists the groups, each copied as a story, with a build session to start', async () => {
+test('the Build page lists the pages, each with what it changes and no story until asked, with a build session to start', async () => {
   const page = await (await get(`/f/${fid}/d/borrowers/build`)).text();
-  assert.match(page, /<h2>Borrowers <span class="pill">To build<\/span><\/h2>/);
-  assert.match(page, /<h2>Reports <span class="pill">To build<\/span><\/h2>/);
-  assert.match(page, /<textarea class="story"[^>]*># Borrowers: Borrowers/);
+  assert.match(page, /<h3 class="page-title" id="page-borrowers">Borrowers<\/h3>\s*<span class="pill">Not built yet<\/span>/);
+  assert.match(page, /<h3 class="page-title" id="page-reports">Reports<\/h3>/);
+  // What changes, in plain lines: no routes, and no rule that's built (R-c9r).
+  assert.match(page, /<span>New page: Borrowers<\/span>/);
+  assert.match(page, /<span>New: Edit borrower, in a drawer over Borrowers<\/span>/);
+  assert.match(page, /<span>1 new form<\/span>/);
+  assert.match(page, /<span>New rule R-k3f: Only an underwriter sees a borrower&#39;s credit score\.<\/span>/);
+  assert.doesNotMatch(page, /R-z1x|\/borrowers\/:id/);
+  // Design-wide rules are a page of their own, so no page repeats them.
+  assert.match(page, /<h3 class="page-title" id="page-across">Across the design<\/h3>[\s\S]*<span>New rule R-q8m: /);
+  // A story only when someone asks (R-w3n).
+  assert.match(page, /<span class="muted">No story yet<\/span>/);
+  assert.match(page, /Write every story/);
+  assert.doesNotMatch(page, /Story written/);
   // A build is checked against the approved screens, so it waits for them (10.9).
   assert.match(page, /Approve the design before building it\./);
   assert.doesNotMatch(page, /Start a build session/);
@@ -162,7 +173,6 @@ test('the Build view lists the groups, each copied as a story, with a build sess
   assert.match(await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text(), /<strong>Approved<\/strong> · ready to build/);
   const approved = await (await get(`/f/${fid}/d/borrowers/build`)).text();
   assert.match(approved, /Start a build session/, 'a design with no branch yet can start one: starting makes its branch');
-  assert.match(page, /Design-wide rules/);
   const session = await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text();
   assert.match(session, /href="\/f\/[0-9a-f]+\/d\/borrowers\/build"><span class="icon icon-code" aria-hidden="true"><\/span>Build<\/a>/);
 });
@@ -213,10 +223,12 @@ test('a build works on the design’s own branch: a build session, its own instr
   assert.equal(second.status, 409);
   assert.match(await second.text(), /This design is building Borrowers now\. Groups are built one at a time\./);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
-  assert.match(view, /Building <strong>Borrowers<\/strong> on this design’s branch, in <a href="\/f\/[0-9a-f]+\/d\/borrowers\/sessions\/[^"]+">Build: Borrowers<\/a>/);
-  // Its build session is easy to get back to: from its group, the sessions menu, and In progress.
-  assert.ok(view.includes(`Build session: <a href="/f/${wid}/d/borrowers/sessions/${sid}">Build: Borrowers</a>`));
-  assert.equal(view.match(/Build session: /g).length, 1, 'only the group that has one');
+  assert.match(view, /Building <strong>Borrowers<\/strong> on <code>prelude\/borrowers<\/code>, in <a href="\/f\/[0-9a-f]+\/d\/borrowers\/sessions\/[^"]+">Build: Borrowers<\/a>\. Other pages wait until it’s built\./);
+  assert.match(view, /<h3 class="page-title" id="page-borrowers">Borrowers<\/h3>\s*<span class="pill">Not built yet<\/span>\s*<span class="pill accent">Building<\/span>/);
+  assert.doesNotMatch(view, /Start a build session/, 'one page at a time');
+  // Its build session is easy to get back to: from its page, the sessions menu, and In progress.
+  assert.ok(view.includes(`Last built in <a href="/f/${wid}/d/borrowers/sessions/${sid}">Build: Borrowers</a>`));
+  assert.equal(view.match(/Last built in /g).length, 1, 'only the page that has one');
   const folderPage = await (await get(`/f/${fid}`)).text();
   assert.ok(folderPage.includes(`<a href="/f/${wid}/d/borrowers/sessions/${sid}">build session</a>`));
 
@@ -245,6 +257,44 @@ test('a design session on the branch may change the design system; the change tr
   await settled(workDir, sid);
   const folder = await (await get(`/f/${fid}`)).text();
   assert.match(folder, /Also changes, outside the design: <code>prelude\/tokens\/system\/tokens\.css<\/code>/);
+});
+
+test('stories are written by the agent only when asked, kept with the design on its branch, and say when they’re out of date', async () => {
+  assert.equal(existsSync(join(workDir, 'stories')), false, 'none until someone asks (R-w3n)');
+  runner.turns.length = 0;
+  runner.queue([{ type: 'wait' }]);
+  const asked = await post(`/f/${wid}/d/borrowers/build/stories`, { writing: 'true' });
+  assert.equal(asked.status, 303);
+  assert.equal(asked.headers.get('location'), `/f/${wid}/d/borrowers/build`);
+  await until(() => runner.turns.length >= 1);
+  const [turn] = runner.turns;
+  assert.equal(turn.mode, 'design', 'it writes in the design, not the app');
+  assert.equal(turn.prompt, 'Write the story for Borrowers.');
+  assert.match(turn.systemPrompt, /You are writing a story for a team's tracker, in Prelude: the page "Borrowers" of the design "Borrowers"/);
+  assert.match(turn.systemPrompt, /- New rule R-k3f: Only an underwriter sees/);
+  assert.match(turn.systemPrompt, /Write the story to prelude\/borrowers\/stories\/borrowers\/1-<slug>\.md/);
+  assert.doesNotMatch(turn.systemPrompt, /R-z1x/, 'no built rule (R-c9r)');
+  assert.doesNotMatch(turn.systemPrompt, /R-q8m/, 'nor a design-wide one: that’s Across the design’s');
+  const writing = await (await get(`/f/${wid}/d/borrowers/build`)).text();
+  assert.match(writing, /The agent is writing its story…/);
+  assert.doesNotMatch(writing, /Write every story/, 'once is enough');
+
+  // The agent's story (by hand), then the turn ends; the other pages' agents write nothing.
+  write(worktree, 'prelude/borrowers/stories/borrowers/1-edit-a-borrower.md', '# Edit a borrower\n\nUnderwriters keep borrowers’ details right.\n\n## What changes\n\n- Edit borrower opens beside the list.\n\n## For developers\n\n- A form at `/borrowers/:id`.\n');
+  runner.release();
+  await until(() => runner.turns.length >= 3 && existsSync(join(workDir, 'stories', 'borrowers', 'story.json')));
+  await until(async () => !/The agent is writing/.test(await (await get(`/f/${wid}/d/borrowers/build`)).text()));
+  const page = await (await get(`/f/${wid}/d/borrowers/build`)).text();
+  assert.match(page, /Story written today at \d\d:\d\d/);
+  assert.match(page, /Open the story/);
+  assert.doesNotMatch(page, /Out of date/);
+  assert.match(git(worktree, 'log', '--stat', '--format=%s', '-1', '--', 'prelude/borrowers/stories'), /a story, written by the agent[\s\S]*stories\/borrowers\/1-edit-a-borrower\.md/, 'committed to its branch (R-u6t)');
+  const pages = await (await fetch(`${base}/f/${wid}/d/borrowers/build/pages`, { headers: { 'x-koda-fragment': '1', referer: `${base}/f/${wid}/d/borrowers/build` } })).text();
+  assert.match(pages, /^<div class="stack gap-3">/, 'the pages alone, for the region that reloads on story-written');
+
+  // The design changes after it: out of date (R-b5k).
+  write(worktree, 'prelude/borrowers/views/borrowers/_edit.eta', '<form><input name="name" value="<%= it.name %>"><input name="email" value="<%= it.email %>"></form>');
+  assert.match(await (await get(`/f/${wid}/d/borrowers/build`)).text(), /<span class="pill warn">Out of date<\/span>/);
 });
 
 test('a build ports the views; the design’s copies go, and the build is done', async () => {

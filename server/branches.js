@@ -111,6 +111,11 @@ export function designCommitsSince(repo, from, branch, designId) {
   } catch { return []; }
 }
 
+/** git's user name where a folder is, as a commit there would be signed, or '' with none. */
+export function gitUser(folderPath) {
+  try { return git(folderPath, 'config', 'user.name'); } catch { return ''; }
+}
+
 /** The repository's remote, for pushing and pull requests: { url, host: 'github' | 'azure' | 'other' } or null. */
 export function remoteOf(folderPath) {
   let url;

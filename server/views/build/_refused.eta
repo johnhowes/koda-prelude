@@ -1,0 +1,4 @@
+<%/* Why the Build page refused something (a build that can't start, an
+     approval over pages that don't render), in the layout's notice region:
+     the page itself has no place for it. */%>
+<p role="alert"><%= it.message %></p>

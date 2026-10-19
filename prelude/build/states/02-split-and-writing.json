@@ -1,0 +1,138 @@
+{
+  "layout": { "needsYou": 2, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/loan-offers",
+          "branch": "prelude/loan-offers",
+          "app": { "built": true, "onBranch": true, "stack": "", "url": "/f/borrower-portal#app" },
+          "approved": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "groups": [
+            {
+              "id": "offers",
+              "key": "/offers",
+              "title": "Offers",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "Offers looks different in Typical, Many offers and Long lender names" },
+                { "icon": "document", "text": "The list can be sorted in new ways" },
+                { "icon": "document", "text": "1 new form" },
+                { "icon": "rule", "text": "New rule R-m7t: Offers are listed with the lowest monthly payment first." }
+              ],
+              "session": null,
+              "story": {
+                "written": "today at 11:20",
+                "outOfDate": null,
+                "split": "the monthly payment and sorting are useful on their own and don’t need the new Compare offers page, so they can ship first.",
+                "stories": [
+                  {
+                    "id": "1",
+                    "url": "/f/borrower-portal/d/loan-offers/build/stories/offers/story/1",
+                    "title": "See each offer’s monthly payment, and sort offers by cost",
+                    "edited": false,
+                    "markdown": "# See each offer's monthly payment, and sort offers by cost\n\nBorrowers compare offers by what they'll pay each month, so the offers list shows it, and puts the cheapest first.\n\n## What changes\n\n- Each offer in the list shows its **monthly payment** under the APR.\n- A **Sort by** menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR.\n- The list keeps the borrower's choice while they're on the page, and starts at Lowest monthly payment next time.\n\n## Acceptance criteria\n\n- The monthly payment matches the offer's details page, to the cent.\n- Offers with the same monthly payment keep their order by APR, lowest first.\n- With one offer, there is no Sort by menu.\n- **R-m7t.** Offers are listed with the lowest monthly payment first.\n\n## Looks right in\n\nTypical, Many offers and Long lender names, each as its approved screen.\n\n## For developers\n\n- `GET /offers` takes `?sort=payment|total|apr`; the list is `prelude/loan-offers/views/offers/_list.eta`.\n- Each offer gains `monthlyPayment`.\n- Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`, `03-long-names`).\n",
+                    "html": "<p>Borrowers compare offers by what they’ll pay each month, so the offers list shows it, and puts the cheapest first.</p><h3>What changes</h3><ul><li>Each offer in the list shows its <strong>monthly payment</strong> under the APR.</li><li>A <strong>Sort by</strong> menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR.</li><li>The list keeps the borrower’s choice while they’re on the page, and starts at Lowest monthly payment next time.</li></ul><h3>Acceptance criteria</h3><ul><li>The monthly payment matches the offer’s details page, to the cent.</li><li>Offers with the same monthly payment keep their order by APR, lowest first.</li><li>With one offer, there is no Sort by menu.</li><li><strong>R-m7t.</strong> Offers are listed with the lowest monthly payment first.</li></ul><h3>Looks right in</h3><p>Typical, Many offers and Long lender names, each as its approved screen.</p><details class=\"disclosure\"><summary>For developers</summary><ul><li><code>GET /offers</code> takes <code>?sort=payment|total|apr</code>; the list is <code>prelude/loan-offers/views/offers/_list.eta</code>.</li><li>Each offer gains <code>monthlyPayment</code>.</li><li>Test data: <code>prelude/loan-offers/states/</code> (<code>01-typical</code>, <code>02-many-offers</code>, <code>03-long-names</code>).</li></ul></details>"
+                  },
+                  {
+                    "id": "2",
+                    "url": "/f/borrower-portal/d/loan-offers/build/stories/offers/story/2",
+                    "title": "Pick two offers to compare",
+                    "edited": false,
+                    "markdown": "# Pick two offers to compare\n\nA borrower with two or more offers can tick two and open them side by side.\n\nDepends on: Compare two loan offers side by side (Compare offers).\n\n## What changes\n\n- With two or more offers, each offer in the list has a **Compare** tick box.\n- Once two are ticked, **Compare these two** appears above the list and opens Compare offers with them.\n- A third tick isn't possible until one of the two is unticked.\n\n## Acceptance criteria\n\n- With one offer, or none, there are no tick boxes and no Compare these two.\n- Compare these two opens the two ticked offers, in the order they were ticked.\n- Unticking one hides Compare these two again.\n\n## Looks right in\n\nTypical and Many offers, each as its approved screen.\n\n## For developers\n\n- The ticks are a form on `GET /offers/compare` with `a` and `b`; no new POST.\n- Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`).\n",
+                    "html": "<p>A borrower with two or more offers can tick two and open them side by side.</p><p><em>Depends on: Compare two loan offers side by side (Compare offers).</em></p><h3>What changes</h3><ul><li>With two or more offers, each offer in the list has a <strong>Compare</strong> tick box.</li><li>Once two are ticked, <strong>Compare these two</strong> appears above the list and opens Compare offers with them.</li><li>A third tick isn’t possible until one of the two is unticked.</li></ul><h3>Acceptance criteria</h3><ul><li>With one offer, or none, there are no tick boxes and no Compare these two.</li><li>Compare these two opens the two ticked offers, in the order they were ticked.</li><li>Unticking one hides Compare these two again.</li></ul><h3>Looks right in</h3><p>Typical and Many offers, each as its approved screen.</p><details class=\"disclosure\"><summary>For developers</summary><ul><li>The ticks are a form on <code>GET /offers/compare</code> with <code>a</code> and <code>b</code>; no new POST.</li><li>Test data: <code>prelude/loan-offers/states/</code> (<code>01-typical</code>, <code>02-many-offers</code>).</li></ul></details>"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "compare",
+              "key": "/offers/compare",
+              "title": "Compare offers",
+              "kind": "new",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/compare",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": true,
+              "instruction": "Leave out the phone layout; the mobile app team covers it.",
+              "changes": [
+                { "icon": "screen", "text": "New page: Compare offers" },
+                { "icon": "screen", "text": "New: Change offer, in a drawer over Compare offers" },
+                { "icon": "rule", "text": "New rule R-k2p: The cheaper offer is the one with the lower total cost over its term, not the lower monthly payment." }
+              ],
+              "session": null,
+              "story": {
+                "written": "today at 10:42",
+                "outOfDate": null,
+                "split": null,
+                "stories": [
+                  {
+                    "id": "1",
+                    "url": "/f/borrower-portal/d/loan-offers/build/stories/compare/story/1",
+                    "title": "Compare two loan offers side by side",
+                    "edited": false,
+                    "markdown": "# Compare two loan offers side by side\n\nA borrower with more than one offer can put two side by side and see which costs less, per month and over the whole loan, before accepting one.\n",
+                    "html": "<p>A borrower with more than one offer can put two side by side and see which costs less, per month and over the whole loan, before accepting one.</p><h3>What changes</h3><ul><li>A new <strong>Compare offers</strong> page shows two offers in columns: lender, APR, term, monthly payment, fees and total cost over the term.</li><li>The offer that costs less over its whole term is marked <strong>Lower total cost</strong>.</li></ul>"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "accept",
+              "key": "/offers/:id/accept",
+              "title": "Accept an offer",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/accept",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New: Confirm your bank account, in a dialog over Accept an offer" },
+                { "icon": "screen", "text": "Accept an offer looks different in Typical and No account on file" },
+                { "icon": "document", "text": "1 new form, 1 changed" },
+                { "icon": "rule", "text": "New rule R-v8d: An offer is accepted only once the bank account it pays into is confirmed." }
+              ],
+              "session": null,
+              "story": null
+            },
+            {
+              "id": "across",
+              "key": "",
+              "title": "Across the design",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/across",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": true,
+              "instruction": "",
+              "changes": [
+                { "icon": "rule", "text": "New rule R-p4c: Amounts are shown in the loan’s currency, to the cent, everywhere." },
+                { "icon": "run", "text": "New: when an offer expires, it leaves the list without a reload" }
+              ],
+              "session": null,
+              "story": null
+            }
+          ],
+          "unchanged": [
+            { "title": "Offer details" },
+            { "title": "Documents" }
+          ]
+        }
+      ]
+    }
+  ]
+}

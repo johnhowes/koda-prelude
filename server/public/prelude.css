@@ -57,11 +57,18 @@
     .inline { flex-direction: column; }
   }
 
-  /* The Build view (step 7): groups of work, each copied as a story. */
-  .build-group h2 { display: flex; align-items: baseline; gap: var(--space-2); }
-  .build-routes, .build-rules { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
-  .build-group details, .in-progress details { margin-block: var(--space-2); }
-  .build-group .story, .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+  /* A project's In progress: each branch's stories, all copied at once. */
+  .build-routes { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
+  .in-progress details { margin-block: var(--space-2); }
+  .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+}
+
+/* The Build page's own rules (prelude/build): what the design system can't say. */
+@scope (.build) {
+  /* A page's name on its card, and a story's title: headings at a section's
+     size, not a card's small label. */
+  .page-title { font-size: var(--text-md); }
+  .story-title { font-size: var(--text-lg); }
 }
 
 /* Home's own rules (prelude/landing-page): what the design system can't say. */

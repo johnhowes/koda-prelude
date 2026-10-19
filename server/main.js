@@ -12,13 +12,14 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, layoutsBuildPrompt } from './agent.js';
+import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
-import { backlogOf, incrementStory, layoutsStory, storyMarkdown } from './backlog.js';
+import { backlogOf } from './backlog.js';
+import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief } from './build.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -113,6 +114,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     channels: createChannels(),   // server events' live channels, per design (6e)
     drafts: createDrafts({ home }),          // each session's unsent message
     dictation: createDictation({ home, live }),   // the speech model, on this machine
+    stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -305,7 +307,8 @@ async function handle(req, res, app) {
       const shell = designs.find(design => design.kind === 'shell') ?? null;
       const shellWork = shell?.work ?? null;
       // In progress (step 10): each design with a branch, and the stories on it -
-      // its new and changed groups, or those still to build.
+      // its new and changed groups, or those still to build. A group's story is
+      // the one the agent wrote, if anyone asked for it (R-w3n).
       const inProgress = designs.filter(design => design.work).map(design => {
         const dir = join(design.work.path, PRELUDE_DIR, ...design.id.split('/'));
         const built = buildSessions(dir);
@@ -315,11 +318,11 @@ async function handle(req, res, app) {
         };
         const stories = isHosted(dir) && buildsPages(design)
           ? groupsOf(app, { entry: design.work, design, dir }).groups.filter(group => group.kind !== 'unchanged')
-            .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: group.story, session: sessionOf(group) }))
+            .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: writtenStory(dir, group), session: sessionOf(group) }))
           : [];
         return { design, work: design.work, stories, buildUrl: `${design.work.url}/build` };
       });
-      const allStories = inProgress.flatMap(item => item.stories.filter(story => story.toBuild).map(story => story.story)).join('\n\n---\n\n');
+      const allStories = inProgress.flatMap(item => item.stories.filter(story => story.toBuild && story.story).map(story => story.story)).join('\n\n---\n\n');
       return page(status, 'folder', {
         folder,
         groups: groupByArea(designs.filter(design => !design.work)),
@@ -650,17 +653,16 @@ const mainOf = folder => mainBranch(folder.path);
 /**
  * The document a Prelude page renders in, by its path: what has to be the
  * same for Koda to swap one page into another's main region.
- *   'app'     the app layout with the design system: Home, a design's page
+ *   'app'     the app layout with the design system: Home, a design's page, Build
  *   'ds-v1'   the app layout with the older ds/v1 stylesheets, for the pages
- *             not moved onto the design system yet (a project, Build, the rest)
+ *             not moved onto the design system yet (a project, the rest)
  *   'window'  a design's pop-out, a window of its own
  * A page moved onto the design system leaves the ds-v1 list.
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
-  if (pathname.endsWith('/window')) return 'window';
-  return pathname.endsWith('/build') ? 'ds-v1' : 'app';
+  return pathname.endsWith('/window') ? 'window' : 'app';
 }
 
 /**
@@ -701,22 +703,29 @@ const isGallery = (design, group) => design.kind === 'shell' && (!group.page || 
 
 /**
  * A design's groups as its Build page and the folder's "In progress" show
- * them (steps 7 and 10), each with:
- *   kind    'new' (not on main), 'changed' (differs on its branch), 'to build'
- *           (on main, not built yet) or 'unchanged' (built, and no change)
- *   change  the increment (increment.js), on a branch
- *   toBuild whether a build session is still due: a changed group is built
- *           once a build of it has finished since its last design change
- *   story   the increment's story for a changed group, the whole group's otherwise
- * { groups, designWide, shared }.
+ * them (steps 7 and 10, prelude/build), each with:
+ *   kind        'new' (not on main), 'changed' (the app has the page, and the
+ *               design changes it), 'to build' (on main, not built yet) or
+ *               'unchanged' (built, and no change)
+ *   change      the increment (increment.js), on a branch
+ *   incremental whether only the increment is new to the app: the app had the
+ *               page as main has it. Else the whole page is, less what's built (R-7qd)
+ *   changes     what it changes in the app, in plain lines (build.js)
+ *   fingerprint what its story would be written from, to tell when one's out of date
+ *   toBuild     whether a build session is still due: a changed group is built
+ *               once a build of it has finished since its last design change
+ * Design-wide rules and events are a group of their own, Across the design.
+ * { groups, designWide, events, shared }.
  */
 function groupsOf(app, { entry, design, dir }) {
-  const designPath = `${PRELUDE_DIR}/${design.id}`;
   const backlog = backlogOf(dir);
   const groups = backlog.groups.filter(group => !isGallery(design, group));
   const { designWide } = backlog;
   const states = listStates(dir);
-  const approved = Boolean(readSnapshots(dir));
+  const stateTitle = id => states.find(state => state.id === id)?.title ?? id;
+  const titles = new Map(readRoutes(dir).map(route => [route.pattern, route.title]));
+  const folderPath = join(dir, ...design.id.split('/').map(() => '..'), '..');
+  const ext = readHostConfig(folderPath)?.views ?? '.eta';
   let increment = null;
   let shared = [];
   let repo = null;
@@ -724,37 +733,54 @@ function groupsOf(app, { entry, design, dir }) {
     try {
       repo = entry.repo ?? app.folders.get(entry.parentId)?.path ?? null;
       const base = repo && baselineOf(repo, entry.branch);
-      const ext = readHostConfig(entry.path)?.views ?? '.eta';
       if (base) increment = incrementOf({ repo, base, designId: design.id, designDir: dir, ext });
       shared = app.branches.status(entry).alsoChanges;
-    } catch { /* git couldn't say: whole stories, as without a branch */ }
+    } catch { /* git couldn't say: whole pages, as without a branch */ }
   }
+  // Built as of a build's commit, and the design not changed since (step 10).
+  const builtSince = key => {
+    const builtAt = entry?.built?.[key];
+    return Boolean(builtAt && repo && designCommitsSince(repo, builtAt, entry.branch, design.id).length === 0);
+  };
+  const described = (group, changes) => ({ ...group, changes, fingerprint: fingerprintOf({ dir, group, changes, ext }) });
   // The shell's layouts (8c): once the app exists, the ones it hasn't got are
   // the shell's first group, and a page that renders in one waits for it.
-  const folderPath = join(dir, ...design.id.split('/').map(() => '..'), '..');
   const layouts = appOf(folderPath).built ? shellLayoutsOf(folderPath) : null;
   const layoutsGroup = design.kind === 'shell' && layouts?.unbuilt.length
-    ? [{ ...LAYOUTS_GROUP, layouts: layouts.unbuilt, kind: 'to build', change: null, toBuild: true, built: false, needsLayouts: [], story: layoutsStory({ design, designPath, shellPath: `${PRELUDE_DIR}/${layouts.id}`, layouts: layouts.unbuilt }) }]
+    ? [described({ ...LAYOUTS_GROUP, layouts: layouts.unbuilt, kind: 'to build', change: null, incremental: false, toBuild: true, built: false, needsLayouts: [] },
+      layouts.unbuilt.map(name => ({ icon: 'screen', text: `The shell’s “${name}” layout` })))]
+    : [];
+  const pages = groups.map(group => {
+    const change = increment?.groups.get(group.key) ?? null;
+    const changed = change?.status === 'changed';
+    const incremental = Boolean(changed && change.builtBefore);
+    // A redesign of a page the app has is a change to it, not a new page (R-7qd).
+    const kind = incremental || (group.page?.from && !group.built) ? 'changed'
+      : change?.status === 'new' ? 'new'
+      : group.built && !changed ? 'unchanged' : 'to build';
+    const toBuild = changed ? !(group.built && builtSince(group.key)) : !group.built;
+    const needsLayouts = layouts ? layoutsOfGroup(group).filter(name => layouts.unbuilt.includes(name)) : [];
+    const changes = changesOf({ group, change: incremental ? change : null, states, titles, stateTitle });
+    return described({ ...group, kind, change, incremental, toBuild, needsLayouts }, changes);
+  });
+  // Across the design: the design-wide rules the app hasn't got, and the
+  // server events no page claims, so no page's story repeats them (R-c9r).
+  const wide = acrossChanges({ wide: increment?.designWide ?? null, rules: designWide, events: backlog.events ?? [] });
+  const acrossDue = designWide.some(rule => rule.proposed) || (wide.some(line => line.icon === 'run') && !builtSince(ACROSS.key));
+  const across = wide.length
+    ? [described({ ...ACROSS, page: null, routes: [], posts: [], rules: designWide, events: backlog.events ?? [], kind: increment && !increment.designNew ? 'changed' : 'new', change: null, incremental: false, toBuild: acrossDue, built: !acrossDue, needsLayouts: [] }, wide)]
     : [];
   return {
     designWide,
     events: backlog.events,   // server events no page claims (6e)
     shared,
-    groups: [...layoutsGroup, ...groups.map(group => {
-      const change = increment?.groups.get(group.key) ?? null;
-      const changed = change?.status === 'changed';
-      const kind = changed ? 'changed' : change?.status === 'new' ? 'new' : group.built ? 'unchanged' : 'to build';
-      const builtAt = entry?.built?.[group.key];
-      const builtSince = Boolean(builtAt && repo && designCommitsSince(repo, builtAt, entry.branch, design.id).length === 0);
-      const toBuild = changed ? !(group.built && builtSince) : !group.built;
-      const story = changed
-        ? incrementStory({ design, designPath, group, change, designEvents: increment?.designWide.events, states, shared })
-        : storyMarkdown({ design, designPath, group, designWide, designEvents: backlog.events, states, approved });
-      const needsLayouts = layouts ? layoutsOfGroup(group).filter(name => layouts.unbuilt.includes(name)) : [];
-      return { ...group, kind, change, toBuild, story, needsLayouts };
-    })],
+    groups: [...layoutsGroup, ...pages, ...across],
   };
 }
+
+/** A group's written stories as one Markdown text for a tracker, or '' with none (R-w3n). */
+const writtenStory = (dir, group) => (readStory(dir, group.slug, { url: '', fingerprint: group.fingerprint, changes: group.changes })?.stories ?? [])
+  .map(story => story.markdown).join('\n\n---\n\n');
 
 /** A pull request's description: what the branch holds, from its design. */
 function pullRequestBody(app, entry, design) {
@@ -1177,7 +1203,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // From the Build page (10.9): back to it, which says what happened. (Posted
     // on main, the design's branch was just made: its Build page is the worktree's.)
     if (/^\/f\/[0-9a-f]+\/d\/.+\/build$/.test(String(form.get('back') ?? ''))) {
-      return review.failures.length ? page(409, 'build', buildView({ error: notice }), `Build · ${title}`) : redirect(res, `${base}/build`);
+      return review.failures.length ? buildPage(409, { notice }) : redirect(res, `${base}/build`);
     }
     return surfaceAnswer(fromForm(form), notice);
   }
@@ -1526,6 +1552,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (build) {
       done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built
         : build.group === LAYOUTS_GROUP.key ? shellLayoutsOf(folder.path)?.unbuilt.length === 0
+        : build.group === ACROSS.key ? !backlogOf(dir).designWide.some(rule => rule.proposed)
         : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
       if (done) {
         app.branches.building(entry, null);
@@ -1566,6 +1593,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // The app's layouts the group's pages render in, so the brief can name them (8c).
     const layouts = shellLayoutsOf(folder.path);
     const pageLayouts = layouts ? layoutsOfGroup(group).map(name => ({ name, file: layouts.links[name]?.slice(5) ?? null })) : [];
+    // The page's stories, edits and all, which the build is checked against (R-n4j).
+    const designPath = `${PRELUDE_DIR}/${design.id}`;
+    const stories = group.slug && group.fingerprint
+      ? storiesBrief(dir, group.slug, readStory(dir, group.slug, { url: '', fingerprint: group.fingerprint, changes: group.changes }), designPath)
+      : null;
     return {
       mode: 'build',
       systemPrompt: build.group === LAYOUTS_GROUP.key
@@ -1574,47 +1606,136 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         ? connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage })
         : isApp
         ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
-        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.kind === 'changed' ? group.change : null, designWide: backlog.designWide, designEvents: backlog.events ?? [], layouts: pageLayouts, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
+        // Across the design is the design-wide rules and events themselves.
+        : buildPrompt({ title: design.title, designPath, group, change: group.incremental ? group.change : null, designWide: group.key === ACROSS.key ? [] : backlog.designWide, designEvents: group.key === ACROSS.key ? [] : backlog.events ?? [], layouts: pageLayouts, stories, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
     };
   };
 
-  // The Build view: what's left to build, as groups to copy as stories or build.
-  const buildView = (extra = {}) => {
-    const designPath = `${PRELUDE_DIR}/${design.id}`;
-    const { groups, designWide } = groupsOf(app, { entry, design, dir });
+  /**
+   * The Build page's model (BuildPage, build.js): the pages still to build,
+   * each with what it changes in the app and its story, if one was asked
+   * for; what's built and unchanged folds away (step 10). Declared, not
+   * assigned, like buildPage and writeStories: Approve answers with them too,
+   * from further up.
+   */
+  function buildView() {
+    const groups = hosted && buildsPages(design) ? groupsOf(app, { entry, design, dir }).groups : [];
     const appHere = appOf(folder.path);
-    let appOnMain = appHere.built;
-    try { appOnMain = entry ? appOf(app.folders.get(parentId).path).built : appHere.built; } catch { /* the folder's gone */ }
+    let appOnMain = appHere;
+    try { if (entry) appOnMain = appOf(app.folders.get(parentId).path); } catch { /* the folder's gone */ }
     // Each group's newest build session, to get back to it.
     const built = buildSessions(dir);
-    const withSession = group => {
-      const session = built.get(group.key);
-      return { ...group, session: session && { title: session.title, url: `${base}/sessions/${session.id}` } };
+    const sessionOf = key => {
+      const session = built.get(key);
+      return session ? { title: session.title, url: `${base}/sessions/${session.id}` } : null;
     };
+    const project = { id: parentId, name: folder.branch?.parentName ?? folder.name };
+    const toBuild = groups.filter(group => group.toBuild);
+    // Pages build one at a time, on the design's branch.
+    const building = entry?.building ? toBuild.find(group => group.key === entry.building.group) ?? null : null;
     return {
-      folder, design, base, designPath, designWide,
-      // What's to build shows; what's built and unchanged folds away (step 10).
-      groups: groups.filter(group => group.kind !== 'unchanged').map(withSession),
-      unchanged: groups.filter(group => group.kind === 'unchanged'),
-      // Building happens on the design's branch, into the app, one group at a time.
-      // (A design with no branch yet builds too: starting makes its branch.)
-      canBuild: (entry ? appHere.built : !folder.branch && buildable(folder.path) && appHere.built)
-        && !(entry?.building && entry.building.group !== APP_GROUP.key && groups.some(g => g.key === entry.building.group && g.toBuild)),
-      building: entry?.building ?? null,
-      app: appHere,
-      appOnMain,
-      updateUrl: entry && `/f/${parentId}/branches/${entry.id}/update`,
-      appUrl: `/f/${parentId}#app`,
+      id: design.id,
+      title: design.title,
+      folder: project,
+      base,
+      branch: entry?.branch ?? null,
+      // There's an app once main (or this folder) has one; it's built into once this branch has it.
+      app: { built: appHere.built || appOnMain.built, onBranch: appHere.built, stack: appHere.stack ?? appOnMain.stack ?? '', url: `/f/${parentId}#app` },
       // Builds wait for approved screens (10.9); the Build page offers Approve.
       approved: Boolean(readSnapshots(dir)?.size),
-      approveUrl: `${base}/approve`,
-      buildUrl: `${base}/build`,
-      // Where the shell's Layouts group is built, for a page waiting on it (8c).
-      shellBuildUrl: (() => { const shell = design.kind === 'shell' ? null : findShell(folder.path); return shell ? `/f/${parentId}/d/${shell.id}/build` : null; })(),
-      error: null,
-      ...extra,
+      building: building && { group: building.slug, title: building.title, session: sessionOf(building.key) ?? { title: building.title, url: base } },
+      writing: app.stories.writingAll(dir),
+      updateUrl: entry ? `/f/${parentId}/branches/${entry.id}/update` : null,
+      groups: toBuild.map(group => groupView(group, { project, session: sessionOf(group.key) })),
+      unchanged: groups.filter(group => !group.toBuild && group.key !== ACROSS.key).map(group => ({ title: group.title })),
     };
-  };
+  }
+
+  /**
+   * A page still to build, as the Build page and its story's page show it
+   * (BuildGroup, build.js): what it changes, and its stories, if asked for.
+   */
+  function groupView(group, { project = { id: parentId, name: folder.branch?.parentName ?? folder.name }, session = null } = {}) {
+    const url = `${base}/build/stories/${group.slug}`;
+    return {
+      id: group.slug,
+      key: group.key,
+      title: group.title,
+      kind: group.kind,
+      url,
+      folder: { name: project.name, url: `/f/${project.id}` },
+      design: { title: design.title, url: base },
+      writing: app.stories.writing(dir, group.slug),
+      instruction: app.stories.instruction(dir, group.slug),
+      changes: group.changes,
+      session,
+      story: readStory(dir, group.slug, { url, fingerprint: group.fingerprint, changes: group.changes }),
+    };
+  }
+
+  /**
+   * A page's story (prelude/build), or a part of it, in the app layout like
+   * the Build page, with the app's live channel: a story arriving reloads its
+   * stories (story-written). A cold load of the rewrite modal has the page
+   * beneath, the modal in its region.
+   */
+  function storyPage(status, group, { view = 'build/story', model = null, modal = null } = {}) {
+    const page = groupView(group);
+    const html = render(`./${view}`, model ?? page);
+    if (fragment && askedFromLayout(req, 'app')) return send(res, status, html);
+    const regions = modal ? { modal: { html, location: url.pathname } } : {};
+    const body = modal || view === 'build/story' ? render('./build/story', page) : html;
+    return send(res, status, render('./layout', { body, path: modal ? page.url : url.pathname, title: `${group.title} · Build · ${title}`, layout: { live: APP_LIVE, needsYou: waitingOf(app) }, regions, system: true }));
+  }
+
+  /**
+   * The Build page, or a part of it, in the app layout like Prelude's other
+   * pages, with the app's live channel: a story arriving reloads the pages
+   * (story-written). A refusal the page has no place for is said in the
+   * layout's notice region.
+   */
+  function buildPage(status, { view = '_build', notice = null } = {}) {
+    const model = buildView();
+    const body = render(`./${view}`, model);
+    if (fragment && askedFromLayout(req, 'app') && !notice) return send(res, status, body);
+    const regions = notice ? { notice: { html: render('./build/_refused', { message: notice }).trim(), location: `${base}/build` } } : {};
+    return send(res, status, render('./layout', { body, path: view === '_build' ? `${base}/build` : `${base}/build/pages`, title: `Build · ${title}`, layout: { live: APP_LIVE, needsYou: waitingOf(app) }, regions, system: true }));
+  }
+
+  /**
+   * Have the agent write pages' stories, one at a time, each kept with the
+   * design on its branch (R-u6t): committed once it's written, unless a turn
+   * is under way, whose own commit takes it. Each one written says so down
+   * the app's channel (story-written), and the Build page's pages reload.
+   */
+  function writeStories(chosen, { all = false, instruction = '' } = {}) {
+    const designPath = `${PRELUDE_DIR}/${design.id}`;
+    const { groups } = groupsOf(app, { entry, design, dir });
+    const references = app.references.of(parentId);
+    const approved = Boolean(readSnapshots(dir)?.size);
+    app.stories.write({
+      dir, cwd: folder.path, designPath, all,
+      references: references.map(reference => reference.path),
+      jobs: chosen.map(group => ({
+        id: group.slug,
+        title: group.title,
+        fingerprint: group.fingerprint,
+        changes: group.changes,
+        instruction,
+        systemPrompt: storyPrompt({
+          title: design.title, designPath, group, storiesPath: `${designPath}/stories/${group.slug}`, states, approved, references,
+          rewrite: hasStory(dir, group.slug),
+          others: groups.filter(other => other.key !== group.key && other.key !== ACROSS.key && other.toBuild).map(other => other.title),
+        }),
+      })),
+      onWritten: () => {
+        if (entry && turns.state(folder, design, null).kind === 'idle') {
+          try { app.branches.commit(entry, `${design.title}: a story, written by the agent (committed by Prelude)`); } catch (error) { console.error(error); }
+        }
+        app.live.publish(APP_CHANNEL, 'story-written');
+      },
+    });
+  }
   /**
    * Start a turn in a session with the person's messages: one, or those that
    * waited, together in the order written (R-z4k). Each item: { text,
@@ -1641,8 +1762,64 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (started.error) appendEntry(dir, session.id, { type: 'note', failed: true, text: `The messages that waited couldn’t be sent: ${started.error}` });
   }
 
+  // The Build page (prelude/build):
+  //   GET  …/build           the page
+  //   GET  …/build/pages     the pages still to build, reloaded as stories arrive
+  //   POST …/build/stories   Write every story: the agent writes each page's that has none
   if (req.method === 'GET' && rest[0] === 'build' && rest.length === 1 && hosted && buildsPages(design)) {
-    return page(200, 'build', buildView(), `Build · ${title}`);
+    return buildPage(200);
+  }
+  if (req.method === 'GET' && rest[0] === 'build' && rest[1] === 'pages' && rest.length === 2 && hosted && buildsPages(design)) {
+    return buildPage(200, { view: 'build/_pages' });
+  }
+  if (req.method === 'POST' && rest[0] === 'build' && rest[1] === 'stories' && rest.length === 2 && hosted && buildsPages(design)) {
+    const form = await readForm(req);
+    if (form.get('writing') === 'true') {
+      const unwritten = groupsOf(app, { entry, design, dir }).groups.filter(group => group.toBuild && !hasStory(dir, group.slug));
+      writeStories(unwritten, { all: true });
+    }
+    return redirect(res, `${base}/build`);
+  }
+
+  // A page's story (prelude/build):
+  //   GET  …/build/stories/:group                  the page
+  //   GET  …/build/stories/:group/list             its stories, reloaded as one arrives
+  //   GET  …/build/stories/:group/rewrite          Rewrite the story, in the modal
+  //   POST …/build/stories/:group                  write it, or write it again (with an instruction)
+  //   GET  …/build/stories/:group/story/:n         one story
+  //   GET  …/build/stories/:group/story/:n/edit    its editor, in its place
+  //   POST …/build/stories/:group/story/:n         save an edit; refused empty
+  if (rest[0] === 'build' && rest[1] === 'stories' && rest.length >= 3 && hosted && buildsPages(design)) {
+    const [, , slug, part, number, more, ...beyond] = rest;
+    const group = groupsOf(app, { entry, design, dir }).groups.find(one => one.toBuild && one.slug === slug);
+    if (!group || beyond.length) return notFound();
+    const pageUrl = `${base}/build/stories/${group.slug}`;
+    if (part === undefined && req.method === 'GET') return storyPage(200, group);
+    if (part === 'list' && number === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_stories' });
+    if (part === 'rewrite' && number === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_rewrite', modal: true });
+    if (part === undefined && req.method === 'POST') {
+      const form = await readForm(req);
+      // Rewriting replaces the edits made by hand; the modal says so before it's sent (R-z2m).
+      if (form.get('writing') === 'true') writeStories([group], { instruction: String(form.get('instruction') ?? '').trim() });
+      return redirect(res, pageUrl);
+    }
+    if (part !== 'story' || !number) return notFound();
+    const storyOf = () => readStory(dir, group.slug, { url: pageUrl, fingerprint: group.fingerprint, changes: group.changes })?.stories.find(one => one.id === number) ?? null;
+    const story = storyOf();
+    if (!story) return notFound();
+    if (more === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_story', model: story });
+    if (more === 'edit' && req.method === 'GET') return storyPage(200, group, { view: 'build/_story-edit', model: story });
+    if (more === undefined && req.method === 'POST') {
+      const markdown = String((await readForm(req)).get('markdown') ?? '');
+      if (!markdown.trim()) return storyPage(422, group, { view: 'build/_story-edit', model: { ...story, markdown, $errors: { markdown: 'This is required.' } } });
+      saveStory(dir, group.slug, number, markdown, { by: gitUser(folder.path) });
+      // A person's edit is kept with the design on its branch, like the agent's (R-u6t).
+      if (entry && turns.state(folder, design, null).kind === 'idle') {
+        try { app.branches.commit(entry, `${design.title}: a story, edited by hand (committed by Prelude)`); } catch (error) { console.error(error); }
+      }
+      return storyPage(200, group, { view: 'build/_story', model: storyOf() });
+    }
+    return notFound();
   }
 
   // Build a group on the design's branch: a build session, briefed from the
@@ -1652,12 +1829,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const isApp = key === APP_GROUP.key && design.kind === 'shell';
     const work = buildsPages(design) && hosted ? groupsOf(app, { entry, design, dir }).groups : [];
     const group = isApp ? APP_GROUP : work.find(g => g.key === key) ?? null;
-    const refuse = error => page(409, 'build', buildView({ error }), `Build · ${title}`);
-    if (!group) return page(422, 'build', buildView({ error: 'That group is no longer in the design.' }), `Build · ${title}`);
+    const refuse = notice => buildPage(409, { notice });
+    if (!group) return buildPage(422, { notice: 'That page is no longer in the design.' });
     // Features are built into the app, so the app comes first (step 8), and
     // must be on this branch too.
     if (!isApp && !appOf(folder.path).built) {
-      return refuse(buildView().appOnMain
+      return refuse(buildView().app.built
         ? 'The app is on main, but not on this design’s branch yet. Bring main into the branch first (Update from main).'
         : 'The app isn’t built yet. Build it first, from the project page.');
     }
