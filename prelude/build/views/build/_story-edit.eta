@@ -1,0 +1,26 @@
+<%/* A story's editor, in place of the story: its Markdown, as it's copied.
+     Saving marks it edited, so a rewrite asks before replacing it. A story
+     can't be saved empty. `it` is the story (with what was typed, and
+     $errors, when a save was refused). */%>
+<form class="card gap-3" action="<%= it.url %>" method="post" ko-target="self">
+  <h2 class="story-title">Edit “<%= it.title %>”</h2>
+  <label class="field">
+    <span class="label">The story, in Markdown</span>
+    <textarea name="markdown" rows="24" spellcheck="true" ko-invalid-server="<%= it.$errors?.markdown %>"<% if (it.$errors?.markdown) { %> aria-invalid="true" aria-describedby="markdown-error"<% } %>><%= it.markdown %></textarea>
+    <% if (it.$errors?.markdown) { %>
+    <span class="error" id="markdown-error">A story can’t be empty. Write something, or discard your changes to keep the one you had.</span>
+    <% } else { %>
+    <span class="hint">As your tracker shows it: a <code>#</code> title, <code>##</code> sections, lists and <code>**bold**</code>. The “For developers” section is folded here, and copied in full.</span>
+    <% } %>
+  </label>
+  <input type="hidden" name="edited" value="true">
+  <%/* In the design, a refused save re-renders from what was posted alone, so
+       the form carries its own address and title. The app's posts only
+       `markdown`. */%>
+  <input type="hidden" name="url" value="<%= it.url %>">
+  <input type="hidden" name="title" value="<%= it.title %>">
+  <div class="cluster actions">
+    <button class="btn primary" type="submit">Save the story</button>
+    <a class="btn ghost" href="<%= it.url %>" ko-target="self">Discard changes</a>
+  </div>
+</form>

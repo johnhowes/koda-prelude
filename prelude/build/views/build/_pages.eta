@@ -1,0 +1,54 @@
+<%/* The pages still to build, each with what changes on it and where its
+     story stands. Reloads when the agent finishes writing a story. `it` is
+     the design. */%>
+<% const kinds = { new: 'New', changed: 'Changed', 'to build': 'Not built yet' };
+   const canStart = it.app.built && it.app.onBranch && it.approved && !it.building; %>
+<div class="stack gap-3">
+  <% for (const group of it.groups ?? []) {
+       const writing = group.writing || (it.writing && !group.story);
+       const count = group.story?.stories.length ?? 0;
+       const building = it.building?.group === group.id; %>
+  <article class="card gap-3" aria-labelledby="page-<%= group.id %>">
+    <div class="cluster">
+      <h3 class="page-title" id="page-<%= group.id %>"><%= group.title %></h3>
+      <span class="pill"><%= kinds[group.kind] %></span>
+      <% if (building) { %><span class="pill accent">Building</span><% } %>
+    </div>
+    <ul class="list">
+      <% for (const change of group.changes) { %>
+      <li><span class="item"><span class="icon icon-<%= change.icon %>" aria-hidden="true"></span><span class="item-text"><span><%= change.text %></span></span></span></li>
+      <% } %>
+    </ul>
+    <div class="cluster">
+      <% if (writing) { %>
+      <span class="cluster gap-2 secondary" role="status"><span class="pulse" aria-hidden="true"></span><%= group.story ? 'The agent is rewriting its story…' : 'The agent is writing its story…' %></span>
+      <% } else if (group.story) { %>
+      <span class="cluster gap-2 secondary"><span class="icon icon-document" aria-hidden="true"></span><%= count === 1 ? 'Story' : `${count} stories` %> written <%= group.story.written %></span>
+      <% if (group.story.outOfDate) { %><span class="pill warn">Out of date</span><% } %>
+      <% } else { %>
+      <span class="muted">No story yet</span>
+      <% } %>
+      <span class="spacer"></span>
+      <div class="cluster actions">
+        <% if (group.story || writing) { %>
+        <a class="btn small ghost" href="<%= group.url %>"><%= count > 1 ? 'Open the stories' : 'Open the story' %></a>
+        <% } else { %>
+        <form action="<%= group.url %>" method="post">
+          <input type="hidden" name="writing" value="true">
+          <button class="btn small ghost" type="submit"><span class="icon icon-document" aria-hidden="true"></span>Write the story</button>
+        </form>
+        <% } %>
+        <% if (canStart) { %>
+        <form action="<%= it.base %>/builds" method="post">
+          <input type="hidden" name="group" value="<%= group.key %>">
+          <button class="btn small" type="submit"><span class="icon icon-code" aria-hidden="true"></span>Start a build session</button>
+        </form>
+        <% } %>
+      </div>
+    </div>
+    <% if (group.session) { %>
+    <p class="muted">Last built in <a href="<%= group.session.url %>"><%= group.session.title %></a></p>
+    <% } %>
+  </article>
+  <% } %>
+</div>

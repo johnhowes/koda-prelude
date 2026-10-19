@@ -1,0 +1,130 @@
+{
+  "layout": { "needsYou": 2, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/loan-offers",
+          "branch": "prelude/loan-offers",
+          "app": { "built": true, "onBranch": true, "stack": "", "url": "/f/borrower-portal#app" },
+          "approved": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "groups": [
+            {
+              "id": "offers",
+              "key": "/offers",
+              "title": "Offers",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "Offers looks different in Typical, Many offers and Long lender names" },
+                { "icon": "document", "text": "The list can be sorted in new ways" },
+                { "icon": "document", "text": "1 new form" },
+                { "icon": "rule", "text": "New rule R-m7t: Offers are listed with the lowest monthly payment first." }
+              ],
+              "session": null,
+              "story": null
+            },
+            {
+              "id": "compare",
+              "key": "/offers/compare",
+              "title": "Compare offers",
+              "kind": "new",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/compare",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New page: Compare offers" },
+                { "icon": "screen", "text": "New: Change offer, in a drawer over Compare offers" },
+                { "icon": "rule", "text": "New rule R-k2p: The cheaper offer is the one with the lower total cost over its term, not the lower monthly payment." }
+              ],
+              "session": null,
+              "story": {
+                "written": "today at 10:42",
+                "outOfDate": null,
+                "split": null,
+                "stories": [
+                  {
+                    "id": "1",
+                    "url": "/f/borrower-portal/d/loan-offers/build/stories/compare/story/1",
+                    "title": "Compare two loan offers side by side",
+                    "edited": false,
+                    "markdown": "# Compare two loan offers side by side\n\nA borrower with more than one offer can put two side by side and see which costs less, per month and over the whole loan, before accepting one.\n\n## What changes\n\n- A new **Compare offers** page shows two offers in columns: lender, APR, term, monthly payment, fees and total cost over the term.\n- The offer that costs less over its whole term is marked **Lower total cost**.\n- **Change offer** above a column lists the borrower's other offers; picking one replaces that column.\n- Each column has **Accept this offer**, which goes on to accepting it, as from the offers list.\n\nBorrowers reach this page from the offers list, which is the Offers story.\n\n## Acceptance criteria\n\n- Monthly payment and total cost match the figures on each offer's own details page, to the cent.\n- When both offers cost the same in total, neither is marked Lower total cost.\n- Change offer lists every other offer the borrower has, and not the two on show.\n- Accept this offer leads to the same Accept an offer step as the offers list does.\n- On a phone, the two offers stack, with the lower total cost first.\n- **R-k2p.** The cheaper offer is the one with the lower total cost over its term, not the lower monthly payment.\n\n## Looks right in\n\nTypical, Two offers, Same total cost and Long lender names, each as its approved screen.\n\n## For developers\n\n- New page `GET /offers/compare?a=:id&b=:id`, designed in `prelude/loan-offers/views/offers/compare.eta`.\n- Change offer is `GET /offers/compare/choose?side=a|b`, in the drawer (`views/offers/_choose.eta`).\n- Each offer gains `monthlyPayment` and `totalCost`, in the loan's currency.\n- Test data: `prelude/loan-offers/states/` (`01-typical`, `04-two-offers`, `05-same-total`, `03-long-names`).\n- `npm run check` compares every page in every state with `prelude/loan-offers/snapshots/`.\n",
+                    "html": "<p>A borrower with more than one offer can put two side by side and see which costs less, per month and over the whole loan, before accepting one.</p><h3>What changes</h3><ul><li>A new <strong>Compare offers</strong> page shows two offers in columns: lender, APR, term, monthly payment, fees and total cost over the term.</li><li>The offer that costs less over its whole term is marked <strong>Lower total cost</strong>.</li><li><strong>Change offer</strong> above a column lists the borrower’s other offers; picking one replaces that column.</li><li>Each column has <strong>Accept this offer</strong>, which goes on to accepting it, as from the offers list.</li></ul><p>Borrowers reach this page from the offers list, which is the Offers story.</p><h3>Acceptance criteria</h3><ul><li>Monthly payment and total cost match the figures on each offer’s own details page, to the cent.</li><li>When both offers cost the same in total, neither is marked Lower total cost.</li><li>Change offer lists every other offer the borrower has, and not the two on show.</li><li>Accept this offer leads to the same Accept an offer step as the offers list does.</li><li>On a phone, the two offers stack, with the lower total cost first.</li><li><strong>R-k2p.</strong> The cheaper offer is the one with the lower total cost over its term, not the lower monthly payment.</li></ul><h3>Looks right in</h3><p>Typical, Two offers, Same total cost and Long lender names, each as its approved screen.</p><details class=\"disclosure\"><summary>For developers</summary><ul><li>New page <code>GET /offers/compare?a=:id&amp;b=:id</code>, designed in <code>prelude/loan-offers/views/offers/compare.eta</code>.</li><li>Change offer is <code>GET /offers/compare/choose?side=a|b</code>, in the drawer (<code>views/offers/_choose.eta</code>).</li><li>Each offer gains <code>monthlyPayment</code> and <code>totalCost</code>, in the loan’s currency.</li><li>Test data: <code>prelude/loan-offers/states/</code> (<code>01-typical</code>, <code>04-two-offers</code>, <code>05-same-total</code>, <code>03-long-names</code>).</li><li><code>npm run check</code> compares every page in every state with <code>prelude/loan-offers/snapshots/</code>.</li></ul></details>"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "accept",
+              "key": "/offers/:id/accept",
+              "title": "Accept an offer",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/accept",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New: Confirm your bank account, in a dialog over Accept an offer" },
+                { "icon": "screen", "text": "Accept an offer looks different in Typical and No account on file" },
+                { "icon": "document", "text": "1 new form, 1 changed" },
+                { "icon": "rule", "text": "New rule R-v8d: An offer is accepted only once the bank account it pays into is confirmed." }
+              ],
+              "session": { "title": "Accept an offer (16 Oct)", "url": "/f/borrower-portal/d/loan-offers/sessions/20261016-1530-a8vn" },
+              "story": {
+                "written": "yesterday at 16:05",
+                "outOfDate": "Since then, Use a different account also asks for the account holder’s name, and a new state shows an account that couldn’t be checked.",
+                "split": null,
+                "stories": [
+                  {
+                    "id": "1",
+                    "url": "/f/borrower-portal/d/loan-offers/build/stories/accept/story/1",
+                    "title": "Confirm the bank account before accepting an offer",
+                    "edited": true,
+                    "markdown": "# Confirm the bank account before accepting an offer\n\nBefore a borrower accepts an offer, they confirm the bank account the loan is paid into, so the money never goes to an account they've since closed.\n\n## What changes\n\n- **Accept this offer** now opens **Confirm your bank account**, showing the account on file (bank and last four digits) with **Use this account** and **Use a different account**.\n- **Use a different account** asks for the routing number and account number, and checks them before going on.\n- The offer's summary on the Accept step shows the monthly payment beside the APR.\n\n## Acceptance criteria\n\n- Nobody can accept an offer without confirming an account.\n- A routing or account number that doesn't check out keeps what was typed and says which one is wrong.\n- Closing the confirmation with **Not now** leaves the offer unaccepted.\n- A borrower with no account on file goes straight to entering one.\n- **R-v8d.** An offer is accepted only once the bank account it pays into is confirmed.\n- Legal has signed off the wording of the confirmation (LEG-212).\n\n## Looks right in\n\nTypical and No account on file, each as its approved screen.\n\n## For developers\n\n- New dialog `GET /offers/:id/accept/account`, over Accept an offer (`prelude/loan-offers/views/offers/_account.eta`).\n- New form `POST /offers/:id/accept/account`; it requires `routingNumber` and `accountNumber`.\n- `POST /offers/:id/accept` now refuses an offer whose account isn't confirmed.\n- Test data: `prelude/loan-offers/states/` (`01-typical`, `06-no-account`).\n",
+                    "html": "<p>Before a borrower accepts an offer, they confirm the bank account the loan is paid into, so the money never goes to an account they’ve since closed.</p><h3>What changes</h3><ul><li><strong>Accept this offer</strong> now opens <strong>Confirm your bank account</strong>, showing the account on file (bank and last four digits) with <strong>Use this account</strong> and <strong>Use a different account</strong>.</li><li><strong>Use a different account</strong> asks for the routing number and account number, and checks them before going on.</li><li>The offer’s summary on the Accept step shows the monthly payment beside the APR.</li></ul><h3>Acceptance criteria</h3><ul><li>Nobody can accept an offer without confirming an account.</li><li>A routing or account number that doesn’t check out keeps what was typed and says which one is wrong.</li><li>Closing the confirmation with <strong>Not now</strong> leaves the offer unaccepted.</li><li>A borrower with no account on file goes straight to entering one.</li><li><strong>R-v8d.</strong> An offer is accepted only once the bank account it pays into is confirmed.</li><li>Legal has signed off the wording of the confirmation (LEG-212).</li></ul><h3>Looks right in</h3><p>Typical and No account on file, each as its approved screen.</p><details class=\"disclosure\"><summary>For developers</summary><ul><li>New dialog <code>GET /offers/:id/accept/account</code>, over Accept an offer (<code>prelude/loan-offers/views/offers/_account.eta</code>).</li><li>New form <code>POST /offers/:id/accept/account</code>; it requires <code>routingNumber</code> and <code>accountNumber</code>.</li><li><code>POST /offers/:id/accept</code> now refuses an offer whose account isn’t confirmed.</li><li>Test data: <code>prelude/loan-offers/states/</code> (<code>01-typical</code>, <code>06-no-account</code>).</li></ul></details>"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "across",
+              "key": "",
+              "title": "Across the design",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/across",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "rule", "text": "New rule R-p4c: Amounts are shown in the loan’s currency, to the cent, everywhere." },
+                { "icon": "run", "text": "New: when an offer expires, it leaves the list without a reload" }
+              ],
+              "session": null,
+              "story": null
+            }
+          ],
+          "unchanged": [
+            { "title": "Offer details" },
+            { "title": "Documents" }
+          ]
+        }
+      ]
+    }
+  ]
+}

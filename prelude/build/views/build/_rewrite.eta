@@ -1,0 +1,25 @@
+<%/* Rewriting a page's story: the agent writes it again from the design as it
+     is now, taking an instruction if one is given. Edits made by hand are
+     replaced, so it says so first. `it` is the page's group. */%>
+<% const edited = (it.story?.stories ?? []).some(one => one.edited); %>
+<div class="stack gap-4">
+  <h2>Rewrite the story</h2>
+  <p class="secondary">The agent writes the story for <%= it.title %> again, from the design as it is now.</p>
+  <form class="stack gap-4" action="<%= it.url %>" method="post">
+    <label class="field">
+      <span class="label">What to change <span class="muted">(optional)</span></span>
+      <textarea name="instruction" rows="3" placeholder="Split the bank account check into its own story"></textarea>
+      <span class="hint">Leave it empty to write it afresh.</span>
+    </label>
+    <input type="hidden" name="writing" value="true">
+    <% if (edited) { %>
+    <div class="notice warn">
+      <p>This story was edited by hand. Rewriting replaces those edits; copy it first if you want to keep them.</p>
+    </div>
+    <% } %>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit"><%= edited ? 'Replace it with a rewrite' : 'Rewrite the story' %></button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,25 @@
+<%/* One story, as it reads in a tracker: its title, then the agent's (or the
+     person's) Markdown, rendered. The app renders the "For developers"
+     section folded away. Copy puts the Markdown on the clipboard, as written;
+     Edit swaps the story for its editor in place. `it` is the story. */%>
+<article class="card gap-3" ko-item aria-labelledby="story-<%= it.id %>">
+  <div class="cluster">
+    <h2 class="story-title" id="story-<%= it.id %>"><%= it.title %></h2>
+    <% if (it.edited) { %><span class="pill">Edited</span><% } %>
+    <span class="spacer"></span>
+    <div class="cluster actions">
+      <textarea hidden readonly ko-as="markdown"><%= it.markdown %></textarea>
+      <button class="btn small" type="button" ko-as="copy">Copy for your tracker</button>
+      <a class="btn small ghost" href="<%= it.url %>/edit" ko-target="self"><span class="icon icon-rename" aria-hidden="true"></span>Edit</a>
+    </div>
+  </div>
+  <div class="prose"><%~ it.html %></div>
+  <script type="koda">
+    // Copying to the clipboard is an action on the platform, not a value.
+    const { markdown, copy } = koda.scope();
+    copy.element.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(markdown.element.value);
+      copy.element.textContent = 'Copied';
+    });
+  </script>
+</article>

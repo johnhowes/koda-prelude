@@ -1,0 +1,25 @@
+{
+  "story-written": {
+    "title": "The agent finished writing a story (Across the design)",
+    "update": "folders/borrower-portal/designs/loan-offers/groups/across",
+    "with": {
+      "writing": false,
+      "story": {
+        "written": "just now",
+        "outOfDate": null,
+        "split": null,
+        "stories": [
+          {
+            "id": "1",
+            "url": "/f/borrower-portal/d/loan-offers/build/stories/across/story/1",
+            "title": "Show amounts to the cent, and drop expired offers as they expire",
+            "edited": false,
+            "markdown": "# Show amounts to the cent, and drop expired offers as they expire\n\nBorrowers see exact amounts everywhere, and never try to accept an offer that has just expired.\n\n## What changes\n\n- Every amount (payments, fees, totals) shows in the loan's currency, to the cent.\n- When an offer expires while a borrower has the offers list open, it leaves the list on its own, without a reload.\n\n## Acceptance criteria\n\n- **R-p4c.** Amounts are shown in the loan's currency, to the cent, everywhere.\n- An offer that expires disappears from an open list within a few seconds.\n- Nothing else on the list moves or reloads when it goes.\n\n## For developers\n\n- The server sends `offer-expired` down the page's live channel; the list reloads on it.\n",
+            "html": "<p>Borrowers see exact amounts everywhere, and never try to accept an offer that has just expired.</p><h3>What changes</h3><ul><li>Every amount (payments, fees, totals) shows in the loan’s currency, to the cent.</li><li>When an offer expires while a borrower has the offers list open, it leaves the list on its own, without a reload.</li></ul><h3>Acceptance criteria</h3><ul><li><strong>R-p4c.</strong> Amounts are shown in the loan’s currency, to the cent, everywhere.</li><li>An offer that expires disappears from an open list within a few seconds.</li><li>Nothing else on the list moves or reloads when it goes.</li></ul><details class=\"disclosure\"><summary>For developers</summary><ul><li>The server sends <code>offer-expired</code> down the page’s live channel; the list reloads on it.</li></ul></details>"
+          }
+        ]
+      }
+    },
+    "send": "story-written"
+  }
+}

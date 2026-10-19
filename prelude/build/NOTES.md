@@ -2,46 +2,77 @@
 
 A redesign of a design's Build page (`/f/:folder/d/:design/build`): today
 `server/views/_build.eta`, fed by `buildView()` in `server/main.js`, with
-the stories written by `server/backlog.js` (`storyMarkdown`,
-`incrementStory`, `layoutsStory`). It renders in the old `layout.eta`, not
-the shell's layouts the Design page now uses.
+stories made by templates in `server/backlog.js` (`storyMarkdown`,
+`incrementStory`, `layoutsStory`) from `increment.js`'s diff. The route
+carries `"from": "@app/server/views/_build"`. The fake design being built
+is "Loan offers" in borrower-portal (Offers, Compare offers, Accept an
+offer, plus "Across the design").
 
-## What's wrong with it today
+Pages: Build (`build/page`, its list `build/_pages`); a page's story
+(`/build/stories/:group`: `build/story`, `_stories`, `_story`,
+`_story-edit`, the `_rewrite` modal). States: typical, split and writing,
+not approved, building, no app, all built. Event: `story-written`.
 
-- The story is raw Markdown in a read-only textarea, hidden behind "Copy as
-  story": you can't read it as a story.
-- Stories are written for the server, not for people: "Fragment at
-  `/f/:folder/d/:design/draft`", acceptance criteria as `POST … updates the
-  record at …, answers with …`, file paths and fixtures throughout.
-- Each page's card lists route patterns and "the design's view" /
-  "the app's own view", which mean nothing to a designer or product owner.
-- What's blocking a build (no app, not approved, behind main, another group
-  building) is a stack of plain cards with long explanations.
-- The header and chrome differ from the Design page's (old layout, old
-  crumbs, `/ds/v1`).
+## What was wrong with it
 
-- Stories aren't only what differs from the working app. `increment.js`
-  compares the design with the same design on main, not with the app: a
-  redesign of an app page (`"from": "@app/…"`) in a new design is "new" and
-  gets the whole page's story; a change on top of an unbuilt main design
-  leaves the unbuilt part out; whole stories list ported routes, built
-  rules and every design-wide rule.
+- The story was raw Markdown in a read-only textarea behind "Copy as story".
+- Stories were written for the server: route patterns, `POST … updates the
+  record at …`, file paths; each card listed routes and "the design's view".
+- Blockers (no app, not approved, behind main, building) were stacked cards.
+- Old layout and ds/v1.
+- Not only what differs from the app: `increment.js` compares with the same
+  design on main, so a redesign of an app page (`"from": "@app/…"`) in a new
+  design was "new" and got the whole page's story; a change on top of an
+  unbuilt main design left the unbuilt part out; whole stories listed ported
+  routes, built rules and every design-wide rule in every story.
 
 ## Decisions
 
-- **Stories are written on demand, by an LLM** (the person, 2026-10-19):
-  small projects may never want them; a PM on a team wants them good. The
-  Build page shows what changes per page without a story; Write story asks
-  the model, in terms of what people see and do, with developer details
-  folded at the end.
+- **Stories are written on demand, by the agent (an LLM)** (the person,
+  2026-10-19): small projects may never want them; a PM on a team wants
+  them good. Write the story per page, or Write every story. The agent reads
+  the change, the app's page as it is now, the rules and approved screens.
 - **A story is only what differs from the working app** (the person,
-  2026-10-19). Proposed fix: a page that came from the app is compared with
-  the app's current file; unbuilt main-design work is included; only a page
-  the app hasn't got is described whole.
+  2026-10-19; R-7qd, R-c9r). For the build: a page that came from the app is
+  compared with the app's current file; unbuilt main-design work is
+  included; only a page the app hasn't got is described whole.
+- **The Build page shows what changes without a story**: per page, Prelude's
+  own plain lines (new pages and overlays by title, which screens look
+  different in which states, forms counted, new rules and events by their
+  words). No route patterns. Design-wide rules and events are a page of
+  their own, "Across the design", so they aren't repeated in every story.
+- **A story is written for people**: a title, why, What changes (in terms of
+  what's on screen), Acceptance criteria (what a person sees and does, with
+  the rules), Looks right in (the states), then "For developers" (routes,
+  views, data, test data), folded on screen and copied in full.
+- **Stories are kept in the design** (proposed, 2026-10-19; R-u6t), so they're
+  on the branch and reviewed with it; out of date (with what changed since)
+  once the design changes after them (R-b5k).
+- **Edit by hand and rewrite both** (the person, 2026-10-19). Edit swaps the
+  story for a Markdown editor in place; a saved edit is marked Edited.
+  Rewrite… is a modal with an optional instruction; over edits it warns
+  first and says "Replace it with a rewrite" (R-z2m).
+- **One story per page; split only with a good reason** (the person,
+  2026-10-19; R-h8x). A split shows its reason ("Split in two: …"), each
+  story with its own Copy, and Copy all.
+- **A story gets its own page, not a drawer**: the drawer is the narrow
+  width (`--measure-narrow`), too tight to read or edit a story.
+- **One notice for what's in the way**, in order: no app, app not on the
+  branch, not approved, building. Start a build session hides while any
+  holds; stories can be written regardless.
+- Building doesn't need a story, and a story doesn't start a build.
+
+## In the preview only
+
+- An edited story's rendered text doesn't change (the fake route updates
+  the Markdown only); the app renders it again.
+- Write every story marks the design, not each page, so only the Build
+  page shows them as being written.
+- Start a build session comes back to Build; the app goes to the session.
 
 ## Open questions
 
-- Proposed, not yet agreed: stories saved in the design (`stories/*.md`),
-  marked out of date when the design changes, Rewrite with an instruction.
-- Can a PM edit a story by hand in Prelude, or only rewrite it?
-- One story per page, or may the model split a big change into several?
+- Is a story's file one per page (`stories/<page>.md`, stories as `#`
+  sections) and who's shown as its author after an edit (git's user)?
+- Should a written story feed the build session's brief, or stay for the
+  tracker only? Today the build works from the change alone.

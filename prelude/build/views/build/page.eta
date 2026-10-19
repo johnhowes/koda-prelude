@@ -1,0 +1,86 @@
+<%/* A design's Build page: what the design changes in the app, page by page,
+     and only that: each page is compared with the app as it is now, so a
+     redesign of a page the app has lists what differs, not the whole page.
+     Each page builds on the design's branch, one at a time, and has a story
+     for the team's tracker only when someone asks the agent to write it.
+     One notice says what's in the way of building, if anything. `it` is the
+     design. */%>
+<% const pages = it.groups ?? [];
+   const unwritten = pages.filter(group => !group.story && !group.writing).length; %>
+<div class="center stack gap-6 build" ko-item>
+  <header class="stack gap-2">
+    <nav class="crumbs" aria-label="Where you are">
+      <a href="/">Projects</a><span aria-hidden="true">›</span>
+      <a href="/f/<%= it.folder.id %>"><%= it.folder.name %></a><span aria-hidden="true">›</span>
+      <a href="<%= it.base %>"><%= it.title %></a>
+    </nav>
+    <h1>Build</h1>
+    <p class="secondary">What <%= it.title %> changes in the app, page by page, compared with the app as it is now. Build each page on the design’s branch, or have the agent write it up as a story for your team’s tracker.</p>
+  </header>
+
+  <% if (!it.app.built) { %>
+  <div class="notice" role="status">
+    <strong>There’s no app to build into yet.</strong>
+    <p>Build the app first<% if (it.app.stack) { %> (<%= it.app.stack %>)<% } %>, then these pages on top of it. You can write their stories now.</p>
+    <div class="cluster actions"><a class="btn small primary" href="<%= it.app.url %>">Build the app</a></div>
+  </div>
+  <% } else if (!it.app.onBranch) { %>
+  <div class="notice warn" role="status">
+    <strong>The app is on main, but not on this design’s branch yet.</strong>
+    <p>Update from main to bring it in, then build these pages on top of it.</p>
+    <form class="cluster actions" action="<%= it.updateUrl %>" method="post">
+      <input type="hidden" name="back" value="<%= it.base %>/build">
+      <button class="btn small primary" type="submit">Update from main</button>
+    </form>
+  </div>
+  <% } else if (!it.approved && pages.length) { %>
+  <div class="notice warn" role="status">
+    <strong>Approve the design before building it.</strong>
+    <p>Approving saves how every page looks in every state. Each build is checked against those screens, so you’ll know it matches the design.</p>
+    <form class="cluster actions" action="<%= it.base %>/approve" method="post">
+      <input type="hidden" name="back" value="<%= it.base %>/build">
+      <input type="hidden" name="approved" value="true">
+      <button class="btn small primary" type="submit">Approve the design</button>
+    </form>
+  </div>
+  <% } else if (it.building) { %>
+  <div class="notice" role="status">
+    <p>Building <strong><%= it.building.title %></strong> on <code><%= it.branch %></code>, in <a href="<%= it.building.session.url %>"><%= it.building.session.title %></a>. Other pages wait until it’s built.</p>
+  </div>
+  <% } %>
+
+  <% if (pages.length) { %>
+  <section class="stack gap-3" aria-labelledby="to-build">
+    <div class="cluster">
+      <h2 class="group-label" id="to-build">To build (<%= pages.length %>)</h2>
+      <span class="spacer"></span>
+      <% if (unwritten > 1 && !it.writing) { %>
+      <form action="<%= it.base %>/build/stories" method="post">
+        <input type="hidden" name="writing" value="true">
+        <button class="btn small ghost" type="submit"><span class="icon icon-document" aria-hidden="true"></span><%= unwritten === pages.length ? 'Write every story' : `Write the other ${unwritten} stories` %></button>
+      </form>
+      <% } %>
+    </div>
+    <div ko-as="pages" ko-source="<%= it.base %>/build/pages" ko-invoke="event:story-written"><%~ include('./_pages', it) %></div>
+  </section>
+  <% } else { %>
+  <div class="empty page">
+    <span class="icon icon-done" aria-hidden="true"></span>
+    <div class="stack gap-2">
+      <h2>Everything in <%= it.title %> is built</h2>
+      <p class="secondary">The app has every page as this design shows it. When the design changes, what’s different shows here.</p>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (it.unchanged?.length) { %>
+  <details class="disclosure">
+    <summary>Built, and not changed by this design (<%= it.unchanged.length %>)</summary>
+    <ul class="list">
+      <% for (const page of it.unchanged) { %>
+      <li><span class="item"><span class="icon icon-done" aria-hidden="true"></span><span class="item-text"><span><%= page.title %></span></span></span></li>
+      <% } %>
+    </ul>
+  </details>
+  <% } %>
+</div>
