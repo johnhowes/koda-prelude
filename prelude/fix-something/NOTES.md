@@ -110,12 +110,22 @@ its first session (`POST /f/:id/fixes`).
   are moved with it. It adds the "Fixing this on…" note and commits. Then it
   redirects to the worktree's fix page. The hidden `branch.*` inputs stay in
   the dialog as designed, and the app ignores them.
-- **The agent's own conversation doesn't move.** Claude keeps a
-  conversation by the folder it ran in, and the fix's turns run in the
-  branch's worktree, so they can't resume it. Each moved session starts the
-  agent afresh on the branch. Its first message there says where the
-  transcript so far is, and tells it to read that first. The person sees one
-  conversation.
+- **The agent carries on** (the person, 2026-10-19). Claude Code keeps a
+  conversation under the folder it ran in, and resumes it only from there.
+  The fix's turns run in the branch's worktree, so when the branch is made,
+  Prelude copies each session's conversation file into the worktree's folder
+  (`runner.carry`, `server/agent.js`). The next turn resumes it, so the agent
+  keeps what it read and found. Its first message on the branch says it can
+  change the project now, and the fix's instructions replace "only read"
+  (Prelude already turns off Claude Code's system prompt snapshot).
+- That layout isn't a documented interface, so there's a fallback. If the
+  file can't be copied, or the resume fails anyway ("No conversation found",
+  `lost`), the agent starts afresh once, in the same turn. Its first message
+  is a recap of what was said: the person's words and its own answers, the
+  newest kept when it's long. The person's message isn't sent twice.
+- Naming a conversation better (the agent suggests the conversation's name
+  after its first answer, and the fix's when Fix it on a branch opens) is
+  waiting on a design session: it changes R-m5c and the dialog.
 - `troubles` (the starting points) are the project's stopped builds (as
   Needs you has them) and its branches whose last check failed.
 - A refused rename or branch echoes what was typed. The approved screens

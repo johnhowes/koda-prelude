@@ -164,7 +164,7 @@ test('Ask or fix: a conversation that only reads, kept on this computer, then fi
   assert.equal(reading.mode, 'ask');
   assert.match(reading.systemPrompt, /You only read/);
   assert.ok(!existsSync(join(repo, 'prelude', 'fixes')), 'nothing written to the project');
-  const sid = listSessions(keptDir)[0].id;
+  const { id: sid, claudeSessionId: agentSession } = listSessions(keptDir)[0];
 
   const conversation = await (await get(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why`)).text();
   assert.match(conversation, /<h1>Names are shouted on the borrowers list. Why\?<\/h1>/);
@@ -198,20 +198,34 @@ test('Ask or fix: a conversation that only reads, kept on this computer, then fi
   assert.doesNotMatch(projectNow, /Asked lately/, 'it left Asked lately');
   assert.match(projectNow, /Names are shouted<span class="pill">Fix<\/span>/, 'for In progress');
 
+  // The agent's own conversation is carried to the worktree, to resume there.
+  assert.deepEqual(runner.carried.map(c => ({ ...c, from: canonical(c.from), to: canonical(c.to) })), [{ sessionId: agentSession, from: repo, to: worktree }]);
+
+  // It resumes; and when it can't after all, it starts afresh, told what was said.
   // The agent's turn waits while the test makes its changes, as the agent would.
-  runner.queue([{ type: 'wait' }, { type: 'text', text: 'Fixed.' }]);
+  runner.queue([{ type: 'lost' }], [{ type: 'wait' }, { type: 'text', text: 'Fixed.' }]);
   const sent = await post(`/f/${wid}/d/fixes/names-are-shouted/sessions/${sid}/messages`, { message: 'Every name on the borrowers list should be quieter.' });
   assert.equal(sent.status, 200, await sent.text());
 
-  await until(() => runner.turns.length >= 2);
+  await until(() => runner.turns.length >= 3);
+  const resumed = runner.turns.at(-2);
+  assert.equal(resumed.resume, true);
+  assert.equal(resumed.sessionId, agentSession, 'the same conversation, carried on');
+  assert.match(resumed.prompt, /It's now fixed on prelude\/fix-names-are-shouted, and you can change the project/);
+  assert.doesNotMatch(resumed.prompt, /What was said so far/);
   const turn = runner.turns.at(-1);
+  assert.equal(turn.resume, false);
+  assert.notEqual(turn.sessionId, agentSession);
   assert.equal(canonical(turn.cwd), worktree);
   assert.equal(turn.mode, 'fix');
   assert.deepEqual(turn.shared, []);
   assert.match(turn.systemPrompt, /You are fixing one problem in this project: "Names are shouted"/);
   assert.match(turn.systemPrompt, /on the branch prelude\/fix-names-are-shouted/);
-  assert.match(turn.prompt, new RegExp(`Read what was said so far first: prelude/fixes/names-are-shouted/sessions/${sid}/transcript\\.jsonl`));
+  assert.match(turn.prompt, /What was said so far:/);
+  assert.match(turn.prompt, /The person: Names are shouted on the borrowers list\. Why\?/);
+  assert.match(turn.prompt, /You: The names are in capitals on the borrowers list\. I’d change list\.eta\./);
   assert.match(turn.prompt, /Every name on the borrowers list should be quieter\.$/);
+  assert.equal(readEntries(fixDir, sid).filter(e => e.type === 'user').length, 2, 'the message is in the transcript once');
 
   // One design changed on purpose, one broken by mistake, one left alone.
   write(worktree, 'prelude/borrowers/views/list.eta', '<ul><% for (const b of it.borrowers) { %><li class="quiet"><%= b.name %></li><% } %></ul>');
@@ -243,8 +257,9 @@ test('Ask or fix: a conversation that only reads, kept on this computer, then fi
   write(worktree, 'prelude/reports/views/reports.eta', '<h1>Reports</h1>');
   const next = await post(`/f/${wid}/d/fixes/names-are-shouted/sessions/${sid}/messages`, { message: 'Carry on.' });
   assert.ok([200, 303].includes(next.status), String(next.status));
-  await until(() => runner.turns.length >= 3);
+  await until(() => runner.turns.length >= 4);
   assert.match(runner.turns.at(-1).prompt, /\/reports/);
+  assert.doesNotMatch(runner.turns.at(-1).prompt, /began before it had a branch/, 'told once');
   await settled(fixDir, sid, 2);
 
   // In progress on the project page, then merged into main from there.

@@ -11,7 +11,6 @@
 // Fixed on a branch, it moves into prelude/fixes/<slug>/ on the branch, its
 // sessions with it, and leaves Asked lately for In progress (R-x8d).
 
-import { randomUUID } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -97,10 +96,10 @@ export function createAsked({ home }) {
      * Fix a conversation on its branch (R-x8d): its fix.json and sessions move
      * into prelude/fixes/<slug>/ in the branch's worktree - `slug` being the
      * fix's, from its name - with that name, and it's no longer kept here. The
-     * paths its transcripts name move with it. The agent's own conversation
-     * stays where it began (Claude keeps it by folder), so each session starts
-     * the agent afresh on the branch, told to read what was said (`carried`).
-     * The caller commits the branch. { fix, dir } (on the branch), or null.
+     * paths its transcripts name move with it. Each session is marked
+     * `carried`, for its first turn on the branch; the caller carries the
+     * agent's own conversations (`sessions`, those started) to the worktree,
+     * and commits the branch. { fix, dir, sessions } (on the branch), or null.
      */
     moveOnto(folder, from, worktreePath, { title = null, slug = from } = {}) {
       const record = find(folder, from);
@@ -109,10 +108,11 @@ export function createAsked({ home }) {
       mkdirSync(target, { recursive: true });
       if (existsSync(sessionsDir(record.dir))) cpSync(sessionsDir(record.dir), sessionsDir(target), { recursive: true });
       const was = `${PRELUDE_DIR}/${FIXES_DIR}/${from}/`;
-      for (const session of listSessions(target)) {
+      const sessions = listSessions(target);
+      for (const session of sessions) {
         const file = join(sessionsDir(target), session.id, 'transcript.jsonl');
         if (slug !== from && existsSync(file)) writeFileSync(file, readFileSync(file, 'utf8').split(was).join(`${PRELUDE_DIR}/${FIXES_DIR}/${slug}/`));
-        if (session.started) updateSession(target, session.id, { claudeSessionId: randomUUID(), started: false, carried: true });
+        updateSession(target, session.id, { carried: true });
       }
       const old = readMeta(record.dir) ?? {};
       const name = String(title ?? '').trim() || record.title;
@@ -121,7 +121,11 @@ export function createAsked({ home }) {
         writeFileSync(join(target, 'NOTES.md'), `# Fix: ${name}\n\nWhat's wrong, the cause, what changed, and what to check - written as the fix goes.\n`);
       }
       rmSync(record.dir, { recursive: true, force: true });
-      return { fix: { ...record, id: `${FIXES_DIR}/${slug}`, slug, title: name, kept: false, dir: target }, dir: target };
+      return {
+        fix: { ...record, id: `${FIXES_DIR}/${slug}`, slug, title: name, kept: false, dir: target },
+        dir: target,
+        sessions: sessions.filter(session => session.started).map(session => ({ id: session.id, claudeSessionId: session.claudeSessionId })),
+      };
     },
   };
 }

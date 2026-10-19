@@ -16,6 +16,8 @@
 // order written. When a turn ends, `onIdle` is told, and sends them together
 // as the next message.
 
+import { randomUUID } from 'node:crypto';
+
 import { designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
 import { render } from './views.js';
@@ -144,8 +146,12 @@ export function createTurns({ runner, live, onChange = () => {} }) {
      * may also read ([{ name, path }]), and `system` the folder's design
      * system, as designPrompt takes it. `view` is how the pages show entries,
      * and `onIdle` runs once the turn is over and the design is free.
+     * `recap` is told instead of `preface` if the conversation can't be
+     * resumed (one carried onto a fix's branch, prelude/fix-something): the
+     * agent starts afresh, once, with what was said so far.
      */
-    start({ folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null, view = plainView, onIdle = null }) {
+    start(options) {
+      const { folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null, recap = null, view = plainView, onIdle = null } = options;
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -220,6 +226,15 @@ ${withFindings(told, message)}` : withFindings(told, message),
       findings.delete(dKey);
 
       const finish = async result => {
+        // A conversation that couldn't be resumed here starts afresh, told
+        // what was said; the person's message is already in the transcript.
+        if (result.lost && recap) {
+          running.delete(dKey);
+          updateSession(designDir, sessionId, { claudeSessionId: randomUUID(), started: false });
+          const again = turns.start({ ...options, shown: [], preface: recap, recap: null });
+          if (!again.error) return;
+          running.set(dKey, { sessionId, stop: turn.stop, stopUrl, ctx });
+        }
         let checked = null;   // what the check found, for afterTurn
         // A message cut off by Stop or an error is kept as far as it got.
         if (ctx.block) endText(ctx, ctx.block.text);

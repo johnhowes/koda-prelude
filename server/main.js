@@ -4,6 +4,7 @@
 // two shapes, and put `Vary: x-koda-fragment` and `x-koda: 1` on every
 // response the application produces, including its own refusals.
 
+import { randomUUID } from 'node:crypto';
 import { createReadStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { createServer as createHttpServer } from 'node:http';
@@ -31,11 +32,11 @@ import { capture } from './capture.js';
 import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
 import { createDrafts, draftKey, sentFile } from './drafts.js';
 import { createAsked } from './asked.js';
-import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, needsOfProject, tell, waitingOf } from './home.js';
+import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { branchesOf, projectOf, referenceId } from './project.js';
-import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
+import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
 import { createTurns, designKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
 import { lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
@@ -117,6 +118,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     channels: createChannels(),   // server events' live channels, per design (6e)
     drafts: createDrafts({ home }),          // each session's unsent message
     asked: createAsked({ home }),            // conversations about a project with no branch yet, on this machine (R-2qz)
+    // The agent's own conversation, carried to another folder to resume there (agent.js).
+    carry: args => runner.carry?.(args) ?? false,
     dictation: createDictation({ home, live }),   // the speech model, on this machine
     stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
   };
@@ -1635,7 +1638,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         : null,
       // What an update from main brought in, told once; or, while one clashed
       // and isn't resolved yet, the files to resolve, told with every message.
-      preface: [carriedOver(session), entry ? (() => {
+      recap: carriedOver(session)?.recap ?? null,
+      preface: [carriedOver(session)?.preface, entry ? (() => {
         const merging = (() => { try { return app.branches.merging(entry); } catch { return null; } })();
         if (merging?.unresolved.length) {
           return `(From Prelude, not the person: ${merging.from} is half brought into this branch, and these files clash: ${merging.unresolved.join(', ')}. Each holds both versions between git's conflict markers (<<<<<<< this branch, ======= then ${merging.from}, >>>>>>>). Resolve every one before anything else: keep what ${merging.from} has, put this branch's change on top of it, drop anything ${merging.from} already does, and remove every marker. Prelude commits the merge after your turn once no marker is left.)`;
@@ -1651,11 +1655,35 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   };
 
   // A session that began as a conversation with no branch, and moved onto
-  // the fix's branch (R-x8d): the agent starts afresh there, so its first
-  // message says where what was said before is.
-  const carriedOver = session => (session?.carried && !session.started
-    ? `(From Prelude, not the person: this conversation began before it had a branch, when you could only read. It's now fixed on ${entry?.branch ?? 'its branch'}, and you can change the project. Read what was said so far first: ${PRELUDE_DIR}/${design.id}/sessions/${session.id}/transcript.jsonl.)`
-    : null);
+  // the fix's branch (R-x8d). Its first turn there resumes the agent's own
+  // conversation, carried to the worktree, told only that it can change the
+  // project now. One that couldn't be carried, or can't be resumed after all
+  // (`recap`), starts afresh, told what was said. { preface, recap }, or null.
+  const carriedOver = session => {
+    if (!session?.carried) return null;
+    const now = `It's now fixed on ${entry?.branch ?? 'its branch'}, and you can change the project, as your instructions now say.`;
+    const recap = recapOf(session, now);
+    return session.started
+      ? { preface: `(From Prelude, not the person: this conversation began before it had a branch, when you could only read. ${now})`, recap }
+      : { preface: recap, recap: null };
+  };
+
+  // What was said so far in a session, for an agent starting afresh: the
+  // person's words and the agent's, newest kept when it's long.
+  const recapOf = (session, now) => {
+    const said = readEntries(dir, session.id)
+      .filter(item => (item.type === 'user' || item.type === 'text') && String(item.text ?? '').trim())
+      .map(item => `${item.type === 'user' ? 'The person' : 'You'}: ${clip(String(item.text).trim(), 2000)}`);
+    const kept = [];
+    let length = 0;
+    for (const line of [...said].reverse()) {
+      if (length + line.length > 24000) break;
+      kept.unshift(line);
+      length += line.length;
+    }
+    const cut = kept.length < said.length ? ` The start is left out here; the whole of it is in ${PRELUDE_DIR}/${design.id}/sessions/${session.id}/transcript.jsonl.` : '';
+    return `(From Prelude, not the person: this conversation began before it had a branch, when you could only read, and you're starting afresh on it here. ${now} What was said so far:${cut}\n\n${kept.join('\n\n')})`;
+  };
 
   // A conversation with no branch yet (prelude/fix-something): the agent only
   // reads (R-h7w), and may read the conversation's own folder, where the
@@ -1976,15 +2004,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
    * waited, together in the order written (R-z4k). Each item: { text,
    * images, lookingAt, prompt } (prompt: what the agent is told).
    */
-  const startTurn = (session, items) => turns.start({
-    folder, design, designDir: dir, sessionId: session.id,
-    message: items.map(item => item.prompt).join('\n\n'),
-    shown: items.map(({ text, images, lookingAt }) => ({ text, images, lookingAt })),
-    stopUrl: `${base}/sessions/${session.id}/stop`,
-    view,
-    onIdle: sendWaiting,
-    ...agentContext(session),
-  });
+  const startTurn = (session, items) => {
+    const started = turns.start({
+      folder, design, designDir: dir, sessionId: session.id,
+      message: items.map(item => item.prompt).join('\n\n'),
+      shown: items.map(({ text, images, lookingAt }) => ({ text, images, lookingAt })),
+      stopUrl: `${base}/sessions/${session.id}/stop`,
+      view,
+      onIdle: sendWaiting,
+      ...agentContext(session),
+    });
+    // Carried onto a fix's branch: told so once, with its first turn there.
+    if (!started.error && session.carried) updateSession(dir, session.id, { carried: false });
+    return started;
+  };
 
   /** When a turn ends, the messages that waited go, the longest-waiting session's first. */
   function sendWaiting() {
@@ -2173,6 +2206,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const worktree = app.folders.get(made.entry.id);
     const moved = app.asked.moveOnto(folder, design.slug, made.entry.path, { title, slug });
     app.drafts.move(folder, design, worktree, moved.fix);
+    // The agent carries on where it left off, in the worktree; one whose
+    // conversation can't be carried starts afresh there, told what was said.
+    for (const session of moved.sessions) {
+      if (!app.carry({ sessionId: session.claudeSessionId, from: folder.path, to: made.entry.path })) {
+        updateSession(moved.dir, session.id, { claudeSessionId: randomUUID(), started: false });
+      }
+    }
     const newest = listSessions(moved.dir)[0];
     if (newest) appendEntry(moved.dir, newest.id, { type: 'note', text: `Fixing this on ${made.entry.branch}, made from ${mainOf(folder)}. The agent can change the project there now; each turn is committed to the branch.` });
     app.branches.commit(made.entry, `${title}: a fix, from a conversation about the project (committed by Prelude)`);
