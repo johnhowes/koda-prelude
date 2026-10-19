@@ -1,0 +1,3 @@
+# Fix: From the project landing page, when I click on a design, it…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
