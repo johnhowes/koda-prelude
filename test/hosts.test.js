@@ -130,7 +130,7 @@ test('once approved, it starts, renders through the host, and serves the app’s
   assert.match(surface, /Design host log/);
 });
 
-test('a design’s page is in the app layout and brings what it needs; it swaps in from Home, and comes whole from a ds/v1 page', async () => {
+test('a design’s page is in the app layout and brings what it needs; it swaps in from Home, the project and Build, and comes whole from its window', async () => {
   const designPage = `/f/${fid}/d/loans/sessions/new`;
   const from = referer => fetch(`${base}${designPage}`, { headers: { 'x-koda-fragment': '1', referer: `${base}${referer}` } }).then(res => res.text());
   // Its fragment links its own stylesheet and asks to fill the window (.fills), which the shell reads.
@@ -139,8 +139,9 @@ test('a design’s page is in the app layout and brings what it needs; it swaps 
   assert.match(fromHome, /^[\s\S]*<link rel="stylesheet" href="\/static\/workspace\.css">\s*<div class="stack gap-3 design-page fills">/);
   assert.doesNotMatch(await from(designPage), /<html/, 'from itself (a session switch): the fragment');
   assert.doesNotMatch(await from(`/f/${fid}`), /<html/, 'from a project’s page, in the same app layout: the fragment');
-  const whole = await from(`/f/${fid}/d/loans/build`);
-  assert.match(whole, /^<!doctype html>/, 'from the Build page, still in ds/v1: the whole page');
+  assert.doesNotMatch(await from(`/f/${fid}/d/loans/build`), /<html/, 'from Build, in the same app layout: the fragment');
+  const whole = await from(`/f/${fid}/d/loans/window`);
+  assert.match(whole, /^<!doctype html>/, 'from its separate window layout: the whole page');
   assert.match(whole, /<body class="shell prelude">/, 'in the app layout');
   assert.match(whole, /href="\/system\/components\.css"/, 'with the design system, not ds/v1');
 });

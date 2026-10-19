@@ -1,0 +1,31 @@
+{
+  "layout": { "needsYou": 0, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/loan-offers",
+          "branch": "prelude/loan-offers",
+          "app": { "built": true, "onBranch": true, "stack": "", "url": "/f/borrower-portal#app" },
+          "approved": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "groups": [],
+          "unchanged": [
+            { "title": "Offers" },
+            { "title": "Compare offers" },
+            { "title": "Offer details" },
+            { "title": "Accept an offer" },
+            { "title": "Documents" }
+          ]
+        }
+      ]
+    }
+  ]
+}

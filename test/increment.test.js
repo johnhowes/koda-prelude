@@ -119,26 +119,21 @@ test('the increment: per group, only what the branch changes against main', () =
   assert.equal(change.groups.get('/reports').status, 'unchanged', 'untouched on the branch');
 });
 
-test('a changed group’s story is the change alone; unchanged groups fold away', async () => {
-  const view = await page(`/f/${wid}/d/loans/build`);  assert.match(view, /<h2>Loans <span class="pill">Changed<\/span><\/h2>/);
-  assert.match(view, /<summary class="muted">Unchanged \(1\): built, and not changed on this branch<\/summary>\s*<ul class="build-routes"><li>Reports<\/li>/);
-  assert.doesNotMatch(view, /<h2>Reports/, 'not shown as work');
-  const story = unescape(view.match(/<textarea class="story"[^>]*>([\s\S]*?)<\/textarea>/)[1]);
-  assert.match(story, /^# Loans: Loans \(change\)/);
-  assert.match(story, /## New\n\n- \*\*Notes\*\*, in the `drawer` over `\/loans` at `\/loans\/:id\/notes`/);
-  assert.match(story, /- Form `POST \/loans\/:id\/notes`: adds a record to `loans\/:id\/notes`/);
-  assert.match(story, /- State \*\*No notes\*\*/);
-  assert.match(story, /## Changed\n\n- `\/loans` \(Loans\): its view is being redesigned \(app\/views\/loans\/list\)\. Port it back over `app\/views\/loans\/list`\./);
-  assert.match(story, /`\/loans`'s data gains [^\n]*`loans\[\]\.notes`/);
-  assert.match(story, /- \*\*Loans\*\* looks different, in Typical\./);
-  assert.match(story, /## Rules\n\n- New: \*\*R-n0t\.\*\* A note says who wrote it\.\n- Reworded: \*\*R-abc\.\*\*[^\n]*\n- Retired: \*\*R-old\.\*\*[^\n]*\(long names wrap now\)/);
-  assert.match(story, /## Test cases\n\n(- \*\*[^\n]*\n)*- \*\*No notes\*\*/);
-  assert.match(story, /The full design is in `prelude\/loans\/`\.$/);
-  // Nothing about the existing page that didn't change.
-  assert.doesNotMatch(story, /\/loans\/:id\/row/);
-  assert.doesNotMatch(story, /POST \/loans\/:id`[^/]/);
-  assert.doesNotMatch(story, /Reports/);
-  assert.doesNotMatch(story, /Empty/, 'a state the change doesn’t show up in');
+test('a changed page lists the change alone, compared with the app as it is; unchanged pages fold away', async () => {
+  const view = await page(`/f/${wid}/d/loans/build`);
+  assert.match(view, /<h3 class="page-title" id="page-loans">Loans<\/h3>\s*<span class="pill">Changed<\/span>/);
+  assert.match(view, /<summary>Built, and not changed by this design \(1\)<\/summary>[\s\S]*<span>Reports<\/span>/);
+  assert.doesNotMatch(view, /id="page-reports"/, 'not shown as work');
+  const changes = [...view.matchAll(/<span class="item-text"><span>([^<]*)<\/span><\/span>/g)].map(match => unescape(match[1]));
+  assert.deepEqual(changes, [
+    'New: Notes, in a drawer over Loans',
+    'Loans looks different in Typical',
+    '1 new form',
+    'New rule R-n0t: A note says who wrote it.',
+    'Retired rule R-old: Names are shown in full.',
+    'Reports',
+  ], 'the redesign by the states it shows in; the rest of the page, built rules and routes, not at all (R-7qd, R-c9r)');
+  assert.match(view, /<span class="muted">No story yet<\/span>/, 'no story until someone asks (R-w3n)');
 });
 
 test('a build of a changed group is briefed from the change', () => {
@@ -152,12 +147,11 @@ test('a build of a changed group is briefed from the change', () => {
   assert.doesNotMatch(prompt, /\/loans\/:id\/row/, 'nothing that didn’t change');
 });
 
-test('the folder shows the current work in one place, with every story to copy', async () => {
+test('the folder shows the current work in one place, with the stories written so far to copy', async () => {
   const folder = await page(`/f/${fid}`);
   assert.match(folder, /<h2 id="in-progress-title">In progress <span class="muted">1<\/span><\/h2>[\s\S]*Loans[\s\S]*<a href="[^"]+\/build">Loans<\/a><span class="pill ">To build<\/span><span class="pill">A change<\/span>/);
   assert.match(folder, /<span class="muted"><code>prelude\/loans<\/code><\/span>/);
-  const all = unescape(folder.match(/<textarea class="story" ko-as="stories"[^>]*>([\s\S]*?)<\/textarea>/)[1]);
-  assert.match(all, /^# Loans: Loans \(change\)/);
+  assert.doesNotMatch(folder, /<textarea class="story"/, 'no story until someone asks (R-w3n)');
   const designs = folder.slice(folder.indexOf('<h2 id="designs-title">Designs</h2>'));
   assert.doesNotMatch(designs.slice(0, designs.indexOf('</section>')), /\/d\/loans"/, 'the designs hold only those without a branch (R-2hx)');
 });
@@ -180,14 +174,15 @@ test('a changed group is built once a build of it finishes, and due again after 
   branches.markBuilt(entry, '/loans');
 
   const built = await page(`/f/${wid}/d/loans/build`);
-  assert.match(built, /<h2>Loans <span class="pill">Changed<\/span> <span class="pill">Built<\/span><\/h2>/, 'still a change against main, now built');
+  assert.match(built, /Everything in Loans is built/, 'the app has it now');
+  assert.match(built, /<summary>Built, and not changed by this design \(2\)<\/summary>[\s\S]*<span>Loans<\/span>/);
   assert.doesNotMatch(built, /Start a build session/);
 
   write(worktree, 'prelude/loans/states/01-typical.json', { loans: [{ id: 1, name: 'Harbor Street Bakery', notes: [{ id: 1, body: 'Called the owner', author: 'Dana' }] }] });
   git(worktree, 'add', '-A');
   git(worktree, 'commit', '-q', '-m', 'Notes say who wrote them');
   const due = await page(`/f/${wid}/d/loans/build`);
-  assert.doesNotMatch(due, /<span class="pill">Built<\/span>/, 'a design change after the build makes it due again');
+  assert.match(due, /<h3 class="page-title" id="page-loans">Loans<\/h3>\s*<span class="pill">Changed<\/span>/, 'a design change after the build makes it due again');
   assert.match(due, /Start a build session/);
 });
 
