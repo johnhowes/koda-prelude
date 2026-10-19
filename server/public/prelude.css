@@ -57,10 +57,9 @@
     .inline { flex-direction: column; }
   }
 
-  /* A project's In progress: each branch's stories, all copied at once. */
-  .build-routes { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
-  .in-progress details { margin-block: var(--space-2); }
-  .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+  /* The Build page and a project's page have moved onto the design system,
+     with rules of their own (the Build page's below, a project's in its own
+     stylesheet), so their old rules are gone from here. */
 }
 
 /* The Build page's own rules (prelude/build): what the design system can't say. */
@@ -81,4 +80,19 @@
   .first-run-steps { align-self: stretch; list-style: none; padding: 0; }
   .first-run-steps > li { align-items: center; }
   .first-run-steps strong { color: var(--fg-muted); }
+}
+
+/* A project's page (prelude/project-landing-page): what the design system can't say. */
+@scope (.project) {
+  /* A path is one long word; let it wrap rather than push the column. */
+  .project-path, code { overflow-wrap: anywhere; }
+
+  /* Lists that are only lines of text, not rows to open. */
+  .in-progress, .stories, .merged, .also-changes { list-style: none; padding: 0; }
+
+  /* The designs' search takes the row beside its filter, and wraps under it when narrow. */
+  .designs-search { flex: 1 1 14rem; inline-size: auto; }
+
+  /* The stories to copy, in full. */
+  .story { inline-size: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
 }

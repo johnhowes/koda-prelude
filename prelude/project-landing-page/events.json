@@ -1,0 +1,20 @@
+{
+  "needs-changed": {
+    "title": "The agent asks you something on Loan offers",
+    "add": "projects/spark-lending/needs",
+    "with": {
+      "kind": "question",
+      "design": "Loan offers",
+      "says": "The agent asked whether an expired offer stays visible to the borrower, or disappears.",
+      "when": "just now",
+      "url": "/f/spark-lending/d/loan-offers"
+    },
+    "send": "needs-changed"
+  },
+  "projects-changed": {
+    "title": "Rate lock’s page renders again, and its build carries on",
+    "update": "projects/spark-lending/inProgress/7e2d9b",
+    "with": { "check": "passing", "failures": 0, "building": { "title": "Lock a rate", "stopped": false } },
+    "send": "projects-changed"
+  }
+}

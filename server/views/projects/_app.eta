@@ -1,0 +1,59 @@
+<%/* The app (step 8): its stack, where it is, and what every design here
+     uses; until it exists, the build that creates it on the shell's branch,
+     or connects the one the project already has (8b). The shell's branch
+     itself is listed under In progress, so this says where to finish it
+     rather than repeating it. `it` is the project. */%>
+<% const p = it, app = p.app, stack = app.stack || p.defaultStack; %>
+<h2 id="app-title">The app</h2>
+<% if (app.status === 'built') { %>
+<p class="secondary"><%= app.stack %><% if (app.path) { %>, in <code><%= app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
+<% } else if (app.status === 'on-branch') { %>
+<p class="secondary">The app is built on the app shell’s branch, <code><%= app.branch %></code>. Once that branch is in your main branch, features can be built on top of it: check what the build made in <a href="<%= app.url %>">the app shell</a>, then finish its branch under In progress.</p>
+<% } else if (app.status === 'building') { %>
+<p class="cluster gap-2 secondary" role="status"><span class="pulse" aria-hidden="true"></span><span>The app is being <%= app.existing ? 'connected' : 'built' %> on the app shell’s branch, as <%= stack %>.</span></p>
+<% if (app.url) { %><div class="cluster actions"><a class="btn small" href="<%= app.url %>">Follow the build</a></div><% } %>
+<% } else if (app.status === 'existing') { %>
+<p class="secondary">This project already has an app. Connecting it finds the app and its stack, and points the app shell at the app’s own layouts, changing as little as it can, so designs render as the app’s own views and features are built into it.</p>
+<% if (p.canBuild) { %>
+<form class="cluster actions" action="/f/<%= p.id %>/app/build" method="post" ko-target="app">
+  <input type="hidden" name="status" value="building">
+  <% if (p.shell) { %><input type="hidden" name="url" value="/f/<%= p.id %>/d/<%= p.shell.id %>/build"><% } %>
+  <button class="btn small" type="submit">Connect the app</button>
+</form>
+<% } %>
+<% } else { %>
+<p class="secondary">It will be <%= stack %>. There’s no app yet: the app build creates it on the app shell’s branch, with the shell’s layouts and the design system, so features can be built on top of it.</p>
+<% if (p.canBuild) { %>
+<form class="stack gap-3" action="/f/<%= p.id %>/app/build" method="post" ko-target="app">
+  <input type="hidden" name="status" value="building">
+  <% if (p.shell) { %><input type="hidden" name="url" value="/f/<%= p.id %>/d/<%= p.shell.id %>/build"><% } %>
+  <% if (!app.stack) { %>
+  <details class="disclosure">
+    <summary>Choose another stack</summary>
+    <label class="field">
+      <span class="label">The app’s stack</span>
+      <input name="stack" placeholder="ASP.NET Core MVC with Razor" autocomplete="off">
+      <span class="hint">Designs are Eta views; with another stack, the app build also gives the app a design host, and designs are rewritten in its language as they’re built.</span>
+    </label>
+  </details>
+  <% } %>
+  <div class="cluster actions">
+    <button class="btn small" type="submit">Start the app build</button>
+    <button class="btn small ghost" type="submit" name="existing" value="true" title="Prelude finds the app this project already has and connects it, instead of building one.">It already has an app</button>
+  </div>
+</form>
+<% } %>
+<% } %>
+<% if (!p.canBuild && p.git === 'inside') { %>
+<p class="muted">This project’s folder is inside another Git repository. Open that repository as the project to build here, so its builds get branches of their own.</p>
+<% } else if (!p.canBuild && p.git === 'missing') { %>
+<p class="muted">A build works on a Git branch, and Git isn’t installed on this computer (or isn’t on the PATH).</p>
+<% } else if (p.git === 'none' && (app.status === 'none' || app.status === 'existing')) { %>
+<p class="muted">Designs and builds work on Git branches: Prelude makes the project a Git repository first, and commits it.</p>
+<% } %>
+<% if (p.system || p.shell) { %>
+<p class="muted">
+  <% if (p.system) { %>Designs here use <a href="/f/<%= p.id %>/d/<%= p.system.id %>"><%= p.system.title %></a><%= p.shell ? ',' : '.' %><% } %>
+  <% if (p.shell) { %><%= p.system ? 'and render' : 'Designs here render' %> in <a href="/f/<%= p.id %>/d/<%= p.shell.id %>"><%= p.shell.title %></a>.<% } %>
+</p>
+<% } %>

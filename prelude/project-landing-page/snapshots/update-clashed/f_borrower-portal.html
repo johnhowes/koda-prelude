@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Project
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+2
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal" ko-scope="/">
+<div class="center wide project" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+</nav>
+<h1>
+borrower-portal
+</h1>
+<span class="muted project-path">
+C:\Projects\borrower-portal
+</span>
+</div>
+<span class="spacer">
+</span>
+<a class="btn primary" href="/f/borrower-portal/designs/new" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+New design…
+</a>
+</div>
+<div class="split" style="--side: 20rem">
+<div class="stack gap-6">
+<div class="stack gap-6" ko-as="work" ko-invoke="event:needs-changed event:projects-changed every:300000" ko-source="/f/borrower-portal/work">
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/document-upload">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+<span class="item-text">
+<span class="item-title">
+Document upload
+<span class="pill ">
+Turn finished
+</span>
+</span>
+<span class="secondary">
+The agent finished its turn: the upload page now shows each file’s progress.
+</span>
+<span class="muted">
+40 minutes ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+2
+</span>
+</h2>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/borrower-portal/d/borrower-shell">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Borrower Portal Shell
+<span class="pill">
+App shell
+</span>
+</span>
+<span class="muted">
+prelude/borrower-shell
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/borrower-shell
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+</div>
+<p class="muted">
+The app on this branch isn’t running: its design host needs your approval first, on the design’s page.
+</p>
+<details class="disclosure">
+<summary>
+Also changes 3 files outside the design
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+src/Borrower.Web/Program.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Borrower.Web/Views/Shared/_Layout.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Borrower.Web/wwwroot/css/site.css
+</code>
+</li>
+</ul>
+</details>
+<div class="notice danger" role="alert">
+<p>
+git couldn’t push prelude/borrower-shell: origin refused it (authentication failed). Check your Git credentials, then try again.
+</p>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/borrower-portal/branches/e03b51/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/borrower-portal/d/document-upload">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Document upload
+</span>
+<span class="muted">
+Applications · prelude/document-upload
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/document-upload
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+<span class="pill warn">
+3 commits behind main
+</span>
+</div>
+<div class="notice danger" role="alert">
+<strong>
+main is half brought in.
+</strong>
+<p>
+These files clash:
+<code>
+prelude/borrower-design-system/system/components.css
+</code>
+,
+<code>
+prelude/document-upload/views/uploads/list.eta
+</code>
+. Send the agent a message on
+<a href="/f/borrower-portal/d/document-upload">
+the design’s page
+</a>
+and it resolves them first; nothing is committed until it has.
+</p>
+<form action="/f/borrower-portal/branches/4c7e19/abandon" class="cluster actions" ko-target="work" method="post">
+<input name="merging" type="hidden" value="">
+<button class="btn small" title="Call off the update: the branch goes back to how it was before it." type="submit">
+Abandon the update
+</button>
+</form>
+</div>
+</div>
+</li>
+</ul>
+</section>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="work">
+<p>
+Prelude couldn’t read this project’s branches. What’s shown may be out of date; try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="work" type="button">
+Try again
+</button>
+</div>
+</div>
+<section aria-labelledby="designs-title" class="card">
+<h2 id="designs-title">
+Designs
+</h2>
+<form action="/f/borrower-portal" aria-label="Designs" class="cluster gap-3" method="get" role="search">
+<input aria-label="Search designs" autocomplete="off" class="designs-search" id="q" name="q" placeholder="Search by title or area" type="search" value="">
+<span aria-label="Show" class="segmented" role="radiogroup">
+<label class="btn small">
+<input checked class="sr-only" id="stageAll" name="stage" type="radio" value="">
+All
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageReady" name="stage" type="radio" value="ready">
+Ready to build
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageDesigning" name="stage" type="radio" value="designing">
+Still designing
+</label>
+</span>
+<noscript>
+<button class="btn small" type="submit">
+Show
+</button>
+</noscript>
+</form>
+<div aria-live="polite" calc-ko-source="'/f/borrower-portal/designs?q=' + encode(q.value) + '&stage=' + (stageReady.selected ? 'ready' : stageDesigning.selected ? 'designing' : '')" class="stack gap-5" ko-as="designList" ko-debounce="250" ko-invoke="input:q change:stageAll change:stageReady change:stageDesigning event:projects-changed">
+<div class="stack gap-1">
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/borrower-design-system">
+<span aria-hidden="true" class="icon icon-design-system">
+</span>
+<span class="item-text">
+<span class="item-title">
+Borrower Design System
+<span class="pill">
+Design system
+</span>
+</span>
+<span class="muted">
+3 pages, all approved · changed yesterday
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Accounts
+<span class="muted">
+1
+</span>
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/sign-in">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Sign in
+</span>
+<span class="muted">
+3 pages, all approved · changed yesterday
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Payments
+<span class="muted">
+1
+</span>
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/payment-methods">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Payment methods
+</span>
+<span class="muted">
+5 pages, 1 approved · changed 4 days ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="designList">
+<p>
+Prelude couldn’t read this project’s designs. Try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="designList" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+</div>
+<aside aria-label="The project’s setup" class="side stack gap-6">
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed" ko-source="/f/borrower-portal/app">
+<h2 id="app-title">
+The app
+</h2>
+<p class="secondary">
+The app is built on the app shell’s branch,
+<code>
+prelude/borrower-shell
+</code>
+. Once that branch is in your main branch, features can be built on top of it: check what the build made in
+<a href="/f/borrower-portal/d/borrower-shell">
+the app shell
+</a>
+, then finish its branch under In progress.
+</p>
+<p class="muted">
+Designs here use
+<a href="/f/borrower-portal/d/borrower-design-system">
+Borrower Design System
+</a>
+, and render in
+<a href="/f/borrower-portal/d/borrower-shell">
+Borrower Portal Shell
+</a>
+.
+</p>
+</section>
+<section aria-labelledby="reading-title" class="card" id="reading">
+<h2 id="reading-title">
+What the agent can read
+</h2>
+<p class="secondary">
+This project, and any folders you add here. Nothing else on this computer. The agent writes only inside the design it’s working on.
+</p>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+This project
+</span>
+<span class="muted project-path">
+C:\Projects\borrower-portal
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div ko-as="references">
+</div>
+<form action="/f/borrower-portal/references" class="stack gap-1" ko-target="referenceField" method="post">
+<div class="stack gap-1" ko-as="referenceField">
+<label class="label" for="reference-path">
+Add a folder
+</label>
+<div class="inline">
+<input autocomplete="off" id="reference-path" name="path" placeholder="C:\Projects\another-app" spellcheck="false" value="">
+<button class="btn small" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn small" type="submit">
+Add
+</button>
+</div>
+</div>
+</form>
+</section>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

@@ -93,7 +93,7 @@ apostrophes (’); "…" for something in progress or that asks for more.
 
 | Say | Not | Because |
 | --- | --- | --- |
-| folder | project, workspace, repo (in the UI) | It's a folder on disk; "usually a repo" explains it once. |
+| project | folder, workspace, repo (in the UI) | What the person opens; "a folder, usually a repo" explains it once. A folder the agent may read is still a folder. |
 | design | project, mockup, prototype | A design describes one feature and grows over sessions. |
 | session | chat, conversation, thread | One sitting with the agent on a design. |
 | screen (a static design), page (a route of a hosted design) | mockup, artboard, frame, view | What the person sees; "view" is the code that renders it. |

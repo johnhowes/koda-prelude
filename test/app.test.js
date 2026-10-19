@@ -14,7 +14,7 @@ import { createDesign } from '../server/designs.js';
 import { canonical, folderId } from '../server/folders.js';
 import { findLayout } from '../server/host.js';
 import { createServer } from '../server/main.js';
-import { readEntries, readSession } from '../server/sessions.js';
+import { listSessions, readEntries, readSession } from '../server/sessions.js';
 import { createFakeRunner } from './fake-runner.js';
 
 Object.assign(process.env, { GIT_AUTHOR_NAME: 'Test', GIT_AUTHOR_EMAIL: 'test@example.com', GIT_COMMITTER_NAME: 'Test', GIT_COMMITTER_EMAIL: 'test@example.com' });
@@ -37,6 +37,17 @@ const post = (path, fields) => fetch(base + path, { method: 'POST', body: new UR
 const commitAll = (repo, message) => { git(repo, 'add', '-A'); git(repo, 'commit', '-q', '-m', message); };
 const worktreeOf = (repo, branch) => canonical(git(repo, 'worktree', 'list').split('\n').find(line => line.includes(`[${branch}]`)).split(/\s+/)[0]);
 const location = res => res.headers.get('location');
+
+/**
+ * The app build a post to /app/build started: it answers with the project's
+ * app, so the build is found on the shell's branch. [, worktree id, session id].
+ */
+function appBuildOf(started, repo, fid, shellId) {
+  assert.equal(started.status, 303);
+  assert.equal(location(started), `/f/${fid}#app`);
+  const shell = worktreeOf(repo, `prelude/${shellId}`);
+  return [null, folderId(shell), listSessions(join(shell, 'prelude', shellId))[0].id];
+}
 
 async function open(path) {
   const body = new FormData();
@@ -70,8 +81,9 @@ after(() => {
 test('in a repository, a new design is made on a branch of its own; the first design settles the stack', async () => {
   const { repo, fid } = await bareRepo();
   const before = await (await get(`/f/${fid}`)).text();
-  assert.match(before, /The app will be <strong>Node, Express, Eta and Koda<\/strong>/);
+  assert.match(before, /Design the first feature/);
   assert.doesNotMatch(before, /id="app"/, 'no app card before a stack is chosen');
+  assert.match(await (await get(`/f/${fid}/designs/new`)).text(), /The app will be <strong>Node, Express, Eta and Koda<\/strong>/);
 
   // The design system needs no stack.
   const system = await post(`/f/${fid}/designs`, { title: 'Tokens', kind: 'system' });
@@ -91,8 +103,8 @@ test('in a repository, a new design is made on a branch of its own; the first de
   assert.equal((await post(`/f/${fid}/designs`, { title: 'Other tokens', kind: 'system' })).status, 422, 'one design system, even only on a branch');
 
   const after = await (await get(`/f/${fid}`)).text();
-  assert.match(after, /Tokens[\s\S]*On <code>prelude\/tokens<\/code>/, 'designs only on their branches are listed, with their branch');
-  assert.match(after, /Loans[\s\S]*On <code>prelude\/loans<\/code>/);
+  assert.match(after, /Tokens[\s\S]*<span class="muted"><code>prelude\/tokens<\/code><\/span>/, 'designs only on their branches are in progress, with their branch');
+  assert.match(after, /Loans[\s\S]*<span class="muted"><code>prelude\/loans<\/code><\/span>/);
   assert.doesNotMatch(after, /Choose another stack/, 'asked once');
   assert.match(after, /Start the app build/);
 });
@@ -107,8 +119,7 @@ test('another stack is described, and its app is built first, on the shell’s b
 
   runner.turns.length = 0;
   const started = await post(`/f/${fid}/app/build`, {});
-  assert.equal(started.status, 303, await started.text());
-  const [, wid, sid] = location(started).match(/^\/f\/([0-9a-f]+)\/d\/app-shell\/sessions\/(.+)$/);
+  const [, wid, sid] = appBuildOf(started, repo, fid, 'app-shell');
   const shell = worktreeOf(repo, 'prelude/app-shell');
   assert.ok(existsSync(join(shell, 'prelude', 'app-shell', 'design.json')), 'the shell was made on its branch: it’s the app’s frame');
   assert.deepEqual(readSession(join(shell, 'prelude', 'app-shell'), sid).build, { group: '@app', title: 'The app' });
@@ -123,7 +134,7 @@ test('another stack is described, and its app is built first, on the shell’s b
   await settled(join(shell, 'prelude', 'app-shell'), sid);
 
   const folder = await (await get(`/f/${fid}`)).text();
-  assert.match(folder, /The app is being built on the shell’s branch/);
+  assert.match(folder, /The app is being built on the app shell’s branch, as ASP\.NET Core MVC with Razor\./);
   const session = await (await get(`/f/${wid}/d/app-shell/sessions/${sid}`)).text();
   assert.match(session, /This session builds <strong>The app<\/strong> into the app, on this design’s branch/);
 });
@@ -155,8 +166,7 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
 
   runner.turns.length = 0;
   const started = await post(`/f/${fid}/app/build`, {});
-  assert.equal(started.status, 303, await started.text());
-  const [, wid, sid] = location(started).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
+  const [, wid, sid] = appBuildOf(started, repo, fid, 'shell');
   await until(() => runner.turns.length >= 1);
   const prompt = runner.turns.at(-1).systemPrompt;
   assert.match(prompt, /a Node server using Express, rendering Eta views, with Koda in the browser/);
@@ -184,19 +194,19 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   assert.deepEqual(findLayout({ folderPath: shell, designDir: join(shell, 'prelude', 'loans'), shellDir, name: 'app' }), { views: join(shell, 'app', 'views', 'layouts'), template: './app', sample: { user: 'Dana' } });
 
   const folder = await (await get(`/f/${fid}`)).text();
-  assert.match(folder, /The app is built on the shell’s branch\. Once that branch is in your main branch/);
+  assert.match(folder, /The app is built on the app shell’s branch, <code>prelude\/shell<\/code>\. Once that branch is in your main branch/);
   assert.match(folder, new RegExp(`action="/f/${fid}/branches/${wid}/merge"`));
 
   // Merge: main has the app; the shell's worktree and branch are gone, and the folder says so.
-  const merged = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
+  const merged = await post(`/f/${fid}/branches/${wid}/merge`, {});
   assert.equal(merged.status, 303, await merged.text());
-  assert.equal(location(merged), `/f/${fid}/d/shell`);
+  assert.equal(location(merged), `/f/${fid}`);
   assert.equal(appOf(repo).built, true, 'the app is on main');
   assert.equal(existsSync(shell), false, 'the worktree is gone');
   assert.equal(git(repo, 'branch', '--list', 'prelude/shell'), '', 'and its branch');
   assert.match(git(repo, 'log', '-1', '--format=%s'), /^Merge prelude\/shell: Shell \(merged by Prelude\)$/);
   const afterMerge = await (await get(`/f/${fid}`)).text();
-  assert.match(afterMerge, /Merged lately[\s\S]*<code>prelude\/shell<\/code> was merged into main/);
+  assert.match(afterMerge, /Merged lately[\s\S]*<code>prelude\/shell<\/code> merged into main just now\./);
   assert.match(afterMerge, /Node, Express, Eta and Koda, in <code>app\/<\/code>/);
   // The design's page says so too: in its header, and in full in its About drawer.
   assert.match(await (await fetch(`${base}/f/${fid}/d/shell`)).text(), /<span class="icon icon-done" aria-hidden="true"><\/span>Merged into main/, 'the design’s page says so too');
@@ -253,13 +263,12 @@ test('a project that already has an app connects it instead of building one (8b)
   commitAll(repo, 'An app, and its shell designed');
 
   const card = await (await get(`/f/${fid}`)).text();
-  assert.match(card, /<button class="btn small ghost" type="submit" name="existing" value="yes"[^>]*>This project already has an app<\/button>/);
+  assert.match(card, /<button class="btn small ghost" type="submit" name="existing" value="true"[^>]*>It already has an app<\/button>/);
 
   runner.turns.length = 0;
-  const started = await post(`/f/${fid}/app/build`, { existing: 'yes' });
-  assert.equal(started.status, 303, await started.text());
+  const started = await post(`/f/${fid}/app/build`, { existing: 'true' });
+  const [, wid, sid] = appBuildOf(started, repo, fid, 'shell');
   assert.deepEqual(JSON.parse(readFileSync(join(repo, 'prelude', 'prelude.json'), 'utf8')).app, { existing: true }, 'the guessed stack goes: the connection describes the real one');
-  const [, wid, sid] = location(started).match(/^\/f\/([0-9a-f]+)\/d\/shell\/sessions\/(.+)$/);
   const shell = worktreeOf(repo, 'prelude/shell');
   const shellDir = join(shell, 'prelude', 'shell');
   assert.equal(readSession(shellDir, sid).title, 'Connect the app');
@@ -277,8 +286,8 @@ test('a project that already has an app connects it instead of building one (8b)
   // Designs of views wait for it, as they're written in its language.
   const early = await post(`/f/${fid}/designs`, { title: 'Loans', area: '', kind: 'design' });
   assert.equal(early.status, 409);
-  assert.match(await early.text(), /the app this project already has is connected first\. Connect the app below\./);
-  assert.match(await (await get(`/f/${fid}`)).text(), /The app is being connected on the shell’s branch\./);
+  assert.match(await early.text(), /the app this project already has is connected first\. Connect the app, under The app\./);
+  assert.match(await (await get(`/f/${fid}`)).text(), /The app is being connected on the app shell’s branch/);
 
   // The agent's work (here, by hand): the json and layouts.json, nothing else.
   write(shell, 'prelude/prelude.json', { app: { existing: true, path: 'server', stack: 'Node, node:http, Eta and Koda' } });
@@ -385,20 +394,19 @@ test('a new folder, not yet a repository: the app build makes it one, and the sh
   assert.equal(appOf(folderPath).stack, null);
 
   const page = await (await get(`/f/${fid}`)).text();
-  assert.match(page, /<div class="card" id="app">[\s\S]*It will be Node, Express, Eta and Koda\. There’s no app yet/);
-  assert.match(page, /<form action="\/f\/[0-9a-f]+\/app\/build" method="post">\s*<details>\s*<summary class="muted">Choose another stack<\/summary>/);
-  assert.match(page, /Prelude makes the project’s folder a git repository first, and commits it/);
+  assert.match(page, /id="app"[\s\S]*It will be Node, Express, Eta and Koda\. There’s no app yet/);
+  assert.match(page, /<form class="stack gap-3" action="\/f\/[0-9a-f]+\/app\/build" method="post" ko-target="app">[\s\S]*?<details class="disclosure">\s*<summary>Choose another stack<\/summary>/);
+  assert.match(page, /Prelude makes the project a Git repository first, and commits it/);
 
   runner.turns.length = 0;
   const started = await post(`/f/${fid}/app/build`, { stack: 'ASP.NET Core MVC with Razor' });
-  assert.equal(started.status, 303, await started.text());
+  const [, , sid] = appBuildOf(started, folderPath, fid, 'shell');
   assert.equal(appOf(folderPath).stack, 'ASP.NET Core MVC with Razor');
   assert.equal(git(folderPath, 'symbolic-ref', '--short', 'HEAD'), 'main');
   assert.equal(git(folderPath, 'log', '-1', '--format=%s'), 'The designs so far (committed by Prelude)');
   assert.equal(git(folderPath, 'status', '--porcelain'), '', 'everything was committed');
   assert.equal(readFileSync(join(folderPath, '.gitignore'), 'utf8'), 'node_modules/\n');
   const shell = worktreeOf(folderPath, 'prelude/shell');
-  const [, sid] = location(started).match(/\/sessions\/(.+)$/);
   await settled(join(shell, 'prelude', 'shell'), sid);
 });
 
@@ -409,6 +417,6 @@ test('a folder inside another repository is left alone, and says why', async () 
   const fid = await open(inner);
   createDesign(inner, { title: 'Landing', kind: 'design' });
   const page = await (await get(`/f/${fid}`)).text();
-  assert.match(page, /This project’s folder is inside another git repository\. Open that repository in Prelude to build here/);
+  assert.match(page, /This project’s folder is inside another Git repository\. Open that repository as the project to build here/);
   assert.doesNotMatch(page, /Start the app build/);
 });

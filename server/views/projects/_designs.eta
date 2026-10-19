@@ -1,0 +1,54 @@
+<%/* The project's designs that aren't on a branch, by area (those with none,
+     the design system and the app shell, first), as the search and the
+     filter leave them: the route filters, by ?q= (title or area) and
+     ?stage=. Each says how far it's got and when it last changed. `stage` is
+     prepared by the app: ready (approved pages not yet built, once the app
+     exists), designing (pages still to approve), approved, or built. */%>
+<% const p = it, designs = p.designs ?? [], merged = p.merged ?? [];
+   const q = it.$query?.q ?? '', stage = it.$query?.stage ?? '', filtered = Boolean(q || stage);
+   const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
+   const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
+   const areas = [...new Set(designs.map(design => design.area ?? ''))].sort((a, b) => (a !== '') - (b !== ''));
+   const progress = design => {
+     const pages = design.pages ?? 0, approved = design.approved ?? 0, built = design.built ?? 0;
+     if (!pages) return 'nothing designed yet';
+     const count = `${pages} ${pages === 1 ? 'page' : 'pages'}`;
+     if (built === pages) return `${count}, all built`;
+     if (built) return `${count}, ${built} built`;
+     if (approved === pages) return `${count}, all approved`;
+     if (approved) return `${count}, ${approved} approved`;
+     return `${count}, none approved yet`;
+   }; %>
+<% if (!designs.length) { %>
+<p class="empty"><%= filtered ? 'No designs match. Try fewer words, or show all of them.' : 'Every design here is in progress. Once a branch is finished, its design is listed here.' %></p>
+<% } else { %>
+<% if (filtered) { %><p class="muted" role="status"><%= designs.length === 1 ? '1 design' : `${designs.length} designs` %></p><% } %>
+<% for (const area of areas) { const inArea = designs.filter(design => (design.area ?? '') === area); %>
+<div class="stack gap-1">
+  <% if (area) { %><h3 class="group-label"><%= area %> <span class="muted"><%= inArea.length %></span></h3><% } %>
+  <ul class="list">
+    <% for (const design of inArea) { %>
+    <li>
+      <a class="item" href="/f/<%= p.id %>/d/<%= design.id %>">
+        <span class="icon icon-<%= kindIcon(design.kind) %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= design.title %><% if (kindPill(design.kind)) { %><span class="pill"><%= kindPill(design.kind) %></span><% } %><% if (design.stage === 'ready') { %><span class="pill">Ready to build</span><% } %></span>
+          <span class="muted"><%= progress(design) %><% if (design.changed) { %> · changed <%= design.changed %><% } %></span>
+        </span>
+      </a>
+    </li>
+    <% } %>
+  </ul>
+</div>
+<% } %>
+<% } %>
+<% if (merged.length && !filtered) { %>
+<div class="stack gap-1">
+  <h3 class="group-label">Merged lately</h3>
+  <ul class="stack gap-1 merged">
+    <% for (const note of merged) { %>
+    <li class="muted"><code><%= note.branch %></code> merged into <%= note.into %> <%= note.when %>. Its worktree and branch were tidied up.</li>
+    <% } %>
+  </ul>
+</div>
+<% } %>

@@ -149,11 +149,11 @@ test('a build of a changed group is briefed from the change', () => {
 
 test('the folder shows the current work in one place, with the stories written so far to copy', async () => {
   const folder = await page(`/f/${fid}`);
-  assert.match(folder, /<h2>In progress<\/h2>[\s\S]*Loans[\s\S]*<a href="[^"]+\/build">Loans<\/a> <span class="muted">· to build · a change<\/span>/);
-  assert.match(folder, /On <code>prelude\/loans<\/code>/);
-  assert.doesNotMatch(folder, /Copy all stories/, 'none written: nobody asked for one (R-w3n)');
-  const designs = folder.slice(folder.indexOf('<h2>Designs</h2>'));
-  assert.doesNotMatch(designs.slice(0, designs.indexOf('</div>')), /prelude\/loans</, 'the plain list holds only designs without a branch');
+  assert.match(folder, /<h2 id="in-progress-title">In progress <span class="muted">1<\/span><\/h2>[\s\S]*Loans[\s\S]*<a href="[^"]+\/build">Loans<\/a><span class="pill ">To build<\/span><span class="pill">A change<\/span>/);
+  assert.match(folder, /<span class="muted"><code>prelude\/loans<\/code><\/span>/);
+  assert.doesNotMatch(folder, /Copy every story still to build/, 'none written: nobody asked for one (R-w3n)');
+  const designs = folder.slice(folder.indexOf('<h2 id="designs-title">Designs</h2>'));
+  assert.doesNotMatch(designs.slice(0, designs.indexOf('</section>')), /\/d\/loans"/, 'the designs hold only those without a branch (R-2hx)');
 });
 
 test('a changed group is built once a build of it finishes, and due again after another design change', async () => {

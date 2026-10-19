@@ -8,6 +8,7 @@ import { designPrompt, permissionArgs } from '../server/agent.js';
 import { createDesign } from '../server/designs.js';
 import { canonical, folderId } from '../server/folders.js';
 import { createServer } from '../server/main.js';
+import { referenceId } from '../server/project.js';
 import { createFakeRunner } from './fake-runner.js';
 
 const home = mkdtempSync(join(tmpdir(), 'prelude-home-'));
@@ -56,7 +57,12 @@ test('the prompt names the reference folders, read-only', () => {
 });
 
 test('reference folders are added on the folder page, kept on this machine, and removable', async () => {
-  assert.equal((await post(`/f/${fid}/references`, { path: `"${other}"` })).status, 303);
+  // Added, the field comes back empty, and the list with it.
+  const added = await post(`/f/${fid}/references`, { path: `"${other}"` });
+  assert.equal(added.status, 200);
+  const answer = await added.text();
+  assert.match(answer, /<input id="reference-path" name="path" value=""/);
+  assert.match(answer, new RegExp(`<div ko-into="references">[\\s\\S]*action="/f/${fid}/references/${referenceId(canonical(other))}/remove"`));
   const stored = JSON.parse(readFileSync(join(home, 'references.json'), 'utf8'));
   assert.deepEqual(stored[fid], [canonical(other)], 'canonical, so permissions match the paths the agent uses');
 
@@ -88,7 +94,9 @@ test('a turn gets the folder’s reference folders', async () => {
   assert.match(design, new RegExp(`<span>${basename(other)}</span><span class="muted">[^<]+</span>`));
   assert.match(design, new RegExp(`<a href="/f/${fid}#reading">Change what it can read</a>`));
 
-  assert.equal((await post(`/f/${fid}/references/remove`, { path: canonical(other) })).status, 303);
+  const removed = await post(`/f/${fid}/references/${referenceId(canonical(other))}/remove`, {});
+  assert.equal(removed.status, 200);
+  assert.ok(!(await removed.text()).includes(canonical(other)), 'the list, without it');
   const page = await (await get(`/f/${fid}`)).text();
   assert.ok(!page.includes(canonical(other)));
 });

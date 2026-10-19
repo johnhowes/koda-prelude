@@ -101,6 +101,7 @@
   /* Center: content held to a readable width, in the middle of what holds it */
   .center { --measure-now: var(--measure); box-sizing: content-box; max-inline-size: var(--measure-now); margin-inline: auto; padding-inline: var(--space-4); }
   .center.narrow { --measure-now: var(--measure-narrow); }
+  .center.wide { --measure-now: var(--measure-wide); }
 
   /* Text that steps back: .secondary explains, .muted annotates */
   .secondary { color: var(--fg-muted); font-size: var(--text-sm); }

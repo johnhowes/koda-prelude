@@ -1,0 +1,196 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
+    ],
+    "needsYou": 5,
+    "agents": [
+      { "design": "Loan offers", "project": "spark-lending", "url": "/f/spark-lending/d/loan-offers" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "built", "stack": "Node with Eta", "path": "app", "existing": false, "branch": null, "url": null },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-design-system", "title": "Spark Design System" },
+      "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "needs": [
+        {
+          "id": "n-m0c",
+          "kind": "to-build",
+          "design": "Repayment schedule",
+          "says": "2 pages are approved and ready to build.",
+          "when": "2 hours ago",
+          "url": "/f/spark-lending/d/repayment-schedule/build"
+        },
+        {
+          "id": "n-q81",
+          "kind": "stopped",
+          "design": "Rate lock",
+          "says": "The build stopped: 1 page doesn’t render in the app.",
+          "when": "25 minutes ago",
+          "url": "/f/spark-lending/d/rate-lock/build"
+        },
+        {
+          "id": "n-u4w",
+          "kind": "finished",
+          "design": "Underwriting queue",
+          "says": "The agent finished its turn: the queue now sorts by days until the rate lock expires.",
+          "when": "12 minutes ago",
+          "url": "/f/spark-lending/d/underwriting-queue"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "a41c07",
+          "design": { "id": "loan-offers", "title": "Loan offers", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/loan-offers",
+          "buildUrl": "/f/spark-lending/d/loan-offers/build",
+          "finish": "/f/spark-lending/branches/a41c07",
+          "branch": "prelude/loan-offers",
+          "into": "main",
+          "check": "unchecked",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "7e2d9b",
+          "design": { "id": "rate-lock", "title": "Rate lock", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/rate-lock",
+          "buildUrl": "/f/spark-lending/d/rate-lock/build",
+          "finish": "/f/spark-lending/branches/7e2d9b",
+          "branch": "prelude/rate-lock",
+          "into": "main",
+          "check": "failing",
+          "failures": 1,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": { "title": "Lock a rate", "stopped": true },
+          "alsoChanges": ["app/routes/rates.js", "app/views/layout.eta"],
+          "running": { "running": false, "approved": true, "url": "http://localhost:3000", "open": "/f/spark-lending/branches/7e2d9b/app" },
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Lock a rate",
+              "kind": "new",
+              "state": "building",
+              "summary": "A borrower locks today’s rate for 30, 45 or 60 days, and sees what it costs.",
+              "story": "Lock a rate\n\nAs a borrower, I can lock today’s rate for 30, 45 or 60 days from my loan’s page, and see the fee for each before I confirm.",
+              "session": "/f/spark-lending/d/rate-lock/sessions/s-8r2"
+            },
+            {
+              "title": "Rate lock expiry",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "Seven days before a lock expires, the loan’s page says so, with Extend.",
+              "story": "Rate lock expiry\n\nSeven days before a rate lock expires, the borrower’s loan page says when, with a way to extend it.",
+              "session": null
+            }
+          ]
+        },
+        {
+          "id": "c90f13",
+          "design": { "id": "repayment-schedule", "title": "Repayment schedule", "kind": "design", "area": "Servicing" },
+          "url": "/f/spark-lending/d/repayment-schedule",
+          "buildUrl": "/f/spark-lending/d/repayment-schedule/build",
+          "finish": "/f/spark-lending/branches/c90f13",
+          "branch": "prelude/repayment-schedule",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 2,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": { "running": true, "approved": true, "url": "http://localhost:3000", "open": "/f/spark-lending/branches/c90f13/app" },
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Schedule",
+              "kind": "new",
+              "state": "built",
+              "summary": "Every payment of the loan, with what goes to principal and to interest.",
+              "story": "Schedule\n\nAs a borrower, I see every payment of my loan in order, each split into principal and interest, with the balance after it.",
+              "session": "/f/spark-lending/d/repayment-schedule/sessions/s-2kq"
+            },
+            {
+              "title": "Pay extra",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "An extra payment, and how much sooner the loan ends because of it.",
+              "story": "Pay extra\n\nAs a borrower, I can make an extra payment toward principal and see how many months sooner my loan ends.",
+              "session": null
+            },
+            {
+              "title": "Loan summary",
+              "kind": "changed",
+              "state": "to-build",
+              "summary": "The next payment’s date now links to the schedule.",
+              "story": "Loan summary (a change)\n\nThe loan summary’s next payment date links to the repayment schedule, scrolled to that payment.",
+              "session": null
+            }
+          ]
+        },
+        {
+          "id": "5b8a2e",
+          "design": { "id": "underwriting-queue", "title": "Underwriting queue", "kind": "design", "area": "Underwriting" },
+          "url": "/f/spark-lending/d/underwriting-queue",
+          "buildUrl": "/f/spark-lending/d/underwriting-queue/build",
+          "finish": "/f/spark-lending/branches/5b8a2e",
+          "branch": "prelude/underwriting-queue",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": true,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        }
+      ],
+      "designs": [
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 days ago" },
+        { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "last week" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/document-checklist", "into": "main", "when": "2 days ago" },
+        { "id": "m-2", "branch": "prelude/borrower-profile", "into": "main", "when": "last week" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+      ]
+    }
+  ]
+}

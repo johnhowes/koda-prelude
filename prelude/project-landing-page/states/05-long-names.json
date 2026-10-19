@@ -1,0 +1,88 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "mortgage-origination", "name": "Spark Mortgage Origination and Servicing Platform", "path": "C:\\Users\\JohnHowes\\source\\repos\\lendwithspark\\spark-mortgage-origination-and-servicing-platform" },
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" }
+    ],
+    "needsYou": 1,
+    "agents": []
+  },
+  "projects": [
+    {
+      "id": "mortgage-origination",
+      "name": "Spark Mortgage Origination and Servicing Platform",
+      "path": "C:\\Users\\JohnHowes\\source\\repos\\lendwithspark\\spark-mortgage-origination-and-servicing-platform",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "existing", "stack": null, "path": null, "existing": true, "branch": null, "url": null },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets" },
+      "shell": null,
+      "needs": [
+        {
+          "id": "n-p2a",
+          "kind": "question",
+          "design": "Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage",
+          "says": "The agent asked whether a borrower who spreads an escrow shortage over twelve months can change their mind after the first payment, and what happens to the payments already made toward it.",
+          "when": "1 hour ago",
+          "url": "/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "d81a6c",
+          "design": { "id": "escrow-analysis-and-shortage-repayment-options", "title": "Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage", "kind": "design", "area": "Servicing and escrow administration" },
+          "url": "/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options",
+          "buildUrl": "/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options/build",
+          "finish": "/f/mortgage-origination/branches/d81a6c",
+          "branch": "prelude/escrow-analysis-and-shortage-repayment-options",
+          "into": "release/2026-q4-servicing",
+          "check": "failing",
+          "failures": 12,
+          "behind": 148,
+          "worked": true,
+          "remote": null,
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Controllers/EscrowAnalysisController.cs",
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/Index.cshtml",
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_ShortageOptions.cshtml",
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_PaymentChange.cshtml",
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Models/EscrowShortageViewModel.cs",
+            "src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Services/ShortageSpreadCalculator.cs",
+            "src/Spark.Mortgage.Servicing.Web/wwwroot/css/escrow.css",
+            "src/Spark.Mortgage.Servicing.Web/Startup.cs",
+            "tests/Spark.Mortgage.Servicing.Web.Tests/Escrow/ShortageSpreadCalculatorTests.cs"
+          ],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Escrow shortage repayment options, with the monthly payment for each and the date it starts",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "A borrower with an escrow shortage chooses to pay it in full, spread it over twelve months, or spread it over the remaining months until the next analysis, and sees the new monthly payment and the date it starts for each option before confirming.",
+              "story": "Escrow shortage repayment options\n\nAs a borrower with an escrow shortage, I choose to pay it in full, spread it over twelve months, or spread it until the next analysis, and see the new monthly payment for each before I confirm.",
+              "session": null
+            }
+          ]
+        }
+      ],
+      "designs": [
+        { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets", "kind": "system", "area": null, "pages": 3, "approved": 2, "built": 0, "stage": "designing", "changed": "3 weeks ago" },
+        { "id": "loan-officer-pipeline-dashboard-with-rate-lock-expirations", "title": "Loan officer pipeline dashboard with rate lock expirations and conditions outstanding", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 11, "approved": 7, "built": 0, "stage": "designing", "changed": "6 days ago" },
+        { "id": "closing-disclosure-review", "title": "Closing disclosure review and borrower e-signature", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 0, "approved": 0, "built": 0, "stage": "designing", "changed": "just now" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/borrower-communication-preferences-and-paperless-statements", "into": "release/2026-q4-servicing", "when": "3 weeks ago" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-servicing-portal-legacy-stylesheets", "path": "\\\\fileserver.lendwithspark.local\\engineering\\archive\\spark-servicing-portal-legacy-stylesheets" },
+        { "id": "r-2", "name": "Spark.Mortgage.Shared.Contracts", "path": "C:\\Users\\JohnHowes\\source\\repos\\lendwithspark\\Spark.Mortgage.Shared.Contracts" }
+      ]
+    }
+  ]
+}

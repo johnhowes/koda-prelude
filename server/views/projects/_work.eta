@@ -1,0 +1,73 @@
+<%/* The project's work: what needs the person here (Home's list, for this
+     project alone), and the designs in progress on their branches. It's a
+     region of its own, so the page reloads it whenever something changes;
+     the designs list is another, which reloads only when designs do. */%>
+<% const p = it, needs = [...(p.needs ?? [])].reverse(), inProgress = p.inProgress ?? [];
+   const kinds = {
+     question: { label: 'Asking you', icon: 'question', tone: 'accent' },
+     stopped: { label: 'Build stopped', icon: 'code', tone: 'warn' },
+     finished: { label: 'Turn finished', icon: 'session', tone: '' },
+     'to-build': { label: 'Ready to build', icon: 'code', tone: '' },
+     'pull-request': { label: 'Pull request open', icon: 'push', tone: '' },
+   };
+   const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
+   const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
+   /* Only the stories the agent has written: one is written when asked for (R-w3n). */
+   const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built' && story.story).map(story => story.story)).join('\n\n---\n\n'); %>
+<% if (needs.length) { %>
+<section class="card" aria-labelledby="needs-title">
+  <h2 id="needs-title">Needs you</h2>
+  <ul class="list">
+    <% for (const need of needs) { const kind = kinds[need.kind]; const away = need.url.startsWith('http'); %>
+    <li>
+      <a class="item" href="<%= need.url %>"<% if (away) { %> target="_blank" rel="noopener"<% } %>>
+        <span class="icon icon-<%= kind.icon %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= need.design %><span class="pill <%= kind.tone %>"><%= kind.label %></span></span>
+          <span class="secondary"><%= need.says %></span>
+          <span class="muted"><%= need.when %></span>
+        </span>
+        <% if (away) { %><span class="icon icon-external" aria-hidden="true"></span><span class="sr-only">(opens on your Git server)</span><% } %>
+      </a>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %>
+
+<% if (inProgress.length) { %>
+<section class="card" aria-labelledby="in-progress-title">
+  <h2 id="in-progress-title">In progress <span class="muted"><%= inProgress.length %></span></h2>
+  <ul class="stack gap-6 in-progress">
+    <% for (const item of inProgress) { %>
+    <li class="stack gap-2">
+      <a class="item" href="<%= item.url %>">
+        <span class="icon icon-<%= kindIcon(item.design.kind) %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= item.design.title %><% if (kindPill(item.design.kind)) { %><span class="pill"><%= kindPill(item.design.kind) %></span><% } %></span>
+          <span class="muted"><%= item.design.area ? `${item.design.area} · ` : '' %>prelude/<%= item.design.id %></span>
+        </span>
+      </a>
+      <%~ include('./_branch', item) %>
+    </li>
+    <% } %>
+  </ul>
+  <% if (toBuild) { %>
+  <details class="disclosure" ko-item>
+    <summary>Copy every story still to build</summary>
+    <div class="stack gap-2">
+      <textarea class="story" ko-as="stories" rows="12" readonly aria-label="Every story still to build"><%= toBuild %></textarea>
+      <div class="cluster actions"><button class="btn small" type="button" ko-as="copyAll">Copy</button></div>
+    </div>
+    <script type="koda">
+      // Copying to the clipboard is an action on the platform, not a value.
+      const { stories, copyAll } = koda.scope();
+      copyAll.element.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(stories.element.value);
+        copyAll.element.textContent = 'Copied';
+      });
+    </script>
+  </details>
+  <% } %>
+</section>
+<% } %>

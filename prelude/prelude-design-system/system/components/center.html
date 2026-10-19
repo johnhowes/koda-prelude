@@ -1,11 +1,14 @@
 <!-- Center: content held to a readable width (--measure, 46rem) in the middle of
      whatever holds it, with a --space-4 gutter so it never touches the edges. A
-     page of cards and forms (a folder, the home page) is a .center holding a
-     .stack. .narrow holds it to --measure-narrow (26rem): a sign-in, an empty
-     state. It centres; it doesn't space its children - put a .stack inside. -->
+     page of cards and forms (the home page) is a .center holding a .stack.
+     .narrow holds it to --measure-narrow (26rem): a sign-in, an empty state.
+     .wide holds it to --measure-wide (72rem): a page with a side column (a
+     .split), such as a project's page, whose main column keeps a readable
+     width beside it. It centres; it doesn't space its children - put a .stack
+     inside. -->
 <main class="center">
   <div class="stack">
-    <h1>Open a folder</h1>
+    <h1>Open a project</h1>
     <div class="card">…</div>
   </div>
 </main>
@@ -13,3 +16,10 @@
 <div class="center narrow">
   <p class="empty">No designs yet.</p>
 </div>
+
+<main class="center wide">
+  <div class="split">
+    <div class="stack">…the work…</div>
+    <aside class="side stack">…the setup…</aside>
+  </div>
+</main>
