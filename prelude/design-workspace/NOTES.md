@@ -284,6 +284,17 @@ Where the app differs from the screens, on purpose:
   (`:scope.window-page > .design`); the app's copy,
   `server/public/workspace.css` line 25, needs the same one-line change,
   in a build or a fix.
+- **The surface sometimes takes over the whole page** (reported
+  2026-10-19, typing in the box or Start with this). Likely cause, from
+  the code (`server/main.js`, the `/d/` routing): a design with no branch
+  is served from the project's own address; the first POST (the draft
+  kept while typing, Start with this) makes its branch, and from then on
+  every GET there is redirected to the worktree's address. The surface's
+  next reload (`design-changed`) comes back from another address, outside
+  its own scope, so Koda routes it by scope and `#main` (`ko-scope="/"`)
+  takes it. Fix in the app: answer a fragment GET there in place
+  (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
+  and keeping a draft, which lives on this machine, needn't make a branch.
 
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
