@@ -76,7 +76,8 @@ function groupKeyFor(pattern, keys) {
  * changedRoutes: [{ route, what: [text] }], removedRoutes, newPosts,
  * changedPosts, removedPosts, shape: [{ pattern, gained, lost }],
  * screens: [{ page, states }], rules: { added, reworded, retired },
- * events: { added, changed: [{ event, what }], removed }, states, statesNew }.
+ * events: { added, changed: [{ event, what }], removed }, states, statesNew,
+ * builtBefore: the page was the app's own on main }.
  * designWide also has { events }: the design-wide events, compared the same way.
  */
 export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
@@ -241,6 +242,9 @@ export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
       || change.rules.added.length || change.rules.reworded.length || change.rules.retired.length
       || change.events.added.length || change.events.changed.length || change.events.removed.length;
     change.status = pageNew ? 'new' : anything ? 'changed' : 'unchanged';
+    // Whether the app had the page as main has it: then the change is all
+    // that's new to the app; else main's unbuilt page is new to it too.
+    change.builtBefore = Boolean(group.page && baseRoutes.find(route => route.pattern === group.page.pattern)?.ported);
     change.summary = summaryOf(group, change);
     changes.set(group.key, change);
   }

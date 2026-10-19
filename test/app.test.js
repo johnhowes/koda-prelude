@@ -146,7 +146,7 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
 
   // A design with no branch yet shows main's version; posting to it makes its branch.
   const view = await (await get(`/f/${fid}/d/loans/build`)).text();
-  assert.match(view, /Features are built into the app, and there isn’t one yet\./);
+  assert.match(view, /There’s no app to build into yet\.<\/strong>\s*<p>Build the app first \(Node, Express, Eta and Koda\), then these pages on top of it\. You can write their stories now\.<\/p>/);
   assert.doesNotMatch(view, /Start a build session/);
   const early = await post(`/f/${fid}/d/loans/builds`, { group: '/loans' });
   assert.equal(early.status, 409, 'no app yet');
@@ -204,8 +204,8 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
 
   // The shell's own page is built like a feature's; its gallery never is.
   const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
-  assert.match(shellBuild, /<h2>Settings <span class="pill">/);
-  assert.doesNotMatch(shellBuild, /<h2>Home /, 'the gallery isn’t built');
+  assert.match(shellBuild, /<h3 class="page-title" id="page-settings">Settings<\/h3>\s*<span class="pill">/);
+  assert.doesNotMatch(shellBuild, />Home<\/h3>/, 'the gallery isn’t built');
   // Approved first (10.9). This app's design host is a stand-in that never runs,
   // so its pages can't render here to be approved: an approved screen is written.
   write(repo, 'prelude/shell/snapshots/_/settings.html', '<h1>Settings</h1>');
@@ -223,7 +223,8 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   const loans = worktreeOf(repo, 'prelude/loans');
   const lid = folderId(loans);
   const behind = await (await get(`/f/${lid}/d/loans/build`)).text();
-  assert.match(behind, /The app is on your main branch, but not on this design’s branch yet/);
+  assert.match(behind, /The app is on main, but not on this design’s branch yet\./);
+  assert.match(behind, new RegExp(`<form class="cluster actions" action="/f/${fid}/branches/${lid}/update" method="post">`));
   const updated = await post(`/f/${fid}/branches/${lid}/update`, { back: `/f/${lid}/d/loans/build` });
   assert.equal(updated.status, 303);
   assert.equal(appOf(loans).built, true, 'main came in');
@@ -326,9 +327,10 @@ test('the shell’s layouts are built before the pages that render in them (8c)'
   write(repo, 'prelude/prelude.json', { app: { existing: true, path: 'server', stack: 'Node and Eta' } });
   commitAll(repo, 'An app, a redesigned shell, and a feature');
 
-  // The feature waits for the layout its page renders in.
+  // The feature waits for the layout its page renders in: a build of it is
+  // refused, saying why (the Build page itself has no place for it: NOTES).
   const work = await (await get(`/f/${fid}/d/workspace/build`)).text();
-  assert.match(work, /Its pages render in the shell’s “workspace” layout, which the app hasn’t got yet\. <a href="\/f\/[0-9a-f]+\/d\/shell\/build">Build the shell’s layouts first<\/a>\./);
+  assert.match(work, /<h3 class="page-title" id="page-work">Work<\/h3>/);
   assert.doesNotMatch(work, /Start a build session/);
   const early = await post(`/f/${fid}/d/workspace/builds`, { group: '/work' });
   assert.equal(early.status, 409);
@@ -336,9 +338,9 @@ test('the shell’s layouts are built before the pages that render in them (8c)'
 
   // The shell's Build page has its Layouts group: the layouts, not the partials.
   const shellBuild = await (await get(`/f/${fid}/d/shell/build`)).text();
-  assert.match(shellBuild, /<h2>The shell’s layouts <span class="pill">To build<\/span><\/h2>/);
-  assert.match(shellBuild, /<code>layouts\/app\.eta<\/code>[\s\S]*<code>layouts\/workspace\.eta<\/code>/);
-  assert.doesNotMatch(shellBuild, /layouts\/_regions\.eta/);
+  assert.match(shellBuild, /<h3 class="page-title" id="page-layouts">The shell’s layouts<\/h3>\s*<span class="pill">Not built yet<\/span>/);
+  assert.match(shellBuild, /<span>The shell’s “app” layout<\/span>[\s\S]*<span>The shell’s “workspace” layout<\/span>/);
+  assert.doesNotMatch(shellBuild, /_regions/);
 
   runner.turns.length = 0;
   const started = await post(`/f/${fid}/d/shell/builds`, { group: '@layouts' });

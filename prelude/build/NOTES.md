@@ -83,6 +83,38 @@ not approved, building, no app, all built. Event: `story-written`.
   2026-10-19): git's user name on the computer that saved it ("Edited by
   John Howes, today at 09:14"), beside the story's title.
 
+## Built into the app (the Build page, 2026-10-19)
+
+- The page is `server/views/_build.eta` (ported back over the old one), its
+  pages `server/views/build/_pages.eta`, its model and the story writer
+  `server/build.js`, the agent's brief `storyPrompt` (agent.js). It renders
+  in the app layout now, with the app's live channel (`/live`); the server
+  sends `story-written` there once a story is written.
+- A page's stories are kept in the design: `stories/<page>/<n>-<slug>.md`
+  (the agent's, or a person's edit), `split.md` (why it's split) and
+  `story.json` (Prelude's: when it was written, a fingerprint of what it was
+  written from, and the page's change lines then). A different fingerprint
+  is Out of date; what changed since is the lines that came and went.
+  Each written story is committed to the branch (R-u6t). A person's edit
+  should set `story.json`'s `edited["<n>"] = { by, at }`.
+- A redesign of an app page in a design with nothing on main to compare
+  with (`from`, no baseline) "looks different in" every state: Prelude
+  can't render the app's page to compare. The agent writing its story reads
+  both files and describes only the differences.
+- Not built here: the story pages (`/build/stories/:group…`) and
+  `POST /build/stories/:group`. Until they are, Write the story and Open the
+  story on the Build page lead nowhere.
+
+### Where the design is silent
+
+- **A refusal has no place on the page** (a build that can't start, an
+  approval over pages that don't render). The app says it in the layout's
+  notice region (`build/_refused.eta`).
+- **A page waiting for the shell's layouts** still shows Start a build
+  session (the old page said it waits); starting it is refused, saying why.
+- **The shell's layouts** don't need approved screens to build, but Start a
+  build session only shows once the design is approved.
+
 ## Open questions
 
 - None open.

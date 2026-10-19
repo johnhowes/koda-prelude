@@ -48,7 +48,7 @@ test('asked for from a page in another document, a page comes whole, so the brow
   const from = referer => fetch(`${base}/`, { headers: { 'x-koda-fragment': '1', referer: `${base}${referer}` } }).then(res => res.text());
   assert.doesNotMatch(await from('/f/0123456789/d/loans/sessions/new'), /<html/, 'from a design page, in the same app layout: the fragment');
   assert.match(await from('/f/0123456789'), /^<!doctype html>/, 'from a project page, still in ds/v1: whole');
-  assert.match(await from('/f/0123456789/d/loans/build'), /^<!doctype html>/, 'from the Build page, still in ds/v1: whole');
+  assert.doesNotMatch(await from('/f/0123456789/d/loans/build'), /<html/, 'from the Build page, in the same app layout: the fragment');
   assert.match(await from('/f/0123456789/d/loans/window'), /^<!doctype html>/, 'from a pop-out window: whole');
 });
 

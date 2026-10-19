@@ -493,6 +493,69 @@ Never change the design's views, states, approved screens (${designPath}/snapsho
 You can't run commands. After each turn Prelude renders every route of the design in every state through the app's own views, which builds the app, and tells you with the next message what fails, a state that no longer fits a model included. It also shows the person how each page differs from its approved screen. When the group is built, say what you changed, and what the person should look at before approving the screens and opening the pull request.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
 }
 
+/**
+ * The instructions for writing a page's story (prelude/build), when someone
+ * asks for one (R-w3n): for people first, and only what the design changes in
+ * the app as it is now (R-7qd), never what's built or another page's (R-c9r).
+ * `group` is a group as main.js's groupsOf gives it, with its `changes`
+ * (build.js) and `kind`; Across the design's rules and events are the
+ * design-wide ones. `others` are the other pages' titles.
+ */
+export function storyPrompt({ title, designPath, group, storiesPath, states = [], approved = false, others = [], references = [] }) {
+  const at = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
+  const across = group.key === '@across';
+  const from = group.page?.from?.slice(5) ?? null;
+  const what = across
+    ? `"${group.title}" holds the design's rules and server events that no single page shows. Its story is only those.`
+    : from
+    ? `${group.title} is a page the app already has (${from}), redesigned in ${at(group.page.view)}. Read both, and describe only how the design differs from the app's page: what's new, changed or gone on screen. Leave out what stays the same.`
+    : group.incremental
+    ? `${group.title} is already in the app. The story is only the change listed above${group.change?.summary ? ` (${group.change.summary})` : ''}; the rest of the page stays as it is.`
+    : `The app hasn't got ${group.title} yet, so its story describes the page whole, less anything already built.`;
+  const routes = group.routes.filter(route => !route.ported).map(route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, in "${route.in}" over ${route.over}` : ''}: ${at(route.view)}, data "${route.data || '(the whole state)'}"`);
+  const posts = group.posts.map(post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`);
+  const rules = group.rules.filter(rule => rule.proposed).map(rule => `  - ${rule.id}: ${rule.text}`);
+  const events = (group.events ?? []).map(event => `  - ${event.name}: ${event.title}`);
+  return `You are writing a story for a team's tracker, in Prelude: the page "${group.title}" of the design "${title}", in ${designPath}/. A story tells a product manager what people will see and do differently once it's built, and a developer what to build. It is read by people, so write it in their words.
+
+What the design changes here, compared with the app as it is now (Prelude worked this out from the design; the story is about these and nothing else):
+${group.changes.map(change => `  - ${change.text}`).join('\n') || '  (nothing listed)'}
+
+${what}
+
+The design: ${designPath}/routes.json (what each address shows, and what each form does), ${designPath}/views/, ${designPath}/states/ (the cases), ${designPath}/RULES.md and ${designPath}/NOTES.md (why).${approved ? ` The approved screens are in ${designPath}/snapshots/.` : ''}${routes.length ? `\nIts pages:\n${routes.join('\n')}` : ''}${posts.length ? `\nIts forms:\n${posts.join('\n')}` : ''}${rules.length ? `\nIts rules, not built yet:\n${rules.join('\n')}` : ''}${events.length ? `\nIts server events:\n${events.join('\n')}` : ''}
+
+Never repeat what's already built or someone else's: no rule that isn't marked *proposed* in RULES.md (the app has it), nothing about pages the app already has beyond this change, and nothing from the other pages' stories (${[...others, ...(across ? [] : ['Across the design, which has the design-wide rules and events'])].join('; ') || 'there are none'}).
+
+Write one story for the page. Split it only when its parts could ship on their own, each useful without the other; then write each as its own story, and say why in one sentence.
+
+Write the story to ${storiesPath}/1-<slug>.md, the slug being its title in lower-case words joined by hyphens; a second to ${storiesPath}/2-<slug>.md, and so on. If you split it, also write ${storiesPath}/split.md: the one sentence why, starting in lower case ("the monthly payment and sorting are useful on their own, so they can ship first."). Write nothing else, anywhere.
+
+Each story, in Markdown:
+
+# <What a person gets, in a few words>
+
+<One short paragraph: who it's for, and why it matters to them.>
+
+## What changes
+
+- <What's on screen and what a person can do, in their words: no addresses, file names or code.>
+
+## Acceptance criteria
+
+- <What a person sees and does that shows it's done, one per line. Each of the page's rules above is one, written as **R-xxx.** and its words.>
+${approved ? `
+## Looks right in
+
+<The states it shows up in, by name (${states.map(state => state.title).join(', ')}), each as its approved screen.>
+` : ''}
+## For developers
+
+- <The addresses, views and data it touches, from routes.json; the test data (${designPath}/states/, by file); anything a developer needs that a person doesn't.>
+
+Nobody is there to answer questions: read what you need, write the files, and finish.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
 /** How a design's RULES.md is written (plan: step 7). */
 function rulesSection(designPath) {
   return `${designPath}/RULES.md holds the design's rules: behaviour worth stating as a rule, in one plain present-tense sentence about what a person observes, with no code names. The views, routes and states already say most of what the design does, so a rule is for what they leave open: that something seen in a state is intended and general, not an accident of the data (what a person without a permission sees, a limit, an ordering), and what nothing on screen can show (an email sent, a record locked). Don't restate what a view or a form's "require" already says plainly.

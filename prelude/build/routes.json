@@ -1,6 +1,6 @@
 {
-  "/f/:folder/d/:design/build": { "view": "build/page", "title": "Build", "data": "folders/:folder/designs/:design", "from": "@app/server/views/_build" },
-  "/f/:folder/d/:design/build/pages": { "view": "build/_pages", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/build": { "view": "@app/server/views/_build", "title": "Build", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/build/pages": { "view": "@app/server/views/build/_pages", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/build/stories": {
     "update": "folders/:folder/designs/:design",
     "answer": { "redirect": "/f/:folder/d/:design/build" }

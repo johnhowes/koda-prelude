@@ -1,0 +1,39 @@
+<form action="/f/borrower-portal/d/loan-offers/build/stories/offers/story/1" class="card gap-3" ko-target="self" method="post">
+<h2 class="story-title">
+Edit “See each offer’s monthly payment, and sort offers by cost”
+</h2>
+<label class="field">
+<span class="label">
+The story, in Markdown
+</span>
+<textarea ko-invalid-server="undefined" name="markdown" rows="24" spellcheck="true">
+# See each offer&#39;s monthly payment, and sort offers by cost Borrowers compare offers by what they&#39;ll pay each month, so the offers list shows it, and puts the cheapest first. ## What changes - Each offer in the list shows its **monthly payment** under the APR. - A **Sort by** menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR. - The list keeps the borrower&#39;s choice while they&#39;re on the page, and starts at Lowest monthly payment next time. ## Acceptance criteria - The monthly payment matches the offer&#39;s details page, to the cent. - Offers with the same monthly payment keep their order by APR, lowest first. - With one offer, there is no Sort by menu. - **R-m7t.** Offers are listed with the lowest monthly payment first. ## Looks right in Typical, Many offers and Long lender names, each as its approved screen. ## For developers - `GET /offers` takes `?sort=payment|total|apr`; the list is `prelude/loan-offers/views/offers/_list.eta`. - Each offer gains `monthlyPayment`. - Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`, `03-long-names`).
+</textarea>
+<span class="hint">
+As your tracker shows it: a
+<code>
+#
+</code>
+title,
+<code>
+##
+</code>
+sections, lists and
+<code>
+**bold**
+</code>
+. The “For developers” section is folded here, and copied in full.
+</span>
+</label>
+<input name="edited" type="hidden" value="true">
+<input name="url" type="hidden" value="/f/borrower-portal/d/loan-offers/build/stories/offers/story/1">
+<input name="title" type="hidden" value="See each offer’s monthly payment, and sort offers by cost">
+<div class="cluster actions">
+<button class="btn primary" type="submit">
+Save the story
+</button>
+<a class="btn ghost" href="/f/borrower-portal/d/loan-offers/build/stories/offers/story/1" ko-target="self">
+Discard changes
+</a>
+</div>
+</form>
