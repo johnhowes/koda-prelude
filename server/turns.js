@@ -24,7 +24,6 @@ import { isAbsolute, relative, resolve } from 'node:path';
 
 import { randomUUID } from 'node:crypto';
 
-import { designPrompt, toolSummary } from './agent.js';
 import { DELETING, designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
 import { render } from './views.js';
