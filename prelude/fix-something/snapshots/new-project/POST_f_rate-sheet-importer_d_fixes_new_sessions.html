@@ -1,0 +1,50 @@
+<form action="/f/rate-sheet-importer/d/fixes/new/sessions" class="composer" ko-item method="post">
+<ul aria-label="Images to send" class="attachments" id="attachments" ko-invoke="event:draft-changed" ko-source="/f/rate-sheet-importer/d/fixes/new/draft">
+</ul>
+<div id="message-box" ko-region>
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea aria-describedby="message-error" id="message" ko-as="message" ko-invalid-server="This is required." name="message" placeholder="Ask about the project, or say what’s wrong and where; paste a screenshot of it. Enter to send, Shift+Enter for a new line." required rows="3">
+</textarea>
+</div>
+<div hidden ko-debounce="800" ko-form="/f/rate-sheet-importer/d/fixes/new/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
+<input calc-value="message.value" name="message" type="hidden">
+</div>
+<div class="composer-foot">
+<div class="composer-tools">
+<div ko-form="/f/rate-sheet-importer/d/fixes/new/attachments" ko-invoke="change" ko-method="post" ko-target="attachments">
+<label class="icon-btn small" title="Attach an image. You can also paste one, or drop it on the box.">
+<span aria-hidden="true" class="icon icon-attach">
+</span>
+<span class="sr-only">
+Attach an image
+</span>
+<input accept="image/png, image/jpeg, image/gif, image/webp" class="sr-only" ko-as="upload" multiple name="image" type="file">
+</label>
+</div>
+<span id="dictation" ko-invoke="event:dictation-changed" ko-source="/f/rate-sheet-importer/d/fixes/new/dictation/button">
+<span class="cluster gap-2 dictation" ko-item>
+<a class="icon-btn small" href="/f/rate-sheet-importer/d/fixes/new/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</a>
+</span>
+</span>
+<span class="error" id="message-error">
+This is required.
+</span>
+<span class="muted" ko-as="draftKept" ko-region role="status">
+</span>
+</div>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+<script type="koda">
+// Two things no binding or trigger expresses: Enter to send, and taking // an image the person pastes or drops, which means moving a File into // the upload's input (it then uploads as if chosen there). Listened for // on the form, since dictation replaces the box itself. const { message, upload } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+</script>
+</form>

@@ -1,0 +1,34 @@
+<h2 id="app-title">
+The app
+</h2>
+<p class="secondary">
+It will be Node with Eta. There’s no app yet: the app build creates it on the app shell’s branch, with the shell’s layouts and the design system, so features can be built on top of it.
+</p>
+<form action="/f/rate-sheet-importer/app/build" class="stack gap-3" ko-target="app" method="post">
+<input name="status" type="hidden" value="building">
+<details class="disclosure">
+<summary>
+Choose another stack
+</summary>
+<label class="field">
+<span class="label">
+The app’s stack
+</span>
+<input autocomplete="off" name="stack" placeholder="ASP.NET Core MVC with Razor">
+<span class="hint">
+Designs are Eta views; with another stack, the app build also gives the app a design host, and designs are rewritten in its language as they’re built.
+</span>
+</label>
+</details>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Start the app build
+</button>
+<button class="btn small ghost" name="existing" title="Prelude finds the app this project already has and connects it, instead of building one." type="submit" value="true">
+It already has an app
+</button>
+</div>
+</form>
+<p class="muted">
+Designs and builds work on Git branches: Prelude makes the project a Git repository first, and commits it.
+</p>

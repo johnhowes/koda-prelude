@@ -1,0 +1,11 @@
+{
+  "writtenAt": "2026-10-19T18:45:13.304Z",
+  "fingerprint": "61ca5e193229f4c4",
+  "changes": [
+    "Project looks different in Typical and New project",
+    "6 new forms",
+    "New rule R-x8d: Fixing a conversation on a branch keeps it: its sessions carry on as the fix's, moved into the fix's folder on the branch, and it leaves Asked lately for In progress.",
+    "New rule R-k9p: Ask or fix is offered on every project, including one with no designs yet."
+  ],
+  "edited": {}
+}
