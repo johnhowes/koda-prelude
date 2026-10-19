@@ -30,7 +30,7 @@ Change model…
 Downloads the one you choose, then removes this one
 </span>
 </a>
-<form action="/f/borrower-portal/d/loan-offers/dictation/remove" ko-target="dictation" method="post">
+<div ko-form="/f/borrower-portal/d/loan-offers/dictation/remove" ko-method="post" ko-target="dictation">
 <input name="status" type="hidden" value="none">
 <button type="submit">
 <span class="item-title">
@@ -40,7 +40,7 @@ Remove the model
 Frees 466 MB. Dictation is off until you set it up again.
 </span>
 </button>
-</form>
+</div>
 </div>
 </details>
 <span class="muted" hidden ko-as="heard" role="status">
