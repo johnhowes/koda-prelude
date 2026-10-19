@@ -1,32 +1,13 @@
 {
+  "layout": { "needsYou": 3 },
   "needs": [
-    {
-      "id": "n-x5p",
-      "kind": "pull-request",
-      "projectId": "borrower-portal",
-      "project": "borrower-portal",
-      "design": "Sign in",
-      "says": "Pushed prelude/sign-in. Its pull request is waiting for a review.",
-      "when": "yesterday",
-      "url": "https://github.com/lendwithspark/borrower-portal/pull/214"
-    },
-    {
-      "id": "n-m0c",
-      "kind": "to-build",
-      "projectId": "spark-lending",
-      "project": "spark-lending",
-      "design": "Repayment schedule",
-      "says": "3 pages are approved and ready to build.",
-      "when": "2 hours ago",
-      "url": "/f/spark-lending/d/repayment-schedule/build"
-    },
     {
       "id": "n-3fd",
       "kind": "finished",
       "projectId": "borrower-portal",
       "project": "borrower-portal",
       "design": "Document upload",
-      "says": "The agent finished its turn: the upload page now shows each file’s progress.",
+      "says": "The agent’s turn ended with an error.",
       "when": "40 minutes ago",
       "url": "/f/borrower-portal/d/document-upload"
     },

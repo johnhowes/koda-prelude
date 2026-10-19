@@ -119,6 +119,17 @@ while it loads" and "Open a project".
     document's title on a swap, and none of the app's titled pages update it
     either. That needs a change to Koda or to the app's layout, for every page.
 
+## Needs you, only what needs acting on (fix, 2026-10-19)
+
+The list had become noise: a row for every unopened session of the week, and
+for every pull request and design ready to build. It now holds only a
+question, a stopped build and a turn that ended with an error (the person's
+decision, replacing 2026-10-16's "includes finished turns"). Pull requests,
+pages to build and finished turns are still said in each card's In progress
+line, and on the project's page; the bar and each card count only what's
+listed. Typical's state lost those rows, and Document upload's is now an
+error. `server/home.js` (`needsYou`) decides; R-n4v, R-8hc, R-w2k changed.
+
 ## Open questions
 
 - In the preview the bar's count doesn't follow an event: it comes from the

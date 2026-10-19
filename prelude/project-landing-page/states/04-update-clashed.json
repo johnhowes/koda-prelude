@@ -26,16 +26,7 @@
       "defaultStack": "Node with Eta",
       "system": { "id": "borrower-design-system", "title": "Borrower Design System" },
       "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
-      "needs": [
-        {
-          "id": "n-3fd",
-          "kind": "finished",
-          "design": "Document upload",
-          "says": "The agent finished its turn: the upload page now shows each file’s progress.",
-          "when": "40 minutes ago",
-          "url": "/f/borrower-portal/d/document-upload"
-        }
-      ],
+      "needs": [],
       "inProgress": [
         {
           "id": "e03b51",

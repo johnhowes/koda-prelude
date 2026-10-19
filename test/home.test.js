@@ -31,8 +31,8 @@ const post = (path, fields, fragment = true) => {
   return fetch(base + path, { method: 'POST', body, headers: fragment ? { 'x-koda-fragment': '1' } : {}, redirect: 'manual' });
 };
 
-/** A design with one session whose turn ended at `at`, its last words `words`. */
-function sessionWith(folder, { design = 'billing', title = 'Billing', id = '20261016-1200-abcd', words, at }) {
+/** A design with one session whose turn ended at `at` (with an error unless `ok`), its last words `words`. */
+function sessionWith(folder, { design = 'billing', title = 'Billing', id = '20261016-1200-abcd', words, at, ok = true }) {
   const dir = join(folder, 'prelude', design);
   mkdirSync(join(dir, 'sessions', id), { recursive: true });
   writeFileSync(join(dir, 'design.json'), JSON.stringify({ title }));
@@ -40,7 +40,7 @@ function sessionWith(folder, { design = 'billing', title = 'Billing', id = '2026
   const entries = [
     { at, type: 'user', text: 'Go on.' },
     { at, type: 'text', text: words },
-    { at, type: 'turn', ok: true, stopped: false, error: null },
+    { at, type: 'turn', ok, stopped: false, error: ok ? null : 'The agent stopped unexpectedly.' },
   ];
   writeFileSync(join(dir, 'sessions', id, 'transcript.jsonl'), entries.map(entry => JSON.stringify(entry)).join('\n') + '\n');
   return `/f/${folderId(folder)}/d/${design}/sessions/${id}`;
@@ -105,11 +105,13 @@ test('the page arrives with the projects’ names; the regions read the rest, mo
   assert.match(projects, /changed 3 hours ago/);
 });
 
-test('a finished turn needs the person until they open its session', async () => {
-  const url = sessionWith(newer, { design: 'invoices', title: 'Invoices', id: '20261016-1300-efgh', words: 'The invoice list now pages. Look at it.', at: new Date(Date.now() - 120000).toISOString() });
+test('a turn that finished well needs nothing; one that ended with an error needs the person until they open its session', async () => {
+  sessionWith(newer, { design: 'statements', title: 'Statements', id: '20261016-1250-qrst', words: 'The statements now page.', at: new Date(Date.now() - 90000).toISOString() });
+  const url = sessionWith(newer, { design: 'invoices', title: 'Invoices', id: '20261016-1300-efgh', words: 'The invoice list now pages. Look at it.', at: new Date(Date.now() - 120000).toISOString(), ok: false });
   let needs = await (await get('/home/needs-you', true)).text();
+  assert.doesNotMatch(needs, /Statements/);
   assert.match(needs, /Invoices<span class="pill ">Turn finished<\/span>/);
-  assert.match(needs, /The agent finished its turn: The invoice list now pages./);
+  assert.match(needs, /The agent’s turn ended with an error./);
   assert.ok(needs.includes(`href="${url}"`));
 
   assert.equal((await get(url)).status, 200);
@@ -117,8 +119,8 @@ test('a finished turn needs the person until they open its session', async () =>
   assert.doesNotMatch(needs, /Invoices/);
 });
 
-test('a finished turn over a week old has left', async () => {
-  sessionWith(older, { design: 'reports', title: 'Reports', id: '20261001-1300-ijkl', words: 'Done.', at: new Date(Date.now() - 8 * 24 * 3600000).toISOString() });
+test('a turn that ended with an error over a week ago has left', async () => {
+  sessionWith(older, { design: 'reports', title: 'Reports', id: '20261001-1300-ijkl', words: 'Done.', at: new Date(Date.now() - 8 * 24 * 3600000).toISOString(), ok: false });
   const needs = await (await get('/home/needs-you', true)).text();
   assert.doesNotMatch(needs, /Reports/);
 });
@@ -127,14 +129,16 @@ test('a question stays until it’s answered, newest first, and the bar counts i
   sessionWith(older, { design: 'loans', title: 'Loans', id: '20261016-1400-mnop', words: 'I made the list. Should an expired offer stay visible?', at: new Date().toISOString() });
   const url = `/f/${folderId(older)}/d/loans/sessions/20261016-1400-mnop`;
   assert.equal((await get(url)).status, 200);   // opened, but not answered
+  sessionWith(older, { design: 'fees', title: 'Fees', id: '20261016-1350-uvwx', words: 'Done.', at: new Date(Date.now() - 300000).toISOString(), ok: false });
 
   const needs = await (await get('/home/needs-you', true)).text();
   assert.match(needs, /Loans<span class="pill accent">Asking you<\/span>/);
   assert.match(needs, /The agent asks: Should an expired offer stay visible\?/);
-  assert.ok(needs.indexOf('Loans') < needs.indexOf('Billing'), 'newest first');
+  assert.ok(needs.indexOf('Loans') < needs.indexOf('Fees'), 'newest first');
+  assert.doesNotMatch(needs, /Billing/, 'a turn that finished well isn’t listed');
 
   const projects = await (await get('/home/projects', true)).text();
-  assert.match(projects, /<span class="pill accent">1 waiting on you<\/span>/);
+  assert.match(projects, /<span class="pill accent">2 waiting on you<\/span>/);
 
   const page = await (await get('/')).text();
   assert.match(page, /<div id="waiting" class="shell-waiting" ko-region ko-focus="none">\s*<a class="btn small ghost" href="\/">Needs you<span class="pill accent">\d+<\/span><\/a>/);
