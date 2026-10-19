@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Open questions
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal/d/loan-offers" ko-scope="/">
+<link href="/static/workspace.css" rel="stylesheet">
+<div class="stack gap-3 design-page fills">
+<header class="cluster gap-3 design-head">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal">
+borrower-portal
+</a>
+</nav>
+<h1>
+Loan offers
+</h1>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+<a class="btn small ghost branch-summary" href="/f/borrower-portal/d/loan-offers/about" ko-target="drawer?" title="The branch, what this design uses, and what the agent can read.">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+<code>
+prelude/loan-offers
+</code>
+<span class="pill">
+Not checked yet
+</span>
+</a>
+</div>
+</header>
+<div class="split gap-3 workspace" style="--side: 26rem">
+<section aria-label="Session" class="panel side chat">
+<div class="toolbar">
+<span class="muted">
+No sessions yet
+</span>
+<span class="spacer">
+</span>
+<span aria-label="Show" class="cluster gap-3" role="group">
+<label class="choice">
+<input checked class="show-agent" type="checkbox">
+Agent
+</label>
+<label class="choice">
+<input checked class="show-tools" type="checkbox">
+Tools
+</label>
+</span>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/sessions/new">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+New session
+</a>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="transcript" ko-region>
+<li class="entry starters">
+<div class="stack gap-3">
+<p class="secondary">
+This design has no sessions yet. The agent starts from the design’s files and its NOTES.md. Start from one of these, or write your own.
+</p>
+<ul class="list">
+<li class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span>
+Describe the feature
+</span>
+<span class="muted">
+Who uses it, and what they need to get done
+</span>
+</span>
+<form action="/f/borrower-portal/d/loan-offers/start" ko-target="message-box" method="post">
+<input name="message" type="hidden" value="This design is for ">
+<button aria-label="Start with: Describe the feature" class="btn small ghost" type="submit">
+Start with this
+</button>
+</form>
+</li>
+<li class="item">
+<span aria-hidden="true" class="icon icon-image">
+</span>
+<span class="item-text">
+<span>
+Start from a sketch or a screenshot
+</span>
+<span class="muted">
+Then attach it, paste it or drop it on the box
+</span>
+</span>
+<form action="/f/borrower-portal/d/loan-offers/start" ko-target="message-box" method="post">
+<input name="message" type="hidden" value="Here’s what I have in mind; start the first page from it. ">
+<button aria-label="Start with: Start from a sketch or a screenshot" class="btn small ghost" type="submit">
+Start with this
+</button>
+</form>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<ol aria-label="Waiting to send" class="transcript queued" id="queued" ko-region>
+</ol>
+<div id="agent-status" ko-region>
+</div>
+<form action="/f/borrower-portal/d/loan-offers/sessions" class="composer" ko-item method="post">
+<ul aria-label="Images to send" class="attachments" id="attachments" ko-invoke="event:draft-changed" ko-source="/f/borrower-portal/d/loan-offers/draft">
+<li class="attachment">
+<a href="/f/borrower-portal/d/loan-offers/images/img-7pa" ko-target="modal?" title="Show it full size">
+<img alt="Show IMG_2041.jpg full size" class="thumb" src="/_prelude/design/assets/napkin-compare.svg">
+</a>
+<span class="attachment-name" title="IMG_2041.jpg">
+IMG_2041.jpg
+</span>
+<input name="attachments" type="hidden" value="img-7pa">
+<button aria-label="Remove IMG_2041.jpg" class="icon-btn small" formaction="/f/borrower-portal/d/loan-offers/attachments/img-7pa/remove" formnovalidate ko-target="attachments" type="submit">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</li>
+</ul>
+<div id="message-box" ko-region>
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" ko-as="message" name="message" placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line." required rows="3">
+</textarea>
+</div>
+<div hidden ko-debounce="800" ko-form="/f/borrower-portal/d/loan-offers/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
+<input calc-value="message.value" name="message" type="hidden">
+</div>
+<div class="composer-foot">
+<div class="composer-tools">
+<div ko-form="/f/borrower-portal/d/loan-offers/attachments" ko-invoke="change" ko-method="post" ko-target="attachments">
+<label class="icon-btn small" title="Attach an image. You can also paste one, or drop it on the box.">
+<span aria-hidden="true" class="icon icon-attach">
+</span>
+<span class="sr-only">
+Attach an image
+</span>
+<input accept="image/png, image/jpeg, image/gif, image/webp" class="sr-only" ko-as="upload" multiple name="image" type="file">
+</label>
+</div>
+<span id="dictation" ko-invoke="event:dictation-changed" ko-source="/f/borrower-portal/d/loan-offers/dictation/button">
+<span class="cluster gap-2 dictation" ko-item>
+<a class="icon-btn small" href="/f/borrower-portal/d/loan-offers/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</a>
+</span>
+</span>
+<span class="muted" ko-as="draftKept" ko-region role="status">
+</span>
+</div>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+<script type="koda">
+// Two things no binding or trigger expresses: Enter to send, and taking // an image the person pastes or drops, which means moving a File into // the upload's input (it then uploads as if chosen there). Listened for // on the form, since dictation replaces the box itself. const { message, upload } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+</script>
+</form>
+</section>
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser">
+<input id="lookingSize" type="hidden" value="">
+<div class="toolbar">
+<span class="spacer">
+</span>
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
+<span aria-hidden="true" class="icon icon-external">
+</span>
+Pop out
+</a>
+</div>
+<div class="design-frame" ko-as="frame">
+<p class="empty">
+No pages yet: give a route in routes.json a title, and it appears here.
+</p>
+</div>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-location="/f/borrower-portal/d/loan-offers/questions" ko-region tabindex="-1">
+<div class="stack gap-6">
+<div class="stack gap-1">
+<h2>
+Open questions
+</h2>
+<p class="secondary">
+What the agent is waiting for you to decide about this design.
+</p>
+</div>
+<p class="empty">
+Nothing waiting on you. When the agent needs a decision, it lands here as well as in the chat.
+</p>
+</div>
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>
