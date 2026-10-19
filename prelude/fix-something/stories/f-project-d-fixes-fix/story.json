@@ -1,0 +1,14 @@
+{
+  "writtenAt": "2026-10-19T18:48:01.282Z",
+  "fingerprint": "602f9a0038ab45eb",
+  "changes": [
+    "A conversation about the project looks different in Typical and New project",
+    "New: Fix it on a branch, in a dialog over A conversation about the project",
+    "New: Rename it, in a dialog over A conversation about the project",
+    "10 new forms",
+    "New rule R-h7w: Until a conversation about the project is fixed on a branch, the agent only reads: nothing in the project changes, and nothing is committed.",
+    "New rule R-m5c: A conversation is named from the first words of its first message, until the person renames it.",
+    "New rule R-j3v: Renaming a fix on a branch keeps the branch's name."
+  ],
+  "edited": {}
+}
