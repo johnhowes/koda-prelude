@@ -276,6 +276,15 @@ Where the app differs from the screens, on purpose:
 
 ## Open questions
 
+- **The pop-out window shows only its bar** (found 2026-10-19). In
+  `@scope (.design-page)`, `.window-page > .design` can never match: the
+  window's page is the scope's root, and a bare selector there must be
+  inside it. So the surface never fills the window and its frame (a size
+  container) collapses to nothing. Fixed in `styles.css`
+  (`:scope.window-page > .design`); the app's copy,
+  `server/public/workspace.css` line 25, needs the same one-line change,
+  in a build or a fix.
+
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
