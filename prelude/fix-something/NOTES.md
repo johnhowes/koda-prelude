@@ -126,8 +126,8 @@ its first session (`POST /f/:id/fixes`).
   render `_message-box` without the conversation's placeholder, as the
   design's own `_answering` does. You only see it when the box is emptied
   again.
-- `server/views/projects/_new-fix.eta` and `_new-fix-fields.eta` aren't
-  used any more, but the agent can't delete files: remove them by hand.
+- The old modal's views, `server/views/projects/_new-fix.eta` and
+  `_new-fix-fields.eta`, are deleted.
 
 ## Open questions
 
