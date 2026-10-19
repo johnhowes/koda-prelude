@@ -1,79 +1,20 @@
+<%/* Prelude's pages (Projects, a project, Build): the bar, then the page, which
+     scrolls with the window (the shell's app layout, prelude/prelude-shell).
+     The page holds itself to a readable width (.center); the shell gives it
+     its room above and below. The root keeps .prelude, which prelude.css
+     scopes its pages' rules to and desktop.js marks; the main region keeps
+     its id, #workspace. `system` is false for pages still in ds/v1. */%>
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><%= it.title ?? 'Prelude' %></title>
-<link rel="icon" href="/static/icon.svg">
-<% if (it.system) { %>
-<%/* A page ported from a design is written in the folder's design system. */%>
-<link rel="stylesheet" href="/system/tokens.css">
-<link rel="stylesheet" href="/system/components.css">
-<link rel="stylesheet" href="/system/icons.css">
-<% } else { %>
-<link rel="stylesheet" href="/ds/v1/tokens.css">
-<link rel="stylesheet" href="/ds/v1/components.css">
-<link rel="stylesheet" href="/ds/v1/icons.css">
-<% } %>
-<link rel="stylesheet" href="/static/prelude.css">
-<script type="importmap">{ "imports": { "@kodalang/core": "/koda/koda.js" } }</script>
+<%~ include('./_head', { ...it, system: it.system ?? true, styles: '/static/prelude.css' }) %>
+<%/* A design's page links this itself; loaded here too, so it's ready when one
+     is swapped in, with no unstyled moment. It styles only .design-page. */%>
+<link rel="stylesheet" href="/static/workspace.css">
 </head>
-<body>
-<% const modal = it.regions?.modal; %>
-<div class="prelude">
-  <% if (!it.bare) { %>
-  <header class="bar">
-    <a class="brand" href="/">Prelude</a>
-    <span class="spacer"></span>
-    <%/* A region, pushed afresh as things start and stop waiting on the person. */%>
-    <div id="waiting" class="waiting" ko-region ko-focus="none"><%~ include('./_waiting', it.layout ?? {}) %></div>
-  </header>
-  <% } %>
-  <main id="workspace" ko-scope="/" ko-location="<%= it.path %>" ko-history>
-<%~ it.body %>
-  </main>
-  <%/* The modal a page may ask for (ko-target="modal?"). It prints what the
-       server puts in it for a deep link to an overlay, and is hidden while
-       empty; its Close empties it. No whitespace inside the region. */%>
-  <dialog id="modal-dialog" class="modal-dialog" aria-label="Question">
-    <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
-    <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
-  </dialog>
-</div>
-<%/* The app's live channel (server-sent events): small named events
-     ("needs-changed") that a page's regions reload on, and markup for the
-     bar's regions (ko-into="waiting"). */%>
-<% if (it.layout?.live) { %><div hidden ko-connect="<%= it.layout.live %>"></div><% } %>
-<script type="module">
-  // The modal is a real dialog, open while its region holds something.
-  // Koda fills and empties the region; showModal() is the platform's, and no
-  // attribute calls it, so this follows the region. Escape closes the dialog,
-  // and then empties the region too, so it forgets what it showed. A form in
-  // it that goes to another page (Open a project) lands in the workspace, so
-  // the modal closes when the workspace moves. The dialog is named by the
-  // first heading of what's in it.
-  const dialog = document.getElementById('modal-dialog');
-  const region = document.getElementById('modal');
-  const close = dialog.querySelector('[commandfor="modal"]');
-  const follow = () => {
-    const filled = region.childElementCount > 0;
-    const heading = region.querySelector('h1, h2, h3');
-    if (heading) dialog.setAttribute('aria-label', heading.textContent.trim());
-    if (filled && !dialog.open) dialog.showModal();
-    if (!filled && dialog.open) dialog.close();
-  };
-  new MutationObserver(follow).observe(region, { childList: true });
-  dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); });
-  const workspace = document.getElementById('workspace');
-  new MutationObserver(records => {
-    if (dialog.open && records.some(record => record.oldValue !== workspace.getAttribute('ko-location'))) dialog.close();
-  }).observe(workspace, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true });
-  follow();
-</script>
-<script type="module" src="/static/desktop.js"></script>
-<script type="module">
-  import { start } from '@kodalang/core';
-  start(document);
-</script>
+<body class="shell prelude">
+<%~ include('./_bar', it.layout ?? {}) %>
+<main id="workspace" class="shell-main" ko-scope="/" ko-location="<%= it.path %>" ko-history><%~ it.body %></main>
+<%~ include('./_regions', it) %>
 </body>
 </html>

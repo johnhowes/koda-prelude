@@ -141,8 +141,13 @@ async function handle(req, res, app) {
   const fragment = req.headers['x-koda-fragment'] === '1';
   // Every layout gets the app's live channel and the bar's count.
   const layout = () => ({ live: APP_LIVE, needsYou: waitingOf(app) });
-  const page = (status, view, data, title) =>
-    send(res, status, shaped(view, data, { fragment, path, title, layout: fragment ? {} : layout() }));
+  // These pages are still in ds/v1 (shaped's default). Asked for from a page
+  // in another document (Home, a design's page), one comes whole, so the
+  // browser loads it with its own stylesheets (layoutOfPath).
+  const page = (status, view, data, title) => {
+    const alone = fragment && askedFromLayout(req, 'ds-v1');
+    return send(res, status, shaped(view, data, { fragment: alone, path, title, layout: alone ? {} : layout() }));
+  };
   const notFoundText = () => send(res, 404, 'Not found', 'text/plain; charset=utf-8');
 
   // The preview origin serves the designs' files and nothing else. Screens are
@@ -211,8 +216,10 @@ async function handle(req, res, app) {
   //   POST /folders                 open one: its page, or the form refused
   //   POST /folders/:id/remove      take one off the list; the disk is left alone
   const homePage = (status, { modal = null } = {}) => {
-    // One URL, two shapes: a Koda region asking for / gets the page alone.
-    const body = { fragment, path: '/', title: 'Prelude', layout: fragment ? {} : layout(), system: true };
+    // One URL, two shapes: a Koda region asking for / gets the page alone,
+    // unless it asked from a design's page, in another layout (askedFromLayout).
+    const alone = fragment && askedFromLayout(req, 'app');
+    const body = { fragment: alone, path: '/', title: 'Prelude', layout: alone ? {} : layout(), system: true };
     const regions = modal ? { modal: { html: render('./home/_open', modal), location: '/open' } } : {};
     return send(res, status, shaped('home/index', homeOf(app, { contents: false }), { ...body, regions }));
   };
@@ -641,6 +648,37 @@ function noteOnBranch(entry, text, failed = false) {
 const mainOf = folder => mainBranch(folder.path);
 
 /**
+ * The document a Prelude page renders in, by its path: what has to be the
+ * same for Koda to swap one page into another's main region.
+ *   'app'     the app layout with the design system: Home, a design's page
+ *   'ds-v1'   the app layout with the older ds/v1 stylesheets, for the pages
+ *             not moved onto the design system yet (a project, Build, the rest)
+ *   'window'  a design's pop-out, a window of its own
+ * A page moved onto the design system leaves the ds-v1 list.
+ */
+function layoutOfPath(pathname) {
+  if (pathname === '/' || pathname === '/open') return 'app';
+  if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
+  if (pathname.endsWith('/window')) return 'window';
+  return pathname.endsWith('/build') ? 'ds-v1' : 'app';
+}
+
+/**
+ * Whether a Koda fragment request came from a page in this layout, by its
+ * Referer. A fragment only fits the layout it was made for: swapped into
+ * another's main region it would miss that layout's stylesheet and frame.
+ * Koda hands a whole document to the browser, which loads it as a page, so a
+ * request from another layout is answered whole. Without a Referer, it's
+ * taken as the same layout, as before.
+ */
+function askedFromLayout(req, layout) {
+  let from;
+  try { from = new URL(req.headers.referer); } catch { return true; }
+  if (from.host !== req.headers.host) return true;
+  return layoutOfPath(from.pathname) === layout;
+}
+
+/**
  * Remove the worktrees and branches of a folder's designs merged into main
  * (here, or by a pull request on the server), at most every 30 seconds per
  * folder. A branch tidied away changes what needs the person (R-w2k).
@@ -1030,8 +1068,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const designPage = (status, model, { session = null, regions = {}, path = url.pathname } = {}) => {
     const live = session ? `${base}/sessions/${session.id}/live?from=${model.entries.length}` : `${base}/live`;
     const body = render('./_session', { ...model, live });
-    if (fragment && !Object.keys(regions).length) return send(res, status, body);
-    return send(res, status, render('./workspace-layout', { body, path, title, regions }));
+    // In the app layout, like Prelude's other pages: the page brings its own
+    // stylesheet and asks to fill the window, so Koda swaps it in from Home
+    // as a fragment. From a page still in ds/v1 it comes whole (askedFromLayout).
+    if (fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length) return send(res, status, body);
+    return send(res, status, render('./layout', { body, path, title, regions, system: true }));
   };
 
   /**
@@ -1058,7 +1099,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
     const body = render('./_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }) });
     if (fragment) return send(res, 200, body);
-    return send(res, 200, render('./workspace-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, live: `${base}/live`, bare: true }));
+    return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
   }
 
   // Show a page: in every window (R-c2m), and in the state named with it, as
@@ -1178,7 +1219,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
     const body = render('./_window', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }) });
     if (fragment) return send(res, 200, body);
-    return send(res, 200, render('./workspace-layout', { body, path: url.pathname, title: `${design.title} · design`, live: `${base}/live?view=window`, bare: true }));
+    return send(res, 200, render('./window-layout', { body, path: url.pathname, title: `${design.title} · design`, layout: { live: `${base}/live?view=window` } }));
   }
 
   /**

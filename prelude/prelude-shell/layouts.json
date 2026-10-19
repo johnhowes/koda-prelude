@@ -1,1 +1,4 @@
-{}
+{
+  "app": "@app/server/views/layout",
+  "window": "@app/server/views/window-layout"
+}

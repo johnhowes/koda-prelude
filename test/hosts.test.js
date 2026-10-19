@@ -130,6 +130,20 @@ test('once approved, it starts, renders through the host, and serves the app’s
   assert.match(surface, /Design host log/);
 });
 
+test('a design’s page is in the app layout and brings what it needs; it swaps in from Home, and comes whole from a ds/v1 page', async () => {
+  const designPage = `/f/${fid}/d/loans/sessions/new`;
+  const from = referer => fetch(`${base}${designPage}`, { headers: { 'x-koda-fragment': '1', referer: `${base}${referer}` } }).then(res => res.text());
+  // Its fragment links its own stylesheet and asks to fill the window (.fills), which the shell reads.
+  const fromHome = await from('/');
+  assert.doesNotMatch(fromHome, /<html/, 'from Home, in the same app layout: the fragment');
+  assert.match(fromHome, /^[\s\S]*<link rel="stylesheet" href="\/static\/workspace\.css">\s*<div class="stack gap-3 design-page fills">/);
+  assert.doesNotMatch(await from(designPage), /<html/, 'from itself (a session switch): the fragment');
+  const whole = await from(`/f/${fid}`);
+  assert.match(whole, /^<!doctype html>/, 'from a project page, still in ds/v1: the whole page');
+  assert.match(whole, /<body class="shell prelude">/, 'in the app layout');
+  assert.match(whole, /href="\/system\/components\.css"/, 'with the design system, not ds/v1');
+});
+
 test('the real app in the design surface (10.8): Design or App, the same screen, each window its own', async () => {
   // The app is built here (its host is the repository's own), so the switch shows.
   const design = await (await get(`/f/${fid}/d/loans/preview?view=inline`)).text();

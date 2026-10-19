@@ -1,5 +1,5 @@
 {
-  "/f/:folder/d/:design": { "view": "@app/server/views/_session", "title": "Design page", "data": "folders/:folder/designs/:design", "layout": "workspace" },
+  "/f/:folder/d/:design": { "view": "@app/server/views/_session", "title": "Design page", "data": "folders/:folder/designs/:design" },
   "/f/:folder/d/:design/about": { "view": "@app/server/views/_about", "title": "About the design", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "/f/:folder/d/:design/rules": { "view": "@app/server/views/_rules", "title": "Rules", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },
   "/f/:folder/d/:design/questions": { "view": "@app/server/views/_questions", "title": "Open questions", "data": "folders/:folder/designs/:design", "over": "/f/:folder/d/:design", "in": "drawer" },

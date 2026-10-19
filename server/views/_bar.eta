@@ -1,0 +1,26 @@
+<%/* The bar across the top: the way home, what the agent is working on, and a
+     quick way to another project. Where the page sits (crumbs) is the page's
+     own, under its region. Following a link in a menu closes the menu, since
+     the bar stays put while the page changes. `it` is the layout's data. */%>
+<header class="shell-bar" ko-item>
+  <a class="shell-brand" href="/">Prelude</a>
+  <span class="spacer"></span>
+  <%/* A region, so the app can push it afresh as turns start and end. */%>
+  <div id="agents" class="shell-agents" ko-region ko-focus="none" role="status"><%~ include('./_agents', it) %></div>
+  <%/* A region too, pushed afresh as things start and stop waiting on the person. */%>
+  <div id="waiting" class="shell-waiting" ko-region ko-focus="none"><%~ include('./_waiting', it) %></div>
+  <% if (it.projects?.length) { %>
+  <details class="menu" ko-as="projects">
+    <summary class="btn small ghost"><span class="icon icon-folder" aria-hidden="true"></span>Projects</summary>
+    <ul class="menu-list">
+      <% for (const project of it.projects) { %>
+      <li><a href="/f/<%= project.id %>" ko-set="projects.open = false">
+        <span class="item-title"><%= project.name %></span>
+        <span class="muted"><%= project.path %></span>
+      </a></li>
+      <% } %>
+      <li><a href="/" ko-set="projects.open = false"><span class="item-title">Open a project…</span></a></li>
+    </ul>
+  </details>
+  <% } %>
+</header>
