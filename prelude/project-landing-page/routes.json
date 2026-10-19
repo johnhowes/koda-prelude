@@ -1,7 +1,7 @@
 {
-  "/f/:project": { "view": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
+  "/f/:project": { "view": "projects/page", "from": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/work": { "view": "@app/server/views/projects/_work", "data": "projects/:project" },
-  "/f/:project/designs": { "view": "@app/server/views/projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
+  "/f/:project/designs": { "view": "projects/_designs", "from": "@app/server/views/projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/app": { "view": "@app/server/views/projects/_app", "data": "projects/:project" },
   "/f/:project/designs/new": { "view": "@app/server/views/projects/_new-design", "title": "New design", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
   "/f/:project/branches/:branch/publish": { "view": "@app/server/views/projects/_publish", "title": "Push a branch", "data": "projects/:project/inProgress/:branch", "over": "/f/:project", "in": "modal" },

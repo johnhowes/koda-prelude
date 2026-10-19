@@ -61,8 +61,8 @@
         { "id": "b12", "design": { "id": "compliance-review", "title": "Compliance review", "kind": "design", "area": "Underwriting" }, "url": "/f/spark-platform/d/compliance-review", "buildUrl": "/f/spark-platform/d/compliance-review/build", "finish": "/f/spark-platform/branches/b12", "branch": "prelude/compliance-review", "into": "main", "check": "failing", "failures": 1, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] }
       ],
       "designs": [
-        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
-        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 31, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "last month" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 3, "layoutsBuilt": 3, "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
 
         { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "3 weeks ago" },
         { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
