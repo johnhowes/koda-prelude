@@ -1,4 +1,0 @@
-<%/* The line beside Send event, after one is sent. `it.event` is the name
-     posted; the title is the design's. */%>
-<% const event = it.surface.events.find(e => e.name === it.event); %>
-<% if (event) { %><span class="muted">Sent: <%= event.title %>.</span><% } else { %><span class="error">That event is no longer in the design.</span><% } %>

@@ -1,5 +1,0 @@
-<%/* The transcript's entries, oldest first; with none yet, where to start. A
-     message sent answers with this list, so it's the region's content. */%>
-<% const base = `/f/${it.folder.id}/d/${it.id}`; const entries = it.entries ?? []; %>
-<% if (!entries.length) { %><%~ include('./_starters', it) %><% } %>
-<% for (const entry of entries) { %><%~ include('./_entry', { entry, base }) %><% } %>

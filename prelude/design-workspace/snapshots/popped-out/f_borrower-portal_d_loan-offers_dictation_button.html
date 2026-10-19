@@ -1,0 +1,51 @@
+<span class="cluster gap-2 dictation" ko-item>
+<div ko-form="/f/borrower-portal/d/loan-offers/dictation/transcribe" ko-invoke="change" ko-method="post" ko-target="message-box">
+<input ko-as="typed" name="message" type="hidden">
+<input accept="audio/*" hidden ko-as="audio" name="audio" type="file">
+<button aria-pressed="false" class="icon-btn small" ko-as="dictate" title="Dictate: press, then speak. Press again to stop, and what you said is typed in." type="button">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</button>
+</div>
+<details class="menu start up" ko-as="modelMenu">
+<summary class="icon-btn small" title="The speech model dictation uses">
+<span aria-hidden="true" class="icon icon-expand">
+</span>
+<span class="sr-only">
+Speech model
+</span>
+</summary>
+<div class="menu-list">
+<p class="menu-note muted">
+Speech model: Most accurate, 1.6 GB, kept on this computer.
+</p>
+<a href="/f/borrower-portal/d/loan-offers/dictation" ko-set="modelMenu.open = false" ko-target="modal?">
+<span class="item-title">
+Change model…
+</span>
+<span class="muted">
+Downloads the one you choose, then removes this one
+</span>
+</a>
+<form action="/f/borrower-portal/d/loan-offers/dictation/remove" ko-target="dictation" method="post">
+<input name="status" type="hidden" value="none">
+<button type="submit">
+<span class="item-title">
+Remove the model
+</span>
+<span class="muted">
+Frees 1.6 GB. Dictation is off until you set it up again.
+</span>
+</button>
+</form>
+</div>
+</details>
+<span class="muted" hidden ko-as="heard" role="status">
+</span>
+<script type="koda">
+const { dictate, audio, typed, heard, onRemove } = koda.scope(); const say = text => { heard.element.textContent = text; heard.element.hidden = !text; }; let recorder = null; const stopMicrophone = () => recorder?.stream.getTracks().forEach(track => track.stop()); dictate.element.addEventListener('click', async () => { if (recorder) { recorder.stop(); return; } let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { say('Prelude can’t use the microphone. Allow it for Prelude in your system’s or browser’s settings, then try again.'); return; } if (!dictate.element.isConnected) { stream.getTracks().forEach(track => track.stop()); return; } const chunks = []; recorder = new MediaRecorder(stream); recorder.ondataavailable = event => chunks.push(event.data); recorder.onstop = () => { stopMicrophone(); recorder = null; dictate.element.setAttribute('aria-pressed', 'false'); const recording = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' }); if (recording.size === 0) { say('Nothing was heard. Press the microphone and speak.'); return; } say('Typing what you said…'); // What's typed so far goes too, so nothing typed while listening is lost. typed.element.value = document.getElementById('message')?.value ?? ''; const file = new DataTransfer(); file.items.add(new File([recording], 'dictation.webm', { type: recording.type })); audio.element.files = file.files; audio.element.dispatchEvent(new Event('change', { bubbles: true })); }; recorder.start(); dictate.element.setAttribute('aria-pressed', 'true'); say('Listening… press again when you’ve finished.'); }); onRemove(() => { if (recorder?.state === 'recording') { recorder.onstop = null; recorder.stop(); } stopMicrophone(); });
+</script>
+</span>
