@@ -102,8 +102,11 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     check for CI, exiting 1 on a failure or a difference; `-- --approve`
     approves instead.
   - Build (plan, step 7): `server/rules.js` reads a design's `RULES.md`;
-    `server/backlog.js` derives what's left to build, by page, and the story
-    text (the Build view, `_build.eta`). A build session is a session whose
+    `server/backlog.js` derives what's left to build, by page. The Build page
+    (prelude/build: `_build.eta`, `build/_pages.eta`; `server/build.js`) lists
+    each page's changes in plain lines, and has the agent write a page's story
+    only when asked (`storyPrompt`, `createStoryWriter`), kept in the design's
+    `stories/<page>/`. A build session is a session whose
     `session.json` has `build: { group, title }`; it runs in `mode: 'build'`
     (`buildPrompt`, `permissionArgs`). A host's `x-prelude-ahead` header (state
     members a typed model lacks) is reported, never failed.
@@ -121,7 +124,7 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
   - Stories of the increment (plan, step 10): `server/increment.js` compares a
     design on its branch with the same design where it left `main`, per group.
     `groupsOf` (main.js) makes each group new, changed, to build or unchanged;
-    a changed group's story (`incrementStory`) and build brief (`buildPrompt`'s
+    a changed group's lines (`changesOf`) and build brief (`buildPrompt`'s
     `change`) hold only the change. To redesign a built page the design brings
     its view back with `"from": "@app/…"` on the route; the build ports it back
     and Prelude clears `from`. The folder page's "In progress" lists the work on

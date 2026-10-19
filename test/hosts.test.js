@@ -139,8 +139,9 @@ test('a design’s page is in the app layout and brings what it needs; it swaps 
   assert.match(fromHome, /^[\s\S]*<link rel="stylesheet" href="\/static\/workspace\.css">\s*<div class="stack gap-3 design-page fills">/);
   assert.doesNotMatch(await from(designPage), /<html/, 'from itself (a session switch): the fragment');
   assert.doesNotMatch(await from(`/f/${fid}`), /<html/, 'from a project’s page, in the same app layout: the fragment');
-  const whole = await from(`/f/${fid}/d/loans/build`);
-  assert.match(whole, /^<!doctype html>/, 'from the Build page, still in ds/v1: the whole page');
+  assert.doesNotMatch(await from(`/f/${fid}/d/loans/build`), /<html/, 'from the Build page, in the same app layout: the fragment');
+  const whole = await from(`/f/${fid}/no-such-page`);
+  assert.match(whole, /^<!doctype html>/, 'from a page still in ds/v1 (one not found): the whole page');
   assert.match(whole, /<body class="shell prelude">/, 'in the app layout');
   assert.match(whole, /href="\/system\/components\.css"/, 'with the design system, not ds/v1');
 });

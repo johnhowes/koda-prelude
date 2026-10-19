@@ -1,0 +1,7 @@
+/* The Build page's own rules: what the design system can't say. */
+@scope (.build) {
+  /* A page's name on its card, and a story's title: headings at a section's
+     size, not a card's small label. */
+  .page-title { font-size: var(--text-md); }
+  .story-title { font-size: var(--text-lg); }
+}

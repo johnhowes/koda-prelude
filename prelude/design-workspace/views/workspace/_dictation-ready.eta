@@ -1,5 +1,0 @@
-<%/* The answer to dictating: the message box with what was said added, and
-     the microphone afresh, out of band, so its "Typing what you said…" goes.
-     `it` is the design. */%>
-<%~ include('./_message-box', { message: it.draft?.message }) %>
-<div ko-into="dictation"><%~ include('./_dictation', it) %></div>

@@ -1,0 +1,11 @@
+{
+  "title": "Build: A page’s story",
+  "claudeSessionId": "37e7cf80-9ea8-4953-84f9-71adc4241b74",
+  "started": true,
+  "startedAt": "2026-10-19T15:18:59.035Z",
+  "updatedAt": "2026-10-19T15:26:12.922Z",
+  "build": {
+    "group": "/f/:folder/d/:design/build/stories/:group",
+    "title": "A page’s story"
+  }
+}

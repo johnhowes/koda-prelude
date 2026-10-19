@@ -1,0 +1,61 @@
+{
+  "layout": { "needsYou": 0, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/loan-offers",
+          "branch": "prelude/loan-offers",
+          "app": { "built": false, "onBranch": false, "stack": "Node, Express and Eta", "url": "/f/borrower-portal#app" },
+          "approved": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "groups": [
+            {
+              "id": "offers",
+              "key": "/offers",
+              "title": "Offers",
+              "kind": "new",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New page: Offers" },
+                { "icon": "rule", "text": "New rule R-m7t: Offers are listed with the lowest monthly payment first." }
+              ],
+              "session": null,
+              "story": null
+            },
+            {
+              "id": "accept",
+              "key": "/offers/:id/accept",
+              "title": "Accept an offer",
+              "kind": "new",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/accept",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New page: Accept an offer" },
+                { "icon": "screen", "text": "New: Confirm your bank account, in a dialog over Accept an offer" },
+                { "icon": "document", "text": "2 new forms" }
+              ],
+              "session": null,
+              "story": null
+            }
+          ],
+          "unchanged": []
+        }
+      ]
+    }
+  ]
+}

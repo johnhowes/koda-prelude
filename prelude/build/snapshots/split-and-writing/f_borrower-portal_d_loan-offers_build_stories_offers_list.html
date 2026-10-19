@@ -1,0 +1,274 @@
+<div class="stack gap-4">
+<div class="cluster">
+<span class="muted">
+Written by the agent today at 11:20 · a build session for this page reads them
+</span>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<textarea hidden ko-as="all" readonly>
+# See each offer&#39;s monthly payment, and sort offers by cost Borrowers compare offers by what they&#39;ll pay each month, so the offers list shows it, and puts the cheapest first. ## What changes - Each offer in the list shows its **monthly payment** under the APR. - A **Sort by** menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR. - The list keeps the borrower&#39;s choice while they&#39;re on the page, and starts at Lowest monthly payment next time. ## Acceptance criteria - The monthly payment matches the offer&#39;s details page, to the cent. - Offers with the same monthly payment keep their order by APR, lowest first. - With one offer, there is no Sort by menu. - **R-m7t.** Offers are listed with the lowest monthly payment first. ## Looks right in Typical, Many offers and Long lender names, each as its approved screen. ## For developers - `GET /offers` takes `?sort=payment|total|apr`; the list is `prelude/loan-offers/views/offers/_list.eta`. - Each offer gains `monthlyPayment`. - Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`, `03-long-names`). --- # Pick two offers to compare A borrower with two or more offers can tick two and open them side by side. Depends on: Compare two loan offers side by side (Compare offers). ## What changes - With two or more offers, each offer in the list has a **Compare** tick box. - Once two are ticked, **Compare these two** appears above the list and opens Compare offers with them. - A third tick isn&#39;t possible until one of the two is unticked. ## Acceptance criteria - With one offer, or none, there are no tick boxes and no Compare these two. - Compare these two opens the two ticked offers, in the order they were ticked. - Unticking one hides Compare these two again. ## Looks right in Typical and Many offers, each as its approved screen. ## For developers - The ticks are a form on `GET /offers/compare` with `a` and `b`; no new POST. - Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`).
+</textarea>
+<button class="btn small ghost" ko-as="copyAll" type="button">
+Copy all 2
+</button>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { all, copyAll } = koda.scope(); copyAll.element.addEventListener('click', async () => { await navigator.clipboard.writeText(all.element.value); copyAll.element.textContent = 'Copied'; });
+</script>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-history">
+</span>
+Rewrite…
+</a>
+</div>
+</div>
+<p class="secondary">
+<strong>
+Split in two:
+</strong>
+the monthly payment and sorting are useful on their own and don’t need the new Compare offers page, so they can ship first.
+</p>
+<div ko-region>
+<article aria-labelledby="story-1" class="card gap-3" ko-item>
+<div class="cluster">
+<h2 class="story-title" id="story-1">
+See each offer’s monthly payment, and sort offers by cost
+</h2>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<textarea hidden ko-as="markdown" readonly>
+# See each offer&#39;s monthly payment, and sort offers by cost Borrowers compare offers by what they&#39;ll pay each month, so the offers list shows it, and puts the cheapest first. ## What changes - Each offer in the list shows its **monthly payment** under the APR. - A **Sort by** menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR. - The list keeps the borrower&#39;s choice while they&#39;re on the page, and starts at Lowest monthly payment next time. ## Acceptance criteria - The monthly payment matches the offer&#39;s details page, to the cent. - Offers with the same monthly payment keep their order by APR, lowest first. - With one offer, there is no Sort by menu. - **R-m7t.** Offers are listed with the lowest monthly payment first. ## Looks right in Typical, Many offers and Long lender names, each as its approved screen. ## For developers - `GET /offers` takes `?sort=payment|total|apr`; the list is `prelude/loan-offers/views/offers/_list.eta`. - Each offer gains `monthlyPayment`. - Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`, `03-long-names`).
+</textarea>
+<button class="btn small" ko-as="copy" type="button">
+Copy for your tracker
+</button>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/build/stories/offers/story/1/edit" ko-target="self">
+<span aria-hidden="true" class="icon icon-rename">
+</span>
+Edit
+</a>
+</div>
+</div>
+<div class="prose">
+<p>
+Borrowers compare offers by what they’ll pay each month, so the offers list shows it, and puts the cheapest first.
+</p>
+<h3>
+What changes
+</h3>
+<ul>
+<li>
+Each offer in the list shows its
+<strong>
+monthly payment
+</strong>
+under the APR.
+</li>
+<li>
+A
+<strong>
+Sort by
+</strong>
+menu above the list: Lowest monthly payment (the default), Lowest total cost, Lowest APR.
+</li>
+<li>
+The list keeps the borrower’s choice while they’re on the page, and starts at Lowest monthly payment next time.
+</li>
+</ul>
+<h3>
+Acceptance criteria
+</h3>
+<ul>
+<li>
+The monthly payment matches the offer’s details page, to the cent.
+</li>
+<li>
+Offers with the same monthly payment keep their order by APR, lowest first.
+</li>
+<li>
+With one offer, there is no Sort by menu.
+</li>
+<li>
+<strong>
+R-m7t.
+</strong>
+Offers are listed with the lowest monthly payment first.
+</li>
+</ul>
+<h3>
+Looks right in
+</h3>
+<p>
+Typical, Many offers and Long lender names, each as its approved screen.
+</p>
+<details class="disclosure">
+<summary>
+For developers
+</summary>
+<ul>
+<li>
+<code>
+GET /offers
+</code>
+takes
+<code>
+?sort=payment|total|apr
+</code>
+; the list is
+<code>
+prelude/loan-offers/views/offers/_list.eta
+</code>
+.
+</li>
+<li>
+Each offer gains
+<code>
+monthlyPayment
+</code>
+.
+</li>
+<li>
+Test data:
+<code>
+prelude/loan-offers/states/
+</code>
+(
+<code>
+01-typical
+</code>
+,
+<code>
+02-many-offers
+</code>
+,
+<code>
+03-long-names
+</code>
+).
+</li>
+</ul>
+</details>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { markdown, copy } = koda.scope(); copy.element.addEventListener('click', async () => { await navigator.clipboard.writeText(markdown.element.value); copy.element.textContent = 'Copied'; });
+</script>
+</article>
+</div>
+<div ko-region>
+<article aria-labelledby="story-2" class="card gap-3" ko-item>
+<div class="cluster">
+<h2 class="story-title" id="story-2">
+Pick two offers to compare
+</h2>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<textarea hidden ko-as="markdown" readonly>
+# Pick two offers to compare A borrower with two or more offers can tick two and open them side by side. Depends on: Compare two loan offers side by side (Compare offers). ## What changes - With two or more offers, each offer in the list has a **Compare** tick box. - Once two are ticked, **Compare these two** appears above the list and opens Compare offers with them. - A third tick isn&#39;t possible until one of the two is unticked. ## Acceptance criteria - With one offer, or none, there are no tick boxes and no Compare these two. - Compare these two opens the two ticked offers, in the order they were ticked. - Unticking one hides Compare these two again. ## Looks right in Typical and Many offers, each as its approved screen. ## For developers - The ticks are a form on `GET /offers/compare` with `a` and `b`; no new POST. - Test data: `prelude/loan-offers/states/` (`01-typical`, `02-many-offers`).
+</textarea>
+<button class="btn small" ko-as="copy" type="button">
+Copy for your tracker
+</button>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/build/stories/offers/story/2/edit" ko-target="self">
+<span aria-hidden="true" class="icon icon-rename">
+</span>
+Edit
+</a>
+</div>
+</div>
+<div class="prose">
+<p>
+A borrower with two or more offers can tick two and open them side by side.
+</p>
+<p>
+<em>
+Depends on: Compare two loan offers side by side (Compare offers).
+</em>
+</p>
+<h3>
+What changes
+</h3>
+<ul>
+<li>
+With two or more offers, each offer in the list has a
+<strong>
+Compare
+</strong>
+tick box.
+</li>
+<li>
+Once two are ticked,
+<strong>
+Compare these two
+</strong>
+appears above the list and opens Compare offers with them.
+</li>
+<li>
+A third tick isn’t possible until one of the two is unticked.
+</li>
+</ul>
+<h3>
+Acceptance criteria
+</h3>
+<ul>
+<li>
+With one offer, or none, there are no tick boxes and no Compare these two.
+</li>
+<li>
+Compare these two opens the two ticked offers, in the order they were ticked.
+</li>
+<li>
+Unticking one hides Compare these two again.
+</li>
+</ul>
+<h3>
+Looks right in
+</h3>
+<p>
+Typical and Many offers, each as its approved screen.
+</p>
+<details class="disclosure">
+<summary>
+For developers
+</summary>
+<ul>
+<li>
+The ticks are a form on
+<code>
+GET /offers/compare
+</code>
+with
+<code>
+a
+</code>
+and
+<code>
+b
+</code>
+; no new POST.
+</li>
+<li>
+Test data:
+<code>
+prelude/loan-offers/states/
+</code>
+(
+<code>
+01-typical
+</code>
+,
+<code>
+02-many-offers
+</code>
+).
+</li>
+</ul>
+</details>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { markdown, copy } = koda.scope(); copy.element.addEventListener('click', async () => { await navigator.clipboard.writeText(markdown.element.value); copy.element.textContent = 'Copied'; });
+</script>
+</article>
+</div>
+</div>

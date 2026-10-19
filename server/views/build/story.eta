@@ -1,0 +1,20 @@
+<%/* One page's story (prelude/build): what the design changes on it, written
+     up by the agent for the team's tracker when someone asks. The agent
+     writes one story, or several when the change splits well (and says why,
+     R-h8x). Each can be copied as Markdown, edited by hand, or rewritten,
+     with an instruction if wanted; a build session for the page reads them
+     (R-n4j). The stories reload when the agent finishes (story-written).
+     `it` is the page's group (BuildGroup, server/build.js). */%>
+<div class="center stack gap-6 build" ko-item>
+  <header class="stack gap-2">
+    <nav class="crumbs" aria-label="Where you are">
+      <a href="/">Projects</a><span aria-hidden="true">›</span>
+      <a href="<%= it.folder.url %>"><%= it.folder.name %></a><span aria-hidden="true">›</span>
+      <a href="<%= it.design.url %>"><%= it.design.title %></a><span aria-hidden="true">›</span>
+      <a href="<%= it.design.url %>/build">Build</a>
+    </nav>
+    <h1><%= it.title %></h1>
+    <p class="secondary">What <%= it.design.title %> changes on this page, as a story for your team’s tracker. It covers only what differs from the app as it is now.</p>
+  </header>
+  <div ko-as="stories" ko-source="<%= it.url %>/list" ko-invoke="event:story-written"><%~ include('./_stories', it) %></div>
+</div>

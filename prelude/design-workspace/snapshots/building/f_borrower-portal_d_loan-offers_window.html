@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Pop-out window
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/workspace.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+</head>
+<body class="shell fill bare">
+<main class="shell-main" id="main" ko-history ko-location="/f/borrower-portal/d/loan-offers/window" ko-scope="/">
+<div class="stack design-page window-page">
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser">
+<div class="toolbar">
+<span aria-label="Show" class="segmented" role="group">
+<a aria-current="true" class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design" title="The design’s views, with its states.">
+Design
+</a>
+<a class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=app&amp;size=fit&amp;client=browser" ko-target="design" title="The app built on this branch, at http://localhost:5173, with its own data.">
+App
+</a>
+</span>
+<details class="menu start">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="clip">
+Compare offers
+</span>
+</summary>
+<div class="menu-list">
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="window">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button name="surface.current" type="submit" value="/offers">
+<span class="item-title">
+Offers
+</span>
+<span class="muted">
+/offers · the app’s own view
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer
+</span>
+<span class="muted">
+/offers/off-2291 · the app’s own view
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291/accept">
+<span class="item-title">
+Offer › Accept the offer
+</span>
+<span class="muted">
+/offers/off-2291/accept · the app’s own view
+</span>
+</button>
+<button aria-current="true" name="surface.current" type="submit" value="/offers/compare">
+<span class="item-title">
+Compare offers
+</span>
+<span class="muted">
+/offers/compare
+</span>
+</button>
+</form>
+<hr>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Refresh
+</span>
+<span class="muted">
+Load this page again
+</span>
+</a>
+<a href="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" target="_blank">
+<span class="item-title">
+Open in browser
+</span>
+<span class="muted">
+http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare
+</span>
+</a>
+</div>
+</details>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 1 is shown on this page.">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+Rules
+<span class="pill">
+1
+</span>
+</a>
+<details class="menu start">
+<summary class="btn small ghost">
+<span class="clip">
+State: Typical
+</span>
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="window">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button aria-current="true" name="surface.state" type="submit" value="01-typical">
+<span class="item-title">
+Typical
+</span>
+<span class="muted">
+01-typical.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="02-no-offers">
+<span class="item-title">
+No offers yet
+</span>
+<span class="muted">
+02-no-offers.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="03-expired">
+<span class="item-title">
+An offer expired
+</span>
+<span class="muted">
+03-expired.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="04-long-names">
+<span class="item-title">
+Long names
+</span>
+<span class="muted">
+04-long-names.json
+</span>
+</button>
+</form>
+</details>
+<details class="menu start">
+<summary class="btn small ghost">
+Send event
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/events" class="menu-list" ko-target="event-status" method="post">
+<button name="event" type="submit" value="offer-expired">
+<span class="item-title">
+An offer expires
+</span>
+<span class="muted">
+offer-expired
+</span>
+</button>
+</form>
+</details>
+<span id="event-status" ko-region role="status">
+</span>
+<details class="menu start" ko-as="captureMenu">
+<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<span aria-hidden="true" class="icon icon-capture">
+</span>
+Capture
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" ko-target="capture-status" method="post">
+<input name="surface.view" type="hidden" value="window">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<input name="name" type="hidden" value="Compare offers – Typical.png">
+<input name="page" type="hidden" value="/offers/compare">
+<input name="state" type="hidden" value="01-typical">
+<input ko-as="frameWidth" name="frame.width" type="hidden" value="">
+<input ko-as="frameHeight" name="frame.height" type="hidden" value="">
+<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<span class="item-title">
+What’s in view
+</span>
+<span class="muted">
+As much as fits the frame now
+</span>
+</button>
+<button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
+<span class="item-title">
+The whole page
+</span>
+<span class="muted">
+Scrolled to its end, as wide as the frame
+</span>
+</button>
+</form>
+</details>
+<span id="capture-status" ko-region role="status">
+</span>
+<span class="spacer">
+</span>
+<details class="menu">
+<summary class="btn small ghost" title="The size this window lays the page out at.">
+<span aria-hidden="true" class="icon icon-fit">
+</span>
+Fit the panel
+</summary>
+<ul class="menu-list">
+<li>
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Fit the panel
+</span>
+<span class="muted">
+As wide and tall as the panel
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=phone&amp;client=browser" ko-target="design">
+<span class="item-title">
+Phone
+</span>
+<span class="muted">
+390 × 844
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=tablet&amp;client=browser" ko-target="design">
+<span class="item-title">
+Tablet
+</span>
+<span class="muted">
+820 × 1180
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=laptop&amp;client=browser" ko-target="design">
+<span class="item-title">
+Laptop
+</span>
+<span class="muted">
+1440 × 900
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=desktop&amp;client=browser" ko-target="design">
+<span class="item-title">
+Desktop
+</span>
+<span class="muted">
+1920 × 1080
+</span>
+</a>
+</li>
+<li>
+<form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="window">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="custom">
+<input name="surface.client" type="hidden" value="browser">
+<span class="item-title">
+Custom size
+</span>
+<div class="inline">
+<label class="sr-only" for="size-width-window">
+Width in pixels
+</label>
+<input id="size-width-window" max="4000" min="200" name="surface.custom.width" placeholder="Width" required type="number" value="">
+<span aria-hidden="true" class="muted">
+×
+</span>
+<label class="sr-only" for="size-height-window">
+Height in pixels
+</label>
+<input id="size-height-window" max="4000" min="200" name="surface.custom.height" placeholder="Height" required type="number" value="">
+<button class="btn small" type="submit">
+Use this size
+</button>
+</div>
+</form>
+</li>
+</ul>
+</details>
+<details class="menu">
+<summary class="btn small ghost" title="What this window shows the page as running in.">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+Browser
+</summary>
+<ul class="menu-list">
+<li>
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Browser
+</span>
+<span class="muted">
+As a browser shows it
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=mobile-app" ko-target="design">
+<span class="item-title">
+Spark mobile app
+</span>
+<span class="muted">
+Inside the iOS and Android app: no site header, and Back is the app’s own
+</span>
+</a>
+</li>
+</ul>
+</details>
+</div>
+<div class="design-frame" ko-as="frame">
+<div class="device" ko-as="device">
+<iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" title="Compare offers">
+</iframe>
+</div>
+</div>
+<script type="koda">
+// At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
+</script>
+</section>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<%/* A page's stories, or what stands in for them: the agent at work, or the
+     way to ask it. A story the design has changed under says what changed
+     since, and that rewriting replaces anyone's edits (R-z2m). `it` is the
+     page's group (BuildGroup, server/build.js). */%>
+<% const story = it.story; const stories = story?.stories ?? [];
+   const edited = stories.some(one => one.edited); %>
+<div class="stack gap-4">
+  <% if (it.writing) { %>
+  <div class="notice" role="status">
+    <div class="cluster gap-2"><span class="pulse" aria-hidden="true"></span><strong><%= story ? 'The agent is rewriting the story…' : 'The agent is writing the story…' %></strong></div>
+    <p>It reads what the design changes on this page, the app’s page as it is now, the rules and the approved screens. It usually takes under a minute; you can leave this page.</p>
+    <% if (it.instruction) { %><p class="secondary">You asked: “<%= it.instruction %>”</p><% } %>
+  </div>
+  <% } %>
+
+  <% if (!story && !it.writing) { %>
+  <div class="empty page">
+    <span class="icon icon-document" aria-hidden="true"></span>
+    <div class="stack gap-2">
+      <h2>No story for <%= it.title %> yet</h2>
+      <p class="secondary">The agent writes it from what the design changes here: what people will see and do differently, and how to tell it’s done. Developer details go at the end.</p>
+    </div>
+    <form class="cluster actions" action="<%= it.url %>" method="post">
+      <input type="hidden" name="writing" value="true">
+      <button class="btn primary" type="submit"><span class="icon icon-document" aria-hidden="true"></span>Write the story</button>
+    </form>
+  </div>
+  <% } else if (!story) { %>
+  <div class="card" aria-hidden="true">
+    <span class="skeleton title" style="--w: 55%"></span>
+    <div class="stack gap-2"><span class="skeleton"></span><span class="skeleton" style="--w: 85%"></span></div>
+    <div class="stack gap-2"><span class="skeleton" style="--w: 30%"></span><span class="skeleton"></span><span class="skeleton" style="--w: 70%"></span><span class="skeleton" style="--w: 90%"></span></div>
+  </div>
+  <% } else { %>
+  <div class="cluster">
+    <span class="muted">Written by the agent <%= story.written %> · a build session for this page reads <%= stories.length > 1 ? 'them' : 'it' %></span>
+    <span class="spacer"></span>
+    <div class="cluster actions">
+      <% if (stories.length > 1) { %>
+      <textarea hidden readonly ko-as="all"><%= stories.map(one => one.markdown).join('\n\n---\n\n') %></textarea>
+      <button class="btn small ghost" type="button" ko-as="copyAll">Copy all <%= stories.length %></button>
+      <script type="koda">
+        // Copying to the clipboard is an action on the platform, not a value.
+        const { all, copyAll } = koda.scope();
+        copyAll.element.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(all.element.value);
+          copyAll.element.textContent = 'Copied';
+        });
+      </script>
+      <% } %>
+      <% if (!it.writing) { %>
+      <a class="btn small ghost" href="<%= it.url %>/rewrite" ko-target="modal?"><span class="icon icon-history" aria-hidden="true"></span>Rewrite…</a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (story.outOfDate && !it.writing) { %>
+  <div class="notice warn" role="status">
+    <strong>The design changed after this story was written.</strong>
+    <p><%= story.outOfDate %></p>
+    <p><%= edited ? 'Rewrite it to catch up, which replaces the edits made to it, or edit it yourself.' : 'Rewrite it to catch up, or edit it yourself.' %> Until then, a build session goes by the design where the two differ.</p>
+    <div class="cluster actions"><a class="btn small" href="<%= it.url %>/rewrite" ko-target="modal?">Rewrite…</a></div>
+  </div>
+  <% } %>
+
+  <% if (stories.length > 1 && story.split) { %>
+  <p class="secondary"><strong>Split in <%= stories.length === 2 ? 'two' : stories.length %>:</strong> <%= story.split %></p>
+  <% } %>
+
+  <% for (const one of stories) { %>
+  <div ko-region><%~ include('./_story', one) %></div>
+  <% } %>
+  <% } %>
+</div>

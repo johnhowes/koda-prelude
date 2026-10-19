@@ -1,0 +1,132 @@
+<section aria-label="Design" class="panel design popped" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=mobile-app" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=mobile-app">
+<input id="lookingSize" type="hidden" value="">
+<div class="toolbar">
+<details class="menu start">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="clip">
+Compare offers
+</span>
+</summary>
+<div class="menu-list">
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="phone">
+<input name="surface.client" type="hidden" value="mobile-app">
+<button name="surface.current" type="submit" value="/offers">
+<span class="item-title">
+Offers
+</span>
+<span class="muted">
+/offers
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer
+</span>
+<span class="muted">
+/offers/off-2291
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291/accept">
+<span class="item-title">
+Offer › Accept the offer
+</span>
+<span class="muted">
+/offers/off-2291/accept
+</span>
+</button>
+<button aria-current="true" name="surface.current" type="submit" value="/offers/compare">
+<span class="item-title">
+Compare offers
+</span>
+<span class="muted">
+/offers/compare
+</span>
+</button>
+</form>
+<hr>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=mobile-app" ko-target="design">
+<span class="item-title">
+Refresh
+</span>
+<span class="muted">
+Load this page again
+</span>
+</a>
+<a href="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" target="_blank">
+<span class="item-title">
+Open in browser
+</span>
+<span class="muted">
+http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare
+</span>
+</a>
+</div>
+</details>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 2 are shown on this page.">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+Rules
+<span class="pill">
+2
+</span>
+</a>
+<details class="menu start">
+<summary class="btn small ghost">
+<span class="clip">
+State: Typical
+</span>
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="phone">
+<input name="surface.client" type="hidden" value="mobile-app">
+<button aria-current="true" name="surface.state" type="submit" value="01-typical">
+<span class="item-title">
+Typical
+</span>
+<span class="muted">
+01-typical.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="02-no-offers">
+<span class="item-title">
+No offers yet
+</span>
+<span class="muted">
+02-no-offers.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="03-expired">
+<span class="item-title">
+An offer expired
+</span>
+<span class="muted">
+03-expired.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="04-long-names">
+<span class="item-title">
+Long names
+</span>
+<span class="muted">
+04-long-names.json
+</span>
+</button>
+</form>
+</details>
+<span class="spacer">
+</span>
+<span class="muted">
+Showing in its own window
+</span>
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
+Show window
+</a>
+</div>
+</section>

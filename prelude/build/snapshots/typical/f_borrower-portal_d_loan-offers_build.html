@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Build
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+2
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal/d/loan-offers/build" ko-scope="/">
+<div class="center stack gap-6 build" ko-item>
+<header class="stack gap-2">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal">
+borrower-portal
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal/d/loan-offers">
+Loan offers
+</a>
+</nav>
+<h1>
+Build
+</h1>
+<p class="secondary">
+What Loan offers changes in the app, page by page, compared with the app as it is now. Build each page on the design’s branch, or have the agent write it up as a story for your team’s tracker.
+</p>
+</header>
+<section aria-labelledby="to-build" class="stack gap-3">
+<div class="cluster">
+<h2 class="group-label" id="to-build">
+To build (4)
+</h2>
+<span class="spacer">
+</span>
+<form action="/f/borrower-portal/d/loan-offers/build/stories" method="post">
+<input name="writing" type="hidden" value="true">
+<button class="btn small ghost" type="submit">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+Write the other 2 stories
+</button>
+</form>
+</div>
+<div ko-as="pages" ko-invoke="event:story-written" ko-source="/f/borrower-portal/d/loan-offers/build/pages">
+<div class="stack gap-3">
+<article aria-labelledby="page-offers" class="card gap-3">
+<div class="cluster">
+<h3 class="page-title" id="page-offers">
+Offers
+</h3>
+<span class="pill">
+Changed
+</span>
+</div>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span>
+Offers looks different in Typical, Many offers and Long lender names
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span>
+The list can be sorted in new ways
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span>
+1 new form
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+<span class="item-text">
+<span>
+New rule R-m7t: Offers are listed with the lowest monthly payment first.
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div class="cluster">
+<span class="muted">
+No story yet
+</span>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<form action="/f/borrower-portal/d/loan-offers/build/stories/offers" method="post">
+<input name="writing" type="hidden" value="true">
+<button class="btn small ghost" type="submit">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+Write the story
+</button>
+</form>
+<form action="/f/borrower-portal/d/loan-offers/builds" method="post">
+<input name="group" type="hidden" value="/offers">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Start a build session
+</button>
+</form>
+</div>
+</div>
+</article>
+<article aria-labelledby="page-compare" class="card gap-3">
+<div class="cluster">
+<h3 class="page-title" id="page-compare">
+Compare offers
+</h3>
+<span class="pill">
+New
+</span>
+</div>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span>
+New page: Compare offers
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span>
+New: Change offer, in a drawer over Compare offers
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+<span class="item-text">
+<span>
+New rule R-k2p: The cheaper offer is the one with the lower total cost over its term, not the lower monthly payment.
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div class="cluster">
+<span class="cluster gap-2 secondary">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+Story written today at 10:42
+</span>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/build/stories/compare">
+Open the story
+</a>
+<form action="/f/borrower-portal/d/loan-offers/builds" method="post">
+<input name="group" type="hidden" value="/offers/compare">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Start a build session
+</button>
+</form>
+</div>
+</div>
+</article>
+<article aria-labelledby="page-accept" class="card gap-3">
+<div class="cluster">
+<h3 class="page-title" id="page-accept">
+Accept an offer
+</h3>
+<span class="pill">
+Changed
+</span>
+</div>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span>
+New: Confirm your bank account, in a dialog over Accept an offer
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span>
+Accept an offer looks different in Typical and No account on file
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span>
+1 new form, 1 changed
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+<span class="item-text">
+<span>
+New rule R-v8d: An offer is accepted only once the bank account it pays into is confirmed.
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div class="cluster">
+<span class="cluster gap-2 secondary">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+Story written yesterday at 16:05
+</span>
+<span class="pill warn">
+Out of date
+</span>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/build/stories/accept">
+Open the story
+</a>
+<form action="/f/borrower-portal/d/loan-offers/builds" method="post">
+<input name="group" type="hidden" value="/offers/:id/accept">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Start a build session
+</button>
+</form>
+</div>
+</div>
+<p class="muted">
+Last built in
+<a href="/f/borrower-portal/d/loan-offers/sessions/20261016-1530-a8vn">
+Accept an offer (16 Oct)
+</a>
+</p>
+</article>
+<article aria-labelledby="page-across" class="card gap-3">
+<div class="cluster">
+<h3 class="page-title" id="page-across">
+Across the design
+</h3>
+<span class="pill">
+Changed
+</span>
+</div>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+<span class="item-text">
+<span>
+New rule R-p4c: Amounts are shown in the loan’s currency, to the cent, everywhere.
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+<span class="item-text">
+<span>
+New: when an offer expires, it leaves the list without a reload
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div class="cluster">
+<span class="muted">
+No story yet
+</span>
+<span class="spacer">
+</span>
+<div class="cluster actions">
+<form action="/f/borrower-portal/d/loan-offers/build/stories/across" method="post">
+<input name="writing" type="hidden" value="true">
+<button class="btn small ghost" type="submit">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+Write the story
+</button>
+</form>
+<form action="/f/borrower-portal/d/loan-offers/builds" method="post">
+<input name="group" type="hidden" value="">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Start a build session
+</button>
+</form>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+<details class="disclosure">
+<summary>
+Built, and not changed by this design (2)
+</summary>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-done">
+</span>
+<span class="item-text">
+<span>
+Offer details
+</span>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-done">
+</span>
+<span class="item-text">
+<span>
+Documents
+</span>
+</span>
+</span>
+</li>
+</ul>
+</details>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

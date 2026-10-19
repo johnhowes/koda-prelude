@@ -12,7 +12,8 @@
    };
    const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
    const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
-   const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built').map(story => story.story)).join('\n\n---\n\n'); %>
+   /* Only the stories the agent has written: one is written when asked for (R-w3n). */
+   const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built' && story.story).map(story => story.story)).join('\n\n---\n\n'); %>
 <% if (needs.length) { %>
 <section class="card" aria-labelledby="needs-title">
   <h2 id="needs-title">Needs you</h2>
