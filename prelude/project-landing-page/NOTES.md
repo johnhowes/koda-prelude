@@ -95,6 +95,45 @@ use moved from the New design form to the app card.
   person had no strong view, 2026-10-18): it's where every branch is seen
   together.
 
+## Built (2026-10-19)
+
+The views are the app's now, in `server/views/projects/`; the model is
+`server/project.js` (`projectOf`, typed from the states), answered from the
+`/f/:id` handler in `server/main.js`. The page is in the app layout on the
+design system (`layoutOfPath` says so), like Home. Its styles are in
+`server/public/prelude.css`, under `@scope (.project)`. What differs from the
+notes above, and why:
+
+- **The layout has `notice?` now** (the shell's build brought it in), so
+  "Pushed …" is said there, as designed.
+- **The main region is `workspace`** in the app's layout: a push's answer
+  addresses the page to `ko-into="workspace"` where the design says `main`.
+- **Merge answers with the work**, as routes.json says, rather than going to
+  the design's page: the branch leaves In progress, and the designs region
+  (on `projects-changed`) lists its design again (R-2hx).
+- **Needs you is Home's**: `needsOfProject()` in `server/home.js` runs Home's
+  own reading for one project (R-v7q).
+- **`approved` is all of a design's pages or none**: the app keeps one
+  approval per design (its snapshots), not one per page, so "4 pages, 2
+  approved" doesn't happen yet.
+- **The events are the ones Home sends**: a turn starting or ending (its
+  check included, so "the page renders again"), a push, a merge, an update
+  and starting a build all `tell()` the app's channel; the work's
+  five-minute read tidies branches merged on the Git server, which sends
+  `projects-changed`, so the app follows too (R-8dz), though its own region
+  has no timer.
+- **Two forms carry what was refused on a cold load** (no script): New
+  design's fields come from `it.$fields`, the folder field from
+  `it.$reference`; both are `{}` as designed otherwise.
+- **References have ids** (from their paths), for `…/references/:id/remove`.
+
 ## Open questions
 
-(none)
+- **New design has nowhere to say why the kind was refused**: designs here
+  wait for the app to be connected (or for a custom stack's app to be
+  built), and a project has one design system and one shell. The fields hold
+  only the title and area, so the app says it under the title for now. A
+  line in the fields for `$errors.kind` would put it in its place.
+- **Starting the app build can fail** (a branch git couldn't make, the agent
+  busy): `_app` has no place for it, so the app answers with the app and
+  says why in `notice?`.

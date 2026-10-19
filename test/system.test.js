@@ -38,9 +38,10 @@ function post(path, fields) {
 const get = path => fetch(base + path, { headers: { 'x-koda-fragment': '1' }, redirect: 'manual' });
 
 test('before there is a system, a design is told it has none', async () => {
-  const page = await (await get(`/f/${fid}`)).text();
-  assert.match(page, /value="system"/);
-  assert.match(page, /value="shell"/);
+  // New design offers each kind until the project has one (R-wm3).
+  const modal = await (await get(`/f/${fid}/designs/new`)).text();
+  assert.match(modal, /value="system"/);
+  assert.match(modal, /value="shell"/);
   runner.turns.length = 0;
   await post(`/f/${fid}/d/onboarding/sign-up/sessions`, { message: 'Hello' });
   assert.match(runner.turns[0].systemPrompt, /no design system yet/);
@@ -53,9 +54,10 @@ test('the folder’s design system is made from New design, and only one', async
 
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, /Acme<span class="pill">Design system<\/span>/);
-  assert.doesNotMatch(page, /value="system"/, 'no second system offered');
-  assert.match(page, /value="shell"/, 'the shell is still offered');
-  assert.match(page, /Designs here use the design system/);
+  assert.match(page, /Designs here use <a href="\/f\/[0-9a-f]+\/d\/acme">Acme<\/a>\./);
+  const modal = await (await get(`/f/${fid}/designs/new`)).text();
+  assert.doesNotMatch(modal, /value="system"/, 'no second system offered');
+  assert.match(modal, /value="shell"/, 'the shell is still offered');
 
   const second = await post(`/f/${fid}/designs`, { title: 'Other', area: '', kind: 'system' });
   assert.equal(second.status, 422);

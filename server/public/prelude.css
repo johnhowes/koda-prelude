@@ -60,8 +60,8 @@
   /* The Build view (step 7): groups of work, each copied as a story. */
   .build-group h2 { display: flex; align-items: baseline; gap: var(--space-2); }
   .build-routes, .build-rules { margin: var(--space-2) 0; padding-left: var(--space-5); font-size: var(--text-sm); }
-  .build-group details, .in-progress details { margin-block: var(--space-2); }
-  .build-group .story, .in-progress .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
+  .build-group details { margin-block: var(--space-2); }
+  .build-group .story { display: block; inline-size: 100%; margin-block: var(--space-2); font-family: var(--font-mono, monospace); font-size: var(--text-sm); }
 }
 
 /* Home's own rules (prelude/landing-page): what the design system can't say. */
@@ -74,4 +74,19 @@
   .first-run-steps { align-self: stretch; list-style: none; padding: 0; }
   .first-run-steps > li { align-items: center; }
   .first-run-steps strong { color: var(--fg-muted); }
+}
+
+/* A project's page (prelude/project-landing-page): what the design system can't say. */
+@scope (.project) {
+  /* A path is one long word; let it wrap rather than push the column. */
+  .project-path, code { overflow-wrap: anywhere; }
+
+  /* Lists that are only lines of text, not rows to open. */
+  .in-progress, .stories, .merged, .also-changes { list-style: none; padding: 0; }
+
+  /* The designs' search takes the row beside its filter, and wraps under it when narrow. */
+  .designs-search { flex: 1 1 14rem; inline-size: auto; }
+
+  /* The stories to copy, in full. */
+  .story { inline-size: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
 }

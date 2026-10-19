@@ -218,7 +218,7 @@ test('a build works on the design’s own branch: a build session, its own instr
   assert.ok(view.includes(`Build session: <a href="/f/${wid}/d/borrowers/sessions/${sid}">Build: Borrowers</a>`));
   assert.equal(view.match(/Build session: /g).length, 1, 'only the group that has one');
   const folderPage = await (await get(`/f/${fid}`)).text();
-  assert.ok(folderPage.includes(`<a href="/f/${wid}/d/borrowers/sessions/${sid}">build session</a>`));
+  assert.ok(folderPage.includes(`<a class="muted" href="/f/${wid}/d/borrowers/sessions/${sid}">Build session</a>`));
 
   const session = await (await get(location)).text();
   assert.match(session, /<span class="item-title">Build: Borrowers <span class="pill">Build<\/span><\/span>/);
@@ -244,7 +244,7 @@ test('a design session on the branch may change the design system; the change tr
   write(worktree, 'prelude/tokens/system/tokens.css', ':root { --accent: teal; --badge: gold; }');
   await settled(workDir, sid);
   const folder = await (await get(`/f/${fid}`)).text();
-  assert.match(folder, /Also changes, outside the design: <code>prelude\/tokens\/system\/tokens\.css<\/code>/);
+  assert.match(folder, /<summary>Also changes 1 file outside the design<\/summary>[\s\S]*?<code>prelude\/tokens\/system\/tokens\.css<\/code>/);
 });
 
 test('a build ports the views; the design’s copies go, and the build is done', async () => {
@@ -294,10 +294,10 @@ test('a merge git refuses changes nothing, and says why beside the branch’s bu
   body.append('path', worktree);
   await fetch(`${base}/folders`, { method: 'POST', body, redirect: 'manual' });
   const main = git(repo, 'rev-parse', 'main');
-  const refused = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
+  const refused = await post(`/f/${fid}/branches/${wid}/merge`, {});
   assert.equal(refused.status, 409);
   const page = await refused.text();
-  assert.match(page, /<div class="branch">[\s\S]*?<p class="err" role="alert">git couldn’t merge prelude\/borrowers into main, so nothing changed: [^<]*app\/views\/reports\.eta[^<]*<\/p>\s*<div class="rowbtns">/);
+  assert.match(page, /<code>prelude\/borrowers<\/code>[\s\S]*?<div class="notice danger" role="alert"><p>git couldn’t merge prelude\/borrowers into main, so nothing changed: [^<]*app\/views\/reports\.eta[^<]*<\/p><\/div>\s*<div class="cluster actions">/);
   assert.equal(git(repo, 'rev-parse', 'main'), main, 'main is where it was');
   assert.equal(readFileSync(join(repo, 'app', 'views', 'reports.eta'), 'utf8'), 'mine');
   rmSync(join(repo, 'app'), { recursive: true });
@@ -309,18 +309,18 @@ test('an update from main that clashes is left for the agent to resolve, then co
   git(repo, 'add', '-A');
   git(repo, 'commit', '-q', '-m', 'Reports on main');
   const branchTip = git(worktree, 'rev-parse', 'HEAD');
-  const clashed = () => post(`/f/${fid}/branches/${wid}/update`, { back: `/f/${fid}` });
+  const clashed = () => post(`/f/${fid}/branches/${wid}/update`, {});
 
   // Abandoned: the branch is as it was.
   assert.equal((await clashed()).status, 303);
   assert.match(readFileSync(join(worktree, 'app', 'views', 'reports.eta'), 'utf8'), /^<<<<<<< /m, 'left with git’s markers');
   const folder = await (await get(`/f/${fid}`)).text();
-  assert.match(folder, /main is half brought in\. This file clashes: <code>app\/views\/reports\.eta<\/code>\./);
+  assert.match(folder, /<strong>main is half brought in\.<\/strong>\s*<p>This file clashes: <code>app\/views\/reports\.eta<\/code>\./);
   assert.match(folder, new RegExp(`action="/f/${fid}/branches/${wid}/abandon"`));
   assert.doesNotMatch(folder, new RegExp(`action="/f/${fid}/branches/${wid}/merge"`), 'no merging into main meanwhile');
-  const refused = await post(`/f/${fid}/branches/${wid}/merge`, { back: `/f/${fid}` });
+  const refused = await post(`/f/${fid}/branches/${wid}/merge`, {});
   assert.equal(refused.status, 409);
-  assert.equal((await post(`/f/${fid}/branches/${wid}/abandon`, { back: `/f/${fid}` })).status, 303);
+  assert.equal((await post(`/f/${fid}/branches/${wid}/abandon`, {})).status, 303);
   assert.equal(git(worktree, 'rev-parse', 'HEAD'), branchTip);
   assert.equal(readFileSync(join(worktree, 'app', 'views', 'reports.eta'), 'utf8'), '<h1>Reports</h1>');
 
@@ -348,16 +348,23 @@ test('with a remote, finishing pushes the branch after asking, and a merge on th
   git(repo, 'remote', 'add', 'origin', remote);
   git(repo, 'push', '-q', 'origin', 'main');
 
-  const asked = await post(`/f/${fid}/branches/${wid}/publish`, { back: `/f/${fid}` });
+  // Asked first, in the modal over the page (R-k4n): by its link, or a post that didn't say yes.
+  const link = await (await get(`/f/${fid}`)).text();
+  assert.ok(link.includes(`href="/f/${fid}/branches/${wid}/publish" ko-target="modal?"`));
+  const opened = await (await get(`/f/${fid}/branches/${wid}/publish`)).text();
+  assert.match(opened, new RegExp(`id="modal" ko-region ko-focus="region" tabindex="-1" ko-location="/f/${fid}/branches/${wid}/publish">`));
+  const asked = await post(`/f/${fid}/branches/${wid}/publish`, {});
   assert.equal(asked.status, 200);
   const question = await asked.text();
   assert.match(question, /Push Borrowers\?/);
-  assert.match(question, new RegExp(`pushes <code>prelude/borrowers</code> to <code>${remote.replace(/\\/g, '\\\\')}</code>`));
+  assert.match(question, /pushes <code>prelude\/borrowers<\/code> to <code>origin<\/code>, where others can see it/);
   assert.equal(git(remote, 'branch', '--list', 'prelude/borrowers'), '', 'nothing pushed before the person says yes');
 
-  const pushed = await post(`/f/${fid}/branches/${wid}/publish`, { back: `/f/${fid}`, confirm: 'yes' });
+  const pushed = await post(`/f/${fid}/branches/${wid}/publish`, { confirm: 'yes' });
   assert.equal(pushed.status, 200);
-  assert.match(await pushed.text(), /Pushed <code>prelude\/borrowers<\/code>\.[\s\S]*Open the pull request on your Git server/);
+  const said = await pushed.text();
+  assert.match(said, /<div id="notice" ko-region ko-focus="none" aria-live="polite" ko-location="[^"]+">\s*<p role="status">Pushed <code>prelude\/borrowers<\/code> and opened its pull request\./);
+  assert.match(said, /<span class="pill">Pull request open<\/span>/);
   assert.match(git(remote, 'branch', '--list', 'prelude/borrowers'), /prelude\/borrowers/);
 
   // The pull request is merged on the server (here, by hand, in a clone).
@@ -367,7 +374,7 @@ test('with a remote, finishing pushes the branch after asking, and a merge on th
   git(clone, 'push', '-q', 'origin', 'main');
 
   const after = await (await get(`/f/${fid}`)).text();
-  assert.match(after, /Merged lately[\s\S]*<code>prelude\/borrowers<\/code> was merged into main/);
+  assert.match(after, /Merged lately[\s\S]*<code>prelude\/borrowers<\/code> merged into main just now\./);
   assert.equal(existsSync(worktree), false, 'its worktree is gone');
   assert.equal(git(repo, 'branch', '--list', 'prelude/borrowers'), '', 'and its branch');
 });
@@ -397,19 +404,22 @@ test('a design’s worktree has the folder’s host approval', () => {
   assert.equal(hosts.approved({ id: 'other' }, config), false);
 });
 
-test('the app on a branch (10.7): running with Open, stopped with Start it, or waiting for approval', () => {
-  const work = running => ({ branch: 'prelude/x', check: 'passing', behind: 0, worked: true, alsoChanges: [], into: 'main', remote: false, running });
-  const app = { url: 'http://localhost:5300', open: '/f/w/host/open', start: '/f/w/host/start', approved: true };
-  const on = render('./_branch', { work: work({ ...app, running: true }), finish: '/f/p/branches/w', back: '/f/p' });
-  assert.match(on, /The app on this branch, with its own data, is running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open/);
-  const off = render('./_branch', { work: work({ ...app, running: false }), finish: '/f/p/branches/w', back: '/f/p' });
+test('the app on a branch (10.7): running with Open it, stopped with Start it, or waiting for approval', () => {
+  const work = running => ({
+    branch: 'prelude/x', check: 'passing', failures: 0, behind: 0, worked: true, alsoChanges: [], into: 'main', remote: null, pushed: false,
+    building: null, merging: null, finishError: null, stories: [], url: '/f/w/d/x', buildUrl: '/f/w/d/x/build', finish: '/f/p/branches/w', running,
+  });
+  const app = { url: 'http://localhost:5300', open: '/f/w/host/open', approved: true };
+  const on = render('./projects/_branch', work({ ...app, running: true }));
+  assert.match(on, /The app on this branch is running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open it/);
+  const off = render('./projects/_branch', work({ ...app, running: false }));
   assert.match(off, /The app on this branch isn’t running\./);
-  assert.match(off, /<form class="app-line" action="\/f\/w\/host\/start" method="post">\s*<input type="hidden" name="back" value="\/f\/p">/);
+  assert.match(off, /<form class="cluster gap-2" action="\/f\/p\/branches\/w\/start" method="post" ko-target="work">/);
   assert.match(off, />Start it<\/button>/);
-  const waiting = render('./_branch', { work: work({ ...app, running: false, approved: false }), finish: '/f/p/branches/w', back: '/f/p' });
-  assert.match(waiting, /needs your approval first, in the design bar/);
+  const waiting = render('./projects/_branch', work({ ...app, running: false, approved: false }));
+  assert.match(waiting, /needs your approval first, on the design’s page/);
   assert.doesNotMatch(waiting, /Start it/);
-  const none = render('./_branch', { work: work(null), finish: '/f/p/branches/w', back: '/f/p' });
+  const none = render('./projects/_branch', work(null));
   assert.doesNotMatch(none, /The app on this branch/, 'no app built, or no design host: nothing to say');
 });
 

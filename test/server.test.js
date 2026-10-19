@@ -78,7 +78,7 @@ test('opening a folder remembers it and lists it', async () => {
   assert.ok(home.includes(`/f/${folderId(repo)}`));
 
   const folder = await (await get(`/f/${folderId(repo)}`)).text();
-  assert.match(folder, /No designs yet/);
+  assert.match(folder, /Design the first feature/);
 });
 
 test('creating designs, with an area, shows them grouped', async () => {
@@ -90,9 +90,10 @@ test('creating designs, with an area, shows them grouped', async () => {
   assert.ok(existsSync(join(repo, 'prelude', 'onboarding', 'sign-up', 'design.json')));
 
   const html = await (await get(`/f/${id}`, true)).text();
-  assert.match(html, /prelude\/billing/);
-  assert.match(html, /<h3 class="area">onboarding<\/h3>/);
-  assert.match(html, /prelude\/onboarding\/sign-up/);
+  assert.ok(html.includes(`href="/f/${id}/d/billing"`));
+  assert.match(html, /<h3 class="group-label">onboarding <span class="muted">1<\/span><\/h3>/);
+  assert.ok(html.includes(`href="/f/${id}/d/onboarding/sign-up"`));
+  assert.ok(html.indexOf('/d/billing"') < html.indexOf('onboarding <span'), 'designs with no area first');
 
   const refused = await post(`/f/${id}/designs`, { title: '', area: 'x' });
   assert.equal(refused.status, 422);

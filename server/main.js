@@ -13,7 +13,7 @@ import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, layoutsBuildPrompt } from './agent.js';
-import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, groupByArea, listDesigns } from './designs.js';
+import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf, incrementStory, layoutsStory, storyMarkdown } from './backlog.js';
@@ -31,6 +31,7 @@ import { createDrafts, draftKey } from './drafts.js';
 import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
+import { branchesOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom } from './sessions.js';
 import { createTurns, designKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
@@ -279,7 +280,6 @@ async function handle(req, res, app) {
     // Step 9: in a git repository, every design works on a branch of its own,
     // in a worktree that is a folder too. `folder.branch` is set in one.
     const repository = !folder.branch && gitState(folder.path) === 'repository';
-    const blank = { title: '', area: '', errors: {} };
 
     // The folder's designs: those on its main branch, and those so far only on
     // their own branches.
@@ -293,58 +293,60 @@ async function handle(req, res, app) {
       return [...onMain, ...onBranches];
     };
 
-    // A design's branch as the folder page shows it: where it stands, and its links.
-    const workOf = design => {
-      const entry = !folder.branch && app.branches.forDesign(folder.id, design.id);
-      return entry ? branchState(app, entry, design) : null;
-    };
+    // A project's page (prelude/project-landing-page), on the design system:
+    //   GET  /f/<id>                           the page; ?q= and ?stage= filter its designs
+    //   GET  /f/<id>/work                      Needs you and In progress, a region
+    //   GET  /f/<id>/designs                   the designs, as ?q= and ?stage= leave them, a region
+    //   GET  /f/<id>/app                       the app, a region
+    //   GET  /f/<id>/designs/new               New design, in the modal over the page
+    //   GET  /f/<id>/branches/<b>/publish      Push a branch: asked first, in the modal (R-k4n)
+    //   POST /f/<id>/designs                   make one: its page, or the fields refused
+    //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
+    //   POST /f/<id>/app/build                 start the app build: the app
+    //   POST /f/<id>/references                add a folder: the field, and the list
+    //   POST /f/<id>/references/<r>/remove     stop reading one: the list
+    const here = `/f/${folder.id}`;
+    const query = Object.fromEntries(url.searchParams.entries());
+    const pageTitle = `${folder.name} · Prelude`;
 
-    // The folder: its designs (each with its branch), the app, and "New design".
-    const view = (status, form, reference = { value: '', error: null }, extra = {}) => {
-      const designs = designsHere().map(design => ({ ...design, work: workOf(design) }));
-      const shell = designs.find(design => design.kind === 'shell') ?? null;
-      const shellWork = shell?.work ?? null;
-      // In progress (step 10): each design with a branch, and the stories on it -
-      // its new and changed groups, or those still to build.
-      const inProgress = designs.filter(design => design.work).map(design => {
-        const dir = join(design.work.path, PRELUDE_DIR, ...design.id.split('/'));
-        const built = buildSessions(dir);
-        const sessionOf = group => {
-          const session = built.get(group.key);
-          return session && { title: session.title, url: `${design.work.url}/sessions/${session.id}` };
+    // In progress (step 10): a branch's stories - its design's new and changed
+    // groups, or those still to build - each with its build session.
+    const storiesOf = (entry, design) => {
+      const dir = join(entry.path, PRELUDE_DIR, ...design.id.split('/'));
+      if (!isHosted(dir) || !buildsPages(design)) return [];
+      const built = buildSessions(dir);
+      return groupsOf(app, { entry, design, dir }).groups.filter(group => group.kind !== 'unchanged').map(group => {
+        const session = built.get(group.key);
+        return {
+          title: group.title,
+          kind: group.kind === 'changed' ? 'changed' : 'new',
+          state: !group.toBuild ? 'built' : entry.building?.group === group.key ? 'building' : 'to-build',
+          summary: group.change?.summary ?? '',
+          story: group.story,
+          session: session ? `/f/${entry.id}/d/${design.id}/sessions/${session.id}` : null,
         };
-        const stories = isHosted(dir) && buildsPages(design)
-          ? groupsOf(app, { entry: design.work, design, dir }).groups.filter(group => group.kind !== 'unchanged')
-            .map(group => ({ title: group.title, kind: group.kind, toBuild: group.toBuild, summary: group.change?.summary ?? '', story: group.story, session: sessionOf(group) }))
-          : [];
-        return { design, work: design.work, stories, buildUrl: `${design.work.url}/build` };
       });
-      const allStories = inProgress.flatMap(item => item.stories.filter(story => story.toBuild).map(story => story.story)).join('\n\n---\n\n');
-      return page(status, 'folder', {
-        folder,
-        groups: groupByArea(designs.filter(design => !design.work)),
-        inProgress,
-        allStories,
-        system: designs.find(design => design.kind === 'system') ?? null,
-        shell,
-        form,
-        references: app.references.of(folder.id),
-        reference,
-        app: appOf(folder.path),
-        // The app built on the shell's branch, not yet merged into main.
-        appOnBranch: Boolean(shellWork && appOf(shellWork.path).built && !appOf(folder.path).built),
-        shellWork,
-        defaultStack: DEFAULT_STACK,
-        canBuild: !folder.branch && buildable(folder.path),
-        git: gitState(folder.path),
-        merged: folder.branch ? [] : app.branches.merged(folder.id).slice(0, 5),
-        appError: null,
-        finishError: null, // { id, message }: finishing that branch failed; shown beside its buttons
-        confirmPublish: null,
-        published: null,
-        ...extra,
-      }, `${folder.name} · Prelude`);
     };
+    const helpers = { branchOf: (entry, design) => branchState(app, entry, design), storiesOf };
+    /** The page's model (project.js), with the request's query for its views. */
+    const projectModel = (options = {}) => ({ ...projectOf(app, folder, { ...helpers, query, ...options }), $query: query });
+
+    // One URL, two shapes: a Koda region asking for the page gets it alone,
+    // unless it asked from a page in another layout (askedFromLayout). A cold
+    // load of an overlay is the page, with the overlay in its region.
+    const projectPage = (status, { model = projectModel(), regions = {} } = {}) => {
+      const alone = fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length;
+      const at = req.method === 'GET' && rest === '' ? `${path}${url.search}` : here;
+      return send(res, status, shaped('projects/page', model, { fragment: alone, path: at, title: pageTitle, layout: alone ? {} : layout(), regions, system: true }));
+    };
+    // A region of the page; one Prelude couldn't read keeps what it had (unreadable).
+    const projectPart = (status, view, options = {}) => {
+      let model;
+      try { model = projectModel(options); } catch (error) { return unreadable(error); }
+      return send(res, status, shaped(view, model, { fragment, path: `${path}${url.search}`, title: pageTitle, layout: fragment ? {} : layout(), system: true }));
+    };
+    const overlay = (status, html) => (fragment ? send(res, status, html) : projectPage(status, { regions: { modal: { html, location: `${path}${url.search}` } } }));
+    const envelope = (into, html = '') => `<div ko-into="${into}">${html}</div>`;
 
     const tidy = () => { if (repository) tidyFolder(app, folder); };
 
@@ -355,31 +357,43 @@ async function handle(req, res, app) {
       return made.error ? made : { entry: made.entry, worktree: app.folders.get(made.entry.id) };
     };
 
-    // Finish a design's branch: merge it into main here, publish it for a pull
-    // request (after the person confirms), or bring main into it.
-    const finishMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(merge|publish|update|abandon)$/);
-    if (finishMatch && req.method === 'POST' && !folder.branch) {
-      const form = await readForm(req);
-      const entry = app.folders.get(finishMatch[1])?.branch;
-      if (!entry || entry.parentId !== folder.id) return redirect(res, `/f/${folder.id}`);
-      const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design) ?? { id: entry.design, title: entry.design };
-      const back = String(form.get('back') ?? '');
-      const backTo = back.startsWith('/f/') ? back : `/f/${folder.id}`;
-      const designPage = `/f/${folder.id}/d/${entry.design}`;
-      const action = finishMatch[2];
-      // Shown beside the branch's buttons, where the person clicked, and
-      // logged: the top of a long page is easily out of sight.
-      const finishFailed = (entry, message) => {
-        console.error(`Finishing ${entry.branch} failed: ${message}`);
-        return view(409, blank, undefined, { finishError: { id: entry.id, message } });
+    // A design's branch: push it for a pull request (asked first), bring main
+    // into it or abandon that, merge it into main here, or start its app.
+    // Each answers with the work, as the branch's forms ask; a push, which
+    // asks in the modal, with the page and a notice.
+    const branchMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(publish|update|abandon|merge|start)$/);
+    if (branchMatch && !folder.branch && (req.method === 'POST' || (req.method === 'GET' && branchMatch[2] === 'publish'))) {
+      const entry = app.folders.get(branchMatch[1])?.branch;
+      if (!entry || entry.parentId !== folder.id) return redirect(res, here);
+      const action = branchMatch[2];
+      const branchNow = () => branchesOf(app, folder, helpers).find(item => item.id === entry.id) ?? null;
+      // Pushing is always asked first, saying which branch goes to which
+      // remote; nothing is pushed until the person says yes (R-k4n).
+      const ask = () => {
+        const branch = branchNow();
+        return branch ? overlay(200, render('./projects/_publish', branch)) : redirect(res, here);
       };
+      if (req.method === 'GET') return ask();
+
+      const form = await readForm(req);
+      const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design) ?? { id: entry.design, title: entry.design };
+      // The work, with why finishing the branch failed beside it, where the
+      // person clicked, and logged: the top of a long page is easily out of sight.
+      const work = (status, failed = null) => {
+        if (failed) console.error(`Finishing ${entry.branch} failed: ${failed}`);
+        const finishError = failed ? { id: entry.id, message: failed } : null;
+        if (!fragment) return failed ? projectPage(status, { model: projectModel({ finishError }) }) : redirect(res, here);
+        return projectPart(status, 'projects/_work', { parts: { designs: false }, finishError });
+      };
+
+      // Merged, the branch leaves In progress and its design is under Designs again (R-2hx).
       if (action === 'merge') {
         const merged = app.branches.merge(entry, `Merge ${entry.branch}: ${design.title} (merged by Prelude)`);
-        if (merged.error) return finishFailed(entry, merged.error);
+        if (merged.error) return work(409, merged.error);
         app.tidied.delete(folder.id);
         tidy();
         tell(app, { needs: true, projects: true });
-        return redirect(res, designPage);
+        return work(200);
       }
       if (action === 'update') {
         const updated = app.branches.update(entry);
@@ -389,54 +403,97 @@ async function handle(req, res, app) {
           ? `${updated.from} is half brought into this branch: ${updated.clashes.length === 1 ? '1 file clashes' : `${updated.clashes.length} files clash`} (${updated.clashes.join(', ')}), left with git's conflict markers. The agent resolves them with your next message; nothing is committed until it has. Or abandon the update.`
           : updated.files.length ? `Brought ${updated.from} into this branch: ${updated.files.length} ${updated.files.length === 1 ? 'file' : 'files'} came in. The agent is told with your next message.` : `${updated.from} had nothing new for this branch.`, Boolean(updated.error));
         tell(app, { projects: true });
-        return redirect(res, backTo);
+        return work(updated.error ? 409 : 200, updated.error ?? null);
       }
       if (action === 'abandon') {
-        noteOnBranch(entry, app.branches.abandon(entry) ? `Abandoned the update from ${mainOf(folder)}: the branch is as it was before it.` : 'git couldn’t abandon the update.');
-        return redirect(res, backTo);
+        const abandoned = app.branches.abandon(entry);
+        const said = abandoned ? `Abandoned the update from ${mainOf(folder)}: the branch is as it was before it.` : 'git couldn’t abandon the update.';
+        noteOnBranch(entry, said, !abandoned);
+        tell(app, { projects: true });
+        return work(abandoned ? 200 : 409, abandoned ? null : said);
       }
+      // The app on this branch (10.7): its host started here, stopping
+      // whichever branch had its url. One that fails to start says why in
+      // the design bar's log.
+      if (action === 'start') {
+        const worktree = app.folders.get(entry.id);
+        const config = readHostConfig(entry.path);
+        if (worktree && config && app.hosts.approved(worktree, config)) {
+          try { await app.hosts.start(worktree, config); } catch { /* its log says why */ }
+        }
+        tell(app, { projects: true });
+        return work(200);
+      }
+
       // Publish: push and open a pull request, once the person has said yes.
-      if (form.get('confirm') !== 'yes') {
-        return view(200, blank, undefined, { confirmPublish: { id: entry.id, branch: entry.branch, design: design.title, remote: remoteOf(folder.path)?.url, back: backTo } });
+      if (form.get('confirm') !== 'yes') return ask();
+      const published = app.branches.publish(entry, { title: `${design.title} (designed and built with Prelude)`, body: pullRequestBody(app, entry, design) });
+      if (published.error) console.error(`Finishing ${entry.branch} failed: ${published.error}`);
+      else {
+        noteOnBranch(entry, published.pr ? `Pushed ${entry.branch} and opened a pull request: ${published.pr}` : `Pushed ${entry.branch}. Open the pull request here: ${published.compare ?? 'on your Git server'}`);
+        tell(app, { needs: true, projects: true });
       }
-      const body = pullRequestBody(app, entry, design);
-      const published = app.branches.publish(entry, { title: `${design.title} (designed and built with Prelude)`, body });
-      if (published.error) return finishFailed(entry, published.error);
-      noteOnBranch(entry, published.pr ? `Pushed ${entry.branch} and opened a pull request: ${published.pr}` : `Pushed ${entry.branch}. Open the pull request here: ${published.compare ?? 'on your Git server'}`);
-      tell(app, { needs: true, projects: true });
-      return view(200, blank, undefined, { published: { branch: entry.branch, pr: published.pr, compare: published.compare } });
+      // Pushed: the modal closes, the page shows the pull request open, and
+      // the notice says so. A failed push stays beside its branch.
+      const status = published.error ? 409 : 200;
+      const model = projectModel(published.error ? { finishError: { id: entry.id, message: published.error } } : {});
+      const pushed = !published.error && model.inProgress.find(item => item.id === entry.id);
+      const notice = pushed ? render('./projects/_pushed', pushed) : '';
+      if (!fragment) return projectPage(status, { model, regions: notice ? { notice: { html: notice, location: path } } : {} });
+      return send(res, status, [envelope('modal?'), envelope('workspace', render('./projects/page', model)), ...(notice ? [envelope('notice?', notice)] : [])].join('\n'));
     }
 
     // Build the app (step 8): in a build session on the folder's shell's
     // branch, the shell made if there isn't one. Starting it settles the stack
-    // if nobody had.
+    // if nobody had. It answers with the app, now being built; one that
+    // couldn't start says why in the notice.
     if (rest === '/app/build' && req.method === 'POST' && !folder.branch) {
       const form = await readForm(req);
+      const answer = (status, appError = null) => {
+        if (!fragment) return appError ? projectPage(status, { model: projectModel({ appError }) }) : redirect(res, `${here}#app`);
+        const html = render('./projects/_app', projectModel({ parts: { work: false, designs: false } }));
+        return send(res, status, appError ? `${html}\n${envelope('notice?', `<p role="alert">${escapeHtml(appError)}</p>`)}` : html);
+      };
       let state = appOf(folder.path);
       // An app the project already has is connected, not built (8b).
-      if (form.get('existing') === 'yes' && !state.built) state = markExisting(folder.path);
+      if (['yes', 'true'].includes(String(form.get('existing') ?? '')) && !state.built) state = markExisting(folder.path);
       if (!state.stack && !state.existing) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
-      if (state.built) return redirect(res, `/f/${folder.id}#app`);
+      if (state.built) return answer(200);
       let shell = designsHere().find(design => design.kind === 'shell');
       let made;
       if (!shell) {
         made = branchFor('app-shell', 'App shell');
-        if (made.error) return view(409, blank, undefined, { appError: made.error });
+        if (made.error) return answer(409, made.error);
         const created = createDesign(made.entry.path, { title: 'App shell', kind: 'shell' });
-        if (created.errors) return view(409, blank, undefined, { appError: Object.values(created.errors)[0] });
+        if (created.errors) return answer(409, Object.values(created.errors)[0]);
         app.branches.commit(made.entry, 'App shell: a new design (committed by Prelude)');
         shell = created.design;
       } else {
         made = branchFor(shell.id, shell.title);
-        if (made.error) return view(409, blank, undefined, { appError: made.error });
+        if (made.error) return answer(409, made.error);
       }
-      return startGroupBuild({ req, res, page, app, folder: made.worktree, designId: shell.id, groupKey: APP_GROUP.key });
+      const started = await startedBuild({ req, app, folder: made.worktree, designId: shell.id, groupKey: APP_GROUP.key });
+      return started.error ? answer(409, started.error) : answer(200);
     }
 
     if (rest === '' && req.method === 'GET') {
       folders.open(folder.path);
       tidy();
-      return view(200, blank);
+      return projectPage(200);
+    }
+
+    // The page's regions. The work's every-five-minutes read tidies what was
+    // merged on the Git server, which says so down the channel (R-8dz).
+    if (rest === '/work' && req.method === 'GET') {
+      tidy();
+      return projectPart(200, 'projects/_work', { parts: { designs: false } });
+    }
+    if (rest === '/designs' && req.method === 'GET') return projectPart(200, 'projects/_designs', { parts: { work: false } });
+    if (rest === '/app' && req.method === 'GET') return projectPart(200, 'projects/_app', { parts: { work: false, designs: false } });
+
+    // New design, in the modal; ?kind= picks the design system or the shell.
+    if (rest === '/designs/new' && req.method === 'GET' && !folder.branch) {
+      return overlay(200, render('./projects/_new-design', projectModel()));
     }
 
     // Approving the repository's design host: it runs the design's views as
@@ -471,21 +528,45 @@ async function handle(req, res, app) {
     }
 
     // Reference folders: what else the agent may read while working here.
+    // Added, the field comes back empty and the list with it; refused, the
+    // field comes back with what was typed and why.
     if (rest === '/references' && req.method === 'POST') {
       const value = cleanPath((await readForm(req)).get('path'));
       const added = app.references.add(folder, value);
-      if (added.error) return view(422, blank, { value, error: added.error });
-      return redirect(res, `/f/${folder.id}`);
+      if (added.error) {
+        const field = { path: value, $errors: { path: added.error } };
+        if (fragment) return send(res, 422, render('./projects/_reference-field', field));
+        return projectPage(422, { model: { ...projectModel(), $reference: field } });
+      }
+      if (!fragment) return redirect(res, `${here}#reading`);
+      const model = projectModel({ parts: { work: false, designs: false } });
+      return send(res, 200, `${render('./projects/_reference-field', model)}\n${envelope('references', render('./projects/_references', model))}`);
     }
 
-    if (rest === '/references/remove' && req.method === 'POST') {
-      app.references.remove(folder.id, String((await readForm(req)).get('path') ?? ''));
-      return redirect(res, `/f/${folder.id}`);
+    const referenceMatch = rest.match(/^\/references\/([0-9a-f]+)\/remove$/);
+    if (referenceMatch && req.method === 'POST') {
+      const reference = app.references.of(folder.id).find(candidate => referenceId(candidate.path) === referenceMatch[1]);
+      if (reference) app.references.remove(folder.id, reference.path);
+      if (!fragment) return redirect(res, `${here}#reading`);
+      return send(res, 200, render('./projects/_references', projectModel({ parts: { work: false, designs: false } })));
     }
 
     if (rest === '/designs' && req.method === 'POST' && !folder.branch) {
       const form = await readForm(req);
-      const input = { title: form.get('title') ?? '', area: form.get('area') ?? '', kind: ['system', 'shell'].includes(form.get('kind')) ? form.get('kind') : 'design' };
+      const input = { title: String(form.get('title') ?? ''), area: String(form.get('area') ?? ''), kind: ['system', 'shell'].includes(form.get('kind')) ? form.get('kind') : 'design' };
+      // Refused, the fields come back alone, with what was typed and why; on
+      // a cold load, in New design over the page. The fields hold only the
+      // title and the area, so a refusal of the kind (the app comes first, or
+      // the project has one already) is said under the title (NOTES.md).
+      const refused = (status, errors) => {
+        const fields = { title: input.title, area: input.area, $errors: errors.kind && !errors.title ? { ...errors, title: errors.kind } : errors };
+        if (fragment) return send(res, status, render('./projects/_new-design-fields', fields));
+        const model = projectModel();
+        const html = render('./projects/_new-design', { ...model, $query: { kind: input.kind }, $fields: fields });
+        return projectPage(status, { model, regions: { modal: { html, location: `${here}/designs/new` } } });
+      };
+      // A design needs a title; refused, nothing else changes.
+      if (!input.title.trim()) return refused(422, { title: 'Give the design a title.' });
       // Designs of views are written in the app's language (step 8). The first
       // one settles the stack: the default, or one described. A described
       // stack's app, with its design host, is built before any design of views.
@@ -495,10 +576,10 @@ async function handle(req, res, app) {
         if (form.get('existing') === 'yes' && !state.stack && !state.built) state = markExisting(folder.path);
         if (!state.stack && !state.existing) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
         if (state.existing && !state.built) {
-          return view(409, { ...input, errors: { kind: 'Designs here are written as the app’s own views, so the app this project already has is connected first. Connect the app below.' } });
+          return refused(409, { kind: 'Designs here are written as the app’s own views, so the app this project already has is connected first. Connect the app, under The app.' });
         }
         if (state.custom && !state.built) {
-          return view(409, { ...input, errors: { kind: `Designs here will be written in ${state.stack}, so its app is built first, with a design host. Start the app build below.` } });
+          return refused(409, { kind: `Designs here will be written in ${state.stack}, so its app is built first, with a design host. Start the app build, under The app.` });
         }
       }
       // In a repository, a new design is made on its own branch.
@@ -507,20 +588,20 @@ async function handle(req, res, app) {
         const existing = designsHere();
         if (input.kind !== 'design') {
           const same = existing.find(design => design.kind === input.kind);
-          if (same) return view(422, { ...input, errors: { kind: `This project already has ${input.kind === 'system' ? 'a design system' : 'an app shell'}: "${same.title}".` } });
+          if (same) return refused(422, { kind: `This project already has ${input.kind === 'system' ? 'a design system' : 'an app shell'}: "${same.title}".` });
         }
-        if (!id.split('/').at(-1)) return view(422, { ...input, errors: { title: String(input.title).trim() ? 'The title needs at least one letter or digit.' : 'Give the design a title.' } });
-        if (existing.some(design => design.id === id)) return view(422, { ...input, errors: { title: `prelude/${id} already exists.` } });
-        const made = branchFor(id, String(input.title).trim());
-        if (made.error) return view(409, { ...input, errors: { kind: made.error } });
+        if (!id.split('/').at(-1)) return refused(422, { title: 'The title needs at least one letter or digit.' });
+        if (existing.some(design => design.id === id)) return refused(422, { title: `prelude/${id} already exists.` });
+        const made = branchFor(id, input.title.trim());
+        if (made.error) return refused(409, { kind: made.error });
         const result = createDesign(made.entry.path, input);
-        if (result.errors) return view(422, { ...input, errors: result.errors });
+        if (result.errors) return refused(422, result.errors);
         app.branches.commit(made.entry, `${result.design.title}: a new design (committed by Prelude)`);
         tell(app, { projects: true });
         return redirect(res, `/f/${made.entry.id}/d/${result.design.id}`);
       }
       const result = createDesign(folder.path, input);
-      if (result.errors) return view(422, { ...input, errors: result.errors });
+      if (result.errors) return refused(422, result.errors);
       tell(app, { projects: true });
       return redirect(res, `/f/${folder.id}/d/${result.design.id}`);
     }
@@ -650,14 +731,16 @@ const mainOf = folder => mainBranch(folder.path);
 /**
  * The document a Prelude page renders in, by its path: what has to be the
  * same for Koda to swap one page into another's main region.
- *   'app'     the app layout with the design system: Home, a design's page
+ *   'app'     the app layout with the design system: Home, a project's page
+ *             (and its regions and overlays), a design's page
  *   'ds-v1'   the app layout with the older ds/v1 stylesheets, for the pages
- *             not moved onto the design system yet (a project, Build, the rest)
+ *             not moved onto the design system yet (Build, the rest)
  *   'window'  a design's pop-out, a window of its own
  * A page moved onto the design system leaves the ds-v1 list.
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|branches\/[0-9a-f]+\/publish))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   if (pathname.endsWith('/window')) return 'window';
   return pathname.endsWith('/build') ? 'ds-v1' : 'app';
@@ -788,6 +871,21 @@ async function startGroupBuild({ req, res, page, app, folder, designId, groupKey
   const first = Object.assign(body, { method: 'POST', url: buildsUrl, headers: { ...req.headers, 'content-type': 'application/x-www-form-urlencoded' } });
   return handleDesign({ req: first, res, url: new URL(buildsUrl, 'http://localhost'), page, app, folder, ...found, rest: ['builds'] });
 }
+
+/**
+ * Start building a group as startGroupBuild does, for a page that answers
+ * with something of its own (the project page's app): { ok } once its build
+ * session has started, or { error } saying why it couldn't.
+ */
+async function startedBuild({ req, app, folder, designId, groupKey }) {
+  const answer = { status: 0, error: null };
+  const res = { headersSent: false, writeHead(status) { answer.status = status; }, end() {} };
+  const page = (status, view, data) => { answer.status = status; answer.error = data?.error ?? null; };
+  await startGroupBuild({ req, res, page, app, folder, designId, groupKey });
+  return answer.status === 303 ? { ok: true } : { error: answer.error ?? 'The app build couldn’t start.' };
+}
+
+const escapeHtml = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 async function handleDesign({ req, res, url, page, app, folder, design, dir, rest }) {
   const { turns, live, watches, designs } = app;

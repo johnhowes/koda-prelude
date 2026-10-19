@@ -279,6 +279,20 @@ export function homeOf(app, { contents = true, now = Date.now(), tidy = () => {}
   };
 }
 
+/**
+ * What waits on the person in one project, for its own page (R-v7q): Home's
+ * needs, for that project alone, oldest first (the view shows newest first).
+ * [{ id, kind, design, says, when, url }]
+ */
+export function needsOfProject(app, folder, { now = Date.now() } = {}) {
+  const seen = app.seen.all();
+  const project = { id: folder.id, name: folder.name, path: folder.path };
+  const needs = worksOf(app, folder).flatMap(work =>
+    needsOfWork(app, project, work, { running: app.turns.state(work.at, work.design, null).kind !== 'idle', seen, now }));
+  return needs.sort((a, b) => a.at.localeCompare(b.at))
+    .map(({ id, kind, design, says, at, url }) => ({ id, kind, design, says, when: ago(at, now), url }));
+}
+
 /** How many things wait on the person, for the bar (R-z3g): kept until something changes. */
 export function waitingOf(app) {
   if (app.waiting == null) {

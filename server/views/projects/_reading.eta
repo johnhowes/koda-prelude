@@ -1,7 +1,8 @@
 <%/* What the agent can read: the project, and the folders the person adds,
      such as another repository whose CSS a design system starts from. The
      list and the Add field are regions of their own, so adding one, or a
-     path refused, changes only them. `it` is the project. */%>
+     path refused, changes only them. `it` is the project; `it.$reference`
+     the field as refused, on a cold load. */%>
 <% const p = it; %>
 <section class="card" id="reading" aria-labelledby="reading-title">
   <h2 id="reading-title">What the agent can read</h2>
@@ -16,6 +17,6 @@
   </ul>
   <div ko-as="references"><%~ include('./_references', p) %></div>
   <form class="stack gap-1" action="/f/<%= p.id %>/references" method="post" ko-target="referenceField">
-    <div class="stack gap-1" ko-as="referenceField"><%~ include('./_reference-field', {}) %></div>
+    <div class="stack gap-1" ko-as="referenceField"><%~ include('./_reference-field', it.$reference ?? {}) %></div>
   </form>
 </section>
