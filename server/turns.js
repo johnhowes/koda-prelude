@@ -15,10 +15,17 @@
 // Messages sent while the agent works wait (R-z4k): each session's in the
 // order written. When a turn ends, `onIdle` is told, and sends them together
 // as the next message.
+//
+// The agent has no shell, so it deletes a file by writing it empty: when the
+// turn ends, each file it emptied, and that is empty still, is removed.
+
+import { existsSync, rmSync, statSync } from 'node:fs';
+import { isAbsolute, relative, resolve } from 'node:path';
 
 import { randomUUID } from 'node:crypto';
 
 import { designPrompt, toolSummary } from './agent.js';
+import { DELETING, designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
 import { render } from './views.js';
 import { presentEntry, sinceWords, stepOf } from './workspace.js';
@@ -160,6 +167,8 @@ export function createTurns({ runner, live, onChange = () => {} }) {
       const ctx = { designDir, session, key: sessionKey(folder, design, sessionId), block: null, timer: null, view, step: null, startedAt: new Date().toISOString(), checking: false };
       const designPath = `prelude/${design.id}`;
       const pending = new Map();   // tool id -> name, to label its result
+      const emptying = new Map();  // tool id -> the file an empty Write names
+      const emptied = new Set();   // files it emptied, deleted when the turn ends
 
       // What the last check found: from memory, or - after Prelude restarted -
       // from this session's last check, if no message has gone since.
@@ -187,7 +196,9 @@ export function createTurns({ runner, live, onChange = () => {} }) {
 
 ${withFindings(told, message)}` : withFindings(told, message),
         // A build session (step 7) brings its own instructions and permissions.
-        systemPrompt: systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack, shared }),
+        systemPrompt: `${systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack, shared })}
+
+${DELETING}`,
         designPath,
         mode,
         shared,
@@ -205,12 +216,15 @@ ${withFindings(told, message)}` : withFindings(told, message),
             endText(ctx, event.text);
           } else if (event.type === 'tool') {
             pending.set(event.id, event.name);
+            if (event.name === 'Write' && event.input?.file_path && event.input.content === '') emptying.set(event.id, event.input.file_path);
             const summary = toolSummary(event.name, event.input, folder.path);
             record(ctx, { type: 'tool', id: event.id, name: event.name, summary });
             // The status line says what it's doing now.
             ctx.step = stepOf(event.name, summary);
             publishState();
           } else if (event.type === 'tool-result') {
+            // Only a write that was allowed: a refused one emptied nothing.
+            if (emptying.has(event.id) && !event.isError) emptied.add(emptying.get(event.id));
             record(ctx, {
               type: 'tool-result', id: event.id, name: pending.get(event.id) ?? null,
               error: event.isError, text: String(event.text ?? '').slice(0, MAX_RESULT),
@@ -238,6 +252,13 @@ ${withFindings(told, message)}` : withFindings(told, message),
         let checked = null;   // what the check found, for afterTurn
         // A message cut off by Stop or an error is kept as far as it got.
         if (ctx.block) endText(ctx, ctx.block.text);
+        // The files it emptied are the ones it deleted; one it wrote again since isn't.
+        for (const path of emptied) {
+          const file = resolve(folder.path, path);
+          const inside = relative(folder.path, file);
+          if (!inside || inside.startsWith('..') || isAbsolute(inside)) continue;
+          try { if (existsSync(file) && statSync(file).isFile() && statSync(file).size === 0) rmSync(file); } catch { /* left for the person */ }
+        }
         // Render what the agent made, and say what doesn't: to the person now,
         // and to the agent with the next message.
         if (check && result.ok) {
