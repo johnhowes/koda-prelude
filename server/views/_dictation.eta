@@ -17,7 +17,9 @@
      attribute expresses. Its file goes in the upload part's input, which
      sends it, as a pasted image does. What went wrong last, if anything
      (no ffmpeg, say), is `it.dictation.error`, said where the script says
-     what it's doing. */%>
+     what it's doing. It sits in the composer's form, and forms can't nest,
+     so Remove and Cancel are ko-form parts: a <form> here would close the
+     composer early, leaving Send and Enter to send outside it. */%>
 <% const base = `/f/${it.folder.id}/d/${it.id}`; const d = it.dictation ?? {}; %>
 <span class="cluster gap-2 dictation" ko-item>
 <% if (d.status === 'ready') { %>
@@ -36,10 +38,10 @@
     <div class="menu-list">
       <p class="menu-note muted">Speech model: <%= model ? `${model.title}, ${model.size}` : d.model %>, kept on this computer.<% if (d.switchingTo && d.switchingTo !== d.model) { %> Getting <%= (it.speechModels ?? []).find(m => m.id === d.switchingTo)?.title ?? d.switchingTo %> to replace it.<% } %></p>
       <a href="<%= base %>/dictation" ko-target="modal?" ko-set="modelMenu.open = false"><span class="item-title">Change model…</span><span class="muted">Downloads the one you choose, then removes this one</span></a>
-      <form action="<%= base %>/dictation/remove" method="post" ko-target="dictation">
+      <div ko-form="<%= base %>/dictation/remove" ko-method="post" ko-target="dictation">
         <input type="hidden" name="status" value="none">
         <button type="submit"><span class="item-title">Remove the model</span><span class="muted">Frees <%= model?.size ?? 'its space' %>. Dictation is off until you set it up again.</span></button>
-      </form>
+      </div>
     </div>
   </details>
   <span class="muted" ko-as="heard" role="status"<% if (!d.error) { %> hidden<% } %>><%= d.error ?? '' %></span>
@@ -80,10 +82,10 @@
 <% } else if (d.status === 'downloading') { %>
   <span class="icon icon-dictate" aria-hidden="true"></span>
   <label class="muted cluster gap-2">Getting the speech model, <%= d.progress %>%<progress max="100" value="<%= d.progress %>"></progress></label>
-  <form action="<%= base %>/dictation/cancel" method="post" ko-target="dictation">
+  <div ko-form="<%= base %>/dictation/cancel" ko-method="post" ko-target="dictation">
     <input type="hidden" name="status" value="none">
     <button class="link-btn" type="submit" title="Stop downloading the speech model. Dictation stays off.">Cancel</button>
-  </form>
+  </div>
 <% } else { %>
   <a class="icon-btn small" href="<%= base %>/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it"><span class="icon icon-dictate" aria-hidden="true"></span><span class="sr-only">Dictate</span></a>
   <% if (d.error) { %><span class="muted" role="status"><%= d.error %></span><% } %>
