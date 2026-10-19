@@ -1,0 +1,443 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
+    ],
+    "needsYou": 5,
+    "agents": [
+      { "design": "Why did Rate lock’s build stop?", "project": "spark-lending", "url": "/f/spark-lending/d/fixes/rate-lock-build-stopped" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "built", "stack": "Node with Eta", "path": "app", "existing": false, "branch": null, "url": null },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-design-system", "title": "Spark Design System" },
+      "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "needs": [
+        {
+          "id": "n-q81",
+          "kind": "stopped",
+          "design": "Rate lock",
+          "says": "The build stopped: 1 page doesn’t render in the app.",
+          "when": "25 minutes ago",
+          "url": "/f/spark-lending/d/rate-lock/build"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "d4e7a1",
+          "design": { "id": "fixes/large-uploads-fail", "title": "Uploads over 10 MB fail on the document checklist", "kind": "fix", "area": null },
+          "url": "/f/spark-lending/d/fixes/large-uploads-fail",
+          "buildUrl": null,
+          "finish": "/f/spark-lending/branches/d4e7a1",
+          "branch": "prelude/fix-large-uploads-fail",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": ["app/routes/documents.js", "app/routes/documents.test.js", "prelude/document-checklist/views/checklist/_upload.eta", "prelude/document-checklist/NOTES.md"],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "a41c07",
+          "design": { "id": "loan-offers", "title": "Loan offers", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/loan-offers",
+          "buildUrl": "/f/spark-lending/d/loan-offers/build",
+          "finish": "/f/spark-lending/branches/a41c07",
+          "branch": "prelude/loan-offers",
+          "into": "main",
+          "check": "unchecked",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "7e2d9b",
+          "design": { "id": "rate-lock", "title": "Rate lock", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/rate-lock",
+          "buildUrl": "/f/spark-lending/d/rate-lock/build",
+          "finish": "/f/spark-lending/branches/7e2d9b",
+          "branch": "prelude/rate-lock",
+          "into": "main",
+          "check": "failing",
+          "failures": 1,
+          "behind": 0,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": { "title": "Lock a rate", "stopped": true },
+          "alsoChanges": ["app/routes/rates.js", "app/views/layout.eta"],
+          "running": { "running": false, "approved": true, "url": "http://localhost:3000", "open": "/f/spark-lending/branches/7e2d9b/app" },
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Lock a rate",
+              "kind": "new",
+              "state": "building",
+              "summary": "A borrower locks today’s rate for 30, 45 or 60 days, and sees what it costs.",
+              "story": "Lock a rate\n\nAs a borrower, I can lock today’s rate for 30, 45 or 60 days from my loan’s page, and see the fee for each before I confirm.",
+              "session": "/f/spark-lending/d/rate-lock/sessions/s-8r2"
+            },
+            {
+              "title": "Rate lock expiry",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "Seven days before a lock expires, the loan’s page says so, with Extend.",
+              "story": "Rate lock expiry\n\nSeven days before a rate lock expires, the borrower’s loan page says when, with a way to extend it.",
+              "session": null
+            }
+          ]
+        },
+        {
+          "id": "c90f13",
+          "design": { "id": "repayment-schedule", "title": "Repayment schedule", "kind": "design", "area": "Servicing" },
+          "url": "/f/spark-lending/d/repayment-schedule",
+          "buildUrl": "/f/spark-lending/d/repayment-schedule/build",
+          "finish": "/f/spark-lending/branches/c90f13",
+          "branch": "prelude/repayment-schedule",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 2,
+          "worked": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": { "running": true, "approved": true, "url": "http://localhost:3000", "open": "/f/spark-lending/branches/c90f13/app" },
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Schedule",
+              "kind": "new",
+              "state": "built",
+              "summary": "Every payment of the loan, with what goes to principal and to interest.",
+              "story": "Schedule\n\nAs a borrower, I see every payment of my loan in order, each split into principal and interest, with the balance after it.",
+              "session": "/f/spark-lending/d/repayment-schedule/sessions/s-2kq"
+            },
+            {
+              "title": "Pay extra",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "An extra payment, and how much sooner the loan ends because of it.",
+              "story": "Pay extra\n\nAs a borrower, I can make an extra payment toward principal and see how many months sooner my loan ends.",
+              "session": null
+            }
+          ]
+        }
+      ],
+      "asked": [
+        {
+          "id": "rate-lock-build-stopped",
+          "title": "Why did Rate lock’s build stop?",
+          "url": "/f/spark-lending/d/fixes/rate-lock-build-stopped",
+          "state": "working",
+          "says": null,
+          "when": "Started 2 minutes ago"
+        },
+        {
+          "id": "payment-dates-a-day-early",
+          "title": "Payment dates on the schedule are a day early",
+          "url": "/f/spark-lending/d/fixes/payment-dates-a-day-early",
+          "state": "answered",
+          "says": "What I’d change: format the date without a time zone in formatDate, and add a test with a date near midnight.",
+          "when": "Today, 09:40"
+        },
+        {
+          "id": "which-designs-show-the-loan-summary",
+          "title": "Which designs show the loan summary?",
+          "url": "/f/spark-lending/d/fixes/which-designs-show-the-loan-summary",
+          "state": "answered",
+          "says": "So a change to the summary’s markup is one change, in the app, and the three designs follow it.",
+          "when": "Yesterday, 16:05"
+        }
+      ],
+      "designs": [
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 days ago" },
+        { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "last week" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/document-checklist", "into": "main", "when": "2 days ago" },
+        { "id": "m-2", "branch": "prelude/borrower-profile", "into": "main", "when": "last week" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+      ],
+
+      "newFix": {
+        "id": "fixes/new",
+        "title": "Ask or fix",
+        "area": null,
+        "kind": "fix",
+        "folder": { "id": "spark-lending", "name": "spark-lending" },
+        "system": { "id": "spark-design-system", "title": "Spark Design System" },
+        "shell": { "id": "spark-shell", "title": "Spark Shell" },
+        "references": [],
+        "buildUrl": null,
+        "changes": null,
+        "stage": null,
+        "merged": null,
+        "branch": null,
+        "sessions": [],
+        "session": null,
+        "state": { "kind": "idle" },
+        "entries": [],
+        "troubles": [
+          { "icon": "code", "title": "Rate lock’s build stopped", "says": "1 page doesn’t render in the app: Lock a rate, in Lock expiring." }
+        ],
+        "rules": [],
+        "questions": [],
+        "decisions": [],
+        "dictation": { "status": "ready", "model": "small" },
+        "speechModels": [
+          { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+          { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+          { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+        ],
+        "queued": [],
+        "images": [],
+        "draft": { "base": "/f/spark-lending/d/fixes/new", "attachments": [] },
+        "live": null
+      },
+
+      "fixes": [
+        {
+          "id": "payment-dates-a-day-early",
+          "page": {
+            "id": "fixes/payment-dates-a-day-early",
+            "title": "Payment dates on the schedule are a day early",
+            "area": null,
+            "kind": "fix",
+            "folder": { "id": "spark-lending", "name": "spark-lending" },
+            "system": { "id": "spark-design-system", "title": "Spark Design System" },
+            "shell": { "id": "spark-shell", "title": "Spark Shell" },
+            "references": [],
+            "buildUrl": null,
+            "changes": null,
+            "stage": null,
+            "merged": null,
+            "branch": null,
+            "sessions": [
+              { "id": "20261019-0940-p2dk", "title": "Payment dates on the schedule are a day early", "started": "Today, 09:40", "lastLine": "Fix it on a branch and I’ll make the change." }
+            ],
+            "session": { "id": "20261019-0940-p2dk", "title": "Payment dates on the schedule are a day early" },
+            "state": { "kind": "idle" },
+            "entries": [
+              { "type": "user", "message": "Payment dates on the schedule are a day early in the app. Ana Morales’s loan is due on the 15th of each month, but the schedule lists the 14th: Nov 14, Dec 14, Jan 14. The design shows the 15th." },
+              { "type": "tool", "name": "Read", "summary": "prelude/repayment-schedule/views/schedule/list.eta" },
+              { "type": "tool", "name": "Grep", "summary": "dueDate in app/" },
+              { "type": "tool", "name": "Read", "summary": "app/lib/dates.js" },
+              { "type": "tool", "name": "Read", "summary": "app/views/schedule/list.eta" },
+              { "type": "text", "html": "<p>The cause is in the app, not in the design. <code>formatDate</code> in <code>app/lib/dates.js</code> turns each due date (<code>2026-11-15</code>) into a <code>Date</code> at midnight UTC, then prints it in the server’s time zone, America/Chicago, where that moment is still the evening of the 14th.</p><p>The design’s states hold the dates as text and print them as they are, which is why its pages show the 15th. The Loan summary’s “Next payment” uses <code>formatDate</code> too, so it’s a day early as well.</p><p>What I’d change: format the date without a time zone in <code>formatDate</code>, and add a test with a date near midnight. Neither design needs to change. Fix it on a branch and I’ll make the change.</p>" },
+              { "type": "turn", "ok": true }
+            ],
+            "rules": [],
+            "questions": [],
+            "decisions": [],
+            "dictation": { "status": "ready", "model": "small" },
+            "speechModels": [
+              { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+              { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+              { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+            ],
+            "queued": [],
+            "images": [],
+            "draft": { "base": "/f/spark-lending/d/fixes/payment-dates-a-day-early", "attachments": [] },
+            "live": null
+          }
+        },
+        {
+          "id": "rate-lock-build-stopped",
+          "page": {
+            "id": "fixes/rate-lock-build-stopped",
+            "title": "Why did Rate lock’s build stop?",
+            "area": null,
+            "kind": "fix",
+            "folder": { "id": "spark-lending", "name": "spark-lending" },
+            "system": { "id": "spark-design-system", "title": "Spark Design System" },
+            "shell": { "id": "spark-shell", "title": "Spark Shell" },
+            "references": [],
+            "buildUrl": null,
+            "changes": null,
+            "stage": null,
+            "merged": null,
+            "branch": null,
+            "sessions": [
+              { "id": "20261019-1402-x7hm", "title": "Why did Rate lock’s build stop?", "started": "Today, 14:02" }
+            ],
+            "session": { "id": "20261019-1402-x7hm", "title": "Why did Rate lock’s build stop?" },
+            "state": {
+              "kind": "working",
+              "step": { "says": "Reading lock.eta", "path": "app/views/rates/lock.eta" },
+              "startedAt": "2026-10-19T19:02:10Z",
+              "since": "1:48",
+              "waiting": 0,
+              "stopUrl": "/f/spark-lending/d/fixes/rate-lock-build-stopped/sessions/20261019-1402-x7hm/stop"
+            },
+            "entries": [
+              { "type": "user", "message": "Why did Rate lock’s build stop? The project page says 1 page doesn’t render in the app." },
+              { "type": "tool", "name": "Read", "summary": "prelude/rate-lock/routes.json" },
+              { "type": "tool", "name": "Read", "summary": "prelude/rate-lock/states/03-lock-expiring.json" },
+              { "type": "text", "html": "<p>The page that doesn’t render is Lock a rate, in the Lock expiring state. I’m reading the app’s view of it and the route that gives it its data, to see what it expects that the state doesn’t have.</p>" },
+              { "type": "tool", "name": "Read", "summary": "app/routes/rates.js" }
+            ],
+            "rules": [],
+            "questions": [],
+            "decisions": [],
+            "dictation": { "status": "ready", "model": "small" },
+            "speechModels": [
+              { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+              { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+              { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+            ],
+            "queued": [],
+            "images": [],
+            "draft": { "base": "/f/spark-lending/d/fixes/rate-lock-build-stopped", "attachments": [] },
+            "live": null
+          }
+        },
+        {
+          "id": "which-designs-show-the-loan-summary",
+          "page": {
+            "id": "fixes/which-designs-show-the-loan-summary",
+            "title": "Which designs show the loan summary?",
+            "area": null,
+            "kind": "fix",
+            "folder": { "id": "spark-lending", "name": "spark-lending" },
+            "system": { "id": "spark-design-system", "title": "Spark Design System" },
+            "shell": { "id": "spark-shell", "title": "Spark Shell" },
+            "references": [],
+            "buildUrl": null,
+            "changes": null,
+            "stage": null,
+            "merged": null,
+            "branch": null,
+            "sessions": [
+              { "id": "20261018-1605-c4wq", "title": "Which designs show the loan summary?", "started": "Yesterday, 16:05", "lastLine": "So a change to the summary’s markup is one change, in the app, and the three designs follow it." }
+            ],
+            "session": { "id": "20261018-1605-c4wq", "title": "Which designs show the loan summary?" },
+            "state": { "kind": "idle" },
+            "entries": [
+              { "type": "user", "message": "Which designs show the loan summary card, and do they all use the same partial?" },
+              { "type": "tool", "name": "Grep", "summary": "loans/_summary in prelude/" },
+              { "type": "tool", "name": "Grep", "summary": "loans/_summary in app/views/" },
+              { "type": "text", "html": "<p>Three designs show it, and all three use the app’s own partial, <code>app/views/loans/_summary.eta</code>:</p><ul><li><strong>Loan application</strong>, on the Submitted page, once the loan is approved.</li><li><strong>Borrower profile</strong>, on the Loans tab, one per loan.</li><li><strong>Repayment schedule</strong>, at the top of the Schedule page (still on its branch).</li></ul><p>None keeps a copy of its own: their routes name <code>@app/app/views/loans/_summary</code>. So a change to the summary’s markup is one change, in the app, and the three designs follow it.</p>" },
+              { "type": "turn", "ok": true }
+            ],
+            "rules": [],
+            "questions": [],
+            "decisions": [],
+            "dictation": { "status": "ready", "model": "small" },
+            "speechModels": [
+              { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+              { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+              { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+            ],
+            "queued": [],
+            "images": [],
+            "draft": { "base": "/f/spark-lending/d/fixes/which-designs-show-the-loan-summary", "attachments": [] },
+            "live": null
+          }
+        },
+        {
+          "id": "large-uploads-fail",
+          "page": {
+            "id": "fixes/large-uploads-fail",
+            "title": "Uploads over 10 MB fail on the document checklist",
+            "area": null,
+            "kind": "fix",
+            "folder": { "id": "spark-lending", "name": "spark-lending" },
+            "system": { "id": "spark-design-system", "title": "Spark Design System" },
+            "shell": { "id": "spark-shell", "title": "Spark Shell" },
+            "references": [],
+            "buildUrl": null,
+            "changes": [
+              { "title": "Document checklist", "url": "/f/spark-lending/d/document-checklist" }
+            ],
+            "stage": null,
+            "merged": null,
+            "branch": {
+              "id": "d4e7a1",
+              "branch": "prelude/fix-large-uploads-fail",
+              "into": "main",
+              "check": "passing",
+              "failures": 0,
+              "behind": 0,
+              "worked": true,
+              "remote": true,
+              "building": null,
+              "alsoChanges": ["app/routes/documents.js", "app/routes/documents.test.js", "prelude/document-checklist/views/checklist/_upload.eta", "prelude/document-checklist/NOTES.md"],
+              "running": null,
+              "merging": null,
+              "error": null
+            },
+            "sessions": [
+              { "id": "20261019-1115-m8ra", "title": "Uploads over 10 MB fail on the document checklist", "started": "Today, 11:15", "lastLine": "Run app/routes/documents.test.js, then try a 20 MB PDF on Document checklist in the app." }
+            ],
+            "session": { "id": "20261019-1115-m8ra", "title": "Uploads over 10 MB fail on the document checklist" },
+            "state": { "kind": "idle" },
+            "entries": [
+              { "type": "user", "message": "Borrowers can’t upload bank statements over 10 MB on the document checklist. The page just says “Upload failed”. Lots of scanned statements are bigger than that." },
+              { "type": "tool", "name": "Grep", "summary": "upload in app/routes/" },
+              { "type": "tool", "name": "Read", "summary": "app/routes/documents.js" },
+              { "type": "text", "html": "<p>The app refuses any upload over 10 MB: <code>app/routes/documents.js</code> sets <code>limits.fileSize</code> to 10 MB, and answers the refusal with the generic “Upload failed”. The checklist page never says there’s a limit.</p><p>Raising the limit is one line. Saying it on the page changes Document checklist’s upload field, which is built, so its design would change too. How large should it be?</p>" },
+              { "type": "turn", "ok": true },
+              { "type": "note", "text": "Fixing this on prelude/fix-large-uploads-fail, made from main. The agent can change the project there now; each turn is committed to the branch." },
+              { "type": "user", "message": "Raise it to 25 MB, and say the limit under the upload field." },
+              { "type": "tool", "name": "Edit", "summary": "app/routes/documents.js" },
+              { "type": "tool", "name": "Edit", "summary": "app/routes/documents.test.js" },
+              { "type": "tool", "name": "Edit", "summary": "prelude/document-checklist/views/checklist/_upload.eta" },
+              { "type": "tool", "name": "Edit", "summary": "prelude/document-checklist/NOTES.md" },
+              { "type": "text", "html": "<p>Done. The limit is 25 MB, and a file over it is refused with “This file is over 25 MB. Scan it at a lower resolution, or split it into parts.” The upload field says “PDF, JPG or PNG, up to 25 MB” under it, in the app and in Document checklist’s design, with a line in its NOTES.md.</p><p>Run <code>app/routes/documents.test.js</code>, then try a 20 MB PDF on Document checklist in the app.</p>" },
+              { "type": "turn", "ok": true },
+              { "type": "check", "failures": [], "designs": [{ "title": "Document checklist", "url": "/f/spark-lending/d/document-checklist" }], "rendered": 12, "differDesigns": [{ "title": "Document checklist", "url": "/f/spark-lending/d/document-checklist", "count": 1 }] }
+            ],
+            "rules": [],
+            "questions": [],
+            "decisions": [],
+            "dictation": { "status": "ready", "model": "small" },
+            "speechModels": [
+              { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+              { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+              { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+            ],
+            "queued": [],
+            "images": [],
+            "draft": { "base": "/f/spark-lending/d/fixes/large-uploads-fail", "attachments": [] },
+            "live": null
+          }
+        }
+      ]
+    }
+  ]
+}

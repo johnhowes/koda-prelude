@@ -1,0 +1,16 @@
+<%/* Rename a conversation about the project, in the modal. It's named from
+     the first words of its first message until the person renames it. On a
+     branch, the branch keeps its name. Refused, the field comes back alone.
+     `it` is the conversation (a fix); `it.$fields` the field as refused, on
+     a cold load. */%>
+<% const base = `/f/${it.folder.id}/d/${it.id}`; %>
+<div class="stack gap-4" ko-item>
+  <h2>Rename it</h2>
+  <form class="stack" action="<%= base %>/rename" method="post" ko-target="fields">
+    <div ko-as="fields"><%~ include('./_rename-fields', it.$fields ?? { title: it.title, branch: it.branch?.branch }) %></div>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit">Rename</button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+</div>

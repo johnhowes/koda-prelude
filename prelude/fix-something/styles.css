@@ -1,0 +1,13 @@
+/* Fix Something: what the design page's rules (server/public/workspace.css)
+   don't say yet. A conversation about the project has only the chat, so it
+   keeps a readable width in the middle of the page instead of stretching
+   across the window. Ported, it goes beside workspace.css's own :only-child
+   rule, which it replaces. workspace.css is linked after this sheet (by the
+   page itself), hence the extra class on each selector. Narrower, the page is a column already (workspace.css), and the chat
+   fills it as before. */
+@scope (.design-page) {
+  @container (width >= 52rem) {
+    .split.workspace:has(> .chat:only-child) { justify-content: center; }
+    .split.workspace > .chat.panel:only-child { flex: 0 1 var(--measure); }
+  }
+}

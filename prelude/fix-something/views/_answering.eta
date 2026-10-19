@@ -1,0 +1,5 @@
+<%/* The answer to Answer and to Start with this: the message box, starting
+     the message after anything already typed, and the drawer closed. `it`
+     is the session's draft. */%>
+<%~ include('./_message-box', { message: it.message }) %>
+<div ko-into="drawer?"></div>

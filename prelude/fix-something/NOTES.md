@@ -1,53 +1,79 @@
 # Fix Something - notes
 
-A UX review and redesign of step 11's Fix (docs/plan.md): starting a fix
-from the project page, its session, and how it's listed. Also: asking the
-agent a question about the project, which changes nothing.
+A UX redesign of step 11's Fix (docs/plan.md): starting one, its page, and
+how it's listed. It also lets you just ask a question about the project.
 
-Today's app: "Fix something…" in the project page's header
-(`server/views/projects/page.eta`) opens a modal (`_new-fix.eta`,
-`_new-fix-fields.eta`) asking for a title and a first message; posting makes
-the branch and worktree, the fix's folder, and its first session
-(`POST /f/:id/fixes`, `server/main.js`). The fix's page is the design page
-without the design surface; it's listed under In progress (`_work.eta`,
-`_branch.eta`).
+Before this design: "Fix something…" on the project page opened a modal
+(`server/views/projects/_new-fix.eta`, `_new-fix-fields.eta`) that asked for
+a title and a first message. Posting made the branch, the fix's folder and
+its first session (`POST /f/:id/fixes`).
 
 ## Review (2026-10-19)
 
-1. **The title comes before the problem.** "What's wrong" is required and
-   names the branch ("the fix's name, and its branch's"), so the person must
-   sum up a problem before describing it, in branch terms.
-2. **The modal is a lesser composer.** No images, paste, drop, capture or
-   dictation, though a screenshot of the error is often the first thing to
-   say ("A screenshot can follow in the chat").
-3. **A branch is made before anything is known.** Many problems turn out
-   to be a question, a misunderstanding, or not Prelude's; each still leaves
-   a branch under In progress ("Nothing done on it yet") to tidy away.
-4. **No way to just ask.** "How does approving work?", "Which designs use
-   the drawer?", "Why does this page look different in the app?" have
-   nowhere to go but a design session, which they don't belong to, or a fix,
-   which makes a branch.
-5. **Hidden on a new project.** The button shows only once there's a
-   design, but a new project is when questions are likeliest.
-6. **Small:** "Start the fix" carries the add icon; the header's button the
-   agent icon. Not reachable from a design's page (the plan's "not now").
+1. You had to name the problem before describing it, and the name was the
+   branch's.
+2. The modal's message box was weaker than the chat's: no images, paste,
+   capture or dictation.
+3. A branch was made before anything was known, so a question left a branch
+   behind ("Nothing done on it yet").
+4. You couldn't just ask a question about the project.
+5. The button was hidden on a project with no designs.
 
-## Proposal (waiting for the person)
+## Decisions
 
-- **One conversation about the project, that becomes a fix when it needs
-  to.** "Ask or fix…" opens a new conversation with the full composer. The
-  agent only reads; it answers, or finds the cause and says what it would
-  change. "Fix it on a branch" (the person's choice) makes the branch, and
-  the conversation carries on as the fix's session.
-- **No title to write**: named from the first message, renamable.
-- **Questions listed apart from branches**: "Asked lately" on the project
-  page, not In progress.
+- **One conversation that becomes a fix** (the person, 2026-10-19). "Ask or
+  fix…" opens a page with the full chat. The agent only reads (R-h7w).
+  "Fix it on a branch…" in the header asks first in a modal, then makes the
+  branch. The same conversation carries on as the fix's (R-x8d). One entry,
+  not two buttons.
+- **A question is a Fix without its branch yet** (the person, 2026-10-19).
+  It isn't a sixth noun. Its id is `fixes/<slug>`, its page is the fix's,
+  and it's `kind: fix` with `branch: null`.
+- **Kept on this computer** (the person, 2026-10-19), like drafts, until it
+  has a branch (R-2qz). Its sessions move into `prelude/fixes/<slug>/` when
+  the branch is made.
+- **No title to write.** It's named from the first message (R-m5c). The name
+  is asked for only by Fix it on a branch, starting from that one, because a
+  branch needs a name. Rename (the icon beside the title) works on a branch
+  or off, and the branch keeps its name (R-j3v).
+- **Ask or fix… is on every project**, even one with no designs (R-k9p).
+  It's a plain button: New design stays the one primary. The first-run page
+  links to it too.
+- **Asked lately** is a card in the project's work region, after In
+  progress. It lists conversations with no branch, newest first, each
+  marked Working or Asking you, with the agent's last line.
+- **The new conversation's page** is `/f/:project/d/fixes/new` (it replaces
+  the modal at `/f/:id/fixes/new`). It starts from what Prelude knows is
+  wrong in the project (`troubles`: a stopped build, a branch whose pages
+  don't render), then "Ask how something works" and "Say what's wrong, with
+  a screenshot".
+- **The chat keeps a readable width** (`--measure`) on a conversation's
+  page, since there's no design surface beside it. It's in `styles.css`.
+- **No "what you're looking at" chip** on a fix's message box, because
+  there's no page on show. The app's fix page shows one today.
+
+## What building it changes in the app
+
+- New routes: `/f/:id/d/fixes/new` (the page), and its first message
+  `POST …/fixes/new/sessions`. This makes the question's local record and
+  its session. `fixes/new` is reserved as a slug. The modal
+  (`_new-fix*.eta`) and `POST /f/:id/fixes` go.
+- `GET/POST …/d/fixes/:fix/branch`: makes the branch and worktree, moves
+  the sessions into the fix's folder, commits, and redirects to the
+  worktree's fix page. `GET/POST …/rename`.
+- A question's agent runs read-only: `permissionArgs` in mode `fix` with no
+  branch allows no writes. `fixPrompt` says it only reads, and should end
+  with what it would change.
+- Model: the project gains `asked`, and the fix page gains `troubles`.
+- `_message-box` takes a `placeholder`.
 
 ## Open questions
 
-- One entry that can become a fix, or two (Ask a question… / Fix
-  something…)?
-- Where a question is kept when it has no branch: on this computer only
-  (`~/.prelude/`), or committed somewhere in the repository?
-- Is a question a kind of Fix (the same noun, before its branch), or a
-  noun of its own? The plan asks each noun to earn its place.
+- How long does a question stay in Asked lately: a number of them, or 30
+  days untouched? And can the person remove one?
+- In a project that isn't a Git repository, Fix it on a branch makes it one
+  first. Should the modal say so? The page's model doesn't say whether the
+  project is a repository.
+- In the preview, the first message of Ask or fix lands on the sample
+  question that's working, not a new one: the fake route can't make the
+  page's model. The branch's About drawer and New session lead nowhere.

@@ -1,0 +1,97 @@
+<%/* A design in progress on its branch: where the branch stands, as pills
+     (its check, a build, how far behind it is, a pull request); the stories
+     on it; the app running from it; what it changes outside the design; and
+     its actions: bring main in, and finish (merge here, or push for a pull
+     request, which asks first in the modal). An update from main that
+     clashed holds the branch until the agent resolves it or it's abandoned.
+     A fix's branch (step 11) is shown the same way. `it` is one of the project's inProgress; `it.finish` its
+     /branches/<id> URL. Its forms answer with the project's work. */%>
+<% const w = it, stories = w.stories ?? [], fix = w.design?.kind === 'fix';
+   const storyState = { built: { label: 'Built', tone: '' }, 'to-build': { label: 'To build', tone: '' }, building: { label: w.building?.stopped ? 'Build stopped' : 'Building', tone: w.building?.stopped ? 'warn' : 'accent' } }; %>
+<div class="stack gap-3">
+  <div class="cluster gap-2">
+    <span class="muted"><code><%= w.branch %></code></span>
+    <% if (w.check === 'passing') { %><span class="pill good">Check passes</span>
+    <% } else if (w.check === 'failing') { %><span class="pill danger"><%= w.failures === 1 ? '1 page doesn’t render' : `${w.failures} pages don’t render` %></span>
+    <% } else if (w.check === 'waiting') { %><span class="pill warn">Design host needs approval</span>
+    <% } else if (!fix) { %><span class="pill">Not checked yet</span><% } %>
+    <% if (w.building && !w.building.stopped) { %><span class="pill accent"><span class="pulse" aria-hidden="true"></span>Building <%= w.building.title %></span><% } %>
+    <% if (w.building?.stopped) { %><span class="pill warn">Build stopped</span><% } %>
+    <% if (w.behind) { %><span class="pill warn"><%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %></span><% } %>
+    <% if (w.pushed) { %><span class="pill">Pull request open</span><% } %>
+    <% if (!w.worked) { %><span class="pill">Nothing done on it yet</span><% } %>
+  </div>
+
+  <%/* Its stories fold away, so a dozen branches still fit on the page; the
+       line says how many are left, and whether one is building. */%>
+  <% if (stories.length) { const left = stories.filter(story => story.state !== 'built').length, building = stories.some(story => story.state === 'building'); %>
+  <details class="disclosure">
+    <summary><%= stories.length === 1 ? '1 story' : `${stories.length} stories` %> · <%= left ? `${left} to build` : 'all built' %><%= building ? (w.building?.stopped ? ' · its build stopped' : ' · 1 building') : '' %></summary>
+  <ul class="stack gap-2 stories" aria-label="Stories on this branch">
+    <% for (const story of stories) { const state = storyState[story.state]; %>
+    <li class="stack gap-1">
+      <span class="cluster gap-2"><a href="<%= w.buildUrl %>"><%= story.title %></a><span class="pill <%= state.tone %>"><%= state.label %></span><% if (story.kind === 'changed') { %><span class="pill">A change</span><% } %><% if (story.session) { %><a class="muted" href="<%= story.session %>">Build session</a><% } %></span>
+      <% if (story.summary) { %><span class="secondary"><%= story.summary %></span><% } %>
+    </li>
+    <% } %>
+  </ul>
+  </details>
+  <% } %>
+
+  <%/* The app on this branch (10.7): its design host is the app itself, with
+       its own data. One URL serves one branch at a time; Start it takes it
+       back. */%>
+  <% if (w.running?.running) { %>
+  <p class="muted">The app on this branch is running at <code><%= w.running.url %></code> · <a href="<%= w.running.open %>" target="_blank">Open it<span class="icon icon-external" aria-hidden="true"></span></a></p>
+  <% } else if (w.running?.approved) { %>
+  <form class="cluster gap-2" action="<%= w.finish %>/start" method="post" ko-target="work">
+    <input type="hidden" name="running.running" value="true">
+    <span class="muted">The app on this branch isn’t running.</span>
+    <button class="btn small ghost" type="submit" title="Start the app from this branch at <%= w.running.url %>. If another branch’s app is running there, it stops.">Start it</button>
+  </form>
+  <% } else if (w.running) { %>
+  <p class="muted">The app on this branch isn’t running: its design host needs your approval first, on the design’s page.</p>
+  <% } %>
+
+  <% if (w.alsoChanges.length) { %>
+  <details class="disclosure">
+    <summary><%= fix ? 'Changes' : 'Also changes' %> <%= w.alsoChanges.length === 1 ? '1 file' : `${w.alsoChanges.length} files` %><%= fix ? '' : ' outside the design' %></summary>
+    <ul class="stack gap-1 also-changes">
+      <% for (const path of w.alsoChanges) { %><li class="muted"><code><%= path %></code></li><% } %>
+    </ul>
+  </details>
+  <% } %>
+
+  <% if (w.finishError) { %>
+  <div class="notice danger" role="alert"><p><%= w.finishError %></p></div>
+  <% } %>
+
+  <% if (w.merging?.unresolved?.length) { %>
+  <div class="notice danger" role="alert">
+    <strong><%= w.merging.from %> is half brought in.</strong>
+    <p><%= w.merging.unresolved.length === 1 ? 'This file clashes' : 'These files clash' %>: <% for (const [i, path] of w.merging.unresolved.entries()) { %><%= i ? ', ' : '' %><code><%= path %></code><% } %>. Send the agent a message on <a href="<%= w.url %>"><%= fix ? 'the fix’s page' : 'the design’s page' %></a> and it resolves <%= w.merging.unresolved.length === 1 ? 'it' : 'them' %> first; nothing is committed until it has.</p>
+    <form class="cluster actions" action="<%= w.finish %>/abandon" method="post" ko-target="work">
+      <input type="hidden" name="merging" value="">
+      <button class="btn small" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
+    </form>
+  </div>
+  <% } else if (w.behind || w.worked) { %>
+  <div class="cluster actions">
+    <% if (w.behind) { %>
+    <form action="<%= w.finish %>/update" method="post" ko-target="work">
+      <input type="hidden" name="behind" value="0">
+      <button class="btn small" type="submit" title="Merge <%= w.into %> into this branch, so it carries on from what’s there now.">Update from <%= w.into %></button>
+    </form>
+    <% } %>
+    <% if (w.pushed && w.remote) { %>
+    <a class="btn small ghost" href="<%= w.remote.pulls %>" target="_blank" rel="noopener">Open the pull request<span class="icon icon-external" aria-hidden="true"></span></a>
+    <% } else if (w.worked && w.remote) { %>
+    <a class="btn small" href="<%= w.finish %>/publish" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
+    <% } else if (w.worked) { %>
+    <form action="<%= w.finish %>/merge" method="post" ko-target="work">
+      <button class="btn small" type="submit" title="Merge <%= w.branch %> into <%= w.into %>: <%= fix ? 'the fix' : 'the design and anything built, together' %>. Its worktree and branch are tidied up after.">Merge into <%= w.into %></button>
+    </form>
+    <% } %>
+  </div>
+  <% } %>
+</div>
