@@ -213,18 +213,21 @@ async function handle(req, res, app) {
   // Home (prelude/landing-page): the page arrives with the recent projects'
   // names, and its two regions read the rest, each on its own.
   //   GET  /                        the page
-  //   GET  /home/needs-you          what waits on the person, across projects
+  //   GET  /loading                 the page as it first arrives, its regions unread
+  //   GET  /home/needs-you         what waits on the person, across projects
   //   GET  /home/projects           what's in each project
   //   GET  /open                    Open a project, in the modal over /
   //   POST /folders                 open one: its page, or the form refused
   //   POST /folders/:id/remove      take one off the list; the disk is left alone
-  const homePage = (status, { modal = null } = {}) => {
+  // The window is called Home, so it can be told from Prelude's other pages;
+  // /loading and /open keep theirs.
+  const homePage = (status, { modal = null, view = 'home/index', title = view === 'home/index' ? 'Home' : 'Prelude' } = {}) => {
     // One URL, two shapes: a Koda region asking for / gets the page alone,
     // unless it asked from a design's page, in another layout (askedFromLayout).
     const alone = fragment && askedFromLayout(req, 'app');
-    const body = { fragment: alone, path: '/', title: 'Prelude', layout: alone ? {} : layout(), system: true };
+    const body = { fragment: alone, path: '/', title, layout: alone ? {} : layout(), system: true };
     const regions = modal ? { modal: { html: render('./home/_open', modal), location: '/open' } } : {};
-    return send(res, status, shaped('home/index', homeOf(app, { contents: false }), { ...body, regions }));
+    return send(res, status, shaped(view, homeOf(app, { contents: false }), { ...body, regions }));
   };
   // A region Prelude couldn't read: not the app's answer (no x-koda), so Koda
   // keeps what the region had and offers to try again (R-d0y).
@@ -239,12 +242,13 @@ async function handle(req, res, app) {
     app.waiting = model.needs.length;
     return send(res, status, shaped(view, model, { fragment, path, title: 'Prelude', layout: fragment ? {} : layout(), system: true }));
   };
-  const openForm = (status, data) => (fragment ? send(res, status, render('./home/_open', data)) : homePage(status, { modal: data }));
+  const openForm = (status, data, title) => (fragment ? send(res, status, render('./home/_open', data)) : homePage(status, { modal: data, title }));
 
   if (path === '/' && req.method === 'GET') return homePage(200);
+  if (path === '/loading' && req.method === 'GET') return homePage(200, { view: 'home/loading' });
   if (path === '/home/needs-you' && req.method === 'GET') return homePart(200, 'home/_needs-you');
   if (path === '/home/projects' && req.method === 'GET') return homePart(200, 'home/_projects');
-  if (path === '/open' && req.method === 'GET') return openForm(200, { path: '' });
+  if (path === '/open' && req.method === 'GET') return openForm(200, { path: '' }, 'Prelude');
 
   if (path === '/folders' && req.method === 'POST') {
     const form = await readForm(req);

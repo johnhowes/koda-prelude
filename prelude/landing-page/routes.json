@@ -1,6 +1,6 @@
 {
   "/": { "view": "@app/server/views/home/index", "title": "Home", "data": "" },
-  "/loading": { "view": "home/loading", "title": "Home, while it loads", "data": "" },
+  "/loading": { "view": "@app/server/views/home/loading", "title": "Home, while it loads", "data": "" },
   "/home/needs-you": { "view": "@app/server/views/home/_needs-you", "data": "" },
   "/home/projects": { "view": "@app/server/views/home/_projects", "data": "" },
   "/open": { "view": "@app/server/views/home/_open", "title": "Open a project", "data": "", "over": "/", "in": "modal" },

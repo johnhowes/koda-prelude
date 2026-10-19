@@ -62,8 +62,13 @@ first run (no projects), all caught up, long names.
 
 `/`, `/home/needs-you`, `/home/projects`, `/open` and both forms are the app's
 own: `server/views/home/`, answered in `server/main.js`, the model read in
-`server/home.js` (its typedefs are the states' shape). `/loading` stays the
-design's: the app needs no such URL.
+`server/home.js` (its typedefs are the states' shape).
+
+`/loading` was built 2026-10-19: `server/views/home/loading.eta`, answered
+like `/` (the names-only model, in the app's layout) but with its regions
+never asked to load. The app needs no such URL; it's there so the design's
+route has the app's view behind it, and shows the first paint on its own.
+R-5ja was already true of `/`, which renders before any project is read.
 
 - **What counts as waiting**, read from each project's sessions and branches
   each time: a *question* is the newest session's last turn ending in "?" (the
@@ -94,6 +99,25 @@ design's: the app needs no such URL.
   still on ds/v1, so the app serves the system at `/system/` (from
   `prelude/prelude-design-system/system`) and the home pages link it instead
   of ds/v1. `prelude.css` still applies on top.
+
+Home's window title was built 2026-10-19 (story `home/1`): `homePage` in
+`server/main.js` titles `/` "Home", as routes.json does, and so does the page
+re-rendered for a refused `POST /folders` without script, and the redirect home
+after removing a project. `/loading` and `/open` keep "Prelude" in the app, as
+the story asks, though their approved screens and routes.json title them "Home,
+while it loads" and "Open a project".
+
+- **Where the design and the story differ, or the story can't be met yet:**
+  - The rendered pages show "Home · Prelude" and `/_prelude/…` stylesheets for
+    every route, `/loading` and `/open` included: that's the preview's shell
+    head (`prelude/prelude-shell/layouts/_head.eta`), not the app's
+    (`server/views/_head.eta`), which the approved screens were taken from. Not
+    a change to Home.
+  - "Coming back to Home from a project's page, the window's title changes back
+    to Home" holds when Home is loaded whole, not when Koda swaps it into the
+    page from the brand link or Needs you: Koda has no way to set the
+    document's title on a swap, and none of the app's titled pages update it
+    either. That needs a change to Koda or to the app's layout, for every page.
 
 ## Open questions
 

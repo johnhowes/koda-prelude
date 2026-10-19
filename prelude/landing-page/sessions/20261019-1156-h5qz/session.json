@@ -1,0 +1,11 @@
+{
+  "title": "Build: Home",
+  "claudeSessionId": "6a2f518c-97ec-4673-867c-1446e9dd16e1",
+  "started": true,
+  "startedAt": "2026-10-19T16:56:30.166Z",
+  "updatedAt": "2026-10-19T16:59:35.011Z",
+  "build": {
+    "group": "/",
+    "title": "Home"
+  }
+}
