@@ -1,0 +1,11 @@
+{
+  "title": "Build: Home, while it loads",
+  "claudeSessionId": "d448e519-f64f-4a42-9549-d1c0a4cdac02",
+  "started": true,
+  "startedAt": "2026-10-19T16:19:40.899Z",
+  "updatedAt": "2026-10-19T16:22:10.648Z",
+  "build": {
+    "group": "/loading",
+    "title": "Home, while it loads"
+  }
+}

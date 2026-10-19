@@ -62,8 +62,13 @@ first run (no projects), all caught up, long names.
 
 `/`, `/home/needs-you`, `/home/projects`, `/open` and both forms are the app's
 own: `server/views/home/`, answered in `server/main.js`, the model read in
-`server/home.js` (its typedefs are the states' shape). `/loading` stays the
-design's: the app needs no such URL.
+`server/home.js` (its typedefs are the states' shape).
+
+`/loading` was built 2026-10-19: `server/views/home/loading.eta`, answered
+like `/` (the names-only model, in the app's layout) but with its regions
+never asked to load. The app needs no such URL; it's there so the design's
+route has the app's view behind it, and shows the first paint on its own.
+R-5ja was already true of `/`, which renders before any project is read.
 
 - **What counts as waiting**, read from each project's sessions and branches
   each time: a *question* is the newest session's last turn ending in "?" (the

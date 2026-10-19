@@ -8,7 +8,6 @@
   *shown-on: /*
 - **R-5ja.** The home page appears at once with the projects' names; what needs the person and what's in each project fill in as they're read, each on its own, so a slow one never holds up the rest.
   *shown-on: /loading*
-  *proposed*
 - **R-p6r.** While the home page is open, what needs the person and what's in each project refresh on their own as soon as something changes in Prelude, and every five minutes for changes made elsewhere (not while the window is hidden).
 - **R-h9b.** A recent project whose folder has gone stays listed, saying so, until the person removes it; removing it leaves the disk alone.
   *shown-on: /*
