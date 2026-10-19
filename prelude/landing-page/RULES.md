@@ -1,9 +1,9 @@
 # Rules: Landing Page
 
-- **R-n4v.** Needs you gathers what's waiting on the person from every recent project, newest first.
+- **R-n4v.** Needs you gathers what the person must act on from every recent project, newest first: the agent asking something, a build that stopped, a turn that ended with an error.
   *shown-on: /*
-- **R-8hc.** A finished turn leaves Needs you once the person has opened its session, or after a week if they never do.
-- **R-w2k.** A pull request stays in Needs you until it's merged.
+- **R-8hc.** A turn that ended with an error leaves Needs you once the person has opened its session, or after a week if they never do; a turn that finished well isn't listed.
+- **R-w2k.** A pull request isn't in Needs you: its project's In progress says it's open until it's merged.
 - **R-t7e.** Projects are listed by when something last changed in them, most recent first.
   *shown-on: /*
 - **R-5ja.** The home page appears at once with the projects' names; what needs the person and what's in each project fill in as they're read, each on its own, so a slow one never holds up the rest.

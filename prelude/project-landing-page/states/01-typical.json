@@ -24,28 +24,12 @@
       "shell": { "id": "spark-shell", "title": "Spark Shell" },
       "needs": [
         {
-          "id": "n-m0c",
-          "kind": "to-build",
-          "design": "Repayment schedule",
-          "says": "2 pages are approved and ready to build.",
-          "when": "2 hours ago",
-          "url": "/f/spark-lending/d/repayment-schedule/build"
-        },
-        {
           "id": "n-q81",
           "kind": "stopped",
           "design": "Rate lock",
           "says": "The build stopped: 1 page doesn’t render in the app.",
           "when": "25 minutes ago",
           "url": "/f/spark-lending/d/rate-lock/build"
-        },
-        {
-          "id": "n-u4w",
-          "kind": "finished",
-          "design": "Underwriting queue",
-          "says": "The agent finished its turn: the queue now sorts by days until the rate lock expires.",
-          "when": "12 minutes ago",
-          "url": "/f/spark-lending/d/underwriting-queue"
         }
       ],
       "inProgress": [

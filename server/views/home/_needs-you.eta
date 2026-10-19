@@ -11,7 +11,7 @@
      'pull-request': { label: 'Pull request open', icon: 'push', tone: '' },
    }; %>
 <% if (!needs.length) { %>
-<p class="empty">Nothing needs you right now. When the agent asks you something, or a design is ready to build, it shows here.</p>
+<p class="empty">Nothing needs you right now. When the agent asks you something, or a build or a turn stops on a problem, it shows here.</p>
 <% } else { %>
 <ul class="list">
   <% for (const need of needs) { const kind = kinds[need.kind]; const away = need.url.startsWith('http'); %>

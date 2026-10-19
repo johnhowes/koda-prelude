@@ -5,7 +5,7 @@
       { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
       { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" }
     ],
-    "needsYou": 9,
+    "needsYou": 3,
     "agents": [
       { "design": "Loan offers", "project": "spark-platform", "url": "/f/spark-platform/d/loan-offers" },
       { "design": "Broker portal", "project": "spark-platform", "url": "/f/spark-platform/d/broker-portal/build" }
@@ -24,13 +24,7 @@
       "system": { "id": "spark-design-system", "title": "Spark Design System" },
       "shell": { "id": "spark-shell", "title": "Spark Shell" },
       "needs": [
-        { "id": "n-a1", "kind": "pull-request", "design": "Admin dashboard", "says": "Pushed prelude/admin-dashboard. Its pull request is waiting for a review.", "when": "3 days ago", "url": "https://github.com/lendwithspark/spark-platform/pull/1182" },
-        { "id": "n-a2", "kind": "to-build", "design": "Closing disclosure", "says": "5 pages are approved and ready to build.", "when": "2 days ago", "url": "/f/spark-platform/d/closing-disclosure/build" },
-        { "id": "n-a3", "kind": "to-build", "design": "Payoff quote", "says": "2 pages are approved and ready to build.", "when": "yesterday", "url": "/f/spark-platform/d/payoff-quote/build" },
-        { "id": "n-a4", "kind": "pull-request", "design": "Escrow statements", "says": "Pushed prelude/escrow-statements. Its pull request is waiting for a review.", "when": "yesterday", "url": "https://github.com/lendwithspark/spark-platform/pull/1197" },
-        { "id": "n-a5", "kind": "finished", "design": "Compliance review", "says": "The agent finished its turn: each finding now links to the regulation it cites.", "when": "3 hours ago", "url": "/f/spark-platform/d/compliance-review" },
         { "id": "n-a6", "kind": "stopped", "design": "Rate lock", "says": "The build stopped: 2 pages don’t render in the app.", "when": "1 hour ago", "url": "/f/spark-platform/d/rate-lock/build" },
-        { "id": "n-a7", "kind": "finished", "design": "Borrower messages", "says": "The agent finished its turn: unread messages are now bold, with a count in the bar.", "when": "35 minutes ago", "url": "/f/spark-platform/d/borrower-messages" },
         { "id": "n-a8", "kind": "question", "design": "Document upload", "says": "The agent asked whether a borrower can replace a document after the underwriter has accepted it.", "when": "12 minutes ago", "url": "/f/spark-platform/d/document-upload" },
         { "id": "n-a9", "kind": "question", "design": "Payment methods", "says": "The agent asked whether a bank account needs verifying with micro-deposits before the first payment.", "when": "2 minutes ago", "url": "/f/spark-platform/d/payment-methods" }
       ],

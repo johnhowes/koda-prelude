@@ -6,13 +6,16 @@
 // ("4 minutes ago"), and needs are kept in the order they arrived, oldest
 // first, for the view to show newest first.
 //
-// What needs the person (R-n4v):
+// How a design stands, read for its In progress line:
 //   question      the newest session's last turn ended asking something (its
 //                 last words end with "?"); until they answer
 //   finished      a turn ended; until they open its session, or for a week (R-8hc)
 //   stopped       a build under way on a branch, with no turn running
 //   to-build      approved pages the app doesn't have yet
-//   pull-request  a branch pushed for review; until it's merged (R-w2k)
+//   pull-request  a branch pushed for review; until it's merged
+// Of these, only what the person must act on needs them (R-n4v): a question,
+// a stopped build and a turn that ended with an error. The rest the page
+// already says where each design is listed.
 // A design the agent is working on needs nothing yet: that's in the bar.
 
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -208,10 +211,13 @@ function needsOfWork(app, project, work, { running, seen, now }) {
     const says = !turn.ok ? 'The agent’s turn ended with an error.'
       : words ? `The agent finished its turn: ${clip(sentences(words)[0], 160)}`
       : 'The agent finished its turn.';
-    needs.push({ ...base, id: `finished:${key}`, kind: 'finished', at: turn.at, says, url });
+    needs.push({ ...base, id: `finished:${key}`, kind: 'finished', at: turn.at, failed: !turn.ok, says, url });
   });
   return needs;
 }
+
+/** Whether a design's state needs the person to act (R-n4v), for Needs you and the bar. */
+const needsYou = need => need.kind === 'question' || need.kind === 'stopped' || (need.kind === 'finished' && need.failed);
 
 /** How a design on its branch stands, in a few words. */
 function whereOf(work, running, needs) {
@@ -245,7 +251,7 @@ function readProject(app, folder, { contents, seen, now, tidy }) {
   for (const work of works) {
     const running = app.turns.state(work.at, work.design, null).kind !== 'idle';
     const mine = needsOfWork(app, project, work, { running, seen, now });
-    needs.push(...mine);
+    needs.push(...mine.filter(needsYou));
     if (work.entry) inProgress.push({ title: work.design.title, where: whereOf(work, running, mine), url: `/f/${folder.id}/d/${work.design.id}`, at: changedAt(work) });
   }
   inProgress.sort((a, b) => b.at.localeCompare(a.at));
@@ -290,7 +296,7 @@ export function needsOfProject(app, folder, { now = Date.now() } = {}) {
   const project = { id: folder.id, name: folder.name, path: folder.path };
   const needs = worksOf(app, folder).flatMap(work =>
     needsOfWork(app, project, work, { running: app.turns.state(work.at, work.design, null).kind !== 'idle', seen, now }));
-  return needs.sort((a, b) => a.at.localeCompare(b.at))
+  return needs.filter(needsYou).sort((a, b) => a.at.localeCompare(b.at))
     .map(({ id, kind, design, says, at, url }) => ({ id, kind, design, says, when: ago(at, now), url }));
 }
 

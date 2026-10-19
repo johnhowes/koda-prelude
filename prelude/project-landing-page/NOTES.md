@@ -87,7 +87,8 @@ use moved from the New design form to the app card.
 - **A branch's stories fold** into "3 stories · 2 to build · 1 building",
   so a dozen branches still fit. The first-run page moved from the work
   region into the page.
-- State `large-project`: 88 designs in eight areas, 12 branches, 9 needs.
+- State `large-project`: 88 designs in eight areas, 12 branches, 3 needs
+  (9 until Needs you kept only what needs acting on, 2026-10-19).
 
 ## Also decided
 
@@ -126,6 +127,15 @@ notes above, and why:
   design's fields come from `it.$fields`, the folder field from
   `it.$reference`; both are `{}` as designed otherwise.
 - **References have ids** (from their paths), for `…/references/:id/remove`.
+
+## Needs you, only what needs acting on (fix, 2026-10-19)
+
+Home's Needs you now lists only a question, a stopped build and a turn that
+ended with an error (prelude/landing-page, R-n4v), so this page's does too
+(R-v7q): ready to build is Designs' pill and filter, a pull request is In
+progress's pill. The states lost their pull request, ready to build and
+finished rows: typical keeps Rate lock's stopped build, update clashed has no
+Needs you card now, and large project keeps 3 of its 9.
 
 ## Open questions
 
