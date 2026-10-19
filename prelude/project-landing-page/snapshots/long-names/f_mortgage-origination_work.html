@@ -1,0 +1,169 @@
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options">
+<span aria-hidden="true" class="icon icon-question">
+</span>
+<span class="item-text">
+<span class="item-title">
+Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage
+<span class="pill accent">
+Asking you
+</span>
+</span>
+<span class="secondary">
+The agent asked whether a borrower who spreads an escrow shortage over twelve months can change their mind after the first payment, and what happens to the payments already made toward it.
+</span>
+<span class="muted">
+1 hour ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+1
+</span>
+</h2>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage
+</span>
+<span class="muted">
+Servicing and escrow administration · prelude/escrow-analysis-and-shortage-repayment-options
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/escrow-analysis-and-shortage-repayment-options
+</code>
+</span>
+<span class="pill danger">
+12 pages don’t render
+</span>
+<span class="pill warn">
+148 commits behind release/2026-q4-servicing
+</span>
+</div>
+<details class="disclosure">
+<summary>
+1 story · 1 to build
+</summary>
+<ul aria-label="Stories on this branch" class="stack gap-2 stories">
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options/build">
+Escrow shortage repayment options, with the monthly payment for each and the date it starts
+</a>
+<span class="pill ">
+To build
+</span>
+</span>
+<span class="secondary">
+A borrower with an escrow shortage chooses to pay it in full, spread it over twelve months, or spread it over the remaining months until the next analysis, and sees the new monthly payment and the date it starts for each option before confirming.
+</span>
+</li>
+</ul>
+</details>
+<details class="disclosure">
+<summary>
+Also changes 9 files outside the design
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Controllers/EscrowAnalysisController.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/Index.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_ShortageOptions.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_PaymentChange.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Models/EscrowShortageViewModel.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Services/ShortageSpreadCalculator.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/wwwroot/css/escrow.css
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Startup.cs
+</code>
+</li>
+<li class="muted">
+<code>
+tests/Spark.Mortgage.Servicing.Web.Tests/Escrow/ShortageSpreadCalculatorTests.cs
+</code>
+</li>
+</ul>
+</details>
+<div class="cluster actions">
+<form action="/f/mortgage-origination/branches/d81a6c/update" ko-target="work" method="post">
+<input name="behind" type="hidden" value="0">
+<button class="btn small" title="Merge release/2026-q4-servicing into this branch, so it carries on from what’s there now." type="submit">
+Update from release/2026-q4-servicing
+</button>
+</form>
+<form action="/f/mortgage-origination/branches/d81a6c/merge" ko-target="work" method="post">
+<button class="btn small" title="Merge prelude/escrow-analysis-and-shortage-repayment-options into release/2026-q4-servicing: the design and anything built, together. Its worktree and branch are tidied up after." type="submit">
+Merge into release/2026-q4-servicing
+</button>
+</form>
+</div>
+</div>
+</li>
+</ul>
+<details class="disclosure" ko-item>
+<summary>
+Copy every story still to build
+</summary>
+<div class="stack gap-2">
+<textarea aria-label="Every story still to build" class="story" ko-as="stories" readonly rows="12">
+Escrow shortage repayment options As a borrower with an escrow shortage, I choose to pay it in full, spread it over twelve months, or spread it until the next analysis, and see the new monthly payment for each before I confirm.
+</textarea>
+<div class="cluster actions">
+<button class="btn small" ko-as="copyAll" type="button">
+Copy
+</button>
+</div>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { stories, copyAll } = koda.scope(); copyAll.element.addEventListener('click', async () => { await navigator.clipboard.writeText(stories.element.value); copyAll.element.textContent = 'Copied'; });
+</script>
+</details>
+</section>

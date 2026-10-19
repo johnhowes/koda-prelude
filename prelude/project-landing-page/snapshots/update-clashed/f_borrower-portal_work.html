@@ -1,0 +1,158 @@
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/document-upload">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+<span class="item-text">
+<span class="item-title">
+Document upload
+<span class="pill ">
+Turn finished
+</span>
+</span>
+<span class="secondary">
+The agent finished its turn: the upload page now shows each file’s progress.
+</span>
+<span class="muted">
+40 minutes ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+2
+</span>
+</h2>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/borrower-portal/d/borrower-shell">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Borrower Portal Shell
+<span class="pill">
+App shell
+</span>
+</span>
+<span class="muted">
+prelude/borrower-shell
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/borrower-shell
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+</div>
+<p class="muted">
+The app on this branch isn’t running: its design host needs your approval first, on the design’s page.
+</p>
+<details class="disclosure">
+<summary>
+Also changes 3 files outside the design
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+src/Borrower.Web/Program.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Borrower.Web/Views/Shared/_Layout.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Borrower.Web/wwwroot/css/site.css
+</code>
+</li>
+</ul>
+</details>
+<div class="notice danger" role="alert">
+<p>
+git couldn’t push prelude/borrower-shell: origin refused it (authentication failed). Check your Git credentials, then try again.
+</p>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/borrower-portal/branches/e03b51/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/borrower-portal/d/document-upload">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Document upload
+</span>
+<span class="muted">
+Applications · prelude/document-upload
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/document-upload
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+<span class="pill warn">
+3 commits behind main
+</span>
+</div>
+<div class="notice danger" role="alert">
+<strong>
+main is half brought in.
+</strong>
+<p>
+These files clash:
+<code>
+prelude/borrower-design-system/system/components.css
+</code>
+,
+<code>
+prelude/document-upload/views/uploads/list.eta
+</code>
+. Send the agent a message on
+<a href="/f/borrower-portal/d/document-upload">
+the design’s page
+</a>
+and it resolves them first; nothing is committed until it has.
+</p>
+<form action="/f/borrower-portal/branches/4c7e19/abandon" class="cluster actions" ko-target="work" method="post">
+<input name="merging" type="hidden" value="">
+<button class="btn small" title="Call off the update: the branch goes back to how it was before it." type="submit">
+Abandon the update
+</button>
+</form>
+</div>
+</div>
+</li>
+</ul>
+</section>

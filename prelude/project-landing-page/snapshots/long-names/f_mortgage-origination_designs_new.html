@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+New design · Prelude
+</title>
+<link href="/_prelude/system/tokens.css" rel="stylesheet">
+<link href="/_prelude/system/components.css" rel="stylesheet">
+<link href="/_prelude/system/icons.css" rel="stylesheet">
+<link href="/_prelude/shell/layouts/shell.css" rel="stylesheet">
+<link href="/_prelude/design/styles.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }
+</script>
+</head>
+<body class="shell">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+1
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/mortgage-origination" ko-set="projects.open = false">
+<span class="item-title">
+Spark Mortgage Origination and Servicing Platform
+</span>
+<span class="muted">
+C:\Users\JohnHowes\source\repos\lendwithspark\spark-mortgage-origination-and-servicing-platform
+</span>
+</a>
+</li>
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="main" ko-history ko-location="/f/mortgage-origination" ko-scope="/">
+<div class="center wide project" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+</nav>
+<h1>
+Spark Mortgage Origination and Servicing Platform
+</h1>
+<span class="muted project-path">
+C:\Users\JohnHowes\source\repos\lendwithspark\spark-mortgage-origination-and-servicing-platform
+</span>
+</div>
+<span class="spacer">
+</span>
+<a class="btn primary" href="/f/mortgage-origination/designs/new" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+New design…
+</a>
+</div>
+<div class="split" style="--side: 20rem">
+<div class="stack gap-6">
+<div class="stack gap-6" ko-as="work" ko-invoke="event:needs-changed event:projects-changed every:300000" ko-source="/f/mortgage-origination/work">
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options">
+<span aria-hidden="true" class="icon icon-question">
+</span>
+<span class="item-text">
+<span class="item-title">
+Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage
+<span class="pill accent">
+Asking you
+</span>
+</span>
+<span class="secondary">
+The agent asked whether a borrower who spreads an escrow shortage over twelve months can change their mind after the first payment, and what happens to the payments already made toward it.
+</span>
+<span class="muted">
+1 hour ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+1
+</span>
+</h2>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Escrow analysis and shortage repayment options for borrowers with an adjustable-rate mortgage
+</span>
+<span class="muted">
+Servicing and escrow administration · prelude/escrow-analysis-and-shortage-repayment-options
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/escrow-analysis-and-shortage-repayment-options
+</code>
+</span>
+<span class="pill danger">
+12 pages don’t render
+</span>
+<span class="pill warn">
+148 commits behind release/2026-q4-servicing
+</span>
+</div>
+<details class="disclosure">
+<summary>
+1 story · 1 to build
+</summary>
+<ul aria-label="Stories on this branch" class="stack gap-2 stories">
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options/build">
+Escrow shortage repayment options, with the monthly payment for each and the date it starts
+</a>
+<span class="pill ">
+To build
+</span>
+</span>
+<span class="secondary">
+A borrower with an escrow shortage chooses to pay it in full, spread it over twelve months, or spread it over the remaining months until the next analysis, and sees the new monthly payment and the date it starts for each option before confirming.
+</span>
+</li>
+</ul>
+</details>
+<details class="disclosure">
+<summary>
+Also changes 9 files outside the design
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Controllers/EscrowAnalysisController.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/Index.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_ShortageOptions.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Views/EscrowAnalysis/_PaymentChange.cshtml
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Models/EscrowShortageViewModel.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Areas/Escrow/Services/ShortageSpreadCalculator.cs
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/wwwroot/css/escrow.css
+</code>
+</li>
+<li class="muted">
+<code>
+src/Spark.Mortgage.Servicing.Web/Startup.cs
+</code>
+</li>
+<li class="muted">
+<code>
+tests/Spark.Mortgage.Servicing.Web.Tests/Escrow/ShortageSpreadCalculatorTests.cs
+</code>
+</li>
+</ul>
+</details>
+<div class="cluster actions">
+<form action="/f/mortgage-origination/branches/d81a6c/update" ko-target="work" method="post">
+<input name="behind" type="hidden" value="0">
+<button class="btn small" title="Merge release/2026-q4-servicing into this branch, so it carries on from what’s there now." type="submit">
+Update from release/2026-q4-servicing
+</button>
+</form>
+<form action="/f/mortgage-origination/branches/d81a6c/merge" ko-target="work" method="post">
+<button class="btn small" title="Merge prelude/escrow-analysis-and-shortage-repayment-options into release/2026-q4-servicing: the design and anything built, together. Its worktree and branch are tidied up after." type="submit">
+Merge into release/2026-q4-servicing
+</button>
+</form>
+</div>
+</div>
+</li>
+</ul>
+<details class="disclosure" ko-item>
+<summary>
+Copy every story still to build
+</summary>
+<div class="stack gap-2">
+<textarea aria-label="Every story still to build" class="story" ko-as="stories" readonly rows="12">
+Escrow shortage repayment options As a borrower with an escrow shortage, I choose to pay it in full, spread it over twelve months, or spread it until the next analysis, and see the new monthly payment for each before I confirm.
+</textarea>
+<div class="cluster actions">
+<button class="btn small" ko-as="copyAll" type="button">
+Copy
+</button>
+</div>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { stories, copyAll } = koda.scope(); copyAll.element.addEventListener('click', async () => { await navigator.clipboard.writeText(stories.element.value); copyAll.element.textContent = 'Copied'; });
+</script>
+</details>
+</section>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="work">
+<p>
+Prelude couldn’t read this project’s branches. What’s shown may be out of date; try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="work" type="button">
+Try again
+</button>
+</div>
+</div>
+<section aria-labelledby="designs-title" class="card">
+<h2 id="designs-title">
+Designs
+</h2>
+<form action="/f/mortgage-origination" aria-label="Designs" class="cluster gap-3" method="get" role="search">
+<input aria-label="Search designs" autocomplete="off" class="designs-search" id="q" name="q" placeholder="Search by title or area" type="search" value="">
+<span aria-label="Show" class="segmented" role="radiogroup">
+<label class="btn small">
+<input checked class="sr-only" id="stageAll" name="stage" type="radio" value="">
+All
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageReady" name="stage" type="radio" value="ready">
+Ready to build
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageDesigning" name="stage" type="radio" value="designing">
+Still designing
+</label>
+</span>
+<noscript>
+<button class="btn small" type="submit">
+Show
+</button>
+</noscript>
+</form>
+<div aria-live="polite" calc-ko-source="'/f/mortgage-origination/designs?q=' + encode(q.value) + '&stage=' + (stageReady.selected ? 'ready' : stageDesigning.selected ? 'designing' : '')" class="stack gap-5" ko-as="designList" ko-debounce="250" ko-invoke="input:q change:stageAll change:stageReady change:stageDesigning event:projects-changed">
+<div class="stack gap-1">
+<ul class="list">
+<li>
+<a class="item" href="/f/mortgage-origination/d/spark-mortgage-design-system">
+<span aria-hidden="true" class="icon icon-design-system">
+</span>
+<span class="item-text">
+<span class="item-title">
+Spark Mortgage Design System, drafted from the servicing portal’s stylesheets
+<span class="pill">
+Design system
+</span>
+</span>
+<span class="muted">
+3 pages, 2 approved · changed 3 weeks ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Origination and underwriting for retail and wholesale channels
+<span class="muted">
+2
+</span>
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/mortgage-origination/d/loan-officer-pipeline-dashboard-with-rate-lock-expirations">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Loan officer pipeline dashboard with rate lock expirations and conditions outstanding
+</span>
+<span class="muted">
+11 pages, 7 approved · changed 6 days ago
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/mortgage-origination/d/closing-disclosure-review">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Closing disclosure review and borrower e-signature
+</span>
+<span class="muted">
+nothing designed yet · changed just now
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Merged lately
+</h3>
+<ul class="stack gap-1 merged">
+<li class="muted">
+<code>
+prelude/borrower-communication-preferences-and-paperless-statements
+</code>
+merged into release/2026-q4-servicing 3 weeks ago. Its worktree and branch were tidied up.
+</li>
+</ul>
+</div>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="designList">
+<p>
+Prelude couldn’t read this project’s designs. Try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="designList" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+</div>
+<aside aria-label="The project’s setup" class="side stack gap-6">
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed" ko-source="/f/mortgage-origination/app">
+<h2 id="app-title">
+The app
+</h2>
+<p class="secondary">
+This project already has an app. Connecting it finds the app and its stack, and points the app shell at the app’s own layouts, changing as little as it can, so designs render as the app’s own views and features are built into it.
+</p>
+<form action="/f/mortgage-origination/app/build" class="cluster actions" ko-target="app" method="post">
+<input name="status" type="hidden" value="building">
+<button class="btn small" type="submit">
+Connect the app
+</button>
+</form>
+<p class="muted">
+Designs here use
+<a href="/f/mortgage-origination/d/spark-mortgage-design-system">
+Spark Mortgage Design System, drafted from the servicing portal’s stylesheets
+</a>
+.
+</p>
+</section>
+<section aria-labelledby="reading-title" class="card" id="reading">
+<h2 id="reading-title">
+What the agent can read
+</h2>
+<p class="secondary">
+This project, and any folders you add here. Nothing else on this computer. The agent writes only inside the design it’s working on.
+</p>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+This project
+</span>
+<span class="muted project-path">
+C:\Users\JohnHowes\source\repos\lendwithspark\spark-mortgage-origination-and-servicing-platform
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div ko-as="references">
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+spark-servicing-portal-legacy-stylesheets
+</span>
+<span class="muted project-path">
+\\fileserver.lendwithspark.local\engineering\archive\spark-servicing-portal-legacy-stylesheets
+</span>
+</span>
+<form action="/f/mortgage-origination/references/r-1/remove" ko-target="references" method="post">
+<button aria-label="Stop reading spark-servicing-portal-legacy-stylesheets" class="icon-btn small" type="submit">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</form>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+Spark.Mortgage.Shared.Contracts
+</span>
+<span class="muted project-path">
+C:\Users\JohnHowes\source\repos\lendwithspark\Spark.Mortgage.Shared.Contracts
+</span>
+</span>
+<form action="/f/mortgage-origination/references/r-2/remove" ko-target="references" method="post">
+<button aria-label="Stop reading Spark.Mortgage.Shared.Contracts" class="icon-btn small" type="submit">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</form>
+</span>
+</li>
+</ul>
+</div>
+<form action="/f/mortgage-origination/references" class="stack gap-1" ko-target="referenceField" method="post">
+<div class="stack gap-1" ko-as="referenceField">
+<label class="label" for="reference-path">
+Add a folder
+</label>
+<div class="inline">
+<input autocomplete="off" id="reference-path" name="path" placeholder="C:\Projects\another-app" spellcheck="false" value="">
+<button class="btn small" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn small" type="submit">
+Add
+</button>
+</div>
+</div>
+</form>
+</section>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/f/mortgage-origination/designs/new" ko-region tabindex="-1">
+<div class="stack gap-4" ko-item>
+<h2>
+New design
+</h2>
+<p class="secondary">
+A design usually describes one feature, and grows over many sessions with the agent.
+</p>
+<form action="/f/mortgage-origination/designs" class="stack" ko-target="fields" method="post">
+<div ko-as="fields">
+<div class="fields">
+<label class="field">
+<span class="label">
+Title
+</span>
+<input autocomplete="off" name="title" placeholder="Sign up" value="">
+</label>
+<label class="field">
+<span class="label">
+Area
+<span class="muted">
+(optional)
+</span>
+</span>
+<input autocomplete="off" list="new-design-areas" name="area" placeholder="Onboarding" value="">
+<span class="hint">
+Designs in the same area are listed together.
+</span>
+</label>
+</div>
+</div>
+<datalist id="new-design-areas">
+<option value="Origination and underwriting for retail and wholesale channels">
+</option>
+<option value="Servicing and escrow administration">
+</option>
+</datalist>
+<fieldset class="choices">
+<legend class="label">
+Kind
+</legend>
+<label class="choice">
+<input checked name="kind" type="radio" value="design">
+<span>
+A design
+<span class="muted">
+· usually one feature
+</span>
+</span>
+</label>
+<label class="choice">
+<input name="kind" type="radio" value="shell">
+<span>
+The app’s shell
+<span class="muted">
+· its layouts; every other design renders in it
+</span>
+</span>
+</label>
+</fieldset>
+<div class="cluster actions">
+<button class="btn primary" type="submit">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+Create design
+</button>
+</div>
+</form>
+</div>
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. The // dialog is named by the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); follow();
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>
