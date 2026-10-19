@@ -5,7 +5,8 @@
 <article class="card gap-3" ko-item aria-labelledby="story-<%= it.id %>">
   <div class="cluster">
     <h2 class="story-title" id="story-<%= it.id %>"><%= it.title %></h2>
-    <% if (it.edited) { %><span class="pill">Edited</span><% } %>
+    <%/* Who edited it last is git's user on the computer that saved it. */%>
+    <% if (it.edited) { %><span class="pill">Edited</span><% if (it.editedBy) { %><span class="muted">by <%= it.editedBy %>, <%= it.editedAt %></span><% } %><% } %>
     <span class="spacer"></span>
     <div class="cluster actions">
       <textarea hidden readonly ko-as="markdown"><%= it.markdown %></textarea>

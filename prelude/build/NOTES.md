@@ -79,6 +79,10 @@ not approved, building, no app, all built. Event: `story-written`.
   page shows them as being written.
 - Start a build session comes back to Build; the app goes to the session.
 
+- **An edited story names who edited it last, and when** (the person,
+  2026-10-19): git's user name on the computer that saved it ("Edited by
+  John Howes, today at 09:14"), beside the story's title.
+
 ## Open questions
 
-- Who's shown as a story's author after an edit (git's user)?
+- None open.

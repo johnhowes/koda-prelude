@@ -33,7 +33,7 @@
   </div>
   <% } else { %>
   <div class="cluster">
-    <span class="muted">Written by the agent <%= story.written %><% if (edited) { %> · edited since<% } %> · a build session for this page reads <%= stories.length > 1 ? 'them' : 'it' %></span>
+    <span class="muted">Written by the agent <%= story.written %> · a build session for this page reads <%= stories.length > 1 ? 'them' : 'it' %></span>
     <span class="spacer"></span>
     <div class="cluster actions">
       <% if (stories.length > 1) { %>
