@@ -1,0 +1,3 @@
+# Fix: When I try to open an existing design, the preview pane…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
