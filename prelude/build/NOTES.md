@@ -101,9 +101,36 @@ not approved, building, no app, all built. Event: `story-written`.
   with (`from`, no baseline) "looks different in" every state: Prelude
   can't render the app's page to compare. The agent writing its story reads
   both files and describes only the differences.
-- Not built here: the story pages (`/build/stories/:group…`) and
-  `POST /build/stories/:group`. Until they are, Write the story and Open the
-  story on the Build page lead nowhere.
+
+## Built into the app (a page's story, 2026-10-19)
+
+- The page is `server/views/build/story.eta`, with `_stories`, `_story`,
+  `_story-edit` and the `_rewrite` modal beside it, answered in `main.js`
+  (`storyPage`; its model is the Build page's group, `groupView`). The page
+  reloads its stories on `story-written`, as the Build page does.
+- A person's edit is saved over the story's file, and `story.json` gets
+  `edited["<n>"] = { by: git's user.name, at }` (`saveStory`, build.js); it's
+  committed to the branch like the agent's stories (R-u6t). The edit form
+  posts only `markdown`: the design's hidden `edited`, `url` and `title` are
+  left out, as its own comment said, since the server knows the story by its
+  address.
+- A rewrite (R-z2m): the modal is what asks. The old stories stay on show
+  while the agent writes; once it has written at least one, each old file it
+  didn't write again is removed (split.md too), and `story.json` starts
+  afresh with no edits. If it writes nothing, the old stories and their edits
+  stay. The instruction goes to the agent with the request, and the page shows
+  it while the rewrite runs ("You asked: …"); it isn't kept after.
+- A build session (R-n4j) is told the page's story files, which were edited
+  by a person, to check the build against their acceptance criteria, that
+  the design wins where they differ, and to say where in NOTES.md
+  (`buildPrompt`'s `stories`).
+- One per page, split only with a reason (R-h8x), is the agent's brief
+  (`storyPrompt`); the reason is `split.md`, shown as "Split in two: …".
+
+### Where the design is silent
+
+- **Who edited it, with no git user**: the pill says Edited without the "by …"
+  line.
 
 ### Where the design is silent
 

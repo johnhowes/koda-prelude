@@ -14,20 +14,20 @@
     "answer": { "redirect": "/f/:folder/d/:design/build" }
   },
 
-  "/f/:folder/d/:design/build/stories/:group": { "view": "build/story", "title": "A page’s story", "data": "folders/:folder/designs/:design/groups/:group" },
-  "/f/:folder/d/:design/build/stories/:group/list": { "view": "build/_stories", "data": "folders/:folder/designs/:design/groups/:group" },
-  "/f/:folder/d/:design/build/stories/:group/rewrite": { "view": "build/_rewrite", "title": "Rewrite the story", "data": "folders/:folder/designs/:design/groups/:group", "over": "/f/:folder/d/:design/build/stories/:group", "in": "modal" },
+  "/f/:folder/d/:design/build/stories/:group": { "view": "@app/server/views/build/story", "title": "A page’s story", "data": "folders/:folder/designs/:design/groups/:group" },
+  "/f/:folder/d/:design/build/stories/:group/list": { "view": "@app/server/views/build/_stories", "data": "folders/:folder/designs/:design/groups/:group" },
+  "/f/:folder/d/:design/build/stories/:group/rewrite": { "view": "@app/server/views/build/_rewrite", "title": "Rewrite the story", "data": "folders/:folder/designs/:design/groups/:group", "over": "/f/:folder/d/:design/build/stories/:group", "in": "modal" },
   "POST /f/:folder/d/:design/build/stories/:group": {
     "update": "folders/:folder/designs/:design/groups/:group",
     "answer": { "redirect": "/f/:folder/d/:design/build/stories/:group" }
   },
 
-  "/f/:folder/d/:design/build/stories/:group/story/:story": { "view": "build/_story", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
-  "/f/:folder/d/:design/build/stories/:group/story/:story/edit": { "view": "build/_story-edit", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
+  "/f/:folder/d/:design/build/stories/:group/story/:story": { "view": "@app/server/views/build/_story", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
+  "/f/:folder/d/:design/build/stories/:group/story/:story/edit": { "view": "@app/server/views/build/_story-edit", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
   "POST /f/:folder/d/:design/build/stories/:group/story/:story": {
     "update": "folders/:folder/designs/:design/groups/:group/story/stories/:story",
     "require": ["markdown"],
-    "form": "build/_story-edit",
-    "answer": { "view": "build/_story", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" }
+    "form": "@app/server/views/build/_story-edit",
+    "answer": { "view": "@app/server/views/build/_story", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" }
   }
 }

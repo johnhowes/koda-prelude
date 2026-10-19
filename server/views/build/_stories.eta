@@ -1,7 +1,7 @@
 <%/* A page's stories, or what stands in for them: the agent at work, or the
      way to ask it. A story the design has changed under says what changed
-     since, and that rewriting replaces anyone's edits. `it` is the page's
-     group. */%>
+     since, and that rewriting replaces anyone's edits (R-z2m). `it` is the
+     page's group (BuildGroup, server/build.js). */%>
 <% const story = it.story; const stories = story?.stories ?? [];
    const edited = stories.some(one => one.edited); %>
 <div class="stack gap-4">

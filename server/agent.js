@@ -442,7 +442,7 @@ ${referenceHost()}${references.length ? `\n\nYou may also read: ${references.map
  * a design - a page, its overlays, fragments and forms - in the app's real
  * code, on a branch of its own. `group` is a backlog group (backlog.js).
  */
-export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], layouts = [], branch, references = [], stack = null, kodaPath = null }) {
+export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], layouts = [], stories = null, branch, references = [], stack = null, kodaPath = null }) {
   const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}${route.from ? `, redesigned from ${route.from.slice(5)}: port it back over that file, and remove the route's "from"` : ''}`);
   const describe = route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`;
   const describePost = post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`;
@@ -474,12 +474,16 @@ export function buildPrompt({ title, designPath, group, change = null, designWid
       ...(change.events?.removed ?? []).map(event => `  - ${event.name} (${event.title}) goes: stop sending it`),
     ]
     : [...(group.events ?? []), ...designEvents].map(event => `  - ${eventLine(event, designAt)}`)).join('\n');
+  // The page's stories, edits and all, are checked against; the design wins (R-n4j).
+  const told = stories?.stories.length
+    ? `\n\nThe team's ${stories.stories.length === 1 ? 'story' : 'stories'} for this page, in ${stories.path}/:\n${stories.stories.map(story => `  - ${story.file}: ${story.title}${story.edited ? ' (edited by a person: their edits count, such as acceptance criteria they added)' : ''}`).join('\n')}\nRead ${stories.stories.length === 1 ? 'it' : 'them'} before you build, and check what you build against ${stories.stories.length === 1 ? 'its' : 'their'} acceptance criteria. Where a story and the design differ, the design wins${stories.outOfDate ? ` (the design changed after ${stories.stories.length === 1 ? 'it was' : 'they were'} written)` : ''}: say where in ${designPath}/NOTES.md. Never change a story.`
+    : '';
   return `You are building part of a design into this repository's app: "${group.title}" of the design "${title}", in ${designPath}/. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and opens the pull request.
 
 The design is the specification, and it is already the app's views: ${designPath}/routes.json says what each URL shows (its view, and "data", the path into a state that becomes the view's model) and what each form does (POST routes: update, add or remove at a data path; "require", refused with a 422 that re-renders "form" with the messages; "answer", what comes back). ${designPath}/states/ are the cases, and become the tests' fixtures. ${designPath}/RULES.md says what else must be true, and ${designPath}/NOTES.md why, including any porting spec.${stack?.guide ? ` Read ${stack.guide}: it says how views are written here, and how ported views differ.` : ''}${kodaPath ? ` The app uses Koda: look attributes up in ${kodaPath}/docs/reference.md.` : ''}
 
 ${layouts.length ? `Its pages render in the app's ${layouts.map(layout => layout.file ? `"${layout.name}" layout (${layout.file})` : `"${layout.name}" layout`).join(' and ')}: a page's markup sits in that layout's main region, and its overlays land in the layout's regions (a route's "in"). Build the pages for it; don't add a layout of your own.\n\n` : ''}${change ? `"${group.title}" is already built: this session builds a change to it, and only that. Everything not listed stays as it is.\n\nThe change:` : 'This session builds:'}
-${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes these proposed rules true:\n${rules}` : ''}${wide ? `\nThese proposed rules aren't tied to a page. Make true the ones what you build touches, and leave the rest:\n${wide}` : ''}${events ? `\nand has the server send these events on its own (${designPath}/events.json):\n${events}` : ''}
+${routes || '  (no pages)'}${posts ? `\n${posts}` : ''}${rules ? `\nand makes these proposed rules true:\n${rules}` : ''}${wide ? `\nThese proposed rules aren't tied to a page. Make true the ones what you build touches, and leave the rest:\n${wide}` : ''}${events ? `\nand has the server send these events on its own (${designPath}/events.json):\n${events}` : ''}${told}
 
 For each of them:
 - Port the view into the app, where the app keeps its views, following its conventions: the markup stays as designed, element for element. Change only what real code requires: a typed model instead of the untyped one, the stack's real field helpers instead of design stand-ins (as ${stack?.guide ?? 'the guide'} says), real URLs. Move a design view's partials with it, and the design's styles into the app's stylesheets.
@@ -501,7 +505,7 @@ You can't run commands. After each turn Prelude renders every route of the desig
  * (build.js) and `kind`; Across the design's rules and events are the
  * design-wide ones. `others` are the other pages' titles.
  */
-export function storyPrompt({ title, designPath, group, storiesPath, states = [], approved = false, others = [], references = [] }) {
+export function storyPrompt({ title, designPath, group, storiesPath, states = [], approved = false, others = [], rewrite = false, references = [] }) {
   const at = view => (view.startsWith('@app/') ? view.slice(5) : `${designPath}/views/${view}`);
   const across = group.key === '@across';
   const from = group.page?.from?.slice(5) ?? null;
@@ -529,7 +533,9 @@ Never repeat what's already built or someone else's: no rule that isn't marked *
 
 Write one story for the page. Split it only when its parts could ship on their own, each useful without the other; then write each as its own story, and say why in one sentence.
 
-Write the story to ${storiesPath}/1-<slug>.md, the slug being its title in lower-case words joined by hyphens; a second to ${storiesPath}/2-<slug>.md, and so on. If you split it, also write ${storiesPath}/split.md: the one sentence why, starting in lower case ("the monthly payment and sorting are useful on their own, so they can ship first."). Write nothing else, anywhere.
+Write the story to ${storiesPath}/1-<slug>.md, the slug being its title in lower-case words joined by hyphens; a second to ${storiesPath}/2-<slug>.md, and so on. If you split it, also write ${storiesPath}/split.md: the one sentence why, starting in lower case ("the monthly payment and sorting are useful on their own, so they can ship first."). Write nothing else, anywhere.${rewrite ? `
+
+This is a rewrite: the page's stories are already in ${storiesPath}/. Write them afresh from the design as it is now, doing what the person asks, if anything; Prelude removes each old file you don't write again, edits and all. Split, or don't, by the same rule as a first story.` : ''}
 
 Each story, in Markdown:
 

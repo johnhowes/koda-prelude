@@ -17,9 +17,9 @@ import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSyste
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory } from './build.js';
+import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief } from './build.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, createBranches, designCommitsSince, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -1593,6 +1593,11 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // The app's layouts the group's pages render in, so the brief can name them (8c).
     const layouts = shellLayoutsOf(folder.path);
     const pageLayouts = layouts ? layoutsOfGroup(group).map(name => ({ name, file: layouts.links[name]?.slice(5) ?? null })) : [];
+    // The page's stories, edits and all, which the build is checked against (R-n4j).
+    const designPath = `${PRELUDE_DIR}/${design.id}`;
+    const stories = group.slug && group.fingerprint
+      ? storiesBrief(dir, group.slug, readStory(dir, group.slug, { url: '', fingerprint: group.fingerprint, changes: group.changes }), designPath)
+      : null;
     return {
       mode: 'build',
       systemPrompt: build.group === LAYOUTS_GROUP.key
@@ -1602,7 +1607,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         : isApp
         ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
         // Across the design is the design-wide rules and events themselves.
-        : buildPrompt({ title: design.title, designPath: `${PRELUDE_DIR}/${design.id}`, group, change: group.incremental ? group.change : null, designWide: group.key === ACROSS.key ? [] : backlog.designWide, designEvents: group.key === ACROSS.key ? [] : backlog.events ?? [], layouts: pageLayouts, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
+        : buildPrompt({ title: design.title, designPath, group, change: group.incremental ? group.change : null, designWide: group.key === ACROSS.key ? [] : backlog.designWide, designEvents: group.key === ACROSS.key ? [] : backlog.events ?? [], layouts: pageLayouts, stories, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
     };
   };
 
@@ -1641,25 +1646,46 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       building: building && { group: building.slug, title: building.title, session: sessionOf(building.key) ?? { title: building.title, url: base } },
       writing: app.stories.writingAll(dir),
       updateUrl: entry ? `/f/${parentId}/branches/${entry.id}/update` : null,
-      groups: toBuild.map(group => {
-        const url = `${base}/build/stories/${group.slug}`;
-        return {
-          id: group.slug,
-          key: group.key,
-          title: group.title,
-          kind: group.kind,
-          url,
-          folder: { name: project.name, url: `/f/${parentId}` },
-          design: { title: design.title, url: base },
-          writing: app.stories.writing(dir, group.slug),
-          instruction: '',
-          changes: group.changes,
-          session: sessionOf(group.key),
-          story: readStory(dir, group.slug, { url, fingerprint: group.fingerprint, changes: group.changes }),
-        };
-      }),
+      groups: toBuild.map(group => groupView(group, { project, session: sessionOf(group.key) })),
       unchanged: groups.filter(group => !group.toBuild && group.key !== ACROSS.key).map(group => ({ title: group.title })),
     };
+  }
+
+  /**
+   * A page still to build, as the Build page and its story's page show it
+   * (BuildGroup, build.js): what it changes, and its stories, if asked for.
+   */
+  function groupView(group, { project = { id: parentId, name: folder.branch?.parentName ?? folder.name }, session = null } = {}) {
+    const url = `${base}/build/stories/${group.slug}`;
+    return {
+      id: group.slug,
+      key: group.key,
+      title: group.title,
+      kind: group.kind,
+      url,
+      folder: { name: project.name, url: `/f/${project.id}` },
+      design: { title: design.title, url: base },
+      writing: app.stories.writing(dir, group.slug),
+      instruction: app.stories.instruction(dir, group.slug),
+      changes: group.changes,
+      session,
+      story: readStory(dir, group.slug, { url, fingerprint: group.fingerprint, changes: group.changes }),
+    };
+  }
+
+  /**
+   * A page's story (prelude/build), or a part of it, in the app layout like
+   * the Build page, with the app's live channel: a story arriving reloads its
+   * stories (story-written). A cold load of the rewrite modal has the page
+   * beneath, the modal in its region.
+   */
+  function storyPage(status, group, { view = 'build/story', model = null, modal = null } = {}) {
+    const page = groupView(group);
+    const html = render(`./${view}`, model ?? page);
+    if (fragment && askedFromLayout(req, 'app')) return send(res, status, html);
+    const regions = modal ? { modal: { html, location: url.pathname } } : {};
+    const body = modal || view === 'build/story' ? render('./build/story', page) : html;
+    return send(res, status, render('./layout', { body, path: modal ? page.url : url.pathname, title: `${group.title} · Build · ${title}`, layout: { live: APP_LIVE, needsYou: waitingOf(app) }, regions, system: true }));
   }
 
   /**
@@ -1682,7 +1708,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
    * is under way, whose own commit takes it. Each one written says so down
    * the app's channel (story-written), and the Build page's pages reload.
    */
-  function writeStories(chosen, { all = false } = {}) {
+  function writeStories(chosen, { all = false, instruction = '' } = {}) {
     const designPath = `${PRELUDE_DIR}/${design.id}`;
     const { groups } = groupsOf(app, { entry, design, dir });
     const references = app.references.of(parentId);
@@ -1695,8 +1721,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         title: group.title,
         fingerprint: group.fingerprint,
         changes: group.changes,
+        instruction,
         systemPrompt: storyPrompt({
           title: design.title, designPath, group, storiesPath: `${designPath}/stories/${group.slug}`, states, approved, references,
+          rewrite: hasStory(dir, group.slug),
           others: groups.filter(other => other.key !== group.key && other.key !== ACROSS.key && other.toBuild).map(other => other.title),
         }),
       })),
@@ -1751,6 +1779,47 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       writeStories(unwritten, { all: true });
     }
     return redirect(res, `${base}/build`);
+  }
+
+  // A page's story (prelude/build):
+  //   GET  …/build/stories/:group                  the page
+  //   GET  …/build/stories/:group/list             its stories, reloaded as one arrives
+  //   GET  …/build/stories/:group/rewrite          Rewrite the story, in the modal
+  //   POST …/build/stories/:group                  write it, or write it again (with an instruction)
+  //   GET  …/build/stories/:group/story/:n         one story
+  //   GET  …/build/stories/:group/story/:n/edit    its editor, in its place
+  //   POST …/build/stories/:group/story/:n         save an edit; refused empty
+  if (rest[0] === 'build' && rest[1] === 'stories' && rest.length >= 3 && hosted && buildsPages(design)) {
+    const [, , slug, part, number, more, ...beyond] = rest;
+    const group = groupsOf(app, { entry, design, dir }).groups.find(one => one.toBuild && one.slug === slug);
+    if (!group || beyond.length) return notFound();
+    const pageUrl = `${base}/build/stories/${group.slug}`;
+    if (part === undefined && req.method === 'GET') return storyPage(200, group);
+    if (part === 'list' && number === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_stories' });
+    if (part === 'rewrite' && number === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_rewrite', modal: true });
+    if (part === undefined && req.method === 'POST') {
+      const form = await readForm(req);
+      // Rewriting replaces the edits made by hand; the modal says so before it's sent (R-z2m).
+      if (form.get('writing') === 'true') writeStories([group], { instruction: String(form.get('instruction') ?? '').trim() });
+      return redirect(res, pageUrl);
+    }
+    if (part !== 'story' || !number) return notFound();
+    const storyOf = () => readStory(dir, group.slug, { url: pageUrl, fingerprint: group.fingerprint, changes: group.changes })?.stories.find(one => one.id === number) ?? null;
+    const story = storyOf();
+    if (!story) return notFound();
+    if (more === undefined && req.method === 'GET') return storyPage(200, group, { view: 'build/_story', model: story });
+    if (more === 'edit' && req.method === 'GET') return storyPage(200, group, { view: 'build/_story-edit', model: story });
+    if (more === undefined && req.method === 'POST') {
+      const markdown = String((await readForm(req)).get('markdown') ?? '');
+      if (!markdown.trim()) return storyPage(422, group, { view: 'build/_story-edit', model: { ...story, markdown, $errors: { markdown: 'This is required.' } } });
+      saveStory(dir, group.slug, number, markdown, { by: gitUser(folder.path) });
+      // A person's edit is kept with the design on its branch, like the agent's (R-u6t).
+      if (entry && turns.state(folder, design, null).kind === 'idle') {
+        try { app.branches.commit(entry, `${design.title}: a story, edited by hand (committed by Prelude)`); } catch (error) { console.error(error); }
+      }
+      return storyPage(200, group, { view: 'build/_story', model: storyOf() });
+    }
+    return notFound();
   }
 
   // Build a group on the design's branch: a build session, briefed from the

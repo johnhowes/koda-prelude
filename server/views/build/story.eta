@@ -1,9 +1,10 @@
-<%/* One page's story: what the design changes on it, written up by the agent
-     for the team's tracker when someone asks. The agent writes one story,
-     or several when the change splits well (and says why). Each can be
-     copied as Markdown, edited by hand, or rewritten, with an instruction if
-     wanted. The stories reload when the agent finishes. `it` is the page's
-     group. */%>
+<%/* One page's story (prelude/build): what the design changes on it, written
+     up by the agent for the team's tracker when someone asks. The agent
+     writes one story, or several when the change splits well (and says why,
+     R-h8x). Each can be copied as Markdown, edited by hand, or rewritten,
+     with an instruction if wanted; a build session for the page reads them
+     (R-n4j). The stories reload when the agent finishes (story-written).
+     `it` is the page's group (BuildGroup, server/build.js). */%>
 <div class="center stack gap-6 build" ko-item>
   <header class="stack gap-2">
     <nav class="crumbs" aria-label="Where you are">

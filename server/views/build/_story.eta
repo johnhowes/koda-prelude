@@ -1,7 +1,8 @@
 <%/* One story, as it reads in a tracker: its title, then the agent's (or the
-     person's) Markdown, rendered. The app renders the "For developers"
-     section folded away. Copy puts the Markdown on the clipboard, as written;
-     Edit swaps the story for its editor in place. `it` is the story. */%>
+     person's) Markdown, rendered, with the "For developers" section folded
+     away (storyHtml, server/build.js). Copy puts the Markdown on the
+     clipboard, as written; Edit swaps the story for its editor in place.
+     `it` is the story (OneStory, server/build.js). */%>
 <article class="card gap-3" ko-item aria-labelledby="story-<%= it.id %>">
   <div class="cluster">
     <h2 class="story-title" id="story-<%= it.id %>"><%= it.title %></h2>

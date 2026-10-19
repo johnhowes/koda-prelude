@@ -1,6 +1,7 @@
 <%/* Rewriting a page's story: the agent writes it again from the design as it
      is now, taking an instruction if one is given. Edits made by hand are
-     replaced, so it says so first. `it` is the page's group. */%>
+     replaced, so it says so first (R-z2m). `it` is the page's group
+     (BuildGroup, server/build.js). */%>
 <% const edited = (it.story?.stories ?? []).some(one => one.edited); %>
 <div class="stack gap-4">
   <h2>Rewrite the story</h2>

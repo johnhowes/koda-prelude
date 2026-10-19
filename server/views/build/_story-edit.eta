@@ -1,7 +1,9 @@
 <%/* A story's editor, in place of the story: its Markdown, as it's copied.
-     Saving marks it edited, so a rewrite asks before replacing it. A story
-     can't be saved empty. `it` is the story (with what was typed, and
-     $errors, when a save was refused). */%>
+     Saving marks it edited, by whom and when, so a rewrite asks before
+     replacing it (R-z2m). A story can't be saved empty. Only `markdown` is
+     posted: the server knows the story by its address. `it` is the story
+     (OneStory, server/build.js; with what was typed, and $errors, when a save
+     was refused). */%>
 <form class="card gap-3" action="<%= it.url %>" method="post" ko-target="self">
   <h2 class="story-title">Edit “<%= it.title %>”</h2>
   <label class="field">
@@ -13,12 +15,6 @@
     <span class="hint">As your tracker shows it: a <code>#</code> title, <code>##</code> sections, lists and <code>**bold**</code>. The “For developers” section is folded here, and copied in full.</span>
     <% } %>
   </label>
-  <input type="hidden" name="edited" value="true">
-  <%/* In the design, a refused save re-renders from what was posted alone, so
-       the form carries its own address and title. The app's posts only
-       `markdown`. */%>
-  <input type="hidden" name="url" value="<%= it.url %>">
-  <input type="hidden" name="title" value="<%= it.title %>">
   <div class="cluster actions">
     <button class="btn primary" type="submit">Save the story</button>
     <a class="btn ghost" href="<%= it.url %>" ko-target="self">Discard changes</a>

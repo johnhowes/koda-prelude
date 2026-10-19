@@ -17,7 +17,7 @@
 //                                 then, so it can say it's out of date, and what changed (R-b5k)
 
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderMarkdown } from '@kodalang/core';
 
@@ -261,9 +261,12 @@ export function readStory(dir, id, { url, fingerprint, changes }) {
 /**
  * The agent writing pages' stories, one at a time per design, each its own
  * run of the agent, only when someone asks (R-w3n).
- *   write({ dir, cwd, designPath, references, jobs: [{ id, title, systemPrompt, fingerprint, changes }], all, onWritten })
+ *   write({ dir, cwd, designPath, references, jobs: [{ id, title, systemPrompt, fingerprint, changes, instruction }], all, onWritten })
  *   writing(dir, id)   whether a page's story is being written, or waits to be
  *   writingAll(dir)    whether Write every story is under way
+ *   instruction(dir, id)  what the person asked of the rewrite under way, or ''
+ * A rewrite keeps the page's stories on show until the agent has written new
+ * ones, then removes what it didn't write again, edits and all (R-z2m).
  * onWritten(job) is called once each is written (or the agent gave up).
  */
 export function createStoryWriter({ runner }) {
@@ -280,20 +283,27 @@ export function createStoryWriter({ runner }) {
     if (!job) { queues.delete(dir); return; }
     queue.current = job;
     const at = storiesDir(dir, job.id);
-    const writtenAt = new Date().toISOString();
+    const started = Date.now();
+    const writtenAt = new Date(started).toISOString();
+    // A rewrite: what the agent doesn't write again goes once it's done, the
+    // edits made to it included (R-z2m). Until then the page keeps showing it.
+    const before = [...storyFiles(at), 'split.md'];
     let turn;
     try {
       mkdirSync(at, { recursive: true });
+      const asked = job.instruction ? ` The person asks: ${job.instruction}` : '';
       turn = runner.turn({
         cwd: job.cwd, sessionId: randomUUID(), resume: false,
-        prompt: `Write the story for ${job.title}.`, systemPrompt: job.systemPrompt,
+        prompt: `Write the story for ${job.title}${before.length > 1 ? ' again' : ''}.${asked}`, systemPrompt: job.systemPrompt,
         designPath: job.designPath, references: job.references, mode: 'design', onEvent: () => {},
       });
     } catch (error) {
       turn = { done: Promise.resolve({ ok: false, error: String(error?.message ?? error) }) };
     }
     Promise.resolve(turn.done).catch(error => ({ ok: false, error: String(error?.message ?? error) })).then(result => {
-      if (storyFiles(at).length) {
+      const fresh = file => { try { return statSync(join(at, file)).mtimeMs >= started; } catch { return false; } };
+      if (storyFiles(at).some(fresh)) {
+        for (const file of before) if (!fresh(file)) rmSync(join(at, file), { force: true });
         writeFileSync(join(at, 'story.json'), JSON.stringify({ writtenAt, fingerprint: job.fingerprint, changes: job.changes.map(line => line.text), edited: {} }, null, 2) + '\n');
       } else {
         console.error(`The agent didn’t write the story for ${job.title}${result?.error ? `: ${result.error}` : '.'}`);
@@ -308,6 +318,11 @@ export function createStoryWriter({ runner }) {
   return {
     writing,
     writingAll: dir => Boolean(queues.get(dir)?.all),
+    instruction(dir, id) {
+      const queue = queues.get(dir);
+      const job = queue?.current?.id === id ? queue.current : queue?.jobs.find(one => one.id === id);
+      return job?.instruction ?? '';
+    },
     write({ dir, cwd, designPath, references = [], jobs, all = false, onWritten }) {
       let queue = queues.get(dir);
       if (!queue) { queue = { jobs: [], current: null, all: false }; queues.set(dir, queue); }
@@ -316,6 +331,37 @@ export function createStoryWriter({ runner }) {
       if (all && (fresh.length || queue.current)) queue.all = true;
       if (!queue.current) next(dir);
     },
+  };
+}
+
+/**
+ * A person's edit of one of a page's stories, kept in its file, and marked
+ * edited by whom and when in story.json, so a rewrite asks before replacing it
+ * (R-z2m). False when the page has no such story.
+ */
+export function saveStory(dir, id, number, markdown, { by = '', at = new Date().toISOString() } = {}) {
+  const folder = storiesDir(dir, id);
+  const file = storyFiles(folder).find(name => name.match(/^\d+/)[0] === String(number));
+  if (!file) return false;
+  writeFileSync(join(folder, file), String(markdown).replace(/\r\n/g, '\n').replace(/\n*$/, '\n'));
+  const meta = json(join(folder, 'story.json')) ?? {};
+  meta.edited = { ...(meta.edited ?? {}), [file.match(/^\d+/)[0]]: { by, at } };
+  writeFileSync(join(folder, 'story.json'), JSON.stringify(meta, null, 2) + '\n');
+  return true;
+}
+
+/**
+ * What a page's build session is told of its stories (R-n4j): each file, its
+ * title and whether a person edited it, and whether the design changed since.
+ * `story` is readStory's.
+ */
+export function storiesBrief(dir, id, story, designPath) {
+  if (!story) return null;
+  const files = storyFiles(storiesDir(dir, id));
+  return {
+    path: `${designPath}/stories/${id}`,
+    outOfDate: Boolean(story.outOfDate),
+    stories: story.stories.map(one => ({ file: files.find(file => file.match(/^\d+/)[0] === one.id) ?? `${one.id}-….md`, title: one.title, edited: one.edited })),
   };
 }
 
