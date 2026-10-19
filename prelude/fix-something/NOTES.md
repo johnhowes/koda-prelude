@@ -79,21 +79,55 @@ its first session (`POST /f/:id/fixes`).
   when its last turn ended on a question (the same test Needs you uses), and
   answered otherwise. One whose `fixes/<slug>` has a branch is left out, so
   it's In progress only.
-- `app.asked.moveOnto(folder, slug, worktreePath, { title })` moves a
+- `app.asked.moveOnto(folder, slug, worktreePath, { title, slug })` moves a
   conversation's sessions into `prelude/fixes/<slug>/` on its branch and
-  stops keeping it here. `create` and `rename` are there for the
-  conversation's pages too.
-- Still to build, with the conversation's pages (`/f/:project/d/fixes/…`,
-  not this group): the routes that use the store. `POST …/fixes/new/sessions`
-  calls `create`. `POST …/d/fixes/:fix/branch` makes the branch
-  (`prelude/fix-<slug>`), calls `moveOnto` and commits. The design page's
-  lookup has to find a conversation in the store when it has no branch. The
-  old modal (`_new-fix*.eta`, `GET /fixes/new`, `POST /fixes`) is still in
-  `server/main.js` until then, but nothing links to it now. So R-x8d and
-  R-2qz stay proposed: what this page shows of them is true, but no route
-  makes, or branches, a conversation yet.
-- Until then, the Ask or fix… links on this page go to
-  `/f/:project/d/fixes/new`, which the app doesn't answer yet.
+  stops keeping it here.
+
+## Built: the conversation's pages (2026-10-19)
+
+- The design's `_header`, `_chat`, `_starters`, `_composer` and
+  `_message-box` replace the app's, and `_fix-branch`, `_fix-branch-fields`,
+  `_rename` and `_rename-fields` are new in `server/views/`. The centring
+  rule is in `server/public/workspace.css`, where it replaces the
+  `:only-child` rule.
+- The project's routes send `/f/:project/d/fixes/new` and any conversation
+  kept on this computer to the design page's handler (`handleDesign`), with
+  the conversation as a design of kind `fix`. `fixes/new` is a conversation
+  with no sessions (`app.asked.fresh`). Its first message makes the
+  conversation (`create`), moves the draft over, and starts the first
+  session there. The old modal's routes (`GET /f/:id/fixes/new`,
+  `POST /f/:id/fixes`) are gone.
+- A fix's page is now at its own address, showing its latest session, on a
+  branch or not. A design's page still goes to `…/sessions/<id>`.
+- R-h7w: with no branch, the agent runs in a new mode, `ask`, with only
+  Read, Glob and Grep. Its prompt is `askPrompt`, which says it only reads
+  and ends with what it would change. It may read the conversation's own
+  folder, where the images are; it's told their full paths. There's no
+  branch, so nothing is committed.
+- `POST …/branch` names the fix's slug, and so its branch, after the name
+  given in the dialog (the hint says "The branch is named after it"). The
+  slug may differ from the conversation's, so the paths in its transcripts
+  are moved with it. It adds the "Fixing this on…" note and commits. Then it
+  redirects to the worktree's fix page. The hidden `branch.*` inputs stay in
+  the dialog as designed, and the app ignores them.
+- **The agent's own conversation doesn't move.** Claude keeps a
+  conversation by the folder it ran in, and the fix's turns run in the
+  branch's worktree, so they can't resume it. Each moved session starts the
+  agent afresh on the branch. Its first message there says where the
+  transcript so far is, and tells it to read that first. The person sees one
+  conversation.
+- `troubles` (the starting points) are the project's stopped builds (as
+  Needs you has them) and its branches whose last check failed.
+- A refused rename or branch echoes what was typed. The approved screens
+  for the refusals show the name as it was, because the preview re-renders
+  from the state.
+- After Start with this, dictation or Stop, the box's placeholder goes back
+  to the design's wording. `_answering`, `_dictation-ready` and the Stop push
+  render `_message-box` without the conversation's placeholder, as the
+  design's own `_answering` does. You only see it when the box is emptied
+  again.
+- `server/views/projects/_new-fix.eta` and `_new-fix-fields.eta` aren't
+  used any more, but the agent can't delete files: remove them by hand.
 
 ## Open questions
 

@@ -56,89 +56,89 @@
     "answer": { "view": "@app/server/views/projects/_references", "data": "projects/:project" }
   },
 
-  "/f/:project/d/fixes/new": { "view": "_session", "from": "@app/server/views/_session", "title": "Ask or fix", "data": "projects/:project/newFix" },
-  "/f/:project/d/fixes/new/draft": { "view": "_attachments", "data": "projects/:project/newFix/draft" },
-  "/f/:project/d/fixes/new/dictation/button": { "view": "_dictation", "data": "projects/:project/newFix" },
+  "/f/:project/d/fixes/new": { "view": "@app/server/views/_session","title": "Ask or fix", "data": "projects/:project/newFix" },
+  "/f/:project/d/fixes/new/draft": { "view": "@app/server/views/_attachments", "data": "projects/:project/newFix/draft" },
+  "/f/:project/d/fixes/new/dictation/button": { "view": "@app/server/views/_dictation", "data": "projects/:project/newFix" },
   "POST /f/:project/d/fixes/new/sessions": {
     "update": "projects/:project/newFix",
     "require": ["message"],
-    "form": "_composer",
+    "form": "@app/server/views/_composer",
     "answer": { "redirect": "/f/:project/d/fixes/rate-lock-build-stopped" }
   },
   "POST /f/:project/d/fixes/new/start": {
     "update": "projects/:project/newFix/draft",
-    "answer": { "view": "_answering", "data": "projects/:project/newFix/draft" }
+    "answer": { "view": "@app/server/views/_answering", "data": "projects/:project/newFix/draft" }
   },
   "POST /f/:project/d/fixes/new/draft": {
     "update": "projects/:project/newFix/draft",
-    "answer": { "view": "_draft-kept", "data": "projects/:project/newFix/draft" }
+    "answer": { "view": "@app/server/views/_draft-kept", "data": "projects/:project/newFix/draft" }
   },
   "POST /f/:project/d/fixes/new/attachments": {
     "add": "projects/:project/newFix/draft/attachments",
-    "answer": { "view": "_attachments", "data": "projects/:project/newFix/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "projects/:project/newFix/draft" }
   },
   "POST /f/:project/d/fixes/new/attachments/:attachment/remove": {
     "remove": "projects/:project/newFix/draft/attachments/:attachment",
-    "answer": { "view": "_attachments", "data": "projects/:project/newFix/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "projects/:project/newFix/draft" }
   },
 
-  "/f/:project/d/fixes/:fix": { "view": "_session", "from": "@app/server/views/_session", "title": "A conversation about the project", "data": "projects/:project/fixes/:fix/page" },
-  "/f/:project/d/fixes/:fix/branch": { "view": "_fix-branch", "title": "Fix it on a branch", "data": "projects/:project/fixes/:fix/page", "over": "/f/:project/d/fixes/:fix", "in": "modal" },
-  "/f/:project/d/fixes/:fix/rename": { "view": "_rename", "title": "Rename it", "data": "projects/:project/fixes/:fix/page", "over": "/f/:project/d/fixes/:fix", "in": "modal" },
-  "/f/:project/d/fixes/:fix/draft": { "view": "_attachments", "data": "projects/:project/fixes/:fix/page/draft" },
-  "/f/:project/d/fixes/:fix/dictation/button": { "view": "_dictation", "data": "projects/:project/fixes/:fix/page" },
+  "/f/:project/d/fixes/:fix": { "view": "@app/server/views/_session","title": "A conversation about the project", "data": "projects/:project/fixes/:fix/page" },
+  "/f/:project/d/fixes/:fix/branch": { "view": "@app/server/views/_fix-branch", "title": "Fix it on a branch", "data": "projects/:project/fixes/:fix/page", "over": "/f/:project/d/fixes/:fix", "in": "modal" },
+  "/f/:project/d/fixes/:fix/rename": { "view": "@app/server/views/_rename", "title": "Rename it", "data": "projects/:project/fixes/:fix/page", "over": "/f/:project/d/fixes/:fix", "in": "modal" },
+  "/f/:project/d/fixes/:fix/draft": { "view": "@app/server/views/_attachments", "data": "projects/:project/fixes/:fix/page/draft" },
+  "/f/:project/d/fixes/:fix/dictation/button": { "view": "@app/server/views/_dictation", "data": "projects/:project/fixes/:fix/page" },
   "POST /f/:project/d/fixes/:fix/branch": {
     "update": "projects/:project/fixes/:fix/page",
     "require": ["title"],
-    "form": "_fix-branch-fields",
+    "form": "@app/server/views/_fix-branch-fields",
     "answer": { "redirect": "/f/:project/d/fixes/:fix" }
   },
   "POST /f/:project/d/fixes/:fix/rename": {
     "update": "projects/:project/fixes/:fix/page",
     "require": ["title"],
-    "form": "_rename-fields",
+    "form": "@app/server/views/_rename-fields",
     "answer": { "redirect": "/f/:project/d/fixes/:fix" }
   },
   "POST /f/:project/d/fixes/:fix/sessions/:session/messages": {
     "add": "projects/:project/fixes/:fix/page/entries",
     "require": ["message"],
-    "form": "_composer",
+    "form": "@app/server/views/_composer",
     "answer": {
-      "view": "_composer", "data": "projects/:project/fixes/:fix/page",
-      "also": [{ "into": "transcript", "view": "_transcript", "data": "projects/:project/fixes/:fix/page" }]
+      "view": "@app/server/views/_composer", "data": "projects/:project/fixes/:fix/page",
+      "also": [{ "into": "transcript", "view": "@app/server/views/_transcript", "data": "projects/:project/fixes/:fix/page" }]
     }
   },
   "POST /f/:project/d/fixes/:fix/sessions/:session/queue": {
     "add": "projects/:project/fixes/:fix/page/queued",
     "require": ["message"],
-    "form": "_composer",
+    "form": "@app/server/views/_composer",
     "answer": {
-      "view": "_composer", "data": "projects/:project/fixes/:fix/page",
-      "also": [{ "into": "queued", "view": "_queued", "data": "projects/:project/fixes/:fix/page" }]
+      "view": "@app/server/views/_composer", "data": "projects/:project/fixes/:fix/page",
+      "also": [{ "into": "queued", "view": "@app/server/views/_queued", "data": "projects/:project/fixes/:fix/page" }]
     }
   },
   "POST /f/:project/d/fixes/:fix/queued/:queued/cancel": {
     "remove": "projects/:project/fixes/:fix/page/queued/:queued",
-    "answer": { "view": "_queued", "data": "projects/:project/fixes/:fix/page" }
+    "answer": { "view": "@app/server/views/_queued", "data": "projects/:project/fixes/:fix/page" }
   },
   "POST /f/:project/d/fixes/:fix/sessions/:session/stop": {
     "update": "projects/:project/fixes/:fix/page/state",
-    "answer": { "view": "_status", "data": "projects/:project/fixes/:fix/page/state" }
+    "answer": { "view": "@app/server/views/_status", "data": "projects/:project/fixes/:fix/page/state" }
   },
   "POST /f/:project/d/fixes/:fix/start": {
     "update": "projects/:project/fixes/:fix/page/draft",
-    "answer": { "view": "_answering", "data": "projects/:project/fixes/:fix/page/draft" }
+    "answer": { "view": "@app/server/views/_answering", "data": "projects/:project/fixes/:fix/page/draft" }
   },
   "POST /f/:project/d/fixes/:fix/draft": {
     "update": "projects/:project/fixes/:fix/page/draft",
-    "answer": { "view": "_draft-kept", "data": "projects/:project/fixes/:fix/page/draft" }
+    "answer": { "view": "@app/server/views/_draft-kept", "data": "projects/:project/fixes/:fix/page/draft" }
   },
   "POST /f/:project/d/fixes/:fix/attachments": {
     "add": "projects/:project/fixes/:fix/page/draft/attachments",
-    "answer": { "view": "_attachments", "data": "projects/:project/fixes/:fix/page/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "projects/:project/fixes/:fix/page/draft" }
   },
   "POST /f/:project/d/fixes/:fix/attachments/:attachment/remove": {
     "remove": "projects/:project/fixes/:fix/page/draft/attachments/:attachment",
-    "answer": { "view": "_attachments", "data": "projects/:project/fixes/:fix/page/draft" }
+    "answer": { "view": "@app/server/views/_attachments", "data": "projects/:project/fixes/:fix/page/draft" }
   }
 }

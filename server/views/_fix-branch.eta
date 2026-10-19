@@ -2,7 +2,7 @@
      only read the project. Making the branch lets it change files there, so
      it says what happens and where before it does. The conversation carries
      on as the fix's, its sessions moved into the fix's folder on the
-     branch. The name is asked here, once a branch needs one, starting from
+     branch (R-x8d). The name is asked here, once a branch needs one, starting from
      the conversation's own. Refused, the fields come back alone. `it` is
      the conversation (a fix with no branch); `it.$fields` the fields as
      refused, on a cold load. */%>

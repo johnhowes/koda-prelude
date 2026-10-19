@@ -43,6 +43,15 @@ export function permissionArgs(designPath, references = [], mode = 'design', sha
   // the shell (`shared`), when it needs to; never their sessions or approved screens.
   // A fix (step 11) writes the app and any design, system or shell, keeping
   // them in step; never anyone's sessions or approved screens.
+  // A conversation about the project with no branch yet (prelude/fix-something)
+  // only reads: it has no tool that writes at all (R-h7w).
+  if (mode === 'ask') {
+    return [
+      '--tools', TOOLS.filter(tool => tool !== 'Write' && tool !== 'Edit').join(','),
+      ...references.flatMap(path => ['--add-dir', path]),
+      '--permission-mode', 'dontAsk',
+    ];
+  }
   const scopes = mode === 'build' || mode === 'fix' ? ['**'] : [`${designPath}/**`, ...shared.map(path => `${path}/**`)];
   // Its sessions are Prelude's record, and its snapshots are what the person approved.
   const kept = mode === 'fix'
@@ -527,6 +536,28 @@ How to fix it:
 Never change anyone's sessions or approved screens (snapshots/), or .git; Prelude refuses those writes.
 
 After each turn Prelude renders every page of each design whose files you've changed, and of each design whose built pages use an app file you've changed, and tells you with the next message what doesn't render. It shows the person, not you, which pages now differ from their approved screens: a fix may change a page on purpose.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/**
+ * The instructions for a conversation about the project (prelude/fix-something):
+ * a question, or a problem not fixed yet, with no branch. The agent only reads
+ * (R-h7w), and ends with what it would change, for Fix it on a branch.
+ */
+export function askPrompt({ designs = [], app = null, references = [], stack = null, kodaPath = null }) {
+  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : ''})`).join('\n') || '  (none yet)';
+  return `You are answering questions about this project, in Prelude. The person asks how something works, or says what's wrong. You only read: you can't change anything in the project, and nothing is committed. If something needs fixing, the person fixes it on a branch, and this conversation carries on there, where you can change the project.
+
+The project:
+- Its designs, in prelude/: each has views, routes.json, states/, RULES.md and NOTES.md.
+${list}
+- ${app?.path ? `The app, in ${app.path}/${app.stack ? ` (${app.stack})` : ''}. A design's route whose view is "@app/<path>" is already built: the view is the app's file.` : 'No app yet: the designs are all there is.'}${stack?.guide ? `\n- ${stack.guide}: how views are written here.` : ''}${kodaPath ? `\n- Koda's attribute reference: ${kodaPath}/docs/reference.md.` : ''}
+
+How to answer:
+1. **Read first.** Read what the question touches: the designs, the design system, the shell, the app and its guidance. Answer from what's there, and say where (the files), so the person can check.
+2. **When something is wrong**, find the cause, and say what it is.
+3. **End with what you'd change**, if anything needs changing: which files, and what in them, in a few lines. Don't write the change out in full: it's made on a branch, once the person fixes it there.
+
+Images the person attaches are kept with this conversation, outside the project; their paths are given with the message.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
 }
 
 /**

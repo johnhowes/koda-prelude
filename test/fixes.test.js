@@ -13,7 +13,7 @@ import { createDesign, findDesign, listDesigns } from '../server/designs.js';
 import { createFix, findFix, listFixes } from '../server/fixes.js';
 import { canonical, folderId } from '../server/folders.js';
 import { createServer } from '../server/main.js';
-import { appendEntry, createSession, readEntries } from '../server/sessions.js';
+import { appendEntry, createSession, listSessions, readEntries } from '../server/sessions.js';
 import { createAsked } from '../server/asked.js';
 import { approve } from './approve.js';
 import { createFakeRunner } from './fake-runner.js';
@@ -89,7 +89,8 @@ test('a fix is a folder in prelude/fixes/, found as a design of kind fix but not
 test('Asked lately: a conversation with no branch is kept on this computer, listed on the project page, and moves onto its branch whole', async () => {
   const asked = createAsked({ home });
   const folder = { id: fid, path: repo };
-  const { fix, dir } = asked.create(folder, { title: 'Which designs show borrowers?' });
+  const { fix } = asked.create(folder, { title: 'Which designs show borrowers?' });
+  const dir = fix.dir;
   assert.equal(fix.id, 'fixes/which-designs-show-borrowers');
   assert.ok(!existsSync(join(repo, 'prelude', 'fixes', fix.slug)), 'not in the project (R-2qz)');
   const session = createSession(dir, { title: fix.title });
@@ -128,36 +129,89 @@ test('a fix’s agent may write the app and every design, but no one’s session
   assert.match(prompt, /- Borrowers \(prelude\/borrowers\)/);
 });
 
-test('Fix something: a fix on its own branch, its agent, a check across the designs it touched, and merged from the project page', async () => {
+test('a conversation with no branch only reads: its agent has no tool that writes (R-h7w)', () => {
+  const args = permissionArgs('prelude/fixes/rows', ['/home/asked/rows'], 'ask');
+  assert.equal(args[args.indexOf('--tools') + 1], 'Read,Glob,Grep');
+  assert.ok(!args.includes('--allowedTools'));
+  assert.ok(args.includes('/home/asked/rows'), 'it may read its own folder, where the images are');
+});
+
+test('Ask or fix: a conversation that only reads, kept on this computer, then fixed on its own branch, its agent, a check across the designs it touched, and merged from the project page', async () => {
   const page = await (await get(`/f/${fid}`)).text();
   assert.ok(page.includes(`href="/f/${fid}/d/fixes/new" title=`), 'Ask or fix, on the project page, as a page of its own');
-  const ask = await get(`/f/${fid}/fixes/new`);
-  assert.equal(ask.status, 200);
-  assert.match(await ask.text(), /Fix something/);
+  const ask = await (await get(`/f/${fid}/d/fixes/new`)).text();
+  assert.match(ask, /<h1>Ask or fix<\/h1>/);
+  assert.match(ask, /<strong>Reading only<\/strong> · Ask about this project/);
+  assert.match(ask, /A new conversation/);
+  assert.doesNotMatch(ask, /Fix it on a branch…|New session|Rename/);
+  assert.match(ask, /Ask how something works/);
+  assert.match(ask, /placeholder="Ask about the project, or say what’s wrong and where/);
+  assert.doesNotMatch(ask, /lookingAt\.include/, 'no chip: no page on show');
 
-  const refused = await post(`/f/${fid}/fixes`, { title: '', message: '' });
+  const refused = await post(`/f/${fid}/d/fixes/new/sessions`, { message: '' });
   assert.equal(refused.status, 422);
+  assert.match(await refused.text(), /This is required\./);
+
+  // The first message makes the conversation, on this computer, and its agent only reads (R-h7w, R-2qz, R-m5c).
+  runner.queue([{ type: 'text', text: 'The names are in capitals on the borrowers list. I’d change list.eta.' }]);
+  const asked = await post(`/f/${fid}/d/fixes/new/sessions`, { message: 'Names are shouted on the borrowers list. Why?' });
+  assert.equal(asked.status, 303, await asked.text());
+  assert.equal(asked.headers.get('location'), `/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why`);
+  const keptDir = join(home, 'asked', fid, 'names-are-shouted-on-the-borrowers-list-why');
+  await until(() => readEntries(keptDir, listSessions(keptDir)[0]?.id ?? 'none').some(e => e.type === 'turn'));
+  const reading = runner.turns.at(-1);
+  assert.equal(canonical(reading.cwd), repo);
+  assert.equal(reading.mode, 'ask');
+  assert.match(reading.systemPrompt, /You only read/);
+  assert.ok(!existsSync(join(repo, 'prelude', 'fixes')), 'nothing written to the project');
+  const sid = listSessions(keptDir)[0].id;
+
+  const conversation = await (await get(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why`)).text();
+  assert.match(conversation, /<h1>Names are shouted on the borrowers list. Why\?<\/h1>/);
+  assert.match(conversation, /Fix it on a branch…/);
+  assert.match(await (await get(`/f/${fid}`)).text(), /Asked lately/);
+
+  // Renamed: the person's name from now on.
+  const renamedEmpty = await post(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why/rename`, { title: ' ' });
+  assert.equal(renamedEmpty.status, 422);
+  assert.equal((await post(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why/rename`, { title: 'Shouting names' })).status, 303);
+  assert.match(await (await get(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why`)).text(), /<h1>Shouting names<\/h1>/);
+
+  // Fix it on a branch (R-x8d): the branch is named after the fix's name, and the conversation moves onto it.
+  const branchAsk = await (await get(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why/branch`)).text();
+  assert.match(branchAsk, /value="Shouting names"/);
+  assert.equal((await post(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why/branch`, { title: '' })).status, 422);
+  const branched = await post(`/f/${fid}/d/fixes/names-are-shouted-on-the-borrowers-list-why/branch`, { title: 'Names are shouted' });
+  assert.equal(branched.status, 303, await branched.text());
+  const location = branched.headers.get('location');
+  const [, wid] = location.match(/^\/f\/([0-9a-f]+)\/d\/fixes\/names-are-shouted$/);
+  assert.notEqual(wid, fid);
+  assert.ok(!existsSync(keptDir), 'no longer kept on this computer');
+  const worktree = worktreeOf('prelude/fix-names-are-shouted');
+  const fixDir = join(worktree, 'prelude', 'fixes', 'names-are-shouted');
+  assert.equal(JSON.parse(readFileSync(join(fixDir, 'fix.json'), 'utf8')).title, 'Names are shouted');
+  assert.ok(readEntries(fixDir, sid).some(e => e.type === 'user'), 'its sessions moved with it');
+  assert.match(readEntries(fixDir, sid).at(-1).text, /^Fixing this on prelude\/fix-names-are-shouted, made from main/);
+  assert.ok(git(worktree, 'ls-tree', '-r', '--name-only', 'HEAD').split('\n').includes(`prelude/fixes/names-are-shouted/sessions/${sid}/transcript.jsonl`), 'committed on the branch');
+  assert.ok(!existsSync(join(repo, 'prelude', 'fixes')), 'nothing written to the checkout');
+  const projectNow = await (await get(`/f/${fid}`)).text();
+  assert.doesNotMatch(projectNow, /Asked lately/, 'it left Asked lately');
+  assert.match(projectNow, /Names are shouted<span class="pill">Fix<\/span>/, 'for In progress');
 
   // The agent's turn waits while the test makes its changes, as the agent would.
   runner.queue([{ type: 'wait' }, { type: 'text', text: 'Fixed.' }]);
-  const started = await post(`/f/${fid}/fixes`, { title: 'Names are shouted', message: 'Every name on the borrowers list should be quieter.' });
-  assert.equal(started.status, 303, await started.text());
-  const location = started.headers.get('location');
-  const [, wid, sid] = location.match(/^\/f\/([0-9a-f]+)\/d\/fixes\/names-are-shouted\/sessions\/(.+)$/);
-  assert.notEqual(wid, fid);
-  const worktree = worktreeOf('prelude/fix-names-are-shouted');
-  const fixDir = join(worktree, 'prelude', 'fixes', 'names-are-shouted');
-  assert.ok(existsSync(join(fixDir, 'fix.json')));
-  assert.ok(!existsSync(join(repo, 'prelude', 'fixes')), 'nothing written to the checkout');
+  const sent = await post(`/f/${wid}/d/fixes/names-are-shouted/sessions/${sid}/messages`, { message: 'Every name on the borrowers list should be quieter.' });
+  assert.equal(sent.status, 200, await sent.text());
 
-  await until(() => runner.turns.length >= 1);
+  await until(() => runner.turns.length >= 2);
   const turn = runner.turns.at(-1);
   assert.equal(canonical(turn.cwd), worktree);
   assert.equal(turn.mode, 'fix');
   assert.deepEqual(turn.shared, []);
   assert.match(turn.systemPrompt, /You are fixing one problem in this project: "Names are shouted"/);
   assert.match(turn.systemPrompt, /on the branch prelude\/fix-names-are-shouted/);
-  assert.equal(turn.prompt, 'Every name on the borrowers list should be quieter.');
+  assert.match(turn.prompt, new RegExp(`Read what was said so far first: prelude/fixes/names-are-shouted/sessions/${sid}/transcript\\.jsonl`));
+  assert.match(turn.prompt, /Every name on the borrowers list should be quieter\.$/);
 
   // One design changed on purpose, one broken by mistake, one left alone.
   write(worktree, 'prelude/borrowers/views/list.eta', '<ul><% for (const b of it.borrowers) { %><li class="quiet"><%= b.name %></li><% } %></ul>');
@@ -189,7 +243,7 @@ test('Fix something: a fix on its own branch, its agent, a check across the desi
   write(worktree, 'prelude/reports/views/reports.eta', '<h1>Reports</h1>');
   const next = await post(`/f/${wid}/d/fixes/names-are-shouted/sessions/${sid}/messages`, { message: 'Carry on.' });
   assert.ok([200, 303].includes(next.status), String(next.status));
-  await until(() => runner.turns.length >= 2);
+  await until(() => runner.turns.length >= 3);
   assert.match(runner.turns.at(-1).prompt, /\/reports/);
   await settled(fixDir, sid, 2);
 

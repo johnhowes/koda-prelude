@@ -1,6 +1,6 @@
 <%/* Rename a conversation about the project, in the modal. It's named from
-     the first words of its first message until the person renames it. On a
-     branch, the branch keeps its name. Refused, the field comes back alone.
+     the first words of its first message until the person renames it (R-m5c). On a
+     branch, the branch keeps its name (R-j3v). Refused, the field comes back alone.
      `it` is the conversation (a fix); `it.$fields` the field as refused, on
      a cold load. */%>
 <% const base = `/f/${it.folder.id}/d/${it.id}`; %>

@@ -12,9 +12,9 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
+import { appBuildPrompt, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
-import { createFix, fixSlug, listFixes } from './fixes.js';
+import { fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
@@ -29,9 +29,9 @@ import { canonical, cleanPath, createFolders, createReferences, refuseFolder } f
 import { createDesignState, designChannel } from './design-state.js';
 import { capture } from './capture.js';
 import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
-import { createDrafts, draftKey } from './drafts.js';
+import { createDrafts, draftKey, sentFile } from './drafts.js';
 import { createAsked } from './asked.js';
-import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
+import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, needsOfProject, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { branchesOf, projectOf, referenceId } from './project.js';
@@ -308,10 +308,9 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/designs                   the designs, as ?q= and ?stage= leave them, a region
     //   GET  /f/<id>/app                       the app, a region
     //   GET  /f/<id>/designs/new               New design, in the modal over the page
-    //   GET  /f/<id>/fixes/new                 Fix something (step 11), in the modal
     //   GET  /f/<id>/branches/<b>/publish      Push a branch: asked first, in the modal (R-k4n)
     //   POST /f/<id>/designs                   make one: its page, or the fields refused
-    //   POST /f/<id>/fixes                     start a fix on its branch: its session, or the fields refused
+    //   …    /f/<id>/d/fixes/<slug or new>/…   a conversation about the project, kept on this computer (handleDesign)
     //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
     //   POST /f/<id>/app/build                 start the app build: the app
     //   POST /f/<id>/references                add a folder: the field, and the list
@@ -508,38 +507,14 @@ async function handle(req, res, app) {
       return overlay(200, render('./projects/_new-design', projectModel()));
     }
 
-    // Fix something (step 11), in the modal: a problem that isn't one design's.
-    if (rest === '/fixes/new' && req.method === 'GET' && !folder.branch) {
-      return overlay(200, render('./projects/_new-fix', projectModel()));
-    }
-
-    // Start a fix: its folder on a branch of its own (made from main; a folder
-    // that isn't a repository becomes one), then its first session, started
-    // with the message. Refused, the fields come back with what was typed.
-    if (rest === '/fixes' && req.method === 'POST' && !folder.branch) {
-      const form = await readForm(req);
-      const input = { title: String(form.get('title') ?? ''), message: String(form.get('message') ?? '') };
-      const refused = (status, errors) => {
-        const fields = { ...input, $errors: errors };
-        if (fragment) return send(res, status, render('./projects/_new-fix-fields', fields));
-        const model = projectModel();
-        return projectPage(status, { model, regions: { modal: { html: render('./projects/_new-fix', { ...model, $fields: fields }), location: `${here}/fixes/new` } } });
-      };
-      // A fix's slug is unique among the fixes on main and on every branch.
-      const taken = new Set([...listFixes(folder.path), ...app.branches.of(folder.id).filter(entry => entry.design.startsWith('fixes/')).map(entry => ({ slug: entry.design.slice(6) }))].map(fix => fix.slug));
-      const slug = fixSlug(input.title, taken);
-      const errors = {};
-      if (!input.title.trim()) errors.title = 'Say what’s wrong, in a few words.';
-      else if (!slug) errors.title = 'The title needs at least one letter or digit.';
-      if (!input.message.trim()) errors.message = 'Tell the agent what you saw.';
-      if (Object.keys(errors).length) return refused(422, errors);
-      const made = branchFor(`fixes/${slug}`, input.title.trim());
-      if (made.error) return refused(409, { title: made.error });
-      const created = createFix(made.entry.path, { title: input.title, slug });
-      if (created.errors) return refused(422, created.errors);
-      app.branches.commit(made.entry, `${created.fix.title}: a new fix (committed by Prelude)`);
-      tell(app, { projects: true });
-      return startFixSession({ req, res, page, app, folder: made.worktree, fixId: created.fix.id, message: input.message });
+    // A conversation about the project with no branch yet (prelude/fix-something):
+    // kept on this computer, not in the project (R-2qz), so it's found there.
+    // /d/fixes/new is the page that starts one. Fixed on a branch, it's in the
+    // branch's worktree, and found as any fix is, below.
+    if (rest.startsWith('/d/fixes/') && !folder.branch) {
+      const [, slug, ...after] = rest.slice(3).split('/');
+      const kept = slug === 'new' ? app.asked.fresh(folder) : app.asked.find(folder, slug);
+      if (kept) return handleDesign({ req, res, url, page, app, folder, design: kept, dir: kept.dir, rest: after });
     }
 
     // Approving the repository's design host: it runs the design's views as
@@ -775,6 +750,24 @@ function noteOnBranch(entry, text, failed = false) {
 const mainOf = folder => mainBranch(folder.path);
 
 /**
+ * What Prelude knows is wrong in a project, for a conversation about it to
+ * start from (prelude/fix-something): a build that stopped, and a branch whose
+ * pages don't render. [{ icon, title, says }].
+ */
+function troublesOf(app, project) {
+  if (!project || project.branch) return [];
+  const stopped = needsOfProject(app, project).filter(need => need.kind === 'stopped')
+    .map(need => ({ icon: 'code', title: `${need.design}’s build stopped`, says: need.says }));
+  const failing = app.branches.of(project.id).filter(entry => !entry.building).flatMap(entry => {
+    const design = findDesign(entry.path, entry.design.split('/'))?.design ?? null;
+    const state = branchState(app, entry, design);
+    if (state.check !== 'failing') return [];
+    return [{ icon: 'close', title: `${state.title}’s pages don’t render`, says: `${state.failures === 1 ? '1 page doesn’t' : `${state.failures} pages don’t`} render on ${entry.branch}.` }];
+  });
+  return [...stopped, ...failing];
+}
+
+/**
  * The document a Prelude page renders in, by its path: what has to be the
  * same for Koda to swap one page into another's main region.
  *   'app'     the app layout with the design system: Home, a project's page
@@ -934,15 +927,15 @@ function pullRequestBody(app, entry, design) {
  * had pressed "Start a build session" on the design's Build page.
  */
 /**
- * Start a fix's first session with the person's message (step 11), as the
- * fix's page does when its first message is sent (`folder` is its worktree).
+ * Start a conversation's first session with what the person sent from Ask or
+ * fix (prelude/fix-something), as its own page does when its first message is
+ * sent: `design` is the conversation just made, `fields` the form's.
  */
-async function startFixSession({ req, res, page, app, folder, fixId, message }) {
-  const found = findDesign(folder.path, fixId.split('/'));
-  const sessionsUrl = `/f/${folder.id}/d/${fixId}/sessions`;
-  const body = Readable.from([Buffer.from(new URLSearchParams({ message }).toString())]);
+async function startConversation({ req, res, page, app, folder, design, fields }) {
+  const sessionsUrl = `/f/${folder.id}/d/${design.id}/sessions`;
+  const body = Readable.from([Buffer.from(new URLSearchParams(fields).toString())]);
   const first = Object.assign(body, { method: 'POST', url: sessionsUrl, headers: { ...req.headers, 'content-type': 'application/x-www-form-urlencoded' } });
-  return handleDesign({ req: first, res, url: new URL(sessionsUrl, 'http://localhost'), page, app, folder, ...found, rest: ['sessions'] });
+  return handleDesign({ req: first, res, url: new URL(sessionsUrl, 'http://localhost'), page, app, folder, design, dir: design.dir, rest: ['sessions'] });
 }
 
 async function startGroupBuild({ req, res, page, app, folder, designId, groupKey }) {
@@ -1038,6 +1031,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // where finishing happens, are the folder's.
   const parentId = folder.branch?.parentId ?? folder.id;
   const entry = folder.branch?.design === design.id ? folder.branch : null;
+  // A conversation about the project with no branch yet (prelude/fix-something):
+  // kept on this computer (asked.js), and its agent only reads (R-h7w).
+  // `starting` is Ask or fix, the page that starts one.
+  const kept = Boolean(design.kept);
+  const starting = kept && design.slug === 'new';
+  // A sent image's file, from the path its transcript keeps.
+  const fileOf = file => sentFile(folder, design, dir, file);
 
   // --- the design page's model (prelude/design-workspace; server/workspace.js)
 
@@ -1231,6 +1231,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       draft: draftOf(session?.id ?? null),
       surface: surfaceModel,
       stage: surfaceModel.stage,   // where the design stands, for the header (10.9)
+      // What's wrong in the project, for a fix's starting points (prelude/fix-something).
+      ...(design.kind === 'fix' ? { troubles: troublesOf(app, app.folders.get(parentId)) } : {}),
       ...extra,
     };
   };
@@ -1576,7 +1578,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (req.method === 'POST' && rest[0] === 'queued' && rest[2] === 'cancel' && rest.length === 3) {
     await readForm(req);
     const gone = turns.cancel(folder, design, rest[1]);
-    for (const image of gone?.images ?? []) rmSync(join(folder.path, ...image.file.split('/')), { force: true });
+    for (const image of gone?.images ?? []) rmSync(fileOf(image.file), { force: true });
     const sessionId = gone?.sessionId ?? sessionOnShow()?.id ?? null;
     if (gone) live.publish(sessionKey(folder, design, gone.sessionId), statusMessage(turns.state(folder, design, gone.sessionId)));
     return sendView(200, '_queued', { ...basics(), queued: queuedOf(sessionId) });
@@ -1633,17 +1635,42 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         : null,
       // What an update from main brought in, told once; or, while one clashed
       // and isn't resolved yet, the files to resolve, told with every message.
-      preface: entry ? (() => {
+      preface: [carriedOver(session), entry ? (() => {
         const merging = (() => { try { return app.branches.merging(entry); } catch { return null; } })();
         if (merging?.unresolved.length) {
           return `(From Prelude, not the person: ${merging.from} is half brought into this branch, and these files clash: ${merging.unresolved.join(', ')}. Each holds both versions between git's conflict markers (<<<<<<< this branch, ======= then ${merging.from}, >>>>>>>). Resolve every one before anything else: keep what ${merging.from} has, put this branch's change on top of it, drop anything ${merging.from} already does, and remove every marker. Prelude commits the merge after your turn once no marker is left.)`;
         }
         const files = app.branches.takeCameIn(entry);
         return files ? `(From Prelude, not the person: the main branch was brought into this branch, and these files came in: ${files.slice(0, 30).join(', ')}${files.length > 30 ? ', …' : ''}. Take them into account.)` : null;
-      })() : null,
+      })() : null].filter(Boolean).join('\n\n') || null,
       afterTurn: entry ? ({ message, check }) => afterBranchTurn(session, message, check) : null,
       ...buildContext(session, references),
       ...fixContext(references),
+      ...askContext(references),
+    };
+  };
+
+  // A session that began as a conversation with no branch, and moved onto
+  // the fix's branch (R-x8d): the agent starts afresh there, so its first
+  // message says where what was said before is.
+  const carriedOver = session => (session?.carried && !session.started
+    ? `(From Prelude, not the person: this conversation began before it had a branch, when you could only read. It's now fixed on ${entry?.branch ?? 'its branch'}, and you can change the project. Read what was said so far first: ${PRELUDE_DIR}/${design.id}/sessions/${session.id}/transcript.jsonl.)`
+    : null);
+
+  // A conversation with no branch yet (prelude/fix-something): the agent only
+  // reads (R-h7w), and may read the conversation's own folder, where the
+  // person's images are kept. Nothing is committed: there's no branch.
+  const askContext = references => {
+    if (!kept) return {};
+    const config = readHostConfig(folder.path);
+    const project = appOf(folder.path);
+    const reading = [...references, { name: 'This conversation', path: dir }];
+    return {
+      mode: 'ask',
+      shared: [],
+      references: reading,
+      check: null,
+      systemPrompt: askPrompt({ designs: listDesigns(folder.path), app: project, references: reading, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaPackage }),
     };
   };
 
@@ -2077,9 +2104,80 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return designPage(status, pageModel({ session, showing: true, extra: extraModel }), { session });
   };
 
+  // A fix's page is at its own address (prelude/fix-something): its latest
+  // session, or Ask or fix's new one. A design's goes to its latest session's.
   if (section === undefined && req.method === 'GET') {
-    const latest = listSessions(dir)[0];
-    return latest ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
+    const latest = starting ? null : listSessions(dir)[0];
+    if (latest && design.kind !== 'fix') return redirect(res, `${base}/sessions/${latest.id}`);
+    if (latest) {
+      app.seen.mark(sessionKey(folder, design, latest.id));
+      tell(app, { needs: true });
+    }
+    return sessionPage(200, latest ?? null);
+  }
+
+  // A conversation about the project (prelude/fix-something): Rename it, on a
+  // branch or not, and Fix it on a branch while it has none. Each asks in the
+  // modal; refused, only the fields come back, or the page with them on a cold load.
+  if (design.kind === 'fix' && !starting && ['rename', 'branch'].includes(section) && sessionId === undefined) {
+    const fieldsView = section === 'rename' ? '_rename-fields' : '_fix-branch-fields';
+    if (section === 'branch' && !kept) return redirect(res, base);
+    const ask = (status, fields = null) => {
+      const html = render(`./_${section === 'rename' ? 'rename' : 'fix-branch'}`, { ...pageModel(), ...(fields ? { $fields: fields } : {}) });
+      if (fragment) return send(res, status, html);
+      const latest = listSessions(dir)[0] ?? null;
+      designs.showSession(dKey, latest?.id ?? 'new');
+      return designPage(status, pageModel({ session: latest, showing: true }), { session: latest, regions: { modal: { html, location: url.pathname } }, path: base });
+    };
+    if (req.method === 'GET') return ask(200);
+    if (req.method !== 'POST') return notFound();
+    const form = await readForm(req);
+    const title = String(form.get('title') ?? '').trim();
+    const refuse = (status, error) => {
+      const fields = { title: String(form.get('title') ?? ''), branch: branchOf()?.branch, $errors: { title: error } };
+      return fragment ? sendView(status, fieldsView, fields) : ask(status, fields);
+    };
+    if (!title) return refuse(422, 'This is required.');
+
+    // Renamed: the person's name from now on (R-m5c). On a branch, the branch
+    // keeps its name (R-j3v): only the fix's title changes.
+    if (section === 'rename') {
+      if (kept) app.asked.rename(folder, design.slug, title);
+      else {
+        const file = join(dir, 'fix.json');
+        let meta = {};
+        try { meta = JSON.parse(readFileSync(file, 'utf8')) ?? {}; } catch { /* a fix.json is remade */ }
+        writeFileSync(file, JSON.stringify({ ...meta, title, named: true }, null, 2) + '\n');
+        if (entry && !turns.busy(folder, design)) {
+          try { app.branches.commit(entry, `${title}: renamed (committed by Prelude)`); } catch (error) { console.error(error); }
+        }
+      }
+      tell(app, { projects: true });
+      return redirect(res, base);
+    }
+
+    // Fix it on a branch (R-x8d): the branch is named after the fix's name,
+    // made from main in a worktree of its own (a folder that isn't a
+    // repository becomes one). The conversation moves onto it, sessions,
+    // drafts and all, and leaves Asked lately for In progress.
+    if (turns.busy(folder, design)) return refuse(409, 'The agent is still answering. Wait for it to finish, or stop it, first.');
+    const taken = new Set([
+      ...listFixes(folder.path).map(fix => fix.slug),
+      ...app.branches.of(folder.id).filter(other => other.design.startsWith('fixes/')).map(other => other.design.slice(6)),
+      ...app.asked.list(folder).filter(other => other.slug !== design.slug).map(other => other.slug),
+    ]);
+    const slug = fixSlug(title, taken);
+    if (!slug) return refuse(422, 'The name needs at least one letter or digit.');
+    const made = app.branches.ensure({ folder, designId: `fixes/${slug}`, title });
+    if (made.error) return refuse(409, made.error);
+    const worktree = app.folders.get(made.entry.id);
+    const moved = app.asked.moveOnto(folder, design.slug, made.entry.path, { title, slug });
+    app.drafts.move(folder, design, worktree, moved.fix);
+    const newest = listSessions(moved.dir)[0];
+    if (newest) appendEntry(moved.dir, newest.id, { type: 'note', text: `Fixing this on ${made.entry.branch}, made from ${mainOf(folder)}. The agent can change the project there now; each turn is committed to the branch.` });
+    app.branches.commit(made.entry, `${title}: a fix, from a conversation about the project (committed by Prelude)`);
+    tell(app, { needs: true, projects: true });
+    return redirect(res, `/f/${worktree.id}/d/${moved.fix.id}`);
   }
 
   if (section !== 'sessions') return notFound();
@@ -2119,9 +2217,31 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   /** What the agent is told: the words, where the images are, and what the person was looking at. */
   const promptOf = (text, images, lookingAt) => [
     text,
-    images.length ? `(The person attached ${images.length === 1 ? 'an image' : `${images.length} images`} to this message. Read ${images.length === 1 ? 'it' : 'them'}: ${images.map(image => image.file).join(', ')}.)` : null,
+    images.length ? `(The person attached ${images.length === 1 ? 'an image' : `${images.length} images`} to this message. Read ${images.length === 1 ? 'it' : 'them'}: ${images.map(image => (kept ? fileOf(image.file) : image.file)).join(', ')}.)` : null,
     lookingAt?.said ?? null,
   ].filter(Boolean).join('\n\n');
+
+  // Ask or fix's first message (prelude/fix-something): the conversation is
+  // made on this computer (R-2qz), named from the message's first words
+  // (R-m5c), and its first session starts there, with what was in the box.
+  if (starting && sessionId === undefined && req.method === 'POST') {
+    const form = await readForm(req);
+    const said = messageOf(form, null);
+    if (!said.text && !said.ids.length) {
+      return sessionPageComposer(422, null, { message: '', $errors: { message: 'This is required.' } });
+    }
+    const taken = new Set([
+      ...listFixes(folder.path).map(fix => fix.slug),
+      ...app.branches.of(folder.id).filter(other => other.design.startsWith('fixes/')).map(other => other.design.slice(6)),
+    ]);
+    const made = app.asked.create(folder, { title: said.text ? titleFrom(said.text) : 'Images', taken });
+    if (made.error) return sessionPageComposer(422, null, { message: said.text, $errors: { message: made.error } });
+    app.drafts.move(folder, design, folder, made.fix);
+    tell(app, { projects: true });
+    const fields = [...form.entries()].filter(([, value]) => typeof value === 'string');
+    return startConversation({ req, res, page, app, folder, design: made.fix, fields });
+  }
+  if (starting && sessionId !== 'new') return notFound();
 
   // The first message starts a session. Words, images, or both (R-b6d).
   if (sessionId === undefined && req.method === 'POST') {
@@ -2134,7 +2254,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const images = app.drafts.send(folder, design, dir, null, session.id, said.ids);
     const started = startTurn(session, [{ text: said.text, images, lookingAt: said.lookingAt?.words ?? null, prompt: promptOf(said.text, images, said.lookingAt) }]);
     if (started.error) return refuse(409, started.error);
-    return redirect(res, `${base}/sessions/${session.id}`);
+    // A fix's page is its own address, showing its latest session (prelude/fix-something).
+    return redirect(res, design.kind === 'fix' ? base : `${base}/sessions/${session.id}`);
   }
 
   /** The message box, answering a form: refused, or afresh. */
@@ -2172,7 +2293,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     }
     const started = startTurn(session, [item]);
     if (started.error) {
-      app.drafts.restore(folder, design, session.id, { message: said.text, images: images.map(image => ({ id: image.id, name: image.name, path: join(folder.path, ...image.file.split('/')) })) });
+      app.drafts.restore(folder, design, session.id, { message: said.text, images: images.map(image => ({ id: image.id, name: image.name, path: fileOf(image.file) })) });
       return sessionPageComposer(409, session, { $errors: { message: started.error } });
     }
     // The transcript afresh: the message is in it, and the starting points
@@ -2190,7 +2311,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (waiting.length) {
       const draft = app.drafts.restore(folder, design, session.id, {
         message: waiting.map(item => item.text).filter(Boolean).join('\n\n'),
-        images: waiting.flatMap(item => item.images.map(image => ({ id: image.id, name: image.name, path: join(folder.path, ...image.file.split('/')) }))),
+        images: waiting.flatMap(item => item.images.map(image => ({ id: image.id, name: image.name, path: fileOf(image.file) }))),
       });
       live.publish(sessionKey(folder, design, session.id), [
         envelope('queued').trim(),

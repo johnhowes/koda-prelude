@@ -13,7 +13,7 @@
 //     <id>.<ext>     each image, as uploaded
 
 import { randomBytes } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { PRELUDE_DIR } from './designs.js';
@@ -35,6 +35,16 @@ export function imageType(bytes) {
 const newImageId = () => `img-${[...randomBytes(4)].map(byte => 'abcdefghijklmnopqrstuvwxyz0123456789'[byte % 36]).join('')}`;
 const isImageId = id => /^img-[a-z0-9]{4,12}$/.test(String(id));
 const safeName = name => String(name).replace(/[\\/:*?"<>|\x00-\x1f]+/g, '-').trim().slice(0, 120) || 'image';
+
+/**
+ * Where a sent image is, from the path the transcript keeps
+ * (prelude/<design>/sessions/…): under the design's own folder, which for a
+ * conversation kept on this computer isn't in the project (prelude/fix-something).
+ */
+export function sentFile(folder, design, designDir, file) {
+  const prefix = `${PRELUDE_DIR}/${design.id}/`;
+  return file.startsWith(prefix) ? join(designDir, ...file.slice(prefix.length).split('/')) : join(folder.path, ...file.split('/'));
+}
 
 /** A session's key in the drafts: its id, or "new" before it starts. */
 export const draftKey = sessionId => (sessionId && isSessionId(sessionId) ? sessionId : 'new');
@@ -150,6 +160,18 @@ export function createDrafts({ home }) {
       return write(folder, design, sessionId, { message: [typed, message].filter(Boolean).join('\n\n'), attachments });
     },
 
+    /**
+     * Move a design's drafts to another design or folder: a conversation
+     * started from the new one's page, or fixed on its branch (prelude/fix-something).
+     */
+    move(fromFolder, fromDesign, toFolder, toDesign) {
+      const from = join(home, 'drafts', fromFolder.id, fromDesign.id.split('/').join('~'));
+      const to = join(home, 'drafts', toFolder.id, toDesign.id.split('/').join('~'));
+      if (!existsSync(from) || existsSync(to)) return;
+      mkdirSync(join(home, 'drafts', toFolder.id), { recursive: true });
+      renameSync(from, to);
+    },
+
     /** An image's file in a draft, for queuing: { id, name, path }. */
     pathOf(folder, design, sessionId, imageId) {
       const attachment = read(folder, design, sessionId).attachments.find(a => a.id === imageId);
@@ -174,7 +196,7 @@ export function createDrafts({ home }) {
         const entry = readEntries(designDir, session.id).find(e => e.type === 'user' && e.images?.some(image => image.id === imageId));
         const image = entry?.images.find(candidate => candidate.id === imageId);
         if (!image) continue;
-        const path = join(folder.path, ...image.file.split('/'));
+        const path = sentFile(folder, design, designDir, image.file);
         let type = null;
         try { type = imageType(readFileSync(path).subarray(0, 16)); } catch { continue; }
         return { id: imageId, name: image.name, type, path, sent: entry.at, draft: null };

@@ -24,7 +24,8 @@ import { presentEntry as presentWords } from './views.js';
  * @property {string} id
  * @property {string} title
  * @property {string|null} area
- * @property {'design'|'system'|'shell'} kind
+ * @property {'design'|'system'|'shell'|'fix'} kind
+ * @property {Trouble[]} [troubles]  a fix's: what's wrong in the project, to start from (prelude/fix-something)
  * @property {{ id: string, name: string, parentId?: string }} folder
  * @property {{ id: string, title: string }|null} system
  * @property {{ id: string, title: string }|null} shell
@@ -63,6 +64,8 @@ import { presentEntry as presentWords } from './views.js';
  * @property {string|null} error
  *
  * @typedef {{ id: string, title: string, started: string, build?: boolean, lastLine?: string }} SessionItem
+ *
+ * @typedef {{ icon: string, title: string, says: string }} Trouble
  *
  * @typedef {object} TurnState
  * @property {'idle'|'working'|'checking'|'stopping'|'busy'} kind

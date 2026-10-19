@@ -11,7 +11,8 @@
      The chip at its foot says what the person is looking at - the page and
      state on show, and the size beside the chat when it isn't Fit - and
      posts it with the message, so "this" means something to the agent. It's
-     on unless they turn it off, for a message about something else.
+     on unless they turn it off, for a message about something else. A
+     conversation about the project (a fix) has no page on show, so no chip.
 
      The microphone dictates: what's said is typed into the box, transcribed
      on this computer (_dictation.eta).
@@ -27,12 +28,14 @@
    const action = it.session ? `${design}/sessions/${it.session.id}/${working ? 'queue' : 'messages'}` : `${design}/sessions`;
    const inSession = /\/(messages|queue)$/.test(action); const waits = action.endsWith('/queue'); const error = it.$errors?.message;
    const base = action.replace(/\/sessions(\/[^/]+\/(messages|queue))?$/, '');
-   const draft = it.draft ?? { base, attachments: [] }; %>
+   const draft = it.draft ?? { base, attachments: [] };
+   const fix = it.kind === 'fix';
+   const placeholder = fix ? 'Ask about the project, or say what’s wrong and where; paste a screenshot of it.' : undefined; %>
 <form class="composer" action="<%= action %>" method="post" ko-item
       <% if (inSession) { %>id="composer" ko-region ko-target="self" ko-attach="replace"<% } %>>
   <%/* An id, not a name: marking up an image, in the modal, sends its copy here. */%>
   <ul class="attachments" id="attachments" ko-source="<%= draft.base %>/draft" ko-invoke="event:draft-changed" aria-label="Images to send"><%~ include('./_attachments', draft) %></ul>
-  <div id="message-box" ko-region><%~ include('./_message-box', { message: it.message ?? draft.message, $errors: it.$errors }) %></div>
+  <div id="message-box" ko-region><%~ include('./_message-box', { message: it.message ?? draft.message, $errors: it.$errors, placeholder }) %></div>
   <%/* The draft: what's typed is kept with the session as it's written (a
        moment after the person stops typing), so it's still here after a
        reload, or after looking at another session and coming back. Its own
@@ -45,7 +48,7 @@
     <div class="composer-tools">
       <%/* On by default; turning it off posts "false", so the agent isn't
            told. The words follow the design (event:design-changed). */%>
-      <% if (!it.surface || it.surface.screens.length) { %>
+      <% if (!fix && (!it.surface || it.surface.screens.length)) { %>
       <input type="hidden" name="lookingAt.include" value="false">
       <label class="chip" title="Tells the agent which page you mean. Turn it off for a message about something else.">
         <input type="checkbox" name="lookingAt.include" value="true" <%= it.lookingAt?.include === 'false' ? '' : 'checked' %>>
