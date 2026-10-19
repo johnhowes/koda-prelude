@@ -38,6 +38,7 @@
 - **R-h4u.** Changing the speech model keeps dictation working with the old one until the new one has downloaded, then removes the old one.
 - **R-e9t.** A session’s starting points are only what Prelude already knows needs doing on the design, most pressing first, and they go once its first message is sent.
   *shown-on: /f/:folder/d/:design @ new-session*
+- **R-o4s.** Opening a design shows its latest session only while the agent is working there or a turn has ended there that the person hasn't seen; otherwise it shows a new session, with its starting points.
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.
   *shown-on: /f/:folder/d/:design @ pages-differ*
