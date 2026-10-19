@@ -15,5 +15,4 @@
   *shown-on: /f/:project/d/fixes/:fix/rename*
   *proposed*
 - **R-k9p.** Ask or fix is offered on every project, including one with no designs yet.
-  *shown-on: /f/:project @ 02-new-project*
-  *proposed*
+  *shown-on: /f/:project @ new-project*

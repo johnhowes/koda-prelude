@@ -13,7 +13,8 @@ import { createDesign, findDesign, listDesigns } from '../server/designs.js';
 import { createFix, findFix, listFixes } from '../server/fixes.js';
 import { canonical, folderId } from '../server/folders.js';
 import { createServer } from '../server/main.js';
-import { readEntries } from '../server/sessions.js';
+import { appendEntry, createSession, readEntries } from '../server/sessions.js';
+import { createAsked } from '../server/asked.js';
 import { approve } from './approve.js';
 import { createFakeRunner } from './fake-runner.js';
 
@@ -85,6 +86,33 @@ test('a fix is a folder in prelude/fixes/, found as a design of kind fix but not
   assert.deepEqual(listDesigns(folder), [], 'a fix isn’t a design');
 });
 
+test('Asked lately: a conversation with no branch is kept on this computer, listed on the project page, and moves onto its branch whole', async () => {
+  const asked = createAsked({ home });
+  const folder = { id: fid, path: repo };
+  const { fix, dir } = asked.create(folder, { title: 'Which designs show borrowers?' });
+  assert.equal(fix.id, 'fixes/which-designs-show-borrowers');
+  assert.ok(!existsSync(join(repo, 'prelude', 'fixes', fix.slug)), 'not in the project (R-2qz)');
+  const session = createSession(dir, { title: fix.title });
+  appendEntry(dir, session.id, { type: 'user', message: 'Which designs show borrowers?' });
+  appendEntry(dir, session.id, { type: 'text', text: 'Only Borrowers. Shall I look at Reports too?' });
+  appendEntry(dir, session.id, { type: 'turn', ok: true });
+
+  const page = await (await get(`/f/${fid}`)).text();
+  assert.match(page, /Asked lately/);
+  assert.ok(page.includes(`href="/f/${fid}/d/fixes/which-designs-show-borrowers"`), 'it opens the conversation');
+  assert.match(page, /Which designs show borrowers\?<span class="pill accent">Asking you<\/span>/);
+  assert.match(page, /Shall I look at Reports too\?/);
+
+  // Fixed on a branch, its sessions go with it, and it's no longer asked (R-x8d).
+  const worktree = mkdtempSync(join(tmpdir(), 'prelude-asked-'));
+  const moved = asked.moveOnto(folder, fix.slug, worktree, { title: 'Borrowers on every design' });
+  assert.equal(JSON.parse(readFileSync(join(moved.dir, 'fix.json'), 'utf8')).title, 'Borrowers on every design');
+  assert.equal(readEntries(moved.dir, session.id).length, 3);
+  assert.equal(findFix(worktree, ['fixes', fix.slug]).design.id, fix.id);
+  assert.deepEqual(asked.list(folder), []);
+  assert.doesNotMatch(await (await get(`/f/${fid}/work`)).text(), /Asked lately/, 'nothing to list, no card');
+});
+
 test('a fix’s agent may write the app and every design, but no one’s sessions, approved screens or .git', () => {
   const args = permissionArgs('prelude/fixes/rows', [], 'fix');
   const allowed = args[args.indexOf('--allowedTools') + 1];
@@ -102,7 +130,7 @@ test('a fix’s agent may write the app and every design, but no one’s session
 
 test('Fix something: a fix on its own branch, its agent, a check across the designs it touched, and merged from the project page', async () => {
   const page = await (await get(`/f/${fid}`)).text();
-  assert.ok(page.includes(`href="/f/${fid}/fixes/new" ko-target="modal?"`), 'Fix something, on the project page');
+  assert.ok(page.includes(`href="/f/${fid}/d/fixes/new" title=`), 'Ask or fix, on the project page, as a page of its own');
   const ask = await get(`/f/${fid}/fixes/new`);
   assert.equal(ask.status, 200);
   assert.match(await ask.text(), /Fix something/);

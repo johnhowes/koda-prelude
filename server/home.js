@@ -111,9 +111,9 @@ const latest = times => times.filter(Boolean).reduce((a, b) => (b > a ? b : a), 
 const mtime = path => { try { return statSync(path).mtime.toISOString(); } catch { return null; } };
 
 // The agent's words as one plain line, and a sentence of them, cut short.
-const plain = text => String(text ?? '').replace(/```[\s\S]*?```/g, ' ').replace(/[*_`#>]+/g, '').replace(/\s+/g, ' ').trim();
-const sentences = text => text.split(/(?<=[.!?])\s+/).filter(Boolean);
-const clip = (text, length) => (text.length <= length ? text : `${text.slice(0, length - 1).replace(/\s+\S*$/, '')}…`);
+export const plain = text => String(text ?? '').replace(/```[\s\S]*?```/g, ' ').replace(/[*_`#>]+/g, '').replace(/\s+/g, ' ').trim();
+export const sentences = text => text.split(/(?<=[.!?])\s+/).filter(Boolean);
+export const clip =(text, length) => (text.length <= length ? text : `${text.slice(0, length - 1).replace(/\s+\S*$/, '')}…`);
 
 /**
  * A project's designs, each where it's worked on: its branch's worktree if it

@@ -1,8 +1,14 @@
 <%/* The project's work: what needs the person here (Home's list, for this
-     project alone), and the designs in progress on their branches. It's a
-     region of its own, so the page reloads it whenever something changes;
-     the designs list is another, which reloads only when designs do. */%>
-<% const p = it, needs = [...(p.needs ?? [])].reverse(), inProgress = p.inProgress ?? [];
+     project alone), the designs and fixes in progress on their branches,
+     and what the person has asked lately. It's a region of its own, so the
+     page reloads it whenever something changes; the designs list is
+     another, which reloads only when designs do.
+
+     Asked lately is the conversations about the project that have no
+     branch: questions, and problems not yet fixed. They're kept on this
+     computer, not in the project (R-2qz). Fixed on a branch, one moves to In
+     progress (R-x8d). Newest first, as the app gives them. */%>
+<% const p = it, needs = [...(p.needs ?? [])].reverse(), inProgress = p.inProgress ?? [], asked = p.asked ?? [];
    const kinds = {
      question: { label: 'Asking you', icon: 'question', tone: 'accent' },
      stopped: { label: 'Build stopped', icon: 'code', tone: 'warn' },
@@ -69,5 +75,26 @@
     </script>
   </details>
   <% } %>
+</section>
+<% } %>
+
+<% if (asked.length) { %>
+<section class="card" aria-labelledby="asked-title">
+  <h2 id="asked-title">Asked lately</h2>
+  <ul class="list">
+    <% for (const question of asked) { %>
+    <li>
+      <a class="item" href="<%= question.url %>">
+        <span class="icon icon-agent" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= question.title %><% if (question.state === 'working') { %><span class="pill accent"><span class="pulse" aria-hidden="true"></span>Working</span><% } else if (question.state === 'asking') { %><span class="pill accent">Asking you</span><% } %></span>
+          <% if (question.says) { %><span class="secondary"><%= question.says %></span><% } %>
+          <span class="muted"><%= question.when %></span>
+        </span>
+      </a>
+    </li>
+    <% } %>
+  </ul>
+  <p class="muted">Kept on this computer, not in the project. Nothing in them changes the project until it’s fixed on a branch.</p>
 </section>
 <% } %>

@@ -30,6 +30,7 @@ import { createDesignState, designChannel } from './design-state.js';
 import { capture } from './capture.js';
 import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
 import { createDrafts, draftKey } from './drafts.js';
+import { createAsked } from './asked.js';
 import { APP_CHANNEL, APP_LIVE, createSeen, homeOf, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
@@ -115,6 +116,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     designs: createDesignState({ live }),
     channels: createChannels(),   // server events' live channels, per design (6e)
     drafts: createDrafts({ home }),          // each session's unsent message
+    asked: createAsked({ home }),            // conversations about a project with no branch yet, on this machine (R-2qz)
     dictation: createDictation({ home, live }),   // the speech model, on this machine
     stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
   };
@@ -302,7 +304,7 @@ async function handle(req, res, app) {
 
     // A project's page (prelude/project-landing-page), on the design system:
     //   GET  /f/<id>                           the page; ?q= and ?stage= filter its designs
-    //   GET  /f/<id>/work                      Needs you and In progress, a region
+    //   GET  /f/<id>/work                      Needs you, In progress and Asked lately, a region
     //   GET  /f/<id>/designs                   the designs, as ?q= and ?stage= leave them, a region
     //   GET  /f/<id>/app                       the app, a region
     //   GET  /f/<id>/designs/new               New design, in the modal over the page

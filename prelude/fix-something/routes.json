@@ -1,6 +1,6 @@
 {
-  "/f/:project": { "view": "projects/page", "from": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
-  "/f/:project/work": { "view": "projects/_work", "from": "@app/server/views/projects/_work", "data": "projects/:project" },
+  "/f/:project": { "view": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
+  "/f/:project/work": { "view": "@app/server/views/projects/_work", "data": "projects/:project" },
   "/f/:project/designs": { "view": "@app/server/views/projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/app": { "view": "@app/server/views/projects/_app", "data": "projects/:project" },
   "/f/:project/designs/new": { "view": "@app/server/views/projects/_new-design", "title": "New design", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
@@ -10,33 +10,33 @@
     "add": "projects/:project/designs",
     "require": ["title"],
     "form": "@app/server/views/projects/_new-design-fields",
-    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "projects/page", "data": "projects/:project" }] }
+    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "@app/server/views/projects/page", "data": "projects/:project" }] }
   },
   "POST /f/:project/branches/:branch/publish": {
     "update": "projects/:project/inProgress/:branch",
     "answer": {
       "into": "modal?",
       "also": [
-        { "into": "main", "view": "projects/page", "data": "projects/:project" },
+        { "into": "main", "view": "@app/server/views/projects/page", "data": "projects/:project" },
         { "into": "notice?", "view": "@app/server/views/projects/_pushed", "data": "projects/:project/inProgress/:branch" }
       ]
     }
   },
   "POST /f/:project/branches/:branch/update": {
     "update": "projects/:project/inProgress/:branch",
-    "answer": { "view": "projects/_work", "data": "projects/:project" }
+    "answer": { "view": "@app/server/views/projects/_work", "data": "projects/:project" }
   },
   "POST /f/:project/branches/:branch/abandon": {
     "update": "projects/:project/inProgress/:branch",
-    "answer": { "view": "projects/_work", "data": "projects/:project" }
+    "answer": { "view": "@app/server/views/projects/_work", "data": "projects/:project" }
   },
   "POST /f/:project/branches/:branch/merge": {
     "remove": "projects/:project/inProgress/:branch",
-    "answer": { "view": "projects/_work", "data": "projects/:project" }
+    "answer": { "view": "@app/server/views/projects/_work", "data": "projects/:project" }
   },
   "POST /f/:project/branches/:branch/start": {
     "update": "projects/:project/inProgress/:branch",
-    "answer": { "view": "projects/_work", "data": "projects/:project" }
+    "answer": { "view": "@app/server/views/projects/_work", "data": "projects/:project" }
   },
   "POST /f/:project/app/build": {
     "update": "projects/:project/app",

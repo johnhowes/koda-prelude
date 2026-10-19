@@ -67,6 +67,34 @@ its first session (`POST /f/:id/fixes`).
 - Model: the project gains `asked`, and the fix page gains `troubles`.
 - `_message-box` takes a `placeholder`.
 
+## Built: the project's page (2026-10-19)
+
+- `projects/page` and `projects/_work` are ported over
+  `server/views/projects/page.eta` and `_work.eta`, as designed.
+- The conversations with no branch are kept in
+  `<home>/asked/<project>/<slug>/` (`server/asked.js`): `fix.json` and
+  `sessions/`, laid out like a fix's folder, so they're never in the project
+  (R-2qz). `askedOf` (`server/project.js`) makes the page's `asked` from
+  them, newest first. A conversation is Working while a turn runs, Asking you
+  when its last turn ended on a question (the same test Needs you uses), and
+  answered otherwise. One whose `fixes/<slug>` has a branch is left out, so
+  it's In progress only.
+- `app.asked.moveOnto(folder, slug, worktreePath, { title })` moves a
+  conversation's sessions into `prelude/fixes/<slug>/` on its branch and
+  stops keeping it here. `create` and `rename` are there for the
+  conversation's pages too.
+- Still to build, with the conversation's pages (`/f/:project/d/fixes/…`,
+  not this group): the routes that use the store. `POST …/fixes/new/sessions`
+  calls `create`. `POST …/d/fixes/:fix/branch` makes the branch
+  (`prelude/fix-<slug>`), calls `moveOnto` and commits. The design page's
+  lookup has to find a conversation in the store when it has no branch. The
+  old modal (`_new-fix*.eta`, `GET /fixes/new`, `POST /fixes`) is still in
+  `server/main.js` until then, but nothing links to it now. So R-x8d and
+  R-2qz stay proposed: what this page shows of them is true, but no route
+  makes, or branches, a conversation yet.
+- Until then, the Ask or fix… links on this page go to
+  `/f/:project/d/fixes/new`, which the app doesn't answer yet.
+
 ## Open questions
 
 - How long does a question stay in Asked lately: a number of them, or 30
