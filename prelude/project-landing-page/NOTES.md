@@ -152,6 +152,14 @@ page"; built only once the app exists). "Nothing designed yet" stays for none.
   `components` (its `system/components/*.html`) and a shell `layouts` (its
   layouts) and `layoutsBuilt` (those ported: `unbuiltLayouts` says which).
 
+Built (2026-10-19): `_designs` is ported over the app's; `page` was already
+the app's, unchanged. `progressOf()` counts as above, with `layoutsBuilt` 0
+until the app exists (nothing is ported before it). The `stage` follows the
+states too, so the filter agrees with the line: a system with components is
+`built` once the app exists and `approved` before, and `designing` with none;
+a shell is `built` when its layouts and own pages all are. The story and the
+design agree.
+
 ## Open questions
 
 - **New design has nowhere to say why the kind was refused**: designs here

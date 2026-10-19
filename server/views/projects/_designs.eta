@@ -1,18 +1,34 @@
 <%/* The project's designs that aren't on a branch, by area (those with none,
      the design system and the app shell, first), as the search and the
      filter leave them: the route filters, by ?q= (title or area) and
-     ?stage=. Each says how far it's got and when it last changed. `stage` is
-     prepared by the app: ready (approved pages not yet built, once the app
-     exists), designing (pages still to approve), approved, or built. */%>
+     ?stage=. Each says how far it's got and when it last changed: a feature
+     by its pages, the design system by its components, and the app shell by
+     its layouts (its gallery isn't pages) and any pages of its own, built
+     once the app exists. `stage` is prepared by the app: ready (approved
+     pages not yet built, once the app exists), designing (pages still to
+     approve), approved, or built. */%>
 <% const p = it, designs = p.designs ?? [], merged = p.merged ?? [];
    const q = it.$query?.q ?? '', stage = it.$query?.stage ?? '', filtered = Boolean(q || stage);
+   const appBuilt = p.app?.status === 'built';
    const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
    const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
    const areas = [...new Set(designs.map(design => design.area ?? ''))].sort((a, b) => (a !== '') - (b !== ''));
+   const counted = (n, one, many) => `${n} ${n === 1 ? one : many}`;
    const progress = design => {
+     if (design.kind === 'system') {
+       const components = design.components ?? 0;
+       return components ? `tokens and ${counted(components, 'component', 'components')}` : 'nothing designed yet';
+     }
+     if (design.kind === 'shell') {
+       const layouts = design.layouts ?? 0, pages = design.pages ?? 0;
+       const total = layouts + pages, built = (design.layoutsBuilt ?? 0) + (design.built ?? 0);
+       if (!total) return 'nothing designed yet';
+       const count = [layouts && counted(layouts, 'layout', 'layouts'), pages && counted(pages, 'page', 'pages')].filter(Boolean).join(' and ');
+       return !appBuilt ? count : built === total ? `${count}, all built` : built ? `${count}, ${built} built` : `${count}, none built yet`;
+     }
      const pages = design.pages ?? 0, approved = design.approved ?? 0, built = design.built ?? 0;
      if (!pages) return 'nothing designed yet';
-     const count = `${pages} ${pages === 1 ? 'page' : 'pages'}`;
+     const count = counted(pages, 'page', 'pages');
      if (built === pages) return `${count}, all built`;
      if (built) return `${count}, ${built} built`;
      if (approved === pages) return `${count}, all approved`;
