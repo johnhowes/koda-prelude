@@ -34,7 +34,7 @@
   .workspace:has(> .design.popped) > .chat { flex: 1; }
 
   /* Show: Agent, Tools. Unchecking one hides those entries. */
-  .chat:has(.show-agent:not(:checked)) .entry.agent,
+  /* Tools: the agent's tool calls show only while it's on. */
   .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
   .show-page { display: inline; }
 

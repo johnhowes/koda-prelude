@@ -42,3 +42,6 @@
 - **R-4tw.** Choosing a client changes only what the page itself shows for that client; Prelude doesn’t run the client, so Pop out and links behave as they do in a browser.
 - **R-pk8.** Showing a page the check named shows it in the state the check named it in.
   *shown-on: /f/:folder/d/:design @ pages-differ*
+- **R-t7w.** The agent's tool calls are hidden in the chat until the person turns Tools on; that choice is remembered on their computer, for every design and session.
+  *shown-on: /f/:folder/d/:design @ typical*
+  *proposed*

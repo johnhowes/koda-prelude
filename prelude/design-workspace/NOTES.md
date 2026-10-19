@@ -185,6 +185,15 @@ the record picker, was dropped).
   from a sketch or a screenshot". All from what Prelude already has (the
   check, NOTES.md, RULES.md, the last session's last line), none written by
   the agent. State `08-new-session` shows it; `05-new-design` the first.
+- **The chat's toolbar is quieter** (the person, 2026-10-19). Agent's
+  messages always show (no checkbox); tool calls only with Tools on, off
+  by default, remembered in the browser (`ko-persist`, local storage):
+  a preference of the person's, not the design's (R-t7w). New session
+  left the toolbar for the top of the sessions menu: rarely wanted, since
+  opening a design starts one when the last is finished. To design it,
+  `_session.eta` came back into the design (`"from"` on its route) with
+  every partial it includes, since includes resolve only in the design's
+  views; only `_chat.eta` changed.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -296,6 +305,9 @@ Where the app differs from the screens, on purpose:
   (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
   and keeping a draft, which lives on this machine, needn't make a branch.
 
+- New session doesn't work in the app (the person, 2026-10-19), though
+  `…/sessions/new` is answered (`server/main.js:2240`). What happens when
+  it's clicked isn't known yet; perhaps the same redirect as above.
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,
