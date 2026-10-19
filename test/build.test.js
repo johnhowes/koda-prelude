@@ -18,6 +18,7 @@ import { createServer } from '../server/main.js';
 import { listSessions, readEntries, readSession } from '../server/sessions.js';
 import { parseRules, ruleWarnings } from '../server/rules.js';
 import { render } from '../server/views.js';
+import { approve } from './approve.js';
 import { createFakeRunner } from './fake-runner.js';
 
 // Commits made in the test need an author, whatever this machine's git config says.
@@ -118,6 +119,7 @@ test('the design agent is told how to write rules; the system and shell aren’t
   const shell = designPrompt({ title: 'Shell', designPath: 'prelude/shell', format: 'views', kind: 'shell' });
   assert.doesNotMatch(shell, /RULES\.md/);
   assert.match(shell, /The layout's own parts[^.]*are real, rendered from the layout's sample data/);
+  assert.match(shell, /A layout is the document around the page, and in a Koda app a click swaps only the main region, never the document\./, 'pages that share the chrome share a layout');
   assert.match(shell, /What a design will put in a region[^.]*is skeleton content: grey bars and blocks in the shape of a typical page/, 'the gallery shows which part is the layout');
   assert.match(shell, /Keep the gallery's views in prelude\/shell\/views\/gallery\/\. A page the shell itself owns[^.]*\(Settings, say/, 'a shell’s own pages are built; its gallery isn’t');
 });
@@ -150,7 +152,16 @@ test('the Build view lists the groups, each copied as a story, with a build sess
   assert.match(page, /<h2>Borrowers <span class="pill">To build<\/span><\/h2>/);
   assert.match(page, /<h2>Reports <span class="pill">To build<\/span><\/h2>/);
   assert.match(page, /<textarea class="story"[^>]*># Borrowers: Borrowers/);
-  assert.match(page, /Start a build session/, 'a design with no branch yet can start one: starting makes its branch');
+  // A build is checked against the approved screens, so it waits for them (10.9).
+  assert.match(page, /Approve the design before building it\./);
+  assert.doesNotMatch(page, /Start a build session/);
+  const designing = await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text();
+  assert.match(designing, /<p class="stage secondary"><strong>Designing<\/strong> · approve it when it’s what you want built<\/p>/, 'the header says where the design stands');
+  assert.match(designing, /When the design is what you want built, approve it/);
+  approve(repo);
+  assert.match(await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text(), /<strong>Approved<\/strong> · ready to build/);
+  const approved = await (await get(`/f/${fid}/d/borrowers/build`)).text();
+  assert.match(approved, /Start a build session/, 'a design with no branch yet can start one: starting makes its branch');
   assert.match(page, /Design-wide rules/);
   const session = await (await get(`/f/${fid}/d/borrowers/sessions/new`)).text();
   assert.match(session, /href="\/f\/[0-9a-f]+\/d\/borrowers\/build"><span class="icon icon-code" aria-hidden="true"><\/span>Build<\/a>/);
@@ -185,6 +196,7 @@ test('a build works on the design’s own branch: a build session, its own instr
   assert.match(turn.systemPrompt, /- R-k3f: Only an underwriter sees/);
   assert.doesNotMatch(turn.systemPrompt, /R-z1x/, 'only proposed rules are to be made true');
   assert.equal(turn.prompt, 'Build Borrowers.');
+  assert.match(await (await get(location)).text(), /<strong>Building Borrowers<\/strong> · checked against the approved design/);
 
   await settled(workDir, sid);
   assert.match(git(worktree, 'log', '-1', '--format=%s'), /^Borrowers: Build Borrowers\.$/);
@@ -257,6 +269,11 @@ test('a build ports the views; the design’s copies go, and the build is done',
   assert.match(git(worktree, 'show', '--stat', '--no-renames', '--format=', 'HEAD'), /app\/views\/borrowers\/list\.eta/);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
   assert.doesNotMatch(view, /Building <strong>/, 'the group is built, so the branch is free for the next');
+  // Built, and the strip says the check matched (10.9), rather than offering approval.
+  const builtPage = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
+  assert.match(builtPage, /<strong>Built<\/strong> · merge into main/);
+  assert.match(builtPage, /<strong>All \d+ pages match<\/strong> the approved design\./);
+  assert.doesNotMatch(builtPage, /Approve these screens/);
   // What's next (10.7): built and checked, so finish the branch; the design window shows the app's views now.
   const next = readEntries(workDir, buildSession.id).filter(e => e.type === 'next').at(-1);
   assert.equal(next.built, true);

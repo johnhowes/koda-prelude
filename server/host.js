@@ -732,9 +732,11 @@ export async function readFormFields(req) {
 /**
  * A posted string, typed like the value it replaces: a number stays a number,
  * a boolean a boolean ("on", "true", "1" are true; a checkbox sends a hidden
- * "false" before it, so an unchecked box still says so).
+ * "false" before it, so an unchecked box still says so). A value that isn't a
+ * string - a server event's fields, written as JSON (6e) - is already typed.
  */
 function typed(value, like) {
+  if (typeof value !== 'string') return value;
   if (typeof like === 'number') return value.trim() === '' || Number.isNaN(Number(value)) ? value : Number(value);
   if (typeof like === 'boolean') return ['on', 'true', '1', 'yes'].includes(value.toLowerCase());
   return value;

@@ -11,8 +11,9 @@ Prelude Design System. Gallery: `/gallery` (with `/drawer`, `/modal`,
 - **app** - the bar, then the page scrolling with the window. Pages hold their
   own width (`.center`); the shell gives the room above and below. Projects, a
   project, Build.
-- **workspace** - the bar, then the page filling the rest of the window; the
-  window doesn't scroll, the page's panels do. A design's page (chat + surface).
+- ~~**workspace**~~ - retired 2026-10-18 (see "One layout for the app's pages"
+  below). A design's page (chat + surface) is in the app layout and fills the
+  window by marking itself `.fills`.
 - **window** - no bar; the page fills the window. The pop-out design surface.
 
 Shared parts in `layouts/` (`_head`, `_bar`, `_agents`, `_regions`), since a layout's
@@ -97,8 +98,26 @@ design host.
 The three layouts are the app's now, named in `layouts.json`:
 
 - **app** → `server/views/layout.eta` (the app's main layout, redesigned).
-- **workspace** → `server/views/workspace-layout.eta` (the design page's,
-  redesigned; it already had most of it).
+- ~~**workspace** → `server/views/workspace-layout.eta`~~ - removed (below).
+
+## One layout for the app's pages (2026-10-18)
+
+Prelude is a Koda app: a click swaps the next page into the main region, and
+nothing outside that region changes. The workspace layout differed from app only
+outside it (its stylesheet, `fill` on the body, the main region's id), so a
+design's page clicked into from Home arrived without them: the preview's frame
+kept a browser's default 300px width and nothing filled the window. Now:
+
+- A design's page is in the **app** layout. Its fragment links its own
+  stylesheet (`/static/workspace.css`) and marks its root `.fills`.
+- The shell fills the window for a page marked `.fills`
+  (`.shell:has(> .shell-main > .fills)`, in `shell.css`), and lets the window
+  scroll again when another page replaces it.
+- `/gallery/workspace` is now "A page that fills the window", in the app layout.
+- A page in a genuinely different document (the pop-out window, and pages still
+  on ds/v1 until they move to the design system) is loaded whole when asked for
+  from another: the server answers with the whole page, which Koda hands to the
+  browser (`layoutOfPath` and `askedFromLayout` in `server/main.js`).
 - **window** → `server/views/window-layout.eta` (new). The pop-out used to be
   `workspace-layout` with `bare: true`; the two pop-out routes in `main.js`
   (`…/preview`, `…/window`) now render `window-layout`, and give their live
