@@ -34,6 +34,9 @@ const FLUSH_MS = 50;
 
 export const designKey = (folder, design) => `${folder.id}/${design.id}`;
 export const sessionKey = (folder, design, sessionId) => `${folder.id}/${design.id}/${sessionId}`;
+// Whether the person has seen a session is the project's, not its branch's: a
+// turn watched on a branch's worktree stays seen once the branch is merged.
+export const seenKey = (folder, design, sessionId) => `${folder.branch?.parentId ?? folder.id}/${design.id}/${sessionId}`;
 
 /**
  * How entries are shown on the pages watching: `present` readies an entry
@@ -68,8 +71,9 @@ export function withFindings(failures, message) {
 }
 
 /**
- * `onChange({ key, finished, watched })` hears each turn start and end: `key`
- * is its session's, and `watched` whether a page showed the session as it ended.
+ * `onChange({ key, seen, finished, watched })` hears each turn start and end:
+ * `key` is its session's, `seen` its seenKey, and `watched` whether a page
+ * showed the session as it ended.
  */
 export function createTurns({ runner, live, onChange = () => {} }) {
   const changed = change => { try { onChange(change); } catch (error) { console.error(error); } };
@@ -163,7 +167,7 @@ export function createTurns({ runner, live, onChange = () => {} }) {
       const session = readSession(designDir, sessionId);
       if (!session) return { error: 'That session no longer exists.' };
 
-      const ctx = { designDir, session, key: sessionKey(folder, design, sessionId), block: null, timer: null, view, step: null, startedAt: new Date().toISOString(), checking: false };
+      const ctx = { designDir, session, key: sessionKey(folder, design, sessionId), seen: seenKey(folder, design, sessionId), block: null, timer: null, view, step: null, startedAt: new Date().toISOString(), checking: false };
       const designPath = `prelude/${design.id}`;
       const pending = new Map();   // tool id -> name, to label its result
       const emptying = new Map();  // tool id -> the file an empty Write names
@@ -234,7 +238,7 @@ ${DELETING}`,
 
       running.set(dKey, { sessionId, stop: turn.stop, stopUrl, ctx });
       publishState();
-      changed({ key: ctx.key, finished: false, watched: false });
+      changed({ key: ctx.key, seen: ctx.seen, finished: false, watched: false });
 
       findings.delete(dKey);
 
@@ -309,7 +313,7 @@ ${DELETING}`,
         }
         running.delete(dKey);
         live.publish(ctx.key, statusMessage({ kind: 'idle' }));
-        changed({ key: ctx.key, finished: true, watched: (live.listening?.(ctx.key) ?? 0) > 0 });
+        changed({ key: ctx.key, seen: ctx.seen, finished: true, watched:(live.listening?.(ctx.key) ?? 0) > 0 });
         if (onIdle) {
           try { onIdle(); } catch (error) { console.error(error); }
         }
