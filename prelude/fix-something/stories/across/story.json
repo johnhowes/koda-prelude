@@ -1,0 +1,8 @@
+{
+  "writtenAt": "2026-10-19T18:50:02.900Z",
+  "fingerprint": "48536d92f52cddfc",
+  "changes": [
+    "New rule R-2qz: A conversation with no branch is kept on this computer only, never in the project's repository."
+  ],
+  "edited": {}
+}

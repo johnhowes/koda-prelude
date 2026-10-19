@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Ask or fix
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/rate-sheet-importer" ko-set="projects.open = false">
+<span class="item-title">
+rate-sheet-importer
+</span>
+<span class="muted">
+C:\Projects\rate-sheet-importer
+</span>
+</a>
+</li>
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/rate-sheet-importer/d/fixes/new" ko-scope="/">
+<link href="/static/workspace.css" rel="stylesheet">
+<div class="stack gap-3 design-page fills">
+<header class="cluster gap-3 design-head">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/rate-sheet-importer">
+rate-sheet-importer
+</a>
+</nav>
+<div class="cluster gap-2">
+<h1>
+Ask or fix
+</h1>
+</div>
+<p class="stage secondary">
+<strong>
+Reading only
+</strong>
+· Ask about this project, or say what’s wrong. The agent reads the designs and the app to answer, and changes nothing until you fix it on a branch.
+</p>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+</div>
+</header>
+<div class="split gap-3 workspace" style="--side: 26rem">
+<section aria-label="Session" class="panel side chat">
+<div class="toolbar">
+<span class="muted">
+A new conversation
+</span>
+<span class="spacer">
+</span>
+<span aria-label="Show" class="cluster gap-3" role="group">
+<label class="choice">
+<input checked class="show-agent" type="checkbox">
+Agent
+</label>
+<label class="choice">
+<input checked class="show-tools" type="checkbox">
+Tools
+</label>
+</span>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="transcript" ko-region>
+<li class="entry starters">
+<div class="stack gap-3">
+<p class="secondary">
+The agent reads the project’s designs, its app and its design system to answer you. Start from one of these, or write your own.
+</p>
+<ul class="list">
+<li class="item">
+<span aria-hidden="true" class="icon icon-question">
+</span>
+<span class="item-text">
+<span>
+Ask how something works
+</span>
+<span class="muted">
+How a page behaves, which designs use something, where a rule is built in the app
+</span>
+</span>
+<form action="/f/rate-sheet-importer/d/fixes/new/start" ko-target="message-box" method="post">
+<input name="message" type="hidden" value="How does ">
+<button aria-label="Start with: Ask how something works" class="btn small ghost" type="submit">
+Start with this
+</button>
+</form>
+</li>
+<li class="item">
+<span aria-hidden="true" class="icon icon-image">
+</span>
+<span class="item-text">
+<span>
+Say what’s wrong, with a screenshot
+</span>
+<span class="muted">
+What you saw, where, and what you expected. Then attach the screenshot, paste it or drop it on the box
+</span>
+</span>
+<form action="/f/rate-sheet-importer/d/fixes/new/start" ko-target="message-box" method="post">
+<input name="message" type="hidden" value="Something’s wrong: ">
+<button aria-label="Start with: Say what’s wrong, with a screenshot" class="btn small ghost" type="submit">
+Start with this
+</button>
+</form>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<ol aria-label="Waiting to send" class="transcript queued" id="queued" ko-region>
+</ol>
+<div id="agent-status" ko-region>
+</div>
+<form action="/f/rate-sheet-importer/d/fixes/new/sessions" class="composer" ko-item method="post">
+<ul aria-label="Images to send" class="attachments" id="attachments" ko-invoke="event:draft-changed" ko-source="/f/rate-sheet-importer/d/fixes/new/draft">
+</ul>
+<div id="message-box" ko-region>
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" ko-as="message" name="message" placeholder="Ask about the project, or say what’s wrong and where; paste a screenshot of it. Enter to send, Shift+Enter for a new line." required rows="3">
+</textarea>
+</div>
+<div hidden ko-debounce="800" ko-form="/f/rate-sheet-importer/d/fixes/new/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
+<input calc-value="message.value" name="message" type="hidden">
+</div>
+<div class="composer-foot">
+<div class="composer-tools">
+<div ko-form="/f/rate-sheet-importer/d/fixes/new/attachments" ko-invoke="change" ko-method="post" ko-target="attachments">
+<label class="icon-btn small" title="Attach an image. You can also paste one, or drop it on the box.">
+<span aria-hidden="true" class="icon icon-attach">
+</span>
+<span class="sr-only">
+Attach an image
+</span>
+<input accept="image/png, image/jpeg, image/gif, image/webp" class="sr-only" ko-as="upload" multiple name="image" type="file">
+</label>
+</div>
+<span id="dictation" ko-invoke="event:dictation-changed" ko-source="/f/rate-sheet-importer/d/fixes/new/dictation/button">
+<span class="cluster gap-2 dictation" ko-item>
+<a class="icon-btn small" href="/f/rate-sheet-importer/d/fixes/new/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</a>
+</span>
+</span>
+<span class="muted" ko-as="draftKept" ko-region role="status">
+</span>
+</div>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+<script type="koda">
+// Two things no binding or trigger expresses: Enter to send, and taking // an image the person pastes or drops, which means moving a File into // the upload's input (it then uploads as if chosen there). Listened for // on the form, since dictation replaces the box itself. const { message, upload } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+</script>
+</form>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<%/* A conversation's name: as it is to start with, and with what was typed
+     and why when it's refused. `it.branch` is its branch, when it has one. */%>
+<% const errors = it.$errors ?? {}; %>
+<div class="fields">
+  <label class="field">
+    <span class="label">Name</span>
+    <input name="title" value="<%= it.title ?? '' %>" autocomplete="off"
+           <% if (errors.title) { %>ko-invalid-server="<%= errors.title %>" aria-describedby="rename-title-error"<% } %>>
+    <% if (errors.title) { %><span class="error" id="rename-title-error"><%= errors.title %></span><% } else if (it.branch) { %><span class="hint">Its branch keeps its name, <code><%= it.branch %></code>.</span><% } %>
+  </label>
+</div>

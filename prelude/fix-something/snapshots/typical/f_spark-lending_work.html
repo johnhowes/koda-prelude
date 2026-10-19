@@ -1,0 +1,402 @@
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/rate-lock/build">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+<span class="item-text">
+<span class="item-title">
+Rate lock
+<span class="pill warn">
+Build stopped
+</span>
+</span>
+<span class="secondary">
+The build stopped: 1 page doesn’t render in the app.
+</span>
+<span class="muted">
+25 minutes ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+4
+</span>
+</h2>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/fixes/large-uploads-fail">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<span class="item-text">
+<span class="item-title">
+Uploads over 10 MB fail on the document checklist
+<span class="pill">
+Fix
+</span>
+</span>
+<span class="muted">
+prelude/fixes/large-uploads-fail
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/fix-large-uploads-fail
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+</div>
+<details class="disclosure">
+<summary>
+Changes 4 files
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+app/routes/documents.js
+</code>
+</li>
+<li class="muted">
+<code>
+app/routes/documents.test.js
+</code>
+</li>
+<li class="muted">
+<code>
+prelude/document-checklist/views/checklist/_upload.eta
+</code>
+</li>
+<li class="muted">
+<code>
+prelude/document-checklist/NOTES.md
+</code>
+</li>
+</ul>
+</details>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/d4e7a1/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/loan-offers">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Loan offers
+</span>
+<span class="muted">
+Applications · prelude/loan-offers
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/loan-offers
+</code>
+</span>
+<span class="pill">
+Not checked yet
+</span>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/a41c07/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/rate-lock">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Rate lock
+</span>
+<span class="muted">
+Applications · prelude/rate-lock
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/rate-lock
+</code>
+</span>
+<span class="pill danger">
+1 page doesn’t render
+</span>
+<span class="pill warn">
+Build stopped
+</span>
+</div>
+<details class="disclosure">
+<summary>
+2 stories · 2 to build · its build stopped
+</summary>
+<ul aria-label="Stories on this branch" class="stack gap-2 stories">
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/rate-lock/build">
+Lock a rate
+</a>
+<span class="pill warn">
+Build stopped
+</span>
+<a class="muted" href="/f/spark-lending/d/rate-lock/sessions/s-8r2">
+Build session
+</a>
+</span>
+<span class="secondary">
+A borrower locks today’s rate for 30, 45 or 60 days, and sees what it costs.
+</span>
+</li>
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/rate-lock/build">
+Rate lock expiry
+</a>
+<span class="pill ">
+To build
+</span>
+</span>
+<span class="secondary">
+Seven days before a lock expires, the loan’s page says so, with Extend.
+</span>
+</li>
+</ul>
+</details>
+<form action="/f/spark-lending/branches/7e2d9b/start" class="cluster gap-2" ko-target="work" method="post">
+<input name="running.running" type="hidden" value="true">
+<span class="muted">
+The app on this branch isn’t running.
+</span>
+<button class="btn small ghost" title="Start the app from this branch at http://localhost:3000. If another branch’s app is running there, it stops." type="submit">
+Start it
+</button>
+</form>
+<details class="disclosure">
+<summary>
+Also changes 2 files outside the design
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+app/routes/rates.js
+</code>
+</li>
+<li class="muted">
+<code>
+app/views/layout.eta
+</code>
+</li>
+</ul>
+</details>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/7e2d9b/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/repayment-schedule">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Repayment schedule
+</span>
+<span class="muted">
+Servicing · prelude/repayment-schedule
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/repayment-schedule
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+<span class="pill warn">
+2 commits behind main
+</span>
+</div>
+<details class="disclosure">
+<summary>
+2 stories · 1 to build
+</summary>
+<ul aria-label="Stories on this branch" class="stack gap-2 stories">
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/repayment-schedule/build">
+Schedule
+</a>
+<span class="pill ">
+Built
+</span>
+<a class="muted" href="/f/spark-lending/d/repayment-schedule/sessions/s-2kq">
+Build session
+</a>
+</span>
+<span class="secondary">
+Every payment of the loan, with what goes to principal and to interest.
+</span>
+</li>
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/repayment-schedule/build">
+Pay extra
+</a>
+<span class="pill ">
+To build
+</span>
+</span>
+<span class="secondary">
+An extra payment, and how much sooner the loan ends because of it.
+</span>
+</li>
+</ul>
+</details>
+<p class="muted">
+The app on this branch is running at
+<code>
+http://localhost:3000
+</code>
+·
+<a href="/f/spark-lending/branches/c90f13/app" target="_blank">
+Open it
+<span aria-hidden="true" class="icon icon-external">
+</span>
+</a>
+</p>
+<div class="cluster actions">
+<form action="/f/spark-lending/branches/c90f13/update" ko-target="work" method="post">
+<input name="behind" type="hidden" value="0">
+<button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
+Update from main
+</button>
+</form>
+<a class="btn small" href="/f/spark-lending/branches/c90f13/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+</ul>
+<details class="disclosure" ko-item>
+<summary>
+Copy every story still to build
+</summary>
+<div class="stack gap-2">
+<textarea aria-label="Every story still to build" class="story" ko-as="stories" readonly rows="12">
+Lock a rate As a borrower, I can lock today’s rate for 30, 45 or 60 days from my loan’s page, and see the fee for each before I confirm. --- Rate lock expiry Seven days before a rate lock expires, the borrower’s loan page says when, with a way to extend it. --- Pay extra As a borrower, I can make an extra payment toward principal and see how many months sooner my loan ends.
+</textarea>
+<div class="cluster actions">
+<button class="btn small" ko-as="copyAll" type="button">
+Copy
+</button>
+</div>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { stories, copyAll } = koda.scope(); copyAll.element.addEventListener('click', async () => { await navigator.clipboard.writeText(stories.element.value); copyAll.element.textContent = 'Copied'; });
+</script>
+</details>
+</section>
+<section aria-labelledby="asked-title" class="card">
+<h2 id="asked-title">
+Asked lately
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/fixes/rate-lock-build-stopped">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<span class="item-text">
+<span class="item-title">
+Why did Rate lock’s build stop?
+<span class="pill accent">
+<span aria-hidden="true" class="pulse">
+</span>
+Working
+</span>
+</span>
+<span class="muted">
+Started 2 minutes ago
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/fixes/payment-dates-a-day-early">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<span class="item-text">
+<span class="item-title">
+Payment dates on the schedule are a day early
+</span>
+<span class="secondary">
+What I’d change: format the date without a time zone in formatDate, and add a test with a date near midnight.
+</span>
+<span class="muted">
+Today, 09:40
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/fixes/which-designs-show-the-loan-summary">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<span class="item-text">
+<span class="item-title">
+Which designs show the loan summary?
+</span>
+<span class="secondary">
+So a change to the summary’s markup is one change, in the app, and the three designs follow it.
+</span>
+<span class="muted">
+Yesterday, 16:05
+</span>
+</span>
+</a>
+</li>
+</ul>
+<p class="muted">
+Kept on this computer, not in the project. Nothing in them changes the project until it’s fixed on a branch.
+</p>
+</section>

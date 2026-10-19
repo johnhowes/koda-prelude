@@ -1,0 +1,11 @@
+<%/* The fix's name, as Fix it on a branch asks it: the conversation's own to
+     start with, and with what was typed and why when it's refused. */%>
+<% const errors = it.$errors ?? {}; %>
+<div class="fields">
+  <label class="field">
+    <span class="label">The fix’s name</span>
+    <input name="title" value="<%= it.title ?? '' %>" autocomplete="off"
+           <% if (errors.title) { %>ko-invalid-server="<%= errors.title %>" aria-describedby="fix-branch-title-error"<% } %>>
+    <% if (errors.title) { %><span class="error" id="fix-branch-title-error"><%= errors.title %></span><% } else { %><span class="hint">A few words. The branch is named after it.</span><% } %>
+  </label>
+</div>

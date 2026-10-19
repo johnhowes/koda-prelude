@@ -1,0 +1,121 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "rate-sheet-importer", "name": "rate-sheet-importer", "path": "C:\\Projects\\rate-sheet-importer" },
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" }
+    ],
+    "needsYou": 5,
+    "agents": []
+  },
+  "projects": [
+    {
+      "id": "rate-sheet-importer",
+      "name": "rate-sheet-importer",
+      "path": "C:\\Projects\\rate-sheet-importer",
+      "git": "none",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "none", "stack": null, "path": null, "existing": false, "branch": null, "url": null },
+      "defaultStack": "Node with Eta",
+      "system": null,
+      "shell": null,
+      "needs": [],
+      "inProgress": [],
+      "asked": [
+        {
+          "id": "what-is-in-this-repository",
+          "title": "What’s in this repository already?",
+          "url": "/f/rate-sheet-importer/d/fixes/what-is-in-this-repository",
+          "state": "answered",
+          "says": "There are no designs and no app yet, so the first design can start from the importer’s CSV columns.",
+          "when": "Today, 10:20"
+        }
+      ],
+      "designs": [],
+      "merged": [],
+      "references": [],
+
+      "newFix": {
+        "id": "fixes/new",
+        "title": "Ask or fix",
+        "area": null,
+        "kind": "fix",
+        "folder": { "id": "rate-sheet-importer", "name": "rate-sheet-importer" },
+        "system": null,
+        "shell": null,
+        "references": [],
+        "buildUrl": null,
+        "changes": null,
+        "stage": null,
+        "merged": null,
+        "branch": null,
+        "sessions": [],
+        "session": null,
+        "state": { "kind": "idle" },
+        "entries": [],
+        "troubles": [],
+        "rules": [],
+        "questions": [],
+        "decisions": [],
+        "dictation": { "status": "none" },
+        "speechModels": [
+          { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+          { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+          { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+        ],
+        "queued": [],
+        "images": [],
+        "draft": { "base": "/f/rate-sheet-importer/d/fixes/new", "attachments": [] },
+        "live": null
+      },
+
+      "fixes": [
+        {
+          "id": "what-is-in-this-repository",
+          "page": {
+            "id": "fixes/what-is-in-this-repository",
+            "title": "What’s in this repository already?",
+            "area": null,
+            "kind": "fix",
+            "folder": { "id": "rate-sheet-importer", "name": "rate-sheet-importer" },
+            "system": null,
+            "shell": null,
+            "references": [],
+            "buildUrl": null,
+            "changes": null,
+            "stage": null,
+            "merged": null,
+            "branch": null,
+            "sessions": [
+              { "id": "20261019-1020-a9tz", "title": "What’s in this repository already?", "started": "Today, 10:20", "lastLine": "There are no designs and no app yet, so the first design can start from the importer’s CSV columns." }
+            ],
+            "session": { "id": "20261019-1020-a9tz", "title": "What’s in this repository already?" },
+            "state": { "kind": "idle" },
+            "entries": [
+              { "type": "user", "message": "What’s in this repository already? I want to design an importer for lenders’ rate sheets." },
+              { "type": "tool", "name": "Glob", "summary": "**/*" },
+              { "type": "tool", "name": "Read", "summary": "README.md" },
+              { "type": "tool", "name": "Read", "summary": "samples/rate-sheet-2026-10.csv" },
+              { "type": "text", "html": "<p>Very little so far: a <code>README.md</code> describing the importer in two paragraphs, and one sample, <code>samples/rate-sheet-2026-10.csv</code>, with 214 rows of product, term, rate, points and lock period.</p><p>There are no designs and no app yet, so the first design can start from the importer’s CSV columns.</p>" },
+              { "type": "turn", "ok": true }
+            ],
+            "rules": [],
+            "questions": [],
+            "decisions": [],
+            "dictation": { "status": "none" },
+            "speechModels": [
+              { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+              { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+              { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+            ],
+            "queued": [],
+            "images": [],
+            "draft": { "base": "/f/rate-sheet-importer/d/fixes/what-is-in-this-repository", "attachments": [] },
+            "live": null
+          }
+        }
+      ]
+    }
+  ]
+}

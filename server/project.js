@@ -15,14 +15,14 @@ import { backlogOf } from './backlog.js';
 import { buildable, gitState, remoteOf } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
-import { ago, needsOfProject } from './home.js';
+import { ago, clip, needsOfProject, plain, sentences } from './home.js';
 import { filterModel, isHosted } from './host.js';
-import { listSessions } from './sessions.js';
+import { listSessions, readEntries } from './sessions.js';
 import { readSnapshots } from './snapshots.js';
 
 /**
  * @typedef {import('./home.js').NeedKind} NeedKind
- * @typedef {'design' | 'system' | 'shell'} DesignKind
+ * @typedef {'design' | 'system' | 'shell' | 'fix'} DesignKind
  *
  * @typedef {object} Need          Something waiting on the person here.
  * @property {string} id
@@ -97,6 +97,14 @@ import { readSnapshots } from './snapshots.js';
  * @property {string} name
  * @property {string} path
  *
+ * @typedef {object} Asked         A conversation about the project with no branch yet (asked.js).
+ * @property {string} id           its slug
+ * @property {string} title
+ * @property {string} url          its page, /f/<project>/d/fixes/<slug>
+ * @property {'working' | 'asking' | 'answered'} state
+ * @property {string | null} says  the agent's last line, if it's said anything
+ * @property {string} when         "Started 2 minutes ago", "yesterday"
+ *
  * @typedef {object} Project
  * @property {string} id
  * @property {string} name
@@ -110,7 +118,8 @@ import { readSnapshots } from './snapshots.js';
  * @property {{ id: string, title: string } | null} shell
  * @property {Need[]} needs           oldest first
  * @property {Branch[]} inProgress
- * @property {Design[]} designs       as ?q= and ?stage= leave them
+ * @property {Asked[]} asked          newest first
+ * @property {Design[]} designs      as ?q= and ?stage= leave them
  * @property {Merged[]} merged        the last five (R-f0c)
  * @property {Reference[]} references
  */
@@ -198,6 +207,34 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
 }
 
 /**
+ * Asked lately: the conversations kept on this computer (asked.js), newest
+ * first. One with a branch is in progress instead, so it isn't here (R-x8d).
+ * Each is working while a turn runs, asking when its newest session's turn
+ * ended on a question (as Needs you reads one), and answered otherwise.
+ * @returns {Asked[]}
+ */
+export function askedOf(app, folder, { now = Date.now() } = {}) {
+  if (folder.branch || !app.asked) return [];
+  const branched = new Set(app.branches.of(folder.id).map(entry => entry.design));
+  return app.asked.list(folder).filter(record => !branched.has(record.id)).map(record => {
+    const session = listSessions(record.dir)[0] ?? null;
+    const entries = session ? readEntries(record.dir, session.id) : [];
+    const words = plain(entries.findLast(item => item.type === 'text')?.text);
+    const turn = entries.findLast(item => item.type === 'turn');
+    const working = app.turns.state(folder, record, null).kind !== 'idle';
+    const asking = !working && turn?.ok && entries.lastIndexOf(turn) === entries.length - 1 && /\?["'”’)\]]*$/.test(words);
+    return {
+      id: record.slug,
+      title: record.title,
+      url: `/f/${folder.id}/d/${record.id}`,
+      state: working ? 'working' : asking ? 'asking' : 'answered',
+      says: words ? clip(sentences(words).at(-1), 220) : null,
+      when: working ? `Started ${ago(session?.startedAt ?? record.createdAt, now)}` : ago(record.updatedAt ?? record.createdAt, now),
+    };
+  });
+}
+
+/**
  * The project page's model. `parts` leaves out what a region doesn't show
  * (reading a hundred designs' progress for the work region would be slow):
  * { work: false } has no needs or branches, { designs: false } no designs.
@@ -255,6 +292,7 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     shell: shell && { id: shell.id, title: shell.title },
     needs: work ? needsOfProject(app, folder, { now }) : [],
     inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError }) : [],
+    asked: work ? askedOf(app, folder, { now }) : [],
     designs,
     merged: folder.branch ? [] : app.branches.merged(folder.id).slice(0, 5)
       .map(note => ({ id: `${note.branch}@${note.at}`, branch: note.branch, into: note.into, when: ago(note.at, now) })),
