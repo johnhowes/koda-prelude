@@ -9,6 +9,7 @@
 // render starts a fresh one.
 
 import { fork } from 'node:child_process';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RENDERER = fileURLToPath(new URL('./renderer.js', import.meta.url));
@@ -17,12 +18,24 @@ const TIMEOUT_MS = 5000;
 // Node 23.5+ calls it --permission; earlier versions, --experimental-permission.
 const PERMISSION_FLAG = process.allowedNodeEnvironmentFlags.has('--permission') ? '--permission' : '--experimental-permission';
 
+// Each path once: Node (23.1, at least) aborts at startup when --allow-fs-read
+// names the same path twice, as it does when the folder is Prelude itself.
+export function readPaths(...paths) {
+  const key = path => {
+    const resolved = resolve(path);
+    return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+  };
+  const seen = new Map();
+  for (const path of paths) if (!seen.has(key(path))) seen.set(key(path), resolve(path));
+  return [...seen.values()];
+}
+
 export function createRenderers({ appRoot }) {
   const processes = new Map();   // folder path -> { child, pending }
 
   const start = folderPath => {
     const child = fork(RENDERER, [], {
-      execArgv: [PERMISSION_FLAG, `--allow-fs-read=${folderPath}`, `--allow-fs-read=${appRoot}`, '--disable-warning=ExperimentalWarning'],
+      execArgv: [PERMISSION_FLAG, ...readPaths(folderPath, appRoot).map(path => `--allow-fs-read=${path}`), '--disable-warning=ExperimentalWarning'],
       stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
       windowsHide: true,
     });
