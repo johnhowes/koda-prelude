@@ -61,6 +61,15 @@ not approved, building, no app, all built. Event: `story-written`.
   branch, not approved, building. Start a build session hides while any
   holds; stories can be written regardless.
 - Building doesn't need a story, and a story doesn't start a build.
+- **A page holds a list of stories, each its own** (the person,
+  2026-10-19): one file per story, under the page
+  (`stories/<page>/<n>-<slug>.md`), each copied, edited and marked edited
+  on its own. A page with several lists their titles on its Build card.
+- **A build session reads the page's stories** (the person, 2026-10-19;
+  R-n4j): edits included (a PM's added criteria, such as a legal sign-off,
+  reach the build), and it checks the build against their acceptance
+  criteria. The design wins where they differ, so an out-of-date story
+  can't steer a build wrong; its notice says so.
 
 ## In the preview only
 
@@ -72,7 +81,4 @@ not approved, building, no app, all built. Event: `story-written`.
 
 ## Open questions
 
-- Is a story's file one per page (`stories/<page>.md`, stories as `#`
-  sections) and who's shown as its author after an edit (git's user)?
-- Should a written story feed the build session's brief, or stay for the
-  tracker only? Today the build works from the change alone.
+- Who's shown as a story's author after an edit (git's user)?

@@ -16,5 +16,8 @@
   *proposed*
 - **R-u6t.** A story is kept with the design on its branch, so it's reviewed and merged with the design; a person's edits are kept the same way.
   *proposed*
+- **R-n4j.** A page's build session is given its stories, edits and all, and checks the build against their acceptance criteria; where a story and the design differ, the design wins.
+  *shown-on: /f/:folder/d/:design/build/stories/:group*
+  *proposed*
 - **R-c9r.** A story never repeats what's already built: no built rules, no pages the app already has, and no rule from another page's story.
   *proposed*

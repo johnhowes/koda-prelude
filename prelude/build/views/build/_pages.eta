@@ -46,6 +46,13 @@
         <% } %>
       </div>
     </div>
+    <% if (group.story && count > 1) { %>
+    <ul class="stack gap-1 secondary" aria-label="Its stories">
+      <% for (const one of group.story.stories) { %>
+      <li><a href="<%= group.url %>#story-<%= one.id %>"><%= one.title %></a></li>
+      <% } %>
+    </ul>
+    <% } %>
     <% if (group.session) { %>
     <p class="muted">Last built in <a href="<%= group.session.url %>"><%= group.session.title %></a></p>
     <% } %>

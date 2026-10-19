@@ -33,7 +33,7 @@
   </div>
   <% } else { %>
   <div class="cluster">
-    <span class="muted">Written by the agent <%= story.written %><% if (edited) { %> · edited since<% } %></span>
+    <span class="muted">Written by the agent <%= story.written %><% if (edited) { %> · edited since<% } %> · a build session for this page reads <%= stories.length > 1 ? 'them' : 'it' %></span>
     <span class="spacer"></span>
     <div class="cluster actions">
       <% if (stories.length > 1) { %>
@@ -58,7 +58,7 @@
   <div class="notice warn" role="status">
     <strong>The design changed after this story was written.</strong>
     <p><%= story.outOfDate %></p>
-    <p><%= edited ? 'Rewrite it to catch up, which replaces the edits made to it, or edit it yourself.' : 'Rewrite it to catch up, or edit it yourself.' %></p>
+    <p><%= edited ? 'Rewrite it to catch up, which replaces the edits made to it, or edit it yourself.' : 'Rewrite it to catch up, or edit it yourself.' %> Until then, a build session goes by the design where the two differ.</p>
     <div class="cluster actions"><a class="btn small" href="<%= it.url %>/rewrite" ko-target="modal?">Rewrite…</a></div>
   </div>
   <% } %>
