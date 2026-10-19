@@ -668,7 +668,7 @@ async function handle(req, res, app) {
 
 // A design: its sessions, each a conversation with the agent.
 //
-//   GET  …/d/<design>                         its latest session (or an empty one)
+//   GET  …/d/<design>                         its latest session while still open, else a new one
 //   GET  …/d/<design>/sessions/new            an empty session; the first message starts it
 //   POST …/d/<design>/sessions                start a session with its first message
 //   GET  …/d/<design>/sessions/<id>           a session
@@ -2137,11 +2137,26 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return designPage(status, pageModel({ session, showing: true, extra: extraModel }), { session });
   };
 
+  // Whether a session still has the person's attention (R-o4s): the agent is
+  // working in it, or a turn ended there in the last week that they haven't
+  // opened it since (as Home's Needs you counts it; seen.json forgets a week).
+  const stillOpen = session => {
+    if (['working', 'checking'].includes(turns.state(folder, design, session.id).kind)) return true;
+    const turn = readEntries(dir, session.id).findLast(item => item.type === 'turn');
+    if (!turn || turn.stopped || !(Date.parse(turn.at) > Date.now() - 7 * 24 * 60 * 60 * 1000)) return false;
+    const seenAt = app.seen.all()[sessionKey(folder, design, session.id)];
+    return !(seenAt && seenAt >= turn.at);
+  };
+
   // A fix's page is at its own address (prelude/fix-something): its latest
-  // session, or Ask or fix's new one. A design's goes to its latest session's.
+  // session, or Ask or fix's new one. A design's goes to its latest session
+  // while that's still open, and is otherwise a new session, with its
+  // starting points (R-o4s).
   if (section === undefined && req.method === 'GET') {
     const latest = starting ? null : listSessions(dir)[0];
-    if (latest && design.kind !== 'fix') return redirect(res, `${base}/sessions/${latest.id}`);
+    if (latest && design.kind !== 'fix') {
+      return stillOpen(latest) ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
+    }
     if (latest) {
       app.seen.mark(sessionKey(folder, design, latest.id));
       tell(app, { needs: true });

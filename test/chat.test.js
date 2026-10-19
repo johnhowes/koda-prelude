@@ -155,11 +155,16 @@ test('the first message starts a session; the agent runs in the folder', async (
   assert.equal(meta.started, true);
   assert.deepEqual(readEntries(designDir, id).map(e => e.type), ['user', 'text', 'turn']);
 
-  // The design page now goes to its latest session.
+  // The design page goes to its latest session while its turn is unseen...
   assert.equal((await get(designUrl)).headers.get('location'), sessionUrl);
   const html = await (await get(sessionUrl)).text();
   assert.match(html, /Design a sign-up screen/);
   assert.match(html, /ko-connect="[^"]+\/sessions\/[^/]+\/live\?from=3"/);
+
+  // ...and, once it's been opened, is a new session (R-o4s).
+  const opened = await get(designUrl);
+  assert.equal(opened.status, 200);
+  assert.match(await opened.text(), /A new session/);
 });
 
 test('later messages resume the conversation; events stream to the page', async () => {

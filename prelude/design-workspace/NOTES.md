@@ -266,6 +266,13 @@ Where the app differs from the screens, on purpose:
   title.
 - **The custom size and which session the chat shows** are kept in
   memory, with the page and the state on show (`design-state.js`).
+- **Opening a design** (`…/d/<design>`, as the project page and Home link
+  it) goes to its latest session only while that's still open: the agent
+  working there, or a turn from the last week the person hasn't opened
+  since (Home's own reading of "seen"). Otherwise it's a new session, with
+  its starting points, "Carry on from…" among them (R-o4s). Before this, it
+  always went to the latest session, even one long finished or a finished
+  build (the person, 2026-10-19; prelude/fixes/from-the-project-landing-page-when-i-click-on-a-design-it).
 
 ## Open questions
 
