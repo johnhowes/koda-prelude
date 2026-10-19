@@ -4,18 +4,20 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>
-New design · Prelude
+New design
 </title>
-<link href="/_prelude/system/tokens.css" rel="stylesheet">
-<link href="/_prelude/system/components.css" rel="stylesheet">
-<link href="/_prelude/system/icons.css" rel="stylesheet">
-<link href="/_prelude/shell/layouts/shell.css" rel="stylesheet">
-<link href="/_prelude/design/styles.css" rel="stylesheet">
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
 <script type="importmap">
-{ "imports": { "@kodalang/core": "/_prelude/koda/koda.js" } }
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
 </script>
+<link href="/static/workspace.css" rel="stylesheet">
 </head>
-<body class="shell">
+<body class="shell prelude">
 <header class="shell-bar" ko-item>
 <a class="shell-brand" href="/">
 Prelude
@@ -76,7 +78,7 @@ Open a project…
 </ul>
 </details>
 </header>
-<main class="shell-main" id="main" ko-history ko-location="/f/borrower-portal" ko-scope="/">
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal" ko-scope="/">
 <div class="center wide project" ko-item>
 <div class="stack gap-8">
 <div class="cluster gap-4">
@@ -530,7 +532,9 @@ Create design
 <div hidden ko-connect="/_prelude/live">
 </div>
 <script type="module">
-// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. The // dialog is named by the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); follow();
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
 </script>
 <script type="module">
 import { start } from '@kodalang/core'; start(document);
