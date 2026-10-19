@@ -1,6 +1,7 @@
 {
-  "/f/:project": { "view": "projects/page", "title": "Project", "data": "projects/:project" },
+  "/f/:project": { "view": "projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/work": { "view": "projects/_work", "data": "projects/:project" },
+  "/f/:project/designs": { "view": "projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/app": { "view": "projects/_app", "data": "projects/:project" },
   "/f/:project/designs/new": { "view": "projects/_new-design", "title": "New design", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
   "/f/:project/branches/:branch/publish": { "view": "projects/_publish", "title": "Push a branch", "data": "projects/:project/inProgress/:branch", "over": "/f/:project", "in": "modal" },

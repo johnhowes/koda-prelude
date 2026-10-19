@@ -22,7 +22,11 @@
     <% if (!w.worked) { %><span class="pill">Nothing done on it yet</span><% } %>
   </div>
 
-  <% if (stories.length) { %>
+  <%/* Its stories fold away, so a dozen branches still fit on the page; the
+       line says how many are left, and whether one is building. */%>
+  <% if (stories.length) { const left = stories.filter(story => story.state !== 'built').length, building = stories.some(story => story.state === 'building'); %>
+  <details class="disclosure">
+    <summary><%= stories.length === 1 ? '1 story' : `${stories.length} stories` %> · <%= left ? `${left} to build` : 'all built' %><%= building ? (w.building?.stopped ? ' · its build stopped' : ' · 1 building') : '' %></summary>
   <ul class="stack gap-2 stories" aria-label="Stories on this branch">
     <% for (const story of stories) { const state = storyState[story.state]; %>
     <li class="stack gap-1">
@@ -31,6 +35,7 @@
     </li>
     <% } %>
   </ul>
+  </details>
   <% } %>
 
   <%/* The app on this branch (10.7): its design host is the app itself, with

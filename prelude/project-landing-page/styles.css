@@ -6,6 +6,9 @@
   /* Lists that are only lines of text, not rows to open. */
   .in-progress, .stories, .merged, .also-changes { list-style: none; padding: 0; }
 
+  /* The designs' search takes the row beside its filter, and wraps under it when narrow. */
+  .designs-search { flex: 1 1 14rem; inline-size: auto; }
+
   /* The stories to copy, in full. */
   .story { inline-size: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
 }

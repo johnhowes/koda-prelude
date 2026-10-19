@@ -1,9 +1,8 @@
 <%/* The project's work: what needs the person here (Home's list, for this
-     project alone), the designs in progress on their branches, and the rest
-     of the designs. A project with no designs yet is the way to make the
-     first. It's a region of its own, so the page reloads it when something
-     changes. */%>
-<% const p = it, needs = [...(p.needs ?? [])].reverse(), inProgress = p.inProgress ?? [], designs = p.designs ?? [], merged = p.merged ?? [];
+     project alone), and the designs in progress on their branches. It's a
+     region of its own, so the page reloads it whenever something changes;
+     the designs list is another, which reloads only when designs do. */%>
+<% const p = it, needs = [...(p.needs ?? [])].reverse(), inProgress = p.inProgress ?? [];
    const kinds = {
      question: { label: 'Asking you', icon: 'question', tone: 'accent' },
      stopped: { label: 'Build stopped', icon: 'code', tone: 'warn' },
@@ -13,38 +12,7 @@
    };
    const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : null;
    const kindIcon = kind => kind === 'system' ? 'design-system' : 'screen';
-   const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built').map(story => story.story)).join('\n\n---\n\n');
-   // Designs by area, those with none first (the design system and the shell).
-   const areas = [...new Set(designs.map(design => design.area ?? ''))].sort((a, b) => (a !== '') - (b !== ''));
-   // Approved pages not yet built, once there's an app to build them into.
-   const readyToBuild = design => p.app?.status === 'built' && (design.approved ?? 0) > (design.built ?? 0);
-   const progress = design => {
-     const pages = design.pages ?? 0, approved = design.approved ?? 0, built = design.built ?? 0;
-     if (!pages) return 'nothing designed yet';
-     const count = `${pages} ${pages === 1 ? 'page' : 'pages'}`;
-     if (built === pages) return `${count}, all built`;
-     if (built) return `${count}, ${built} built`;
-     if (approved === pages) return `${count}, all approved`;
-     if (approved) return `${count}, ${approved} approved`;
-     return `${count}, none approved yet`;
-   }; %>
-<% if (!designs.length && !inProgress.length) { %>
-<div class="empty page">
-  <span class="icon icon-screen" aria-hidden="true"></span>
-  <div class="stack gap-2">
-    <h2>Design the first feature</h2>
-    <p class="secondary">A design describes one feature, written as the app’s own views with real-looking data. It grows over sessions with the agent, then is built into the app on a branch of its own.</p>
-  </div>
-  <div class="cluster actions">
-    <a class="btn primary large" href="/f/<%= p.id %>/designs/new" ko-target="modal?"><span class="icon icon-add" aria-hidden="true"></span>Create the first design…</a>
-  </div>
-  <% if (!p.system || !p.shell) { %>
-  <p class="muted">Or start with what every design uses:
-    <% if (!p.system) { %><a href="/f/<%= p.id %>/designs/new?kind=system" ko-target="modal?">the design system</a><% } %><% if (!p.system && !p.shell) { %> or <% } %><% if (!p.shell) { %><a href="/f/<%= p.id %>/designs/new?kind=shell" ko-target="modal?">the app shell</a><% } %>.</p>
-  <% } %>
-</div>
-<% } else { %>
-
+   const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built').map(story => story.story)).join('\n\n---\n\n'); %>
 <% if (needs.length) { %>
 <section class="card" aria-labelledby="needs-title">
   <h2 id="needs-title">Needs you</h2>
@@ -68,7 +36,7 @@
 
 <% if (inProgress.length) { %>
 <section class="card" aria-labelledby="in-progress-title">
-  <h2 id="in-progress-title">In progress</h2>
+  <h2 id="in-progress-title">In progress <span class="muted"><%= inProgress.length %></span></h2>
   <ul class="stack gap-6 in-progress">
     <% for (const item of inProgress) { %>
     <li class="stack gap-2">
@@ -99,42 +67,6 @@
       });
     </script>
   </details>
-  <% } %>
-</section>
-<% } %>
-
-<section class="card" aria-labelledby="designs-title">
-  <h2 id="designs-title">Designs</h2>
-  <% if (!designs.length) { %>
-  <p class="empty">Every design here is in progress. Once a branch is finished, its design is listed here.</p>
-  <% } %>
-  <% for (const area of areas) { const inArea = designs.filter(design => (design.area ?? '') === area); %>
-  <div class="stack gap-1">
-    <% if (area) { %><h3 class="group-label"><%= area %></h3><% } %>
-    <ul class="list">
-      <% for (const design of inArea) { %>
-      <li>
-        <a class="item" href="/f/<%= p.id %>/d/<%= design.id %>">
-          <span class="icon icon-<%= kindIcon(design.kind) %>" aria-hidden="true"></span>
-          <span class="item-text">
-            <span class="item-title"><%= design.title %><% if (kindPill(design.kind)) { %><span class="pill"><%= kindPill(design.kind) %></span><% } %><% if (readyToBuild(design)) { %><span class="pill">Ready to build</span><% } %></span>
-            <span class="muted"><%= progress(design) %><% if (design.changed) { %> · changed <%= design.changed %><% } %></span>
-          </span>
-        </a>
-      </li>
-      <% } %>
-    </ul>
-  </div>
-  <% } %>
-  <% if (merged.length) { %>
-  <div class="stack gap-1">
-    <h3 class="group-label">Merged lately</h3>
-    <ul class="stack gap-1 merged">
-      <% for (const note of merged) { %>
-      <li class="muted"><code><%= note.branch %></code> merged into <%= note.into %> <%= note.when %>. Its worktree and branch were tidied up.</li>
-      <% } %>
-    </ul>
-  </div>
   <% } %>
 </section>
 <% } %>

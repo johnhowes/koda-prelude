@@ -72,9 +72,9 @@
         }
       ],
       "designs": [
-        { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets", "kind": "system", "area": null, "pages": 3, "approved": 2, "built": 0, "changed": "3 weeks ago" },
-        { "id": "loan-officer-pipeline-dashboard-with-rate-lock-expirations", "title": "Loan officer pipeline dashboard with rate lock expirations and conditions outstanding", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 11, "approved": 7, "built": 0, "changed": "6 days ago" },
-        { "id": "closing-disclosure-review", "title": "Closing disclosure review and borrower e-signature", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 0, "approved": 0, "built": 0, "changed": "just now" }
+        { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets", "kind": "system", "area": null, "pages": 3, "approved": 2, "built": 0, "stage": "designing", "changed": "3 weeks ago" },
+        { "id": "loan-officer-pipeline-dashboard-with-rate-lock-expirations", "title": "Loan officer pipeline dashboard with rate lock expirations and conditions outstanding", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 11, "approved": 7, "built": 0, "stage": "designing", "changed": "6 days ago" },
+        { "id": "closing-disclosure-review", "title": "Closing disclosure review and borrower e-signature", "kind": "design", "area": "Origination and underwriting for retail and wholesale channels", "pages": 0, "approved": 0, "built": 0, "stage": "designing", "changed": "just now" }
       ],
       "merged": [
         { "id": "m-1", "branch": "prelude/borrower-communication-preferences-and-paperless-statements", "into": "release/2026-q4-servicing", "when": "3 weeks ago" }

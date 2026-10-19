@@ -1,0 +1,180 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-platform", "name": "spark-platform", "path": "C:\\Projects\\spark-platform" },
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" }
+    ],
+    "needsYou": 9,
+    "agents": [
+      { "design": "Loan offers", "project": "spark-platform", "url": "/f/spark-platform/d/loan-offers" },
+      { "design": "Broker portal", "project": "spark-platform", "url": "/f/spark-platform/d/broker-portal/build" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "spark-platform",
+      "name": "spark-platform",
+      "path": "C:\\Projects\\spark-platform",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "built", "stack": "ASP.NET Core MVC with Razor", "path": "src/Spark.Web", "existing": true, "branch": null, "url": null },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-design-system", "title": "Spark Design System" },
+      "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "needs": [
+        { "id": "n-a1", "kind": "pull-request", "design": "Admin dashboard", "says": "Pushed prelude/admin-dashboard. Its pull request is waiting for a review.", "when": "3 days ago", "url": "https://github.com/lendwithspark/spark-platform/pull/1182" },
+        { "id": "n-a2", "kind": "to-build", "design": "Closing disclosure", "says": "5 pages are approved and ready to build.", "when": "2 days ago", "url": "/f/spark-platform/d/closing-disclosure/build" },
+        { "id": "n-a3", "kind": "to-build", "design": "Payoff quote", "says": "2 pages are approved and ready to build.", "when": "yesterday", "url": "/f/spark-platform/d/payoff-quote/build" },
+        { "id": "n-a4", "kind": "pull-request", "design": "Escrow statements", "says": "Pushed prelude/escrow-statements. Its pull request is waiting for a review.", "when": "yesterday", "url": "https://github.com/lendwithspark/spark-platform/pull/1197" },
+        { "id": "n-a5", "kind": "finished", "design": "Compliance review", "says": "The agent finished its turn: each finding now links to the regulation it cites.", "when": "3 hours ago", "url": "/f/spark-platform/d/compliance-review" },
+        { "id": "n-a6", "kind": "stopped", "design": "Rate lock", "says": "The build stopped: 2 pages don’t render in the app.", "when": "1 hour ago", "url": "/f/spark-platform/d/rate-lock/build" },
+        { "id": "n-a7", "kind": "finished", "design": "Borrower messages", "says": "The agent finished its turn: unread messages are now bold, with a count in the bar.", "when": "35 minutes ago", "url": "/f/spark-platform/d/borrower-messages" },
+        { "id": "n-a8", "kind": "question", "design": "Document upload", "says": "The agent asked whether a borrower can replace a document after the underwriter has accepted it.", "when": "12 minutes ago", "url": "/f/spark-platform/d/document-upload" },
+        { "id": "n-a9", "kind": "question", "design": "Payment methods", "says": "The agent asked whether a bank account needs verifying with micro-deposits before the first payment.", "when": "2 minutes ago", "url": "/f/spark-platform/d/payment-methods" }
+      ],
+      "inProgress": [
+        { "id": "b01", "design": { "id": "loan-offers", "title": "Loan offers", "kind": "design", "area": "Applications" }, "url": "/f/spark-platform/d/loan-offers", "buildUrl": "/f/spark-platform/d/loan-offers/build", "finish": "/f/spark-platform/branches/b01", "branch": "prelude/loan-offers", "into": "main", "check": "unchecked", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b02", "design": { "id": "rate-lock", "title": "Rate lock", "kind": "design", "area": "Pricing" }, "url": "/f/spark-platform/d/rate-lock", "buildUrl": "/f/spark-platform/d/rate-lock/build", "finish": "/f/spark-platform/branches/b02", "branch": "prelude/rate-lock", "into": "main", "check": "failing", "failures": 2, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": { "title": "Lock a rate", "stopped": true }, "alsoChanges": ["src/Spark.Web/Controllers/RatesController.cs", "src/Spark.Web/Views/Shared/_Layout.cshtml"], "running": { "running": false, "approved": true, "url": "https://localhost:7180", "open": "/f/spark-platform/branches/b02/app" }, "merging": null, "finishError": null,
+          "stories": [
+            { "title": "Lock a rate", "kind": "new", "state": "building", "summary": "A borrower locks today’s rate for 30, 45 or 60 days, and sees what it costs.", "story": "Lock a rate\n\nAs a borrower, I can lock today’s rate for 30, 45 or 60 days, and see the fee for each before I confirm.", "session": "/f/spark-platform/d/rate-lock/sessions/s-1" },
+            { "title": "Rate lock expiry", "kind": "new", "state": "to-build", "summary": "Seven days before a lock expires, the loan’s page says so, with Extend.", "story": "Rate lock expiry\n\nSeven days before a rate lock expires, the loan page says when, with a way to extend it.", "session": null },
+            { "title": "Lock desk", "kind": "changed", "state": "to-build", "summary": "Locks made by borrowers appear on the lock desk beside the loan officers’.", "story": "Lock desk (a change)\n\nRate locks a borrower makes appear on the lock desk with the loan officers’ own.", "session": null }
+          ] },
+        { "id": "b03", "design": { "id": "repayment-schedule", "title": "Repayment schedule", "kind": "design", "area": "Servicing" }, "url": "/f/spark-platform/d/repayment-schedule", "buildUrl": "/f/spark-platform/d/repayment-schedule/build", "finish": "/f/spark-platform/branches/b03", "branch": "prelude/repayment-schedule", "into": "main", "check": "passing", "failures": 0, "behind": 6, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null,
+          "stories": [
+            { "title": "Schedule", "kind": "new", "state": "built", "summary": "Every payment of the loan, with what goes to principal and to interest.", "story": "Schedule\n\nAs a borrower, I see every payment of my loan, each split into principal and interest.", "session": "/f/spark-platform/d/repayment-schedule/sessions/s-2" },
+            { "title": "Pay extra", "kind": "new", "state": "built", "summary": "An extra payment, and how much sooner the loan ends because of it.", "story": "Pay extra\n\nAs a borrower, I can pay extra toward principal and see how many months sooner my loan ends.", "session": "/f/spark-platform/d/repayment-schedule/sessions/s-3" }
+          ] },
+        { "id": "b04", "design": { "id": "underwriting-queue", "title": "Underwriting queue", "kind": "design", "area": "Underwriting" }, "url": "/f/spark-platform/d/underwriting-queue", "buildUrl": "/f/spark-platform/d/underwriting-queue/build", "finish": "/f/spark-platform/branches/b04", "branch": "prelude/underwriting-queue", "into": "main", "check": "passing", "failures": 0, "behind": 1, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b05", "design": { "id": "document-upload", "title": "Document upload", "kind": "design", "area": "Applications" }, "url": "/f/spark-platform/d/document-upload", "buildUrl": "/f/spark-platform/d/document-upload/build", "finish": "/f/spark-platform/branches/b05", "branch": "prelude/document-upload", "into": "main", "check": "passing", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b06", "design": { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Servicing" }, "url": "/f/spark-platform/d/payment-methods", "buildUrl": "/f/spark-platform/d/payment-methods/build", "finish": "/f/spark-platform/branches/b06", "branch": "prelude/payment-methods", "into": "main", "check": "unchecked", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b07", "design": { "id": "escrow-statements", "title": "Escrow statements", "kind": "design", "area": "Escrow" }, "url": "/f/spark-platform/d/escrow-statements", "buildUrl": "/f/spark-platform/d/escrow-statements/build", "finish": "/f/spark-platform/branches/b07", "branch": "prelude/escrow-statements", "into": "main", "check": "passing", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": true, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null,
+          "stories": [
+            { "title": "Annual escrow statement", "kind": "new", "state": "built", "summary": "The year’s deposits and payments out, and the balance after each.", "story": "Annual escrow statement\n\nAs a borrower, I see the year’s escrow deposits and disbursements with the running balance.", "session": "/f/spark-platform/d/escrow-statements/sessions/s-4" }
+          ] },
+        { "id": "b08", "design": { "id": "broker-portal", "title": "Broker portal", "kind": "design", "area": "Pricing" }, "url": "/f/spark-platform/d/broker-portal", "buildUrl": "/f/spark-platform/d/broker-portal/build", "finish": "/f/spark-platform/branches/b08", "branch": "prelude/broker-portal", "into": "main", "check": "passing", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": { "title": "Submit a loan", "stopped": false }, "alsoChanges": ["src/Spark.Web/Areas/Brokers/BrokersArea.cs"], "running": { "running": true, "approved": true, "url": "https://localhost:7180", "open": "/f/spark-platform/branches/b08/app" }, "merging": null, "finishError": null,
+          "stories": [
+            { "title": "Broker sign in", "kind": "new", "state": "built", "summary": "A broker signs in with their NMLS number.", "story": "Broker sign in\n\nAs a broker, I sign in with my NMLS number and password.", "session": "/f/spark-platform/d/broker-portal/sessions/s-5" },
+            { "title": "Submit a loan", "kind": "new", "state": "building", "summary": "A broker submits a loan with its borrower, property and pricing.", "story": "Submit a loan\n\nAs a broker, I submit a loan with the borrower, the property and the rate I priced.", "session": "/f/spark-platform/d/broker-portal/sessions/s-6" },
+            { "title": "Broker pipeline", "kind": "new", "state": "to-build", "summary": "A broker’s submitted loans and where each stands.", "story": "Broker pipeline\n\nAs a broker, I see my submitted loans and where each one stands.", "session": null },
+            { "title": "Compensation plan", "kind": "new", "state": "to-build", "summary": "What the broker earns on each loan, before it closes.", "story": "Compensation plan\n\nAs a broker, I see what I earn on each loan before it closes.", "session": null }
+          ] },
+        { "id": "b09", "design": { "id": "closing-day-checklist", "title": "Closing day checklist", "kind": "design", "area": "Closing" }, "url": "/f/spark-platform/d/closing-day-checklist", "buildUrl": "/f/spark-platform/d/closing-day-checklist/build", "finish": "/f/spark-platform/branches/b09", "branch": "prelude/closing-day-checklist", "into": "main", "check": "unchecked", "failures": 0, "behind": 0, "worked": false, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b10", "design": { "id": "borrower-messages", "title": "Borrower messages", "kind": "design", "area": "Servicing" }, "url": "/f/spark-platform/d/borrower-messages", "buildUrl": "/f/spark-platform/d/borrower-messages/build", "finish": "/f/spark-platform/branches/b10", "branch": "prelude/borrower-messages", "into": "main", "check": "passing", "failures": 0, "behind": 2, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b11", "design": { "id": "admin-dashboard", "title": "Admin dashboard", "kind": "design", "area": "Reporting" }, "url": "/f/spark-platform/d/admin-dashboard", "buildUrl": "/f/spark-platform/d/admin-dashboard/build", "finish": "/f/spark-platform/branches/b11", "branch": "prelude/admin-dashboard", "into": "main", "check": "passing", "failures": 0, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": true, "building": null, "alsoChanges": ["src/Spark.Web/Areas/Admin/AdminArea.cs", "src/Spark.Web/Startup.cs"], "running": null, "merging": null, "finishError": null, "stories": [] },
+        { "id": "b12", "design": { "id": "compliance-review", "title": "Compliance review", "kind": "design", "area": "Underwriting" }, "url": "/f/spark-platform/d/compliance-review", "buildUrl": "/f/spark-platform/d/compliance-review/build", "finish": "/f/spark-platform/branches/b12", "branch": "prelude/compliance-review", "into": "main", "check": "failing", "failures": 1, "behind": 0, "worked": true, "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-platform/pulls" }, "pushed": false, "building": null, "alsoChanges": [], "running": null, "merging": null, "finishError": null, "stories": [] }
+      ],
+      "designs": [
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+
+        { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "co-borrower-invite", "title": "Co-borrower invite", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "employment-history", "title": "Employment history", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "income-verification", "title": "Income verification", "kind": "design", "area": "Applications", "pages": 5, "approved": 3, "built": 0, "stage": "designing", "changed": "4 days ago" },
+        { "id": "asset-statements", "title": "Asset statements", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "property-details", "title": "Property details", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "declarations", "title": "Declarations", "kind": "design", "area": "Applications", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "credit-authorization", "title": "Credit authorization", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "application-summary", "title": "Application summary", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "save-and-resume", "title": "Save and resume", "kind": "design", "area": "Applications", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changed": "6 days ago" },
+
+        { "id": "conditions-list", "title": "Conditions list", "kind": "design", "area": "Underwriting", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "condition-clearing", "title": "Condition clearing", "kind": "design", "area": "Underwriting", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "credit-report-review", "title": "Credit report review", "kind": "design", "area": "Underwriting", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "appraisal-review", "title": "Appraisal review", "kind": "design", "area": "Underwriting", "pages": 3, "approved": 3, "built": 1, "stage": "ready", "changed": "3 days ago" },
+        { "id": "title-review", "title": "Title review", "kind": "design", "area": "Underwriting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "flood-certification", "title": "Flood certification", "kind": "design", "area": "Underwriting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "debt-to-income-calculator", "title": "Debt-to-income calculator", "kind": "design", "area": "Underwriting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "exceptions", "title": "Exceptions", "kind": "design", "area": "Underwriting", "pages": 3, "approved": 1, "built": 0, "stage": "designing", "changed": "yesterday" },
+        { "id": "underwriter-notes", "title": "Underwriter notes", "kind": "design", "area": "Underwriting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "decision-letter", "title": "Decision letter", "kind": "design", "area": "Underwriting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "suspense-queue", "title": "Suspense queue", "kind": "design", "area": "Underwriting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+
+        { "id": "rate-sheet", "title": "Rate sheet", "kind": "design", "area": "Pricing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "pricing-overrides", "title": "Pricing overrides", "kind": "design", "area": "Pricing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "lock-desk", "title": "Lock desk", "kind": "design", "area": "Pricing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "lock-extensions", "title": "Lock extensions", "kind": "design", "area": "Pricing", "pages": 2, "approved": 2, "built": 0, "stage": "ready", "changed": "5 days ago" },
+        { "id": "float-down", "title": "Float down", "kind": "design", "area": "Pricing", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changed": "2 days ago" },
+        { "id": "margin-adjustments", "title": "Margin adjustments", "kind": "design", "area": "Pricing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "investor-pricing", "title": "Investor pricing", "kind": "design", "area": "Pricing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "pricing-history", "title": "Pricing history", "kind": "design", "area": "Pricing", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "broker-compensation", "title": "Broker compensation", "kind": "design", "area": "Pricing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "rate-alerts", "title": "Rate alerts", "kind": "design", "area": "Pricing", "pages": 2, "approved": 1, "built": 0, "stage": "designing", "changed": "last week" },
+
+        { "id": "closing-disclosure", "title": "Closing disclosure", "kind": "design", "area": "Closing", "pages": 5, "approved": 5, "built": 0, "stage": "ready", "changed": "2 days ago" },
+        { "id": "loan-estimate", "title": "Loan estimate", "kind": "design", "area": "Closing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "fee-worksheet", "title": "Fee worksheet", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "closing-calendar", "title": "Closing calendar", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "settlement-agents", "title": "Settlement agents", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "wire-instructions", "title": "Wire instructions", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "e-signature", "title": "E-signature", "kind": "design", "area": "Closing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "funding", "title": "Funding", "kind": "design", "area": "Closing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "post-closing-checklist", "title": "Post-closing checklist", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "trailing-documents", "title": "Trailing documents", "kind": "design", "area": "Closing", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changed": "4 days ago" },
+        { "id": "closing-package", "title": "Closing package", "kind": "design", "area": "Closing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+
+        { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "last month" },
+        { "id": "loan-summary", "title": "Loan summary", "kind": "design", "area": "Servicing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "payment-history", "title": "Payment history", "kind": "design", "area": "Servicing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "autopay", "title": "Autopay", "kind": "design", "area": "Servicing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "payoff-quote", "title": "Payoff quote", "kind": "design", "area": "Servicing", "pages": 2, "approved": 2, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "statements", "title": "Statements", "kind": "design", "area": "Servicing", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "paperless-preferences", "title": "Paperless preferences", "kind": "design", "area": "Servicing", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "hardship-request", "title": "Hardship request", "kind": "design", "area": "Servicing", "pages": 4, "approved": 2, "built": 0, "stage": "designing", "changed": "3 days ago" },
+        { "id": "forbearance-plan", "title": "Forbearance plan", "kind": "design", "area": "Servicing", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "loan-modification", "title": "Loan modification", "kind": "design", "area": "Servicing", "pages": 5, "approved": 5, "built": 5, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "contact-preferences", "title": "Contact preferences", "kind": "design", "area": "Servicing", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+
+        { "id": "escrow-analysis", "title": "Escrow analysis", "kind": "design", "area": "Escrow", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "escrow-shortage", "title": "Escrow shortage", "kind": "design", "area": "Escrow", "pages": 3, "approved": 3, "built": 0, "stage": "ready", "changed": "last week" },
+        { "id": "tax-disbursements", "title": "Tax disbursements", "kind": "design", "area": "Escrow", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "insurance-disbursements", "title": "Insurance disbursements", "kind": "design", "area": "Escrow", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "hazard-insurance-updates", "title": "Hazard insurance updates", "kind": "design", "area": "Escrow", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "pmi-removal", "title": "PMI removal", "kind": "design", "area": "Escrow", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "escrow-refund", "title": "Escrow refund", "kind": "design", "area": "Escrow", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "escrow-waiver", "title": "Escrow waiver", "kind": "design", "area": "Escrow", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changed": "5 days ago" },
+        { "id": "property-tax-bills", "title": "Property tax bills", "kind": "design", "area": "Escrow", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "insurance-claims", "title": "Insurance claims", "kind": "design", "area": "Escrow", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+
+        { "id": "sign-in", "title": "Sign in", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "two-step-verification", "title": "Two-step verification", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "last month" },
+        { "id": "password-reset", "title": "Password reset", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "team-members", "title": "Team members", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "roles-and-permissions", "title": "Roles and permissions", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "audit-log", "title": "Audit log", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "session-timeout", "title": "Session timeout", "kind": "design", "area": "Accounts", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "profile-settings", "title": "Profile settings", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "notification-settings", "title": "Notification settings", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "api-keys", "title": "API keys", "kind": "design", "area": "Accounts", "pages": 2, "approved": 2, "built": 0, "stage": "ready", "changed": "last week" },
+        { "id": "single-sign-on", "title": "Single sign-on", "kind": "design", "area": "Accounts", "pages": 3, "approved": 1, "built": 0, "stage": "designing", "changed": "2 days ago" },
+
+        { "id": "pipeline-report", "title": "Pipeline report", "kind": "design", "area": "Reporting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
+        { "id": "pull-through-report", "title": "Pull-through report", "kind": "design", "area": "Reporting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "funding-report", "title": "Funding report", "kind": "design", "area": "Reporting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "delinquency-report", "title": "Delinquency report", "kind": "design", "area": "Reporting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "investor-remittance", "title": "Investor remittance", "kind": "design", "area": "Reporting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" },
+        { "id": "hmda-export", "title": "HMDA export", "kind": "design", "area": "Reporting", "pages": 2, "approved": 2, "built": 0, "stage": "ready", "changed": "4 days ago" },
+        { "id": "production-by-loan-officer", "title": "Production by loan officer", "kind": "design", "area": "Reporting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "turn-times", "title": "Turn times", "kind": "design", "area": "Reporting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
+        { "id": "exception-report", "title": "Exception report", "kind": "design", "area": "Reporting", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "custom-reports", "title": "Custom reports", "kind": "design", "area": "Reporting", "pages": 4, "approved": 1, "built": 0, "stage": "designing", "changed": "yesterday" },
+        { "id": "scheduled-exports", "title": "Scheduled exports", "kind": "design", "area": "Reporting", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "3 weeks ago" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/pmi-removal", "into": "main", "when": "2 weeks ago" },
+        { "id": "m-2", "branch": "prelude/loan-summary", "into": "main", "when": "2 weeks ago" },
+        { "id": "m-3", "branch": "prelude/forbearance-plan", "into": "main", "when": "2 weeks ago" },
+        { "id": "m-4", "branch": "prelude/notification-settings", "into": "main", "when": "2 weeks ago" },
+        { "id": "m-5", "branch": "prelude/exception-report", "into": "main", "when": "2 weeks ago" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" },
+        { "id": "r-2", "name": "Spark.Contracts", "path": "C:\\Projects\\Spark.Contracts" }
+      ]
+    }
+  ]
+}

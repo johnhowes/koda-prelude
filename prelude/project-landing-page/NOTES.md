@@ -9,7 +9,8 @@ Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
 `/f/:project/branches/:branch/publish` (Push a branch, modal). Fragments:
 `/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
 project, app being built, update clashed (with the app on the shell's branch
-and a failed push), long names (an existing app to connect, no remote).
+and a failed push), long names (an existing app to connect, no remote),
+large project (a hundred features).
 
 ## Decisions (the person asked for all eleven, 2026-10-18)
 
@@ -53,7 +54,7 @@ use moved from the New design form to the app card.
 
 ## What building it changes in the app
 
-- New GET routes: `/f/:id/work`, `/f/:id/app` (fragments), `/f/:id/designs/new`
+- New GET routes: `/f/:id/work`, `/f/:id/designs?q=&stage=`, `/f/:id/app` (fragments), `/f/:id/designs/new`
   and `/f/:id/branches/:bid/publish` (modals over the page).
 - Forms aim at regions and answer with fragments (work, app, references,
   the fields) instead of re-rendering the page; `back` fields go.
@@ -68,6 +69,25 @@ use moved from the New design form to the app card.
 - The page needs the design system (`system: true`), as Home does.
 - In the design, Merge just removes the branch from In progress; the app
   redirects to the design's page.
+
+## At scale: a hundred features (the person, 2026-10-19)
+
+- **Designs is its own region with search and a filter**: search as you type
+  (title or area, `?q=`) and All / Ready to build / Still designing
+  (`?stage=`). The page route filters the same way, so a filtered URL loads
+  as a page and works without script. Each area heading shows its count; a
+  search that matches nothing says so. Merged lately hides while filtering.
+- **`stage` is prepared by the app** per design: `ready` (approved pages not
+  built, once the app exists), `designing` (pages left to approve, or none
+  yet), `approved`, `built`. The filter matches on it, and it drives the
+  Ready to build pill.
+- **Designs reload only on `projects-changed`**; the work (Needs you, In
+  progress) on both events. Reading a hundred designs' progress on every
+  finished turn would be slow.
+- **A branch's stories fold** into "3 stories · 2 to build · 1 building",
+  so a dozen branches still fit. The first-run page moved from the work
+  region into the page.
+- State `large-project`: 88 designs in eight areas, 12 branches, 9 needs.
 
 ## Also decided
 

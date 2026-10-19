@@ -84,9 +84,9 @@
         }
       ],
       "designs": [
-        { "id": "borrower-design-system", "title": "Borrower Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
-        { "id": "sign-in", "title": "Sign in", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 0, "changed": "yesterday" },
-        { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Payments", "pages": 5, "approved": 1, "built": 0, "changed": "4 days ago" }
+        { "id": "borrower-design-system", "title": "Borrower Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 0, "stage": "approved", "changed": "yesterday" },
+        { "id": "sign-in", "title": "Sign in", "kind": "design", "area": "Accounts", "pages": 3, "approved": 3, "built": 0, "stage": "approved", "changed": "yesterday" },
+        { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Payments", "pages": 5, "approved": 1, "built": 0, "stage": "designing", "changed": "4 days ago" }
       ],
       "merged": [],
       "references": []
