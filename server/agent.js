@@ -12,7 +12,8 @@
 //   { type: 'tool', id, name, input }         it used a tool
 //   { type: 'tool-result', id, isError, text }
 //
-// The agent gets ordinary file tools and nothing else (plan: ground rule 3).
+// The agent gets ordinary file tools and nothing else (plan: ground rule 3);
+// it deletes a file by emptying it (DELETING).
 // It may read the folder and the folder's reference folders, and nothing else
 // on the machine; it may write only inside its design's folder, never in that
 // design's sessions/ and snapshots/. Anything else is refused without asking. No MCP servers,
@@ -25,6 +26,11 @@ import { readFileSync } from 'node:fs';
 import { eventLine } from './backlog.js';
 
 const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
+
+// With no shell there is no rm, so a file is deleted by writing it empty:
+// Prelude removes each file a turn emptied when the turn ends (turns.js), and
+// only where the agent may write, since the emptying Write is fenced as any is.
+export const DELETING = 'To delete a file, write it empty (Write with no content). When the turn ends, Prelude deletes each file you emptied, before it checks and commits the turn. So delete what is no longer used yourself; never ask the person to delete files by hand.';
 
 /**
  * Reads are fenced by Claude Code itself: with no read rule of ours, it allows

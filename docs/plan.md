@@ -46,7 +46,9 @@ until then.)
    move beyond plain HTML (see step 6). We'll make it then, deliberately.
 3. **The agent uses ordinary file tools.** The agent is the Claude Code CLI, run in the
    folder with Read/Write/Edit/Glob/Grep. Its writes are limited to `prelude/<design>/**`.
-   There are no MCP domain tools, because the agent can simply read the files.
+   There are no MCP domain tools, because the agent can simply read the files. With no
+   shell, it deletes a file by writing it empty; Prelude removes the files a turn emptied
+   when the turn ends.
 4. **The design's memory lives in its files, not in a conversation.** Because a design
    spans many sessions, each new session starts from the design's files: the screens and
    `NOTES.md`. It does not start from previous transcripts. The agent keeps `NOTES.md` up

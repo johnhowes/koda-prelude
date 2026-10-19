@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
@@ -322,6 +322,44 @@ test('messages written while the agent works go together, in order, when its tur
   assert.equal(runner.turns[1].prompt, 'First\n\nSecond');
   await until(() => readEntries(designDir, id).filter(e => e.type === 'turn').length === turnsBefore + 2);
   assert.deepEqual(readEntries(designDir, id).filter(e => e.type === 'user').slice(-2).map(e => e.text), ['First', 'Second'], 'each shown as written');
+});
+
+test('a file the agent empties is deleted when its turn ends', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  const sessionUrl = `${designUrl}/sessions/${id}`;
+  const turnsBefore = readEntries(designDir, id).filter(e => e.type === 'turn').length;
+  // As the agent names them: under the folder's canonical path, its working directory.
+  const dir = join(canonical(repo), 'prelude', 'onboarding', 'sign-up');
+  const gone = join(dir, '_unused.eta');
+  const rewritten = join(dir, '_rewritten.eta');
+  const refused = join(dir, '_refused.eta');
+  const untouched = join(dir, '_empty.eta');
+  // The fake runner writes nothing, so the files are as the agent would leave them.
+  writeFileSync(gone, '');
+  writeFileSync(rewritten, 'written again');
+  writeFileSync(refused, '');
+  writeFileSync(untouched, '');
+  const write = (tid, file, content, isError = false) => [
+    { type: 'tool', id: tid, name: 'Write', input: { file_path: file, content } },
+    { type: 'tool-result', id: tid, isError, text: isError ? 'denied' : 'ok' },
+  ];
+  runner.turns.length = 0;
+  runner.queue([
+    ...write('d1', gone, ''),
+    ...write('d2', rewritten, ''),
+    ...write('d3', rewritten, 'written again'),
+    ...write('d4', refused, '', true),
+    { type: 'text', text: 'Removed the unused partial.' },
+  ]);
+  await post(`${sessionUrl}/messages`, { message: 'Tidy up' });
+  await until(() => readEntries(designDir, id).filter(e => e.type === 'turn').length === turnsBefore + 1);
+
+  assert.match(runner.turns[0].systemPrompt, /To delete a file, write it empty/, 'the agent is told how');
+  assert.ok(!existsSync(gone), 'emptied, so deleted');
+  assert.ok(existsSync(rewritten), 'written again after it was emptied');
+  assert.ok(existsSync(refused), 'the write was refused');
+  assert.ok(existsSync(untouched), 'an empty file the agent never emptied stays');
+  for (const file of [rewritten, refused, untouched]) rmSync(file);
 });
 
 test('answering a question starts a message after what is typed, and sends nothing', async () => {
