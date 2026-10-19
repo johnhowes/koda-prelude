@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { appOf, DEFAULT_STACK } from './app-config.js';
 import { backlogOf } from './backlog.js';
 import { buildable, gitState, remoteOf } from './branches.js';
-import { PRELUDE_DIR, listDesigns } from './designs.js';
+import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
 import { ago, needsOfProject } from './home.js';
 import { filterModel, isHosted } from './host.js';
@@ -165,7 +165,8 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
   const remote = remoteOf(folder.path);
   const onMain = listDesigns(folder.path);
   return app.branches.of(folder.id)
-    .map(entry => ({ entry, design: listDesigns(entry.path).find(design => design.id === entry.design) ?? onMain.find(design => design.id === entry.design) }))
+    // A fix (step 11) is found as a design, though it isn't listed with them.
+    .map(entry => ({ entry, design: listDesigns(entry.path).find(design => design.id === entry.design) ?? onMain.find(design => design.id === entry.design) ?? findDesign(entry.path, entry.design.split('/'))?.design }))
     .filter(({ design }) => design)
     .sort((a, b) => a.design.id.localeCompare(b.design.id))
     .map(({ entry, design }) => {

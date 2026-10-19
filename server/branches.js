@@ -111,6 +111,19 @@ export function designCommitsSince(repo, from, branch, designId) {
   } catch { return []; }
 }
 
+/**
+ * The files a worktree has changed since a commit, committed or not, new
+ * files included (repository-relative, with /). A fix's check (step 11)
+ * runs before the turn is committed.
+ */
+export function changedSince(worktree, base) {
+  try {
+    const tracked = git(worktree, 'diff', '--name-only', base).split('\n');
+    const untracked = git(worktree, 'ls-files', '--others', '--exclude-standard').split('\n');
+    return [...new Set([...tracked, ...untracked].map(line => line.trim()).filter(Boolean))];
+  } catch { return []; }
+}
+
 /** git's user name where a folder is, as a commit there would be signed, or '' with none. */
 export function gitUser(folderPath) {
   try { return git(folderPath, 'config', 'user.name'); } catch { return ''; }
@@ -281,7 +294,8 @@ export function createBranches({ home }) {
       const ready = prepare(folder.path, [`prelude/${designId}`, 'prelude/prelude.json'], `${title}, as designed so far (committed by Prelude)`);
       if (ready.error) return ready;
       const main = mainBranch(folder.path);
-      const base = `prelude/${slug(designId)}`;
+      // A fix's branch is prelude/fix-<slug> (step 11); a design's, prelude/<design>.
+      const base = designId.startsWith('fixes/') ? `prelude/fix-${slug(designId.slice(6))}` : `prelude/${slug(designId)}`;
       let branch = base;
       for (let n = 2; gitOk(folder.path, 'rev-parse', '--verify', '--quiet', `refs/heads/${branch}`); n++) branch = `${base}-${n}`;
       const path = join(home, 'worktrees', folder.id, branch.replace(/\//g, '-'));

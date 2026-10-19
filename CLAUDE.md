@@ -142,12 +142,18 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     as it can. Without a host, `app.assets` (`appAssets`) names the app's own
     files by URL, and host.js serves them on the preview origin. A shell's
     `layouts.json` names layouts that are the app's files.
+  - Fixes (plan, step 11): `server/fixes.js`. A fix is one problem outside any
+    one design, in `prelude/fixes/<slug>/`, found by `findDesign` as a design of
+    kind `fix` (id `fixes/<slug>`), on the branch `prelude/fix-<slug>`. Its agent
+    runs in `mode: 'fix'` (`fixPrompt`, `fixContext` in main.js) and may write
+    the app and every design; its check covers the designs it touched. Its page
+    has no design surface.
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.
   - A design's page (built from `prelude/design-workspace`): `_session.eta` and
-    its partials, in `workspace-layout.eta` (Prelude's design system, the
-    shell's chrome, `drawer?` and `modal?`; styles in `public/workspace.css`).
+    its partials, a page in the app layout like any other (it links
+    `public/workspace.css` itself, and `.fills` makes the shell fill the window).
     Its model is `server/workspace.js` (`DesignPage`), shaped like the
     design's states. `server/drafts.js` keeps each session's unsent message
     and images in `~/.prelude/drafts/`; `server/capture.js` takes a picture
