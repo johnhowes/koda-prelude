@@ -211,6 +211,22 @@ the record picker, was dropped).
   `.panel-head` to the design system. In the app: split the event in
   `design-state.js` (`filesChanged` publishes `files-changed`) and add the
   bar's route. Send event "The agent changes the design" shows it here.
+- **A sent message shows at once** (the person, 2026-10-20: there was a
+  lag). The composer's script, on submit, clones a `<template>` bubble
+  (words as text, the tray's thumbnails), marked "Sending…", into
+  `#transcript` (or `#queued` while the agent works). The answer's
+  transcript replaces it; a refusal's composer removes any left (R-s4n).
+- **The agent's words stream as markdown** (the person, 2026-10-20: raw
+  markdown showed until the message was whole). `_live-entry.eta` is a
+  `.prose` of the words so far, rendered; each push replaces it with all
+  of them rendered afresh, not appended text, so the saved entry that
+  takes its place looks the same. A reload finds it in the transcript
+  (`it.streaming`). In the app: `flush` (turns.js) renders the block's
+  whole text with the entries' markdown into `push-delta` without
+  `ko-attach="last"` (perhaps a slower flush than 50ms, since it resends
+  the whole text), and the page model gets `streaming` from the turn's
+  block instead of pushing it on connect. State `04-building` shows one
+  mid-sentence.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does

@@ -51,24 +51,24 @@
   "POST /f/:folder/d/:design/sessions": {
     "update": "folders/:folder/designs/:design",
     "require": ["message"],
-    "form": "@app/server/views/_composer",
+    "form": "_composer",
     "answer": { "redirect": "/f/:folder/d/:design" }
   },
   "POST /f/:folder/d/:design/sessions/:session/messages": {
     "add": "folders/:folder/designs/:design/entries",
     "require": ["message"],
-    "form": "@app/server/views/_composer",
+    "form": "_composer",
     "answer": {
-      "view": "@app/server/views/_composer", "data": "folders/:folder/designs/:design",
-      "also": [{ "into": "transcript", "view": "@app/server/views/_transcript", "data": "folders/:folder/designs/:design" }]
+      "view": "_composer", "data": "folders/:folder/designs/:design",
+      "also": [{ "into": "transcript", "view": "_transcript", "data": "folders/:folder/designs/:design" }]
     }
   },
   "POST /f/:folder/d/:design/sessions/:session/queue": {
     "add": "folders/:folder/designs/:design/queued",
     "require": ["message"],
-    "form": "@app/server/views/_composer",
+    "form": "_composer",
     "answer": {
-      "view": "@app/server/views/_composer", "data": "folders/:folder/designs/:design",
+      "view": "_composer", "data": "folders/:folder/designs/:design",
       "also": [{ "into": "queued", "view": "@app/server/views/_queued", "data": "folders/:folder/designs/:design" }]
     }
   },

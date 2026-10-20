@@ -72,6 +72,12 @@
   .queued .bubble { opacity: 0.7; border: var(--border-width) dashed var(--accent); }
   .queued .entry.user { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
   .queued form { display: contents; }
+
+  /* The agent's words as they stream in, before any have come. */
+  .entry.live .prose:empty::after { content: "…"; color: var(--fg-subtle); }
+  /* A message just sent, shown before the server has it: quieter until
+     the transcript comes back with it. */
+  .entry.sending .bubble { opacity: 0.7; }
 }
 
 /* The image, full size, in the modal (its own scope: the modal isn't inside
