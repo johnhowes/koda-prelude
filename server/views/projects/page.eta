@@ -86,7 +86,9 @@
       </div>
       <aside class="side stack gap-6" aria-label="The project’s setup">
         <% if (started || p.app.status !== 'none') { %>
-        <section class="card" id="app" aria-labelledby="app-title" ko-as="app" ko-source="/f/<%= p.id %>/app" ko-invoke="event:projects-changed"><%~ include('./_app', p) %></section>
+        <%/* The app also follows its own running copy: starting, running,
+             stopped (app-changed). */%>
+        <section class="card" id="app" aria-labelledby="app-title" ko-as="app" ko-source="/f/<%= p.id %>/app" ko-invoke="event:projects-changed event:app-changed"><%~ include('./_app', p) %></section>
         <% } %>
         <%~ include('./_reading', p) %>
       </aside>

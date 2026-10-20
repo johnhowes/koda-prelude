@@ -181,7 +181,96 @@ states too, so the filter agrees with the line: a system with components is
 a shell is `built` when its layouts and own pages all are. The story and the
 design agree.
 
+## Run the app from here (redesign, 2026-10-20)
+
+The person asked to launch the app from main on this page. Decided:
+
+- **A separate instance**, not the design host: its own command and
+  address (`app.run`: `command`, `url`, `state` stopped / starting /
+  running / failed, `log`). Its port is given as `PORT`; the address must be
+  on this machine and not the host's (the app checks; the design only
+  requires both).
+- **Clicking Run is the approval** (the person): the button always shows the
+  command beside it (R-h2w). Only once the app is built (on main).
+- **The app build gives the default** (the person, 2026-10-20): building or
+  connecting the app, the agent writes a run command and an address of its
+  own into `prelude/prelude.json` (`"run": { "start", "url" }`, beside
+  `host`), so the card starts set (typical). Changed on the card, it's kept
+  on this computer and wins over the project's; the repository isn't
+  touched.
+- **Unset** (an app connected before this, or a build that couldn't say):
+  the card asks for both and has "Save and run" (large project). Set,
+  "Change how it runs" is a disclosure while it's stopped.
+- Starting shows a pulse and Stop; the server opens the browser once it
+  answers and says `app-changed` (the app region now reloads on it too);
+  running shows its address, Open and Stop; failing shows the last of its
+  output and "Run it again" (events `app-running`, `app-failed`).
+- States: typical has it set and stopped; large project hasn't set it.
+
+**Brought back for it**: `_app` (changed), `_run-fields` (new) and `page`
+(its `ko-invoke` gains `event:app-changed`); page's other partials are
+copied unchanged. Building it: a runner like `server/hosts.js` but for
+`app.run`, started in the project's folder without `PRELUDE_HOST`, the whole
+tree stopped with Prelude.
+
+## Update from main says what it did (fix, 2026-10-20)
+
+"Update from main" seemed to do nothing (the person). In the app, the
+behind count is against local `main` but the update merges `origin/main`
+when there's a remote, so unpushed local commits never come in and the
+button stays; and what it did was said only on the design's page. The app
+needs to update from whichever main is newer (local when diverged, as the
+count is): a fix for "Ask or fix", not this design (R-u9d).
+
+Here, the branch now says what the update did (`updated`: `from`,
+`files`, given once with the work's answer, as `finishError` is): "Brought
+main in: 2 files came in…" or "main had nothing new for this branch" (large
+project, Document upload). The design's form posts `behind` as a stand-in
+for the file count. **Brought back for it**: `_branch` (changed) and
+`_work`, which includes it.
+
+## Built: running the app, and what an update did (2026-10-20)
+
+`_app` and `_branch` are ported over the app's, `_run-fields` is new beside
+them, and `page` gains `event:app-changed`; `_work` was already the app's.
+Every route's view is `@app` now.
+
+- **The runner is `server/runs.js`**: one app per project, started from the
+  project's own folder (never a branch's worktree) with `shell: true`, its
+  `PORT` from its address, and `PRELUDE_HOST` taken out of its environment.
+  It's `starting` until anything answers at the address, then `running`, and
+  the browser opens it; one that exits before answering, or doesn't answer
+  in three minutes, is `failed`, with the last 1500 characters of its output.
+  One that exits after it answered is just `stopped`. Prelude quitting closes
+  the server, which takes each one's whole tree down (R-5tj). Its state
+  changing on its own says `app-changed` down the app's channel.
+- **Where how it runs comes from** (R-p7c): `"run": { "start", "url" }` in
+  `prelude/prelude.json`, which the app build's and the connection's
+  instructions now ask the agent to write; saved on the card, it's kept in
+  `runs.json` in Prelude's home, by the project's folder, and wins.
+- **What the app checks** beyond the design's `require`: the address is
+  `http://` on localhost (or 127.0.0.1), and is neither the design host's
+  (`host.url`) nor Prelude's own port. Settings from the project are checked
+  the same way when Run is clicked; refused there, the card shows it failed
+  with why. Run and Save and run do nothing until the app is built.
+- **A refused change without script** comes back as the page with the card's
+  fields showing why, but not what was typed: the fields show what's saved.
+  With script (the usual case) they come back with what was typed.
+- **Update from main** (R-u9d) merges the remote's main only when it holds
+  all of the local one, and the local one otherwise, so every commit it's
+  counted behind comes in. The work's answer gives that branch `updated`
+  (`from`, and `files`, the count of files that came in); a clash is said by
+  the merging notice instead, and without script the page is answered with
+  it rather than a redirect. The design's hidden `updated.from` /
+  `updated.files` inputs were stand-ins for this and aren't in the app's form.
+- The story (the design system and shell say what they hold) is untouched by
+  this change, and still agrees with the design.
+
 ## Open questions
+
+- **Running it while the design host runs in the same folder**: two
+  `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
+  output folder, or to stop the host first; let the build find out.
 
 - **New design has nowhere to say why the kind was refused**: designs here
   wait for the app to be connected (or for a custom stack's app to be

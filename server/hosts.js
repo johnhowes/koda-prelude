@@ -88,7 +88,7 @@ function open(url, { body = null, timeout = RENDER_TIMEOUT_MS, ...options }, onR
   attempt(4);
 }
 
-function call(url, { method = 'GET', body = null, timeout = RENDER_TIMEOUT_MS } = {}) {
+export function call(url, { method = 'GET', body = null, timeout = RENDER_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
     open(url, {
       method,

@@ -2,11 +2,68 @@
      uses; until it exists, the build that creates it on the shell's branch,
      or connects the one the project already has (8b). The shell's branch
      itself is listed under In progress, so this says where to finish it
-     rather than repeating it. `it` is the project. */%>
-<% const p = it, app = p.app, stack = app.stack || p.defaultStack; %>
+     rather than repeating it. `it` is the project.
+
+     Once it's built, the app can be run from here: from the project's own
+     folder (main), with a command and an address of its own, apart from the
+     copy that renders designs. `app.run` is how it runs (command and url,
+     kept on this computer, null until set) and its state: stopped,
+     starting, running or failed (with the last of its output in `log`).
+     Clicking Run approves the command it shows (R-h2w). */%>
+<% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}; %>
 <h2 id="app-title">The app</h2>
 <% if (app.status === 'built') { %>
 <p class="secondary"><%= app.stack %><% if (app.path) { %>, in <code><%= app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
+<% if (!run.command) { %>
+<form class="stack gap-3" action="/f/<%= p.id %>/app/run" method="post" ko-target="runFields">
+  <p class="secondary">To run it from here, say how it starts. It runs from <%= p.name %>’s own folder, apart from the copy Prelude renders designs with, so give it an address of its own.</p>
+  <input type="hidden" name="state" value="starting">
+  <div class="stack gap-3" ko-as="runFields"><%~ include('./_run-fields', run) %></div>
+  <div class="cluster actions"><button class="btn small" type="submit"><span class="icon icon-run" aria-hidden="true"></span>Save and run</button></div>
+</form>
+<% } else if (run.state === 'starting') { %>
+<div class="cluster gap-2" role="status">
+  <span class="pulse" aria-hidden="true"></span>
+  <span class="secondary">Starting the app at <code><%= run.url %></code>…</span>
+  <span class="spacer"></span>
+  <form action="/f/<%= p.id %>/app/run/stop" method="post" ko-target="app">
+    <input type="hidden" name="state" value="stopped">
+    <button class="btn small ghost" type="submit">Stop</button>
+  </form>
+</div>
+<p class="muted">It opens in your browser once it answers.</p>
+<% } else if (run.state === 'running') { %>
+<div class="stack gap-2" role="status">
+  <span class="cluster gap-2"><span class="pill good">Running</span><code><%= run.url %></code></span>
+  <div class="cluster actions">
+    <a class="btn small" href="<%= run.url %>" target="_blank" rel="noopener">Open<span class="icon icon-external" aria-hidden="true"></span></a>
+    <form action="/f/<%= p.id %>/app/run/stop" method="post" ko-target="app">
+      <input type="hidden" name="state" value="stopped">
+      <button class="btn small ghost" type="submit">Stop</button>
+    </form>
+  </div>
+</div>
+<% } else { %>
+<% if (run.state === 'failed') { %>
+<div class="notice danger" role="alert">
+  <strong>The app stopped before it answered.</strong>
+  <p>The last of what it said:</p>
+  <pre><%= run.log %></pre>
+</div>
+<% } %>
+<form class="stack gap-2" action="/f/<%= p.id %>/app/run/start" method="post" ko-target="app">
+  <input type="hidden" name="state" value="starting">
+  <div class="cluster actions"><button class="btn small" type="submit"><span class="icon icon-run" aria-hidden="true"></span><%= run.state === 'failed' ? 'Run it again' : 'Run the app' %></button></div>
+  <p class="muted">Runs <code><%= run.command %></code> in <span class="project-path"><%= p.path %></span>, at <code><%= run.url %></code>.</p>
+</form>
+<details class="disclosure">
+  <summary>Change how it runs</summary>
+  <form class="stack gap-3" action="/f/<%= p.id %>/app/run" method="post" ko-target="runFields">
+    <div class="stack gap-3" ko-as="runFields"><%~ include('./_run-fields', run) %></div>
+    <div class="cluster actions"><button class="btn small" type="submit">Save</button></div>
+  </form>
+</details>
+<% } %>
 <% } else if (app.status === 'on-branch') { %>
 <p class="secondary">The app is built on the app shell’s branch, <code><%= app.branch %></code>. Once that branch is in your main branch, features can be built on top of it: check what the build made in <a href="<%= app.url %>">the app shell</a>, then finish its branch under In progress.</p>
 <% } else if (app.status === 'building') { %>

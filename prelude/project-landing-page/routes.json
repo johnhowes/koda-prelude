@@ -42,6 +42,20 @@
     "update": "projects/:project/app",
     "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
   },
+  "POST /f/:project/app/run": {
+    "update": "projects/:project/app/run",
+    "require": ["command", "url"],
+    "form": "@app/server/views/projects/_run-fields",
+    "answer": { "into": "runFields?", "also": [{ "into": "app", "view": "@app/server/views/projects/_app", "data": "projects/:project" }] }
+  },
+  "POST /f/:project/app/run/start": {
+    "update": "projects/:project/app/run",
+    "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
+  },
+  "POST /f/:project/app/run/stop": {
+    "update": "projects/:project/app/run",
+    "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
+  },
   "POST /f/:project/references": {
     "add": "projects/:project/references",
     "require": ["path"],

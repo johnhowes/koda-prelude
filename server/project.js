@@ -68,7 +68,12 @@ import { changedSinceApproved } from './workspace.js';
  * @property {{ running: boolean, approved: boolean, url: string, open: string } | null} running
  * @property {{ from: string, unresolved: string[] } | null} merging
  * @property {string | null} finishError
+ * @property {Updated} [updated]   what an update from main just did: given once, with the work's answer
  * @property {Story[]} stories
+ *
+ * @typedef {object} Updated       What the last update from main brought in (R-u9d).
+ * @property {string} from         the main branch's name
+ * @property {number} files        how many files came in; none is "nothing new"
  *
  * @typedef {object} Design        A design not on a branch, and how far it's got.
  * @property {string} id
@@ -92,6 +97,13 @@ import { changedSinceApproved } from './workspace.js';
  * @property {boolean} existing
  * @property {string | null} branch   the shell's, while the app is on it
  * @property {string | null} url      where to follow or check it
+ * @property {Run} run
+ *
+ * @typedef {object} Run           How the app runs from here, and whether it is (runs.js; R-h2w).
+ * @property {string | null} command  null until the app build, or the person, says
+ * @property {string | null} url
+ * @property {'stopped' | 'starting' | 'running' | 'failed'} state
+ * @property {string | null} log      the last of its output, once it failed
  *
  * @typedef {object} Merged
  * @property {string} id
@@ -192,11 +204,12 @@ function progressOf(design, dir, appExists, ext) {
  * The designs in progress on the project's branches, each as the page shows
  * it. `branchOf(entry, design)` is where the branch stands (main.js's
  * branchState), `storiesOf(entry, design)` its stories; `finishError` is
- * { id, message } when finishing that branch just failed. `only` is one
+ * { id, message } when finishing that branch just failed, `updated`
+ * { id, from, files } when it was just updated from main. `only` is one
  * branch's worktree id, for a page that shows just that one (Push's modal).
  * @returns {Branch[]}
  */
-export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null, only = null }) {
+export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null, updated = null, only = null }) {
   if (folder.branch) return [];
   const remote = remoteOf(folder.path);
   const onMain = listDesigns(folder.path);
@@ -228,6 +241,7 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
         running: state.running ? { running: state.running.running, approved: state.running.approved, url: state.running.url, open: state.running.open } : null,
         merging: state.merging ? { from: state.merging.from, unresolved: state.merging.unresolved } : null,
         finishError: finishError?.id === entry.id ? finishError.message : null,
+        ...(updated?.id === entry.id ? { updated: { from: updated.from, files: updated.files } } : {}),
         stories: storiesOf(entry, design),
       };
     });
@@ -269,7 +283,7 @@ export function askedOf(app, folder, { now = Date.now() } = {}) {
  * design on a branch is in progress, not among them).
  * @returns {Project}
  */
-export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts = {}, finishError = null, appError = null, now = Date.now() }) {
+export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts = {}, finishError = null, updated = null, appError = null, now = Date.now() }) {
   const { work = true, designs: withDesigns = true } = parts;
   const entries = folder.branch ? [] : app.branches.of(folder.id);
   const onMain = listDesigns(folder.path);
@@ -296,6 +310,8 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     existing: config.existing,
     branch: status === 'building' || status === 'on-branch' ? shellEntry.branch : null,
     url: status === 'building' ? `/f/${folder.id}/d/${shell.id}/build` : status === 'on-branch' ? `/f/${folder.id}/d/${shell.id}` : null,
+    // Run from the project's own folder, so a branch's worktree has none.
+    run: folder.branch ? { command: null, url: null, state: 'stopped', log: null } : app.runs.of(folder),
   };
 
   const ext = readHostConfig(folder.path)?.views ?? '.eta';
@@ -319,7 +335,7 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     system: system && { id: system.id, title: system.title },
     shell: shell && { id: shell.id, title: shell.title },
     needs: work ? needsOfProject(app, folder, { now }) : [],
-    inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError }) : [],
+    inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError, updated }) : [],
     asked: work ? askedOf(app, folder, { now }) : [],
     designs,
     merged: folder.branch ? [] : app.branches.merged(folder.id).slice(0, 5)

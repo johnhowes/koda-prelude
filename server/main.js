@@ -27,6 +27,7 @@ import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
+import { checkRun, createRuns } from './runs.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
 import { capture } from './capture.js';
@@ -116,6 +117,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     watches: createWatches(),
     renderers: createRenderers({ appRoot: dirname(here) }),
     hosts: createHosts({ home }),
+    // The apps run from their projects' pages, apart from the design hosts (R-h2w).
+    runs: createRuns({ home, onChange: () => tell(app, { running: true }) }),
     designs: createDesignState({ live }),
     channels: createChannels(),   // server events' live channels, per design (6e)
     drafts: createDrafts({ home }),          // each session's unsent message
@@ -141,7 +144,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 66000;
   // Renderer processes would outlive the server; stop them with it.
-  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.channels.closeAll(); app.dictation.closeAll(); });
+  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.runs.closeAll(); app.channels.closeAll(); app.dictation.closeAll(); });
   return server;
 }
 
@@ -321,6 +324,8 @@ async function handle(req, res, app) {
     //   …    /f/<id>/d/fixes/<slug or new>/…   a conversation about the project, kept on this computer (handleDesign)
     //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
     //   POST /f/<id>/app/build                 start the app build: the app
+    //   POST /f/<id>/app/run                   how the app runs from here (and run it): the fields, and the app
+    //   POST /f/<id>/app/run/<start or stop>   run the app from here, or stop it: the app
     //   POST /f/<id>/references                add a folder: the field, and the list
     //   POST /f/<id>/references/<r>/remove     stop reading one: the list
     const here = `/f/${folder.id}`;
@@ -399,11 +404,12 @@ async function handle(req, res, app) {
       const design = findDesign(entry.path, entry.design.split('/'))?.design ?? { id: entry.design, title: entry.design };
       // The work, with why finishing the branch failed beside it, where the
       // person clicked, and logged: the top of a long page is easily out of sight.
-      const work = (status, failed = null) => {
+      // An update says there what it did, once (R-u9d).
+      const work = (status, failed = null, updated = null) => {
         if (failed) console.error(`Finishing ${entry.branch} failed: ${failed}`);
         const finishError = failed ? { id: entry.id, message: failed } : null;
-        if (!fragment) return failed ? projectPage(status, { model: projectModel({ finishError }) }) : redirect(res, here);
-        return projectPart(status, 'projects/_work', { parts: { designs: false }, finishError });
+        if (!fragment) return failed || updated ? projectPage(status, { model: projectModel({ finishError, updated }) }) : redirect(res, here);
+        return projectPart(status, 'projects/_work', { parts: { designs: false }, finishError, updated });
       };
 
       // Merged, the branch leaves In progress and its design is under Designs again (R-2hx).
@@ -424,7 +430,9 @@ async function handle(req, res, app) {
           ? `${updated.from} is half brought into this branch: ${updated.clashes.length === 1 ? '1 file clashes' : `${updated.clashes.length} files clash`} (${updated.clashes.join(', ')}), left with git's conflict markers. The agent resolves them with your next message; nothing is committed until it has. Or abandon the update.`
           : updated.files.length ? `Brought ${updated.from} into this branch: ${updated.files.length} ${updated.files.length === 1 ? 'file' : 'files'} came in. The agent is told with your next message.` : `${updated.from} had nothing new for this branch.`, Boolean(updated.error));
         tell(app, { projects: true });
-        return work(updated.error ? 409 : 200, updated.error ?? null);
+        // A clash is said by the branch's merging notice instead.
+        const said = updated.files ? { id: entry.id, from: updated.from, files: updated.files.length } : null;
+        return work(updated.error ? 409 : 200, updated.error ?? null, said);
       }
       if (action === 'abandon') {
         const abandoned = app.branches.abandon(entry);
@@ -495,6 +503,45 @@ async function handle(req, res, app) {
       }
       const started = await startedBuild({ req, app, folder: made.worktree, designId: shell.id, groupKey: APP_GROUP.key });
       return started.error ? answer(409, started.error) : answer(200);
+    }
+
+    // Run the app from here (runs.js): once it's built, from the project's own
+    // folder, with a command and address of its own, never the design host's
+    // (R-h2w). How it runs is saved on this computer only (R-p7c); Save and
+    // run also starts it. Each answers with the app; the fields come back
+    // fresh, or refused with what was typed and why.
+    const runChecks = () => ({ host: readHostConfig(folder.path)?.url ?? null, prelude: req.headers.host ?? null });
+    const appPart = () => (fragment
+      ? send(res, 200, render('./projects/_app', projectModel({ parts: { work: false, designs: false } })))
+      : redirect(res, `${here}#app`));
+    if (rest === '/app/run' && req.method === 'POST' && !folder.branch) {
+      const form = await readForm(req);
+      const input = { command: String(form.get('command') ?? '').trim(), url: String(form.get('url') ?? '').trim() };
+      const errors = checkRun(input, runChecks());
+      if (Object.keys(errors).length) {
+        const fields = { ...input, $errors: errors };
+        if (fragment) return send(res, 422, render('./projects/_run-fields', fields));
+        // Cold, the card shows how it runs now, with why the change was refused.
+        const model = projectModel();
+        return projectPage(422, { model: { ...model, app: { ...model.app, run: { ...model.app.run, $errors: errors } } } });
+      }
+      app.runs.save(folder, input);
+      if (form.get('state') === 'starting' && appOf(folder.path).built) app.runs.start(folder, runChecks());
+      tell(app, { running: true });
+      if (!fragment) return redirect(res, `${here}#app`);
+      const model = projectModel({ parts: { work: false, designs: false } });
+      return send(res, 200, `${render('./projects/_run-fields', model.app.run)}\n${envelope('app', render('./projects/_app', model))}`);
+    }
+    // Clicking Run is the approval: the button shows the command it runs.
+    if (rest === '/app/run/start' && req.method === 'POST' && !folder.branch) {
+      if (appOf(folder.path).built) app.runs.start(folder, runChecks());
+      tell(app, { running: true });
+      return appPart();
+    }
+    if (rest === '/app/run/stop' && req.method === 'POST' && !folder.branch) {
+      app.runs.stop(folder);
+      tell(app, { running: true });
+      return appPart();
     }
 
     if (rest === '' && req.method === 'GET') {
