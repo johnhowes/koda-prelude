@@ -19,7 +19,7 @@
 
 import { execFile, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 import { canonical, folderId } from './folders.js';
 import { listSessions, updateSession } from './sessions.js';
@@ -65,6 +65,11 @@ export function gitState(folderPath) {
   } catch (error) {
     return error.code === 'ENOENT' ? 'missing' : 'none';
   }
+}
+
+/** The repository a worktree belongs to (its project's folder), or null. */
+export function repositoryOf(worktreePath) {
+  try { return canonical(resolve(worktreePath, git(worktreePath, 'rev-parse', '--git-common-dir'), '..')); } catch { return null; }
 }
 
 /** Whether a build can start here: a repository, or a folder a build can make one. */
