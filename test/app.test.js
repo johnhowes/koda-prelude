@@ -151,6 +151,31 @@ test('another stack is described, and its app is built first, on the shell’s b
   assert.match(await (await get(`/f/${wid}/d/app-shell/build`)).text(), /Build sessions \(1\)[\s\S]*<span class="item-title">Build the app<\/span>/);
 });
 
+test('a design with no branch keeps its draft without one; once it has one, a region’s reload is answered in place, not moved', async () => {
+  const { repo, fid } = await bareRepo();
+  createDesign(repo, { title: 'Loans', kind: 'design' });
+  commitAll(repo, 'Designs');
+
+  // Typing, and Start with this, change only the draft, kept on this computer.
+  assert.equal((await post(`/f/${fid}/d/loans/draft`, { message: 'Make it' })).status, 200);
+  assert.equal((await post(`/f/${fid}/d/loans/start`, { message: 'bigger' })).status, 200);
+  assert.equal(git(repo, 'branch', '--list', 'prelude/loans'), '', 'no branch for a draft');
+  assert.match(readFileSync(join(home, 'drafts', fid, 'loans', 'new', 'draft.json'), 'utf8'), /Make it\\n\\nbigger/);
+
+  // Anything else posted makes the branch, and the draft goes with the design.
+  await post(`/f/${fid}/d/loans/builds`, { group: '/loans' });
+  const wid = folderId(worktreeOf(repo, 'prelude/loans'));
+  assert.match(readFileSync(join(home, 'drafts', wid, 'loans', 'new', 'draft.json'), 'utf8'), /Make it/);
+  assert.equal(existsSync(join(home, 'drafts', fid, 'loans')), false);
+
+  // A cold load moves to the worktree; a region reloading its part is
+  // answered at its own address, so Koda keeps it in that region.
+  assert.equal(location(await get(`/f/${fid}/d/loans/about`)), `/f/${wid}/d/loans/about`);
+  const part = await fetch(`${base}/f/${fid}/d/loans/about`, { headers: { 'x-koda-fragment': '1' }, redirect: 'manual' });
+  assert.equal(part.status, 200);
+  assert.doesNotMatch(await part.text(), /<html/i, 'the part alone, from the worktree');
+});
+
 test('the app is built on the shell’s branch, merged into main and tidied up; a feature then updates from main and builds', async () => {
   const { repo, fid } = await bareRepo();
   createDesign(repo, { title: 'Tokens', kind: 'system' });

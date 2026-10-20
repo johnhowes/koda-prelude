@@ -422,6 +422,18 @@ Where the app differs from the screens, on purpose:
   `_keep`) matched the app's line for line, and `:scope.window-page >
   .design` was already in `server/public/workspace.css`, so the port is
   the route alone.
+- **The surface or the bar no longer takes over the whole page**
+  (2026-10-20, the fix in `prelude/fixes/a-design-s-page-sometimes-gets-swapped-for-a-single-piece/`).
+  A design with no branch is served from the project's own address; once
+  a post had made its branch, every GET there was redirected to the
+  worktree's, so a region's reload (the surface on `design-changed`, the
+  bar on `files-changed`) came back from outside its scope and Koda gave
+  it to `#workspace` (`ko-scope="/"`). The app (`server/main.js`, the
+  `/d/` routing) now answers a fragment GET there in place, with the
+  worktree, and moves only a cold load. Keeping the draft, Start with
+  this, answering a question and the tray's images change only the draft,
+  kept on this computer, so they no longer make the branch; when another
+  post makes it, the draft moves with the design.
 
 ## Built: the design page is for designing only (2026-10-20)
 
@@ -446,6 +458,15 @@ Where the app differs from the screens, on purpose:
 
 ## Open questions
 
+- New session doesn't work in the app (the person, 2026-10-19), though
+  `…/sessions/new` is answered (`server/main.js`, `sessionId === 'new'`).
+  Probably not the redirect above: the link is in `#workspace`, whose
+  scope is `/`, so even a redirected answer lands where it should. On a
+  page already showing a new session it's the current item, and reloads
+  the same empty session. What happens when it's clicked still needs
+  reproducing.
+- A message may be images alone (rule R-b6d), but the design's route still
+  requires text: its `require` can't say "text or an image".
 - **The surface sometimes takes over the whole page** (reported
   2026-10-19, typing in the box or Start with this). Likely cause, from
   the code (`server/main.js`, the `/d/` routing): a design with no branch

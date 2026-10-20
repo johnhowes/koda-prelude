@@ -644,6 +644,10 @@ async function handle(req, res, app) {
       // there is moved to it, and anything posted is answered there, the branch
       // made first if the design has none yet. Starting a build in a folder
       // that isn't a repository makes it one, and the design's branch with it.
+      // A region reloading its part is answered there in place, not moved: a
+      // part from another address lands outside the region's scope, so Koda
+      // gives it to the page's own region and it fills the page. What only
+      // changes the draft, kept on this computer, makes no branch.
       const startsBuild = req.method === 'POST' && segments.at(-1) === 'builds';
       if (repository || (!folder.branch && startsBuild && buildable(folder.path))) {
         const onMain = findDesign(folder.path, segments);
@@ -653,13 +657,15 @@ async function handle(req, res, app) {
         const design = onMain?.design ?? onBranch?.found?.design;
         if (design) {
           let entry = app.branches.forDesign(folder.id, design.id);
-          if (!entry && req.method === 'POST') {
+          if (!entry && req.method === 'POST' && !(onMain && changesDraftOnly(onMain.rest))) {
             const made = branchFor(design.id, design.title);
             if (made.error) return page(409, 'not-found', { what: made.error }, 'Couldn’t make the design’s branch');
             entry = made.entry;
+            // Drafts are kept by folder: what was typed here goes with the design.
+            app.drafts.move(folder, design, app.folders.get(entry.id), design);
           }
           if (entry) {
-            if (req.method === 'GET') return redirect(res, `/f/${entry.id}${rest}${url.search}`);
+            if (req.method === 'GET' && !fragment) return redirect(res, `/f/${entry.id}${rest}${url.search}`);
             const worktree = app.folders.get(entry.id);
             const found = findDesign(worktree.path, segments);
             if (found) return handleDesign({ req, res, url, page, app, folder: worktree, ...found });
@@ -688,6 +694,18 @@ async function handle(req, res, app) {
 //   POST …/d/<design>/screen                  show a screen, in every window
 //   GET  …/d/<design>/window                  the design surface alone, for a pop-out window
 //   GET  …/d/<design>/live                    the design's channel: "design-changed", "files-changed"
+/**
+ * Whether a post to a design only changes its draft (R-d3v): what's typed,
+ * its images, or a message started in the box (R-y3h). [segment] after the
+ * design's id.
+ */
+function changesDraftOnly(rest) {
+  const parts = rest[0] === 'sessions' && rest.length >= 3 ? rest.slice(2) : rest;
+  if (['draft', 'attachments'].includes(parts[0])) return true;
+  if (rest[0] === 'images' && rest[2] === 'markup') return true;
+  return (rest[0] === 'start' && rest.length === 1) || (rest[0] === 'questions' && rest[2] === 'answer' && rest.length === 3);
+}
+
 // The app build's group (step 8): not a page of a design, but the app itself,
 // built in a session of the folder's shell, since the shell is the app's frame.
 const APP_GROUP = { key: '@app', slug: 'app', title: 'The app', routes: [], posts: [], rules: [] };
