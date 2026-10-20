@@ -10,6 +10,14 @@
 // doesn't render) or, for the page being built, 'unbuilt' (its route is still
 // the design's own view). Approving one as built saves that screen alone; the
 // rest are still checked against the design (R-f6w).
+//
+// The app build and the shell's layouts build have no screens of their own.
+// Beside their chat is what the build did instead: whether the app starts
+// from the branch (Prelude starts it afresh after each turn), kept as
+//
+//   sessions/<id>/result.json  { at, start: { status, log? } }
+//
+// with what the build changed since the session started, read from git.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -37,18 +45,33 @@ import { whenWords } from './workspace.js';
  * @property {Shot[]} shots      the page being built's, then the rest's that don't match
  * @property {{ matching: number, pages: number }} elsewhere  the rest that match, counted
  *
+ * @typedef {object} Result      What an app or layouts build did, as its session shows it.
+ * @property {string} url
+ * @property {string|null} at    "today at 09:52"; null before the first turn ends
+ * @property {{ status: 'starts' | 'fails' | 'unapproved' | 'none' | 'unchecked', log?: string }} start
+ *   whether the app started from the branch after the last turn: it answered
+ *   Prelude in time, didn't (with its log), waits for the person's approval,
+ *   or there's no design host to run it
+ * @property {{ since: 'session' | 'branch', files: { path: string, how: 'added' | 'changed' | 'removed' }[] }} changes
+ * @property {{ name: string, file: string | null }[] | null} layouts  the shell's layouts build's:
+ *   each layout, with the app's file once it's built
+ *
  * @typedef {object} BuildSession  A build session's page (build/session).
  * @property {string} id
  * @property {string} title
  * @property {string} url
+ * @property {'page' | 'app' | 'layouts'} kind  a page of the design, the app itself, or the shell's layouts
  * @property {{ id: string, name: string, url: string }} folder  the project
  * @property {{ id: string, title: string, url: string }} design
  * @property {string} branch
- * @property {{ title: string, stories: number }} build  the page being built, and how many stories it has
- * @property {{ running: boolean, url: string, open: string, start: string, back: string } | null} app
+ * @property {{ title: string, stories: number }} build  what's being built, and how many stories it has
+ * @property {{ running: boolean, approved: boolean, command: string, url: string, open: string, start: string, back: string } | null} app
  *   the app on this branch, with its own data; null with no design host to run it
  * @property {{ says: string } | null} status  what the agent is doing, while it works
- * @property {Check} check
+ * @property {{ built: boolean, finish: { url: string, label: string } }} next  what's next: whether
+ *   it's built, and where the branch is finished (the project page)
+ * @property {Check | null} check   a page's build: its screens
+ * @property {Result | null} result the app or layouts build: what it did
  * @property {object[]} [entries]  the design's stand-in transcript; the app gives `chat`
  * @property {object} [chat]       the design page's chat (DesignPage, server/workspace.js)
  * @property {string} [live]       the session's channel
@@ -63,6 +86,34 @@ export function readCheck(dir, sessionId) {
 
 export function writeCheck(dir, sessionId, check) {
   writeFileSync(fileOf(dir, sessionId), JSON.stringify(check, null, 2) + '\n');
+}
+
+const resultFileOf = (dir, sessionId) => join(sessionsDir(dir), sessionId, 'result.json');
+
+/** An app or layouts build's last start: { at, start }, or null before its first. */
+export function readResult(dir, sessionId) {
+  try { return JSON.parse(readFileSync(resultFileOf(dir, sessionId), 'utf8')); } catch { return null; }
+}
+
+export function writeResult(dir, sessionId, result) {
+  writeFileSync(resultFileOf(dir, sessionId), JSON.stringify(result, null, 2) + '\n');
+}
+
+/**
+ * What an app or layouts build did, as the page shows it: its start, the
+ * files changed (a design's sessions left out: they're the conversation,
+ * not the build), and the shell's layouts, for a layouts build. The log is
+ * its end, as the host kept it.
+ */
+export function resultView(kept, { url, changes, layouts = null }) {
+  const start = kept?.start ?? { status: 'unchecked' };
+  return {
+    url,
+    at: kept ? whenWords(kept.at) ?? 'a while ago' : null,
+    start: { status: start.status, ...(start.log ? { log: start.log.trim() } : {}) },
+    changes: { since: changes.since, files: changes.files.filter(file => !/^prelude\/.+\/sessions\//.test(file.path)) },
+    layouts,
+  };
 }
 
 /**

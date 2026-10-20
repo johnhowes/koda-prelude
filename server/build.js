@@ -72,6 +72,7 @@ import { whenWords } from './workspace.js';
  * @property {string | null} updateUrl  Update from main
  * @property {BuildGroup[]} groups
  * @property {{ title: string }[]} unchanged  built, and not changed by this design
+ * @property {{ title: string, url: string, started: string }[]} [sessions]  every build session, newest first
  */
 
 /** The page that holds the design-wide rules and events. */

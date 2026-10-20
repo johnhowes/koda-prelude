@@ -33,8 +33,9 @@ import { presentEntry as presentWords } from './views.js';
  * @property {string|null} buildUrl
  * @property {{ branch: string, into: string, when: string }|null} merged
  * @property {Branch|null} branch
- * @property {SessionItem[]} sessions
- * @property {{ id: string, title: string, build?: { title: string } }|null} session
+ * @property {SessionItem[]} sessions  the design's sessions; on a build session's page, its build sessions
+ * @property {boolean} [builds]     the chat is a build session's (prelude/build): no New session
+ * @property {{ id: string, title: string }|null} session
  * @property {TurnState} state
  * @property {object[]} entries      transcript entries, presented (presentEntry)
  * @property {{ id: string, html: string }|null} [streaming]  what the agent is writing now: its live entry's id, and the words so far as markdown
@@ -65,7 +66,7 @@ import { presentEntry as presentWords } from './views.js';
  * @property {{ from: string, unresolved: string[] }|null} merging
  * @property {string|null} error
  *
- * @typedef {{ id: string, title: string, started: string, build?: boolean, lastLine?: string }} SessionItem
+ * @typedef {{ id: string, title: string, started: string, lastLine?: string }} SessionItem
  *
  * @typedef {{ icon: string, title: string, says: string }} Trouble
  *
@@ -90,12 +91,10 @@ import { presentEntry as presentWords } from './views.js';
  *
  * @typedef {object} Surface
  * @property {'inline'|'window'} view
- * @property {'design'|'app'} mode
  * @property {string} size
  * @property {string} client
  * @property {{ width: number, height: number }} [custom]
  * @property {string} origin        where the page on show is served (+ current)
- * @property {{ url: string, running: boolean, approved: boolean, start: string }|null} app
  * @property {{ start: string, approved: boolean, approve: string }|null} host
  * @property {boolean} popped
  * @property {string|null} notice

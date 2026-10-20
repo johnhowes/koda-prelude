@@ -1,0 +1,68 @@
+{
+  "layout": { "needsYou": 1, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "app-shell",
+          "title": "App shell",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/app-shell",
+          "branch": "prelude/app-shell",
+          "app": { "built": true, "onBranch": true, "stack": "Node, Express, Eta and Koda", "url": "/f/borrower-portal#app" },
+          "approved": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/app-shell/update",
+          "sessions": [
+            {
+              "id": "20261020-1130-l4yt",
+              "title": "Build: The shell’s layouts",
+              "url": "/f/borrower-portal/d/app-shell/sessions/20261020-1130-l4yt",
+              "kind": "layouts",
+              "started": "today at 11:30",
+              "folder": { "id": "borrower-portal", "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "id": "app-shell", "title": "App shell", "url": "/f/borrower-portal/d/app-shell" },
+              "branch": "prelude/app-shell",
+              "build": { "title": "The shell’s layouts", "stories": 0 },
+              "app": { "running": true, "approved": true, "command": "node app/server.js", "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/app-shell/sessions/20261020-1130-l4yt/app/start", "back": "/f/borrower-portal/d/app-shell/sessions/20261020-1130-l4yt" },
+              "status": null,
+              "next": { "built": true, "finish": { "url": "/f/borrower-portal", "label": "Merge into main" } },
+              "check": null,
+              "result": {
+                "url": "/f/borrower-portal/d/app-shell/sessions/20261020-1130-l4yt/result",
+                "at": "today at 11:47",
+                "start": { "status": "starts" },
+                "changes": {
+                  "since": "session",
+                  "files": [
+                    { "path": "app/views/layouts/app.eta", "how": "changed" },
+                    { "path": "app/views/layouts/workspace.eta", "how": "added" },
+                    { "path": "prelude/app-shell/layouts.json", "how": "changed" },
+                    { "path": "prelude/app-shell/layouts/app.eta", "how": "removed" },
+                    { "path": "prelude/app-shell/layouts/workspace.eta", "how": "removed" }
+                  ]
+                },
+                "layouts": [
+                  { "name": "app", "file": "app/views/layouts/app" },
+                  { "name": "workspace", "file": "app/views/layouts/workspace" }
+                ]
+              },
+              "entries": [
+                { "id": 1, "type": "user", "message": "Build the shell’s layouts." },
+                { "id": 2, "type": "tool", "name": "Edit", "summary": "app/views/layouts/app.eta" },
+                { "id": 3, "type": "tool", "name": "Write", "summary": "app/views/layouts/workspace.eta" },
+                { "id": 4, "type": "text", "html": "<p>Both layouts are the app’s now: <strong>app</strong> as redesigned, and the new <strong>workspace</strong>, with its drawer region. <code>layouts.json</code> names each, so the designs render in them.</p>" },
+                { "id": 5, "type": "note", "text": "Committed to prelude/app-shell (9c03d7e)." }
+              ]
+            }
+          ],
+          "groups": [],
+          "unchanged": []
+        }
+      ]
+    }
+  ]
+}

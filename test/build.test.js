@@ -10,6 +10,7 @@ import { after, before, test } from 'node:test';
 
 import { buildPrompt, designPrompt, permissionArgs } from '../server/agent.js';
 import { backlogOf, storyMarkdown } from '../server/backlog.js';
+import { filesChangedSince, headOf } from '../server/branches.js';
 import { createDesign } from '../server/designs.js';
 import { canonical, folderId } from '../server/folders.js';
 import { listStates } from '../server/host.js';
@@ -206,16 +207,18 @@ test('a build works on the design’s own branch: a build session, its own instr
   assert.match(turn.systemPrompt, /- R-k3f: Only an underwriter sees/);
   assert.doesNotMatch(turn.systemPrompt, /R-z1x/, 'only proposed rules are to be made true');
   assert.equal(turn.prompt, 'Build Borrowers.');
-  assert.match(await (await get(location)).text(), /<strong>Building Borrowers<\/strong> · checked against the approved design/);
+  assert.match(await (await get(location)).text(), /<h1>Building Borrowers<\/h1>/, 'a build session opens in Build');
+  assert.match(await (await get(`/f/${wid}/d/borrowers/sessions/new`)).text(), /<strong>Building Borrowers<\/strong> · checked against the approved design/, 'the design page says where the design stands');
+  assert.ok(readSession(workDir, sid).from, 'where the branch was when it started');
 
   await settled(workDir, sid);
   assert.match(git(worktree, 'log', '-1', '--format=%s'), /^Borrowers: Build Borrowers\.$/);
-  // What's next (10.7): the group isn't built yet, so carry on. No design host, so no app line.
-  await until(() => readEntries(workDir, sid).some(e => e.type === 'next'));
-  const next = readEntries(workDir, sid).find(e => e.type === 'next');
-  assert.equal(next.built, false);
-  assert.equal(next.app, null);
-  assert.equal(next.firstPorted, false);
+  // What's next (10.7) is the session page's, not a transcript entry: the
+  // group isn't built yet, so carry on. No design host, so no app.
+  assert.ok(!readEntries(workDir, sid).some(e => e.type === 'next'));
+  const building = await (await get(location)).text();
+  assert.match(building, /<strong>Next:<\/strong> Borrowers isn’t built yet\. Send the agent the next message to carry on\./);
+  assert.doesNotMatch(building, /Open the app|Start the app/);
   assert.match(git(worktree, 'show', '--stat', '--format=', 'HEAD'), /prelude\/borrowers\/sessions\//);
 
   // Groups are built one at a time.
@@ -232,11 +235,19 @@ test('a build works on the design’s own branch: a build session, its own instr
   const folderPage = await (await get(`/f/${fid}`)).text();
   assert.ok(folderPage.includes(`<a class="muted" href="/f/${wid}/d/borrowers/sessions/${sid}">Build session</a>`));
 
+  // Build sessions are Build's: listed there, and in a build session's
+  // chat, which starts no design session; never on the design page.
+  assert.ok(view.includes(`Build sessions (1)`));
+  assert.ok(view.includes(`<a class="item" href="/f/${wid}/d/borrowers/sessions/${sid}">`));
   const session = await (await get(location)).text();
-  assert.match(session, /<span class="item-title">Build: Borrowers <span class="pill">Build<\/span><\/span>/);
-  assert.match(session, /<div class="notice" role="note">\s*<p>This session builds <strong>Borrowers<\/strong> into the app, on this design’s branch\./, 'a notice at the top of the chat');
+  assert.match(session, /<span class="item-title">Build: Borrowers<\/span>/);
+  assert.doesNotMatch(session, /New session|This session builds|class="pill">Build</);
+  assert.match(session, /<strong>Build session<\/strong> · on <code>prelude\/borrowers<\/code>/);
+  const designPage = await (await get(`/f/${wid}/d/borrowers/sessions/new`)).text();
+  assert.doesNotMatch(designPage, /Build: Borrowers/, 'not in the design’s sessions menu');
+  assert.equal((await get(`/f/${wid}/d/borrowers`)).status, 200, 'the design’s latest session is never a build session (R-o4s): a new one');
   // The header names the branch; its state and actions are in the About drawer.
-  assert.match(session, /<span class="icon icon-push" aria-hidden="true"><\/span><code>prelude\/borrowers<\/code>/);
+  assert.match(designPage, /<span class="icon icon-push" aria-hidden="true"><\/span><code>prelude\/borrowers<\/code>/);
   const about = await (await get(`/f/${wid}/d/borrowers/about`)).text();
   assert.match(about, /Works on <code>prelude\/borrowers<\/code>, building Borrowers\./);
   assert.match(about, /Merge into main/, 'no remote: finished by merging here');
@@ -319,21 +330,17 @@ test('a build ports the views; the design’s copies go, and the build is done',
   assert.match(git(worktree, 'show', '--stat', '--no-renames', '--format=', 'HEAD'), /app\/views\/borrowers\/list\.eta/);
   const view = await (await get(`/f/${wid}/d/borrowers/build`)).text();
   assert.doesNotMatch(view, /Building <strong>/, 'the group is built, so the branch is free for the next');
-  // Built, and the strip says the check matched (10.9), rather than offering approval.
-  const builtPage = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
-  assert.match(builtPage, /<strong>Built<\/strong> · merge into main/);
-  assert.match(builtPage, /<strong>All \d+ pages match<\/strong> the approved design\./);
-  assert.doesNotMatch(builtPage, /Approve these screens/);
-  // What's next (10.7): built and checked, so finish the branch; the design window shows the app's views now.
-  const next = readEntries(workDir, buildSession.id).filter(e => e.type === 'next').at(-1);
-  assert.equal(next.built, true);
-  assert.equal(next.checked, true);
-  assert.equal(next.firstPorted, true);
-  assert.deepEqual(next.finish, { url: `/f/${fid}`, label: 'Merge into main' });
+  // Built, and the design page's strip says the check matched (10.9), rather than offering approval.
+  const designPage = await (await get(`/f/${wid}/d/borrowers/sessions/new`)).text();
+  assert.match(designPage, /<strong>Built<\/strong> · merge into main/);
+  assert.match(designPage, /<strong>All \d+ pages match<\/strong> the approved design\./);
+  assert.doesNotMatch(designPage, /Approve these screens/);
+  assert.match(designPage, /· the app’s own view/, 'the page menu says which pages are the app’s');
+  // What's next (10.7), on the build session's page: built and checked, so finish the branch.
+  assert.ok(!readEntries(workDir, buildSession.id).some(e => e.type === 'next'));
   const session = await (await get(`/f/${wid}/d/borrowers/sessions/${buildSession.id}`)).text();
-  assert.match(session, /The design window now shows the app’s own views/);
-  assert.match(session, /<strong>Next:<\/strong>\s*When you’re happy with it,\s*finish the branch on <a href="\/f\/[0-9a-f]+">the project page<\/a>: Merge into main\./);
-  assert.match(session, /· the app’s own view/, 'the page menu says so too');
+  assert.match(session, /<strong>Borrowers is built\.<\/strong>\s*<p>Every screen matches its approved design\. Try it in the app, with its own data, then finish the branch on the project page: Merge into main\.<\/p>/);
+  assert.ok(session.includes(`<a class="btn small ghost" href="/f/${fid}"><span class="icon icon-push" aria-hidden="true"></span>Finish on the project page</a>`));
 });
 
 test('a merge git refuses changes nothing, and says why beside the branch’s buttons', async () => {
@@ -477,12 +484,66 @@ test('the app on a branch (10.7): running with Open it, stopped with Start it, o
   assert.doesNotMatch(none, /The app on this branch/, 'no app built, or no design host: nothing to say');
 });
 
-test('after a build turn (10.7): what’s next, from the turn’s check', () => {
-  const next = extra => render('./_entry', { entry: { type: 'next', group: 'Home', built: true, checked: true, failures: 0, differ: 0, app: null, firstPorted: false, finish: { url: '/f/p', label: 'Push and open a pull request' }, ...extra } });
-  assert.match(next({ built: false }), /Home isn’t built yet\. Send the next message to carry on\./);
-  assert.match(next({ failures: 2 }), /2 pages don’t render yet\. The agent is told with your next message\./);
-  assert.match(next({ differ: 1 }), /1 page differs from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar\. Then\s*finish the branch on <a href="\/f\/p">the project page<\/a>: Push and open a pull request\./);
-  assert.match(next({ checked: false }), /Prelude didn’t check the pages this turn/);
-  assert.match(next({ app: { url: 'http://localhost:5300', running: true, open: '/f/w/host/open' } }), /running at <code>http:\/\/localhost:5300<\/code> · <a href="\/f\/w\/host\/open" target="_blank">Open/);
-  assert.doesNotMatch(next({ app: { url: 'http://localhost:5300', running: false, open: '/f/w/host/open' } }), /running at/);
+test('what’s next in a build session (10.7): one notice beside the chat, never a transcript entry', () => {
+  const app = { running: true, approved: true, command: 'node app/server.js', url: 'http://localhost:5300', open: '/f/w/host/open', start: '/s/app/start', back: '/s' };
+  const shot = status => ({ id: status, group: 'Home', page: 'Home', state: 'Typical', status, url: `/s/check/${status}` });
+  const session = extra => ({ kind: 'page', url: '/s', build: { title: 'Home', stories: 0 }, app: null, status: null, next: { built: true, finish: { url: '/f/p', label: 'Push and open a pull request' } }, check: { shots: [shot('matches')] }, result: null, ...extra });
+  const next = extra => render('./build/_next', session(extra));
+  assert.match(next({ check: { shots: [shot('fails')] } }), /1 screen doesn’t render\./);
+  assert.match(next({ check: { shots: [shot('differs')] } }), /1 screen differs<\/strong> from the approved design\./);
+  assert.match(next({ check: { shots: [shot('unbuilt')] } }), /<strong>Next:<\/strong> Home isn’t built yet\./);
+  assert.match(next({ next: { built: false, finish: { url: '/f/p', label: 'Merge into main' } } }), /<strong>Next:<\/strong> Home isn’t built yet\./, 'a rule still to make true');
+  assert.equal(next({ status: { says: 'Working…' } }).trim(), '', 'nothing while the agent works');
+  const built = next({ app });
+  assert.match(built, /<strong>Home is built\.<\/strong>\s*<p>Every screen matches its approved design\. Try it in the app, with its own data, then finish the branch on the project page: Push and open a pull request\.<\/p>/);
+  assert.match(built, /href="\/f\/w\/host\/open" target="_blank"[^>]*><span class="icon icon-external" aria-hidden="true"><\/span>Open the app<\/a>/);
+  assert.match(built, /href="\/f\/p"><span class="icon icon-push" aria-hidden="true"><\/span>Finish on the project page<\/a>/);
+
+  // The app build and the shell's layouts: from the app's start.
+  const result = start => ({ url: '/s/result', at: 'today at 10:00', start, changes: { since: 'session', files: [] }, layouts: null });
+  const appBuild = extra => next({ kind: 'app', build: { title: 'The app', stories: 0 }, check: null, app, ...extra });
+  assert.match(appBuild({ result: result({ status: 'fails', log: 'Error: Cannot find module' }) }), /The app doesn’t start from this branch\.[\s\S]*action="\/s\/result\/fix"[\s\S]*Ask the agent to fix it/);
+  assert.match(appBuild({ app: { ...app, running: false, approved: false }, result: result({ status: 'unapproved' }) }), /Approve the app to start it\.<\/strong> Prelude starts it with <code>node app\/server\.js<\/code>[\s\S]*<input type="hidden" name="approve" value="true">[\s\S]*Approve and start the app/);
+  assert.match(appBuild({ result: result({ status: 'starts' }) }), /<strong>The app is built\.<\/strong>\s*<p>The app starts from this branch, at <code>http:\/\/localhost:5300<\/code>\./);
+  assert.match(next({ kind: 'layouts', build: { title: 'The shell’s layouts', stories: 0 }, check: null, next: { built: false, finish: { url: '/f/p', label: 'Merge into main' } }, result: result({ status: 'starts' }) }), /The shell’s layouts aren’t built yet\./);
+});
+
+test('the app build and the shell’s layouts show what the build did: whether the app starts, the layouts, the files changed', () => {
+  const session = result => ({ kind: 'layouts', url: '/s', build: { title: 'The shell’s layouts', stories: 0 }, app: null, status: null, next: { built: false, finish: { url: '/f/p', label: 'Merge into main' } }, check: null, result });
+  const html = render('./build/_result', session({
+    url: '/s/result', at: 'today at 10:00',
+    start: { status: 'fails', log: 'Error: Cannot find module \'express\'' },
+    changes: { since: 'session', files: [{ path: 'app/views/layouts/app.eta', how: 'changed' }, { path: 'app/views/layouts/workspace.eta', how: 'added' }, { path: 'prelude/shell/layouts/app.eta', how: 'removed' }] },
+    layouts: [{ name: 'app', file: 'app/views/layouts/app' }, { name: 'workspace', file: null }],
+  }));
+  assert.match(html, /Whether it starts<span class="pill danger">Doesn’t start<\/span>/);
+  assert.match(html, /<summary>What it printed<\/summary>\s*<pre>Error: Cannot find module &#39;express&#39;<\/pre>/);
+  assert.match(html, /“app”<span class="pill good">Built<\/span>[\s\S]*The app’s <code>app\/views\/layouts\/app<\/code>/);
+  assert.match(html, /“workspace”<span class="pill ">Not built yet<\/span>/);
+  assert.match(html, /<summary>Added \(1\)<\/summary>[\s\S]*app\/views\/layouts\/workspace\.eta[\s\S]*<summary>Changed \(1\)<\/summary>[\s\S]*<summary>Removed \(1\)<\/summary>/);
+  assert.match(html, /since this session started/);
+  assert.match(html, /Started today at 10:00, after the agent’s last turn\./);
+  assert.equal(render('./build/_result', { ...session(null), kind: 'page' }).trim(), '', 'a page’s build has the check instead');
+});
+
+test('what a build changed, from git: added, changed and removed, new files included', () => {
+  const work = canonical(mkdtempSync(join(tmpdir(), 'prelude-changes-')));
+  git(work, 'init', '-q', '-b', 'main');
+  write(work, 'kept.txt', 'a');
+  write(work, 'gone.txt', 'b');
+  git(work, 'add', '-A');
+  git(work, 'commit', '-q', '-m', 'Start');
+  const from = headOf(work);
+  write(work, 'kept.txt', 'changed');
+  rmSync(join(work, 'gone.txt'));
+  write(work, 'app/new.js', 'new');
+  git(work, 'add', 'kept.txt', 'gone.txt');
+  git(work, 'commit', '-q', '-m', 'A turn');
+  write(work, 'app/untracked.js', 'not committed yet');
+  assert.deepEqual(filesChangedSince(work, from), [
+    { path: 'app/new.js', how: 'added' },
+    { path: 'app/untracked.js', how: 'added' },
+    { path: 'gone.txt', how: 'removed' },
+    { path: 'kept.txt', how: 'changed' },
+  ]);
 });

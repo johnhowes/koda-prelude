@@ -37,6 +37,11 @@
     "add": "folders/:folder/designs/:design/sessions/:session/entries",
     "answer": { "view": "@app/server/views/build/_entry", "data": "folders/:folder/designs/:design/sessions/:session/entries/:new" }
   },
+  "/f/:folder/d/:design/sessions/:session/result": { "view": "@app/server/views/build/_result", "data": "folders/:folder/designs/:design/sessions/:session" },
+  "POST /f/:folder/d/:design/sessions/:session/result/fix": {
+    "add": "folders/:folder/designs/:design/sessions/:session/entries",
+    "answer": { "view": "@app/server/views/build/_entry", "data": "folders/:folder/designs/:design/sessions/:session/entries/:new" }
+  },
   "POST /f/:folder/d/:design/sessions/:session/messages": {
     "add": "folders/:folder/designs/:design/sessions/:session/entries",
     "require": ["message"],

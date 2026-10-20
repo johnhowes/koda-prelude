@@ -1,14 +1,15 @@
 <%/* The check, as a list: every screen of the page being built, in every
      state, against its approved screen; then the rest of the design, which a
      build can change too, listed only where it doesn't match (the rest
-     counted; R-9xe). One notice says what to do first. Each screen opens in
-     this panel to compare. It runs again after each of the agent's turns
-     (check-done). `it` is the session (BuildSession, server/check.js). */%>
+     counted; R-9xe). One notice says what's next (_next). Each screen opens
+     in this panel to compare. It runs again after each of the agent's turns
+     (check-done). The app build and the shell's layouts have no check: no
+     screens of their own (_result). `it` is the session (BuildSession,
+     server/check.js). */%>
+<% if (it.check) { %>
 <% const check = it.check; const all = check.shots;
    const shots = all.filter(shot => shot.group === it.build.title);
    const others = all.filter(shot => shot.group !== it.build.title);
-   const count = status => all.filter(shot => shot.status === status).length;
-   const fails = count('fails'), differs = count('differs'), unbuilt = count('unbuilt');
    const pages = [...new Set(shots.map(shot => shot.page))];
    const says = {
      matches: { pill: 'good', label: 'Matches', line: 'As approved' },
@@ -17,21 +18,7 @@
      unbuilt: { pill: '', label: 'Not built yet', line: 'Still the design’s own view' },
    }; %>
 <div class="stack gap-5">
-  <% if (fails) { %>
-  <div class="notice danger" role="alert">
-    <p><strong><%= fails === 1 ? '1 screen doesn’t render.' : `${fails} screens don’t render.` %></strong> The agent is told with your next message.</p>
-  </div>
-  <% } else if (differs) { %>
-  <div class="notice warn" role="status">
-    <p><strong><%= differs === 1 ? '1 screen differs' : `${differs} screens differ` %> from the approved design.</strong> Open <%= differs === 1 ? 'it' : 'one' %> to compare. Ask the agent to fix it, or approve it as built if the change is what you want.</p>
-  </div>
-  <% } else if (!unbuilt && !it.status) { %>
-  <div class="notice good" role="status">
-    <strong><%= it.build.title %> is built.</strong>
-    <p>Every screen matches its approved design. Try it in the app, with its own data, then finish the branch from the project’s page.</p>
-    <% if (it.app) { %><div class="cluster actions"><%~ include('./_open-app', it.app) %></div><% } %>
-  </div>
-  <% } %>
+  <%~ include('./_next', it) %>
 
   <% for (const page of pages) { %>
   <section class="stack gap-1" aria-label="<%= page %>">
@@ -70,3 +57,4 @@
 
   <p class="muted" role="status"><%= it.status ? `The agent is working. The check runs again when its turn ends; this is from ${check.at}.` : `Checked ${check.at}, after the agent’s last turn.` %></p>
 </div>
+<% } %>
