@@ -19,7 +19,9 @@
 //   - a native folder picker, beside the typed path;
 //   - a real window per design for Pop out, which remembers its size and
 //     place (on a second monitor, say);
-//   - Open in browser in the system's browser, not another app window.
+//   - Open in browser in the system's browser, not another app window;
+//   - Capture's What's in view as the window shows the frame, with what's
+//     typed in it, where the server could only open the page afresh.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -240,6 +242,9 @@ fn bridge(server: &str) -> String {
     popOut: (url, name) => invoke('pop_out', {{ url, name }}),
     // A screen in the system's browser.
     openInBrowser: url => invoke('open_in_browser', {{ url }}),
+    // A picture of part of this window as it is on screen (a box in the
+    // page's CSS pixels, scaled): the DevTools answer, {{ data }} in base64.
+    capture: (rect, scale) => invoke('capture', {{ x: rect.x, y: rect.y, width: rect.width, height: rect.height, scale }}),
   }};
 }})();
 "#,
@@ -320,6 +325,60 @@ fn open_in_browser(app: AppHandle, url: String) -> Result<(), String> {
     app.opener().open_url(target.as_str(), None::<&str>).map_err(|error| error.to_string())
 }
 
+/// What `Page.captureScreenshot` is asked for: a PNG of a box of the page,
+/// in its CSS pixels, at `scale`. Only boxes that make sense are asked for.
+fn screenshot_params(x: f64, y: f64, width: f64, height: f64, scale: f64) -> Result<String, String> {
+    let sane = |n: f64| n.is_finite() && n >= 0.0;
+    if !(sane(x) && sane(y) && sane(width) && sane(height) && width >= 1.0 && height >= 1.0 && scale.is_finite() && scale > 0.0 && scale <= 16.0) {
+        return Err("That isn't a box on the page.".into());
+    }
+    Ok(format!(
+        r#"{{"format":"png","captureBeyondViewport":false,"clip":{{"x":{x},"y":{y},"width":{width},"height":{height},"scale":{scale}}}}}"#
+    ))
+}
+
+/// Async, so waiting for the picture never holds up the event loop the
+/// webview runs on.
+#[tauri::command]
+async fn capture(window: WebviewWindow, x: f64, y: f64, width: f64, height: f64, scale: f64) -> Result<String, String> {
+    let params = screenshot_params(x, y, width, height, scale)?;
+    screenshot(&window, params)
+}
+
+/// WebView2's own DevTools protocol, asked on the webview's thread; the answer
+/// comes back here.
+#[cfg(windows)]
+fn screenshot(window: &WebviewWindow, params: String) -> Result<String, String> {
+    use std::sync::mpsc;
+    use webview2_com::CallDevToolsProtocolMethodCompletedHandler;
+    use windows_core::{HSTRING, PCWSTR};
+
+    let (sent, answer) = mpsc::channel::<Result<String, String>>();
+    window
+        .with_webview(move |webview| {
+            let failed = sent.clone();
+            let handler = CallDevToolsProtocolMethodCompletedHandler::create(Box::new(move |result, json| {
+                let _ = sent.send(result.map(|()| json).map_err(|error| error.message()));
+                Ok(())
+            }));
+            let method = HSTRING::from("Page.captureScreenshot");
+            let params = HSTRING::from(params);
+            let asked = unsafe {
+                webview.controller().CoreWebView2().and_then(|core| core.CallDevToolsProtocolMethod(PCWSTR(method.as_ptr()), PCWSTR(params.as_ptr()), &handler))
+            };
+            if let Err(error) = asked {
+                let _ = failed.send(Err(error.message()));
+            }
+        })
+        .map_err(|error| error.to_string())?;
+    answer.recv_timeout(Duration::from_secs(20)).map_err(|_| "The window didn't give its picture.".to_string())?
+}
+
+#[cfg(not(windows))]
+fn screenshot(_window: &WebviewWindow, _params: String) -> Result<String, String> {
+    Err("Picturing the window is only in the Windows app for now.".into())
+}
+
 fn show_main(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
@@ -341,7 +400,7 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         // Every window - the main one and each design's - opens where it was.
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![pick_folder, pop_out, open_in_browser])
+        .invoke_handler(tauri::generate_handler![pick_folder, pop_out, open_in_browser, capture])
         .setup(move |app| {
             // The bridge, for the server's origin alone: a capability made from
             // the URL this shell was started with, rather than a pattern that
@@ -352,7 +411,8 @@ fn main() {
                     .remote(format!("{}/*", origin_of(&server_url)))
                     .permission("allow-pick-folder")
                     .permission("allow-pop-out")
-                    .permission("allow-open-in-browser"),
+                    .permission("allow-open-in-browser")
+                    .permission("allow-capture"),
             )?;
 
             // Starting a server opens on the shell's own "Starting Prelude…" page.
@@ -429,8 +489,19 @@ mod tests {
         assert_eq!(origin_of("http://localhost:4200/f/x"), "http://localhost:4200");
         let script = bridge("http://localhost:4200");
         assert!(script.contains("if (location.origin !== \"http://localhost:4200\") return;"));
-        for command in ["pick_folder", "pop_out", "open_in_browser"] {
+        for command in ["pick_folder", "pop_out", "open_in_browser", "capture"] {
             assert!(script.contains(command));
         }
+    }
+
+    #[test]
+    fn a_capture_asks_for_a_box_on_the_page_only() {
+        assert_eq!(
+            screenshot_params(10.0, 20.0, 390.0, 844.0, 2.0).unwrap(),
+            r#"{"format":"png","captureBeyondViewport":false,"clip":{"x":10,"y":20,"width":390,"height":844,"scale":2}}"#
+        );
+        assert!(screenshot_params(0.0, 0.0, 0.0, 10.0, 1.0).is_err());
+        assert!(screenshot_params(f64::NAN, 0.0, 10.0, 10.0, 1.0).is_err());
+        assert!(screenshot_params(0.0, 0.0, 10.0, 10.0, 0.0).is_err());
     }
 }

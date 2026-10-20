@@ -152,12 +152,12 @@ offer-added
 <span id="event-status" ko-region role="status">
 </span>
 <details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
@@ -165,12 +165,16 @@ Capture
 <input name="name" type="hidden" value="Compare offers – Typical.png">
 <input name="page" type="hidden" value="/offers/compare">
 <input name="state" type="hidden" value="01-typical">
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
-<span class="muted">
-As much as fits the frame now
+<span class="muted" data-browser-only>
+As much as fits the frame, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+As much as fits the frame, exactly as it is now, with what you’ve typed
 </span>
 </button>
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
@@ -178,7 +182,7 @@ As much as fits the frame now
 The whole page
 </span>
 <span class="muted">
-Scrolled to its end, as wide as the frame
+Scrolled to its end, as wide as the frame, opened afresh
 </span>
 </button>
 </form>

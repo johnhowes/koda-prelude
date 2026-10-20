@@ -24,10 +24,8 @@
 - ~~**R-k7c.** A capture is the page exactly as the window that captured it shows it: its page, state, size and client, or the app.~~
   *retired: it pictured the page picked, never a drawer or modal open over it or a page reached by a link, and a page opened afresh can't hold what's typed (2026-10-20); see R-w8p and R-3qz.*
 - **R-w8p.** A capture of the design is of the page where the frame is now, a page reached by following its links or a drawer or modal open over it included, in the window's state, size and client.
-  *proposed*
 - **R-3qz.** In the desktop app, capturing what's in view keeps the page exactly as it is on screen, with what's typed or drawn in it; in a browser, and for the whole page in either, the page is opened afresh where it was, without what's typed.
   *shown-on: /f/:folder/d/:design @ typical*
-  *proposed*
 - **R-f2y.** What the person says is turned into text on their own computer and never leaves it; the only download is the speech model, once, when they turn dictation on.
   *shown-on: /f/:folder/d/:design/dictation @ pages-differ*
 - **R-n5q.** Dictation adds what was said after what’s already typed, keeping anything typed while it listened.

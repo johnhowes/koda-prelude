@@ -1,6 +1,7 @@
-// Capture (prelude/design-workspace, R-k7c): a picture of a page exactly as a
-// window shows it - its page, state, size and client, or the app - for the
-// message box. The page is in a frame on another origin, which the page
+// Capture (prelude/design-workspace, R-w8p, R-3qz): a picture of a page,
+// opened afresh where the frame is, as a window shows it - its state, size and
+// client, or the app - for the message box. (The desktop app's What's in view
+// is its own picture of the frame, desktop.js; this is everything else.) The page is in a frame on another origin, which the page
 // around it can't read, so the server takes the picture: it opens the page in
 // a headless Edge or Chrome already on this computer (PRELUDE_BROWSER names
 // another) and asks it for a PNG over the DevTools protocol. No dependency:

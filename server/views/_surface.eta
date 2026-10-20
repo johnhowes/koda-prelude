@@ -51,10 +51,13 @@
   <div id="design-bar" class="panel-head" ko-source="<%= barUrl %>" ko-invoke="event:files-changed"><%~ include('./_design-bar', { ...it, here, shown }) %></div>
 
   <% if (!popped) { %>
-  <%/* The frame's size at Fit, for Capture's "what's in view" (the bar's
-       form): beside the frame, so they outlast the bar's reloads. */%>
+  <%/* For Capture (the bar's form), beside the frame so they outlast the
+       bar's reloads: the frame's size at Fit, for "what's in view", and
+       where the frame is now (frame.at), for the server to open. Empty,
+       the server opens the page picked. */%>
   <input type="hidden" form="capture-form" name="frame.width" ko-as="frameWidth" value="<%= size.width ?? '' %>">
   <input type="hidden" form="capture-form" name="frame.height" ko-as="frameHeight" value="<%= size.height ?? '' %>">
+  <input type="hidden" form="capture-form" name="frame.at" ko-as="frameAt" value="">
   <div class="design-frame<%= size.width ? ' sized' : '' %>" ko-as="frame">
     <% if (cur && appMode && !s.app.running) { %>
     <% if (s.app.approved) { %>
@@ -85,6 +88,23 @@
     });
     observer.observe(frame.element);
     onRemove(() => observer.disconnect());
+  </script>
+  <% } %>
+  <% if (cur && !appMode) { %>
+  <script type="koda">
+    // Where the frame is now, for Capture (R-w8p): a page the person reached
+    // by following links, or a drawer or modal open over it, at its own
+    // address. The frame is another origin, so its page says so itself: the
+    // design's origin adds a script to the pages it serves into a frame,
+    // which posts the address on each arrival (koda:attached) and on Back.
+    // Only that frame's word is taken.
+    const { device, frameAt, onRemove } = koda.scope();
+    const heard = event => {
+      if (event.source !== device.element.querySelector('iframe')?.contentWindow) return;
+      if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at;
+    };
+    window.addEventListener('message', heard);
+    onRemove(() => window.removeEventListener('message', heard));
   </script>
   <% } %>
   <% } %>

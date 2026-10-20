@@ -4,7 +4,7 @@
 fn main() {
     tauri_build::try_build(
         tauri_build::Attributes::new()
-            .app_manifest(tauri_build::AppManifest::new().commands(&["pick_folder", "pop_out", "open_in_browser"])),
+            .app_manifest(tauri_build::AppManifest::new().commands(&["pick_folder", "pop_out", "open_in_browser", "capture"])),
     )
     .expect("failed to run the Tauri build script");
 }

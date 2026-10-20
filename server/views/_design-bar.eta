@@ -120,31 +120,42 @@
   <% } %>
   <% } %>
 
-  <%/* Capture the page: the server renders it as this window shows it
-       (page, state, size, client; or the app) and puts the picture in the
-       message box, to send or mark up. What's in view, or the whole page
-       scrolled to its end. At Fit, "in view" is the frame's own size, which
-       the frame reports into the form (frame.width, frame.height: inputs
-       beside the frame, outside this region, so they outlast its reloads).
-       The line beside it says where the picture went; the tray in the chat
-       reloads on draft-changed, so a capture from the pop-out lands there
-       too. */%>
+  <%/* Capture the page, where the frame is now (R-w8p): a page reached by
+       following links in it, with a drawer or modal open over it, as this
+       window shows it (state, size, client; or the app). The picture goes in
+       the message box, to send or mark up.
+
+       In a browser the server opens that address afresh and pictures it, so
+       what's typed or drawn and not yet saved isn't in it. In the desktop
+       app, What's in view is the frame exactly as it is on screen, taken by
+       the app itself (desktop.js puts it in `picture` before the form goes);
+       the whole page, scrolled to its end, is still opened afresh, since the
+       screen never held it (R-3qz). The hints say which, by client.
+
+       At Fit, "in view" is the frame's own size, and frame.at where it is:
+       inputs beside the frame, outside this region, so they outlast its
+       reloads. The line beside it says where the picture went; the tray in
+       the chat reloads on draft-changed, so a capture from the pop-out lands
+       there too. */%>
   <% if (cur && !popped && !(appMode && !s.app.running)) { %>
-  <% const shot = `${cur.title} – ${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`; %>
+  <% const shot = `${cur.title} – ${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`;
+     const inView = size.width ? `${size.width} × ${size.height}` : 'As much as fits the frame'; %>
   <details class="menu start" ko-as="captureMenu">
-    <summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</summary>
-    <form class="menu-list" id="capture-form" action="<%= base %>/capture" method="post" ko-target="capture-status">
+    <summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</summary>
+    <form class="menu-list" id="capture-form" action="<%= base %>/capture" method="post" enctype="multipart/form-data" ko-target="capture-status">
       <%~ keep %>
       <input type="hidden" name="name" value="<%= shot %>">
       <input type="hidden" name="page" value="<%= current %>">
       <input type="hidden" name="state" value="<%= appMode ? '' : state?.id ?? '' %>">
-      <button type="submit" name="whole" value="false" ko-set="captureMenu.open = false">
+      <input type="file" name="picture" accept="image/png" hidden data-capture-picture>
+      <button type="submit" name="whole" value="false" ko-set="captureMenu.open = false" data-capture-shown>
         <span class="item-title">What’s in view</span>
-        <span class="muted"><%= size.width ? `${size.width} × ${size.height}, as the frame shows it` : 'As much as fits the frame now' %></span>
+        <span class="muted" data-browser-only><%= inView %>, opened afresh: what you’ve typed isn’t in it</span>
+        <span class="muted" data-desktop-only><%= inView %>, exactly as it is now, with what you’ve typed</span>
       </button>
       <button type="submit" name="whole" value="true" ko-set="captureMenu.open = false">
         <span class="item-title">The whole page</span>
-        <span class="muted">Scrolled to its end, <%= size.width ? `${size.width} wide` : 'as wide as the frame' %></span>
+        <span class="muted">Scrolled to its end, <%= size.width ? `${size.width} wide` : 'as wide as the frame' %>, opened afresh</span>
       </button>
     </form>
   </details>

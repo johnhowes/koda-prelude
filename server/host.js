@@ -478,9 +478,26 @@ export async function handleDesignHost(req, res, app, host) {
  */
 const CLIENT_SCRIPT = '<script>(()=>{const m=/^prelude-client:(\\{.*\\})$/.exec(window.name);if(!m)return;try{for(const[k,v]of Object.entries(JSON.parse(m[1])))document.documentElement.setAttribute(k,String(v))}catch{}})()</script>';
 
+/**
+ * Where a framed page is now (R-w8p), told to the design surface around it,
+ * which can't read another origin's frame: an overlay region that's open
+ * (#modal, #drawer) at its ko-location, else the page's own address. Posted
+ * on each arrival (koda:attached), on Back and when a dialog closes, so
+ * Capture opens the page the person has in front of them.
+ */
+const WHERE_SCRIPT = '<script>(()=>{if(window.parent===window)return;'
+  + 'const path=u=>{try{const a=new URL(u,location.href);return a.origin===location.origin?a.pathname+a.search:null}catch{return null}};'
+  + 'const open=r=>r&&r.children.length&&r.getAttribute("ko-location")&&(r.closest("dialog")?.open??true);'
+  + 'const tell=()=>{const r=["modal","drawer"].map(id=>document.getElementById(id)).find(open);'
+  + 'const at=(r&&path(r.getAttribute("ko-location")))||location.pathname+location.search;'
+  + 'window.parent.postMessage({type:"prelude:where",at},"*")};'
+  + 'const soon=()=>setTimeout(tell,0);'
+  + 'document.addEventListener("koda:attached",soon);addEventListener("popstate",soon);document.addEventListener("close",soon,true);'
+  + 'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",tell);else tell()})()</script>';
+
 function withClient(html) {
   const head = /<head(\s[^>]*)?>/i.exec(html);
-  return head ? html.slice(0, head.index + head[0].length) + CLIENT_SCRIPT + html.slice(head.index + head[0].length) : html;
+  return head ? html.slice(0, head.index + head[0].length) + CLIENT_SCRIPT + WHERE_SCRIPT + html.slice(head.index + head[0].length) : html;
 }
 
 /**

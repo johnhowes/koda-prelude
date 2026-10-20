@@ -384,6 +384,36 @@ Where the app differs from the screens, on purpose:
   `server/public/workspace.css` now has the design's
   `:scope.window-page > .design`.
 
+## Built: capture where the frame is, and what's on screen (2026-10-20)
+
+- **Where the frame is** (R-w8p): the design's origin adds `WHERE_SCRIPT`
+  beside the client script (`withClient`, `server/host.js`) to each page it
+  serves; in a frame, it posts `prelude:where` on load, on each
+  `koda:attached`, on popstate and when a dialog closes: an open `#modal`
+  or `#drawer` at its `ko-location`, else its own path and query.
+  `_surface.eta` keeps it in `frame.at`. The capture route (`server/main.js`)
+  opens it instead of `page` when the design's routes answer its path (an
+  overlay renders over its page, as a deep link does), and names the
+  picture after that route's title. App mode still opens the page picked.
+- **What's on screen, in the desktop app** (R-3qz): `desktop.js` takes the
+  click on `[data-capture-shown]` when the shell has `capture`, closes the
+  menu, waits two frames, asks `preludeDesktop.capture(rect, 1 / --scale)`
+  and puts the PNG in `picture` before submitting. The shell's `capture`
+  command (`tauri/src-tauri/src/main.rs`) is WebView2's
+  `CallDevToolsProtocolMethod("Page.captureScreenshot")` with a clip, on
+  the webview's thread (`webview2-com` 0.39 and `windows-core` 0.62, the
+  versions Tauri's webview already uses; Windows only, elsewhere it says so
+  and the page is opened afresh). The server keeps a posted `picture` as it
+  is, refusing anything that isn't a PNG; if the shell can't picture it, the
+  form goes without and the server opens the page afresh.
+- **`[data-browser-only]`** is in the app's copy of the shell's CSS
+  (`server/public/shell.css`), added beside `[data-desktop-only]` rather
+  than copying the shell's file over it: the app's copy has its own
+  `.fills` rules the shell's doesn't.
+- The pop-out window's route still carries `"from"` (not in this change), so
+  it renders through the design's `_window.eta` and its copies of
+  `_surface.eta` and `_design-bar.eta`, which now match the app's.
+
 ## Open questions
 
 - **The surface sometimes takes over the whole page** (reported
