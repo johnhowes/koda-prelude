@@ -9,7 +9,7 @@
 
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { basename, join, resolve, sep } from 'node:path';
 
 const KEEP = 20;
 
@@ -39,9 +39,18 @@ export function refuseFolder(path) {
 
 export function createFolders(home) {
   const file = join(home, 'folders.json');
+  // The worktrees Prelude makes for designs' branches (branches.js). They're
+  // never projects of their own (R-c7w): a step 8 build, or a worktree's page,
+  // used to put them on the list, so any record of one is dropped.
+  const key = p => (process.platform === 'win32' ? p.toLowerCase() : p);
+  const worktree = path => key(canonical(path)).startsWith(key(canonical(join(home, 'worktrees')) + sep));
 
   const read = () => {
-    try { return JSON.parse(readFileSync(file, 'utf8')); } catch { return []; }
+    let list;
+    try { list = JSON.parse(readFileSync(file, 'utf8')); } catch { return []; }
+    const projects = list.filter(folder => !worktree(folder.path));
+    if (projects.length < list.length) write(projects);
+    return projects;
   };
   const write = list => {
     mkdirSync(home, { recursive: true });
@@ -51,6 +60,9 @@ export function createFolders(home) {
   return {
     recent: read,
 
+    /** Whether the path is a worktree Prelude made for a design's branch. */
+    worktree,
+
     get(id) {
       return read().find(folder => folder.id === id) ?? null;
     },
@@ -59,10 +71,12 @@ export function createFolders(home) {
      * Put the folder at the top of the recent list and return it. The path is
      * stored in its canonical form: on Windows a short name (JOHNHO~1) would
      * otherwise stop the agent's path-scoped permissions from matching the
-     * long paths its tools use.
+     * long paths its tools use. A design's worktree isn't put on the list, and
+     * null is returned.
      */
     open(path) {
       const full = canonical(path);
+      if (worktree(full)) return null;
       const folder = { id: folderId(full), path: full, name: basename(full) || full, openedAt: new Date().toISOString() };
       write([folder, ...read().filter(other => other.id !== folder.id)].slice(0, KEEP));
       return folder;

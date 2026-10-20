@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 
-import { folderId } from '../server/folders.js';
+import { canonical, folderId } from '../server/folders.js';
 import { ago, seenAt } from '../server/home.js';
 import { createServer } from '../server/main.js';
 import { seenKey } from '../server/turns.js';
@@ -180,6 +180,31 @@ test('a project whose folder has gone says so, and removing it leaves the disk a
   await post(`/folders/${folderId(older)}/remove`, {});
   assert.ok(existsSync(join(older, 'prelude', 'billing', 'design.json')));
   assert.ok(!JSON.parse(readFileSync(join(home, 'folders.json'), 'utf8')).some(folder => folder.id === folderId(older)));
+});
+
+test('a design’s worktree is never a project of its own (R-c7w)', async () => {
+  // A record of one, as a step 8 build or a worktree's page left: gone, and still there.
+  const worktrees = join(canonical(home), 'worktrees', 'abcdef0123');
+  const kept = join(worktrees, 'prelude-billing');
+  mkdirSync(kept, { recursive: true });
+  const merged = join(worktrees, 'prelude-merged');
+  const list = JSON.parse(readFileSync(join(home, 'folders.json'), 'utf8'));
+  const records = [kept, merged].map(path => ({ id: folderId(path), path, name: 'prelude-x', openedAt: new Date().toISOString() }));
+  writeFileSync(join(home, 'folders.json'), JSON.stringify([...records, ...list]));
+
+  const page = await (await get('/', true)).text();
+  const projects = await (await get('/home/projects', true)).text();
+  for (const record of records) {
+    assert.ok(!page.includes(record.id) && !projects.includes(record.id));
+  }
+  assert.ok(projects.includes(folderId(newer)), 'the projects are still listed');
+  assert.deepEqual(JSON.parse(readFileSync(join(home, 'folders.json'), 'utf8')), list, 'and the records are dropped');
+
+  // Opened directly, it opens its project; one git doesn't know is refused, and not listed.
+  const opened = await post('/folders', { path: kept });
+  assert.equal(opened.status, 422);
+  assert.match(await opened.text(), /a design’s branch Prelude made/);
+  assert.ok(!readFileSync(join(home, 'folders.json'), 'utf8').includes('prelude-billing'));
 });
 
 test('the app’s live channel is an event stream', async () => {

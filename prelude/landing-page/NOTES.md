@@ -139,6 +139,16 @@ leave them out. The views and states were already right; R-c7w (proposed)
 says it, and the build should filter worktrees out of `recent()` (or of
 `server/home.js`'s list) and drop such records.
 
+Built 2026-10-20: `server/folders.js` treats any folder under
+`~/.prelude/worktrees/` as a design's worktree. Reading the recent list drops
+such records (gone or not), and `open()` never adds one: a worktree's own page
+no longer puts it on the list, and `POST /folders` with a worktree's path opens
+the repository it belongs to (`repositoryOf` in `server/branches.js`), so the
+person lands on the project, whose card shows the branch's work. A worktree
+git no longer knows (its project unknown) is refused in the modal, in the
+form's own error. No view, state or route changed. The story (`home/1`) is
+about the window's title, unaffected.
+
 ## Open questions
 
 - In the preview the bar's count doesn't follow an event: it comes from the
