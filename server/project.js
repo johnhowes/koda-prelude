@@ -8,6 +8,7 @@
 // ("2 hours ago"), needs are oldest first for the view to show newest first,
 // and each design's `stage` is prepared here for the filter and its pill.
 
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { appOf, DEFAULT_STACK } from './app-config.js';
@@ -16,7 +17,8 @@ import { buildable, gitState, remoteOf } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
 import { ago, clip, needsOfProject, plain, sentences } from './home.js';
-import { filterModel, isHosted } from './host.js';
+import { filterModel, isHosted, shellLayouts, unbuiltLayouts } from './host.js';
+import { readHostConfig } from './hosts.js';
 import { listSessions, readEntries } from './sessions.js';
 import { readSnapshots } from './snapshots.js';
 
@@ -72,7 +74,10 @@ import { readSnapshots } from './snapshots.js';
  * @property {string} title
  * @property {DesignKind} kind
  * @property {string | null} area
- * @property {number} pages
+ * @property {number} [components]   the design system's
+ * @property {number} [layouts]      the app shell's
+ * @property {number} [layoutsBuilt] the shell's layouts the app has (none before it exists)
+ * @property {number} pages          a shell's are its own, not its gallery's
  * @property {number} approved
  * @property {number} built
  * @property {'ready' | 'designing' | 'approved' | 'built'} stage
@@ -141,25 +146,41 @@ function pullsOf(remote) {
   return remote.host === 'github' ? `${web}/pulls` : remote.host === 'azure' ? `${web}/pullrequests` : web;
 }
 
+/** How many components a design system has: its system/components/*.html. */
+function componentsOf(dir) {
+  try { return readdirSync(join(dir, 'system', 'components')).filter(file => file.endsWith('.html')).length; } catch { return 0; }
+}
+
 /**
  * A design's pages and how far they've got, as its Build page counts them (a
  * shell's gallery isn't built), and its stage: ready (approved pages not yet
  * built, once the app exists: R-r6b), designing (pages still to approve, or
  * none yet), approved, or built. Approval is the design's, all its pages at
- * once, so `approved` is all of them or none.
+ * once, so `approved` is all of them or none. The design system has no pages,
+ * so it's counted by its components, and is built once the app exists; the
+ * shell's layouts count beside its own pages, built once they're ported
+ * (unbuiltLayouts says which aren't).
  */
-function progressOf(design, dir, appExists) {
+function progressOf(design, dir, appExists, ext) {
   const pages = isHosted(dir)
     ? backlogOf(dir).groups.filter(group => group.page && !(design.kind === 'shell' && group.page.view.startsWith('gallery/')))
     : [];
   const built = pages.filter(group => group.built).length;
   const approved = pages.length && readSnapshots(dir)?.size ? pages.length : 0;
+  if (design.kind === 'system') {
+    const components = componentsOf(dir);
+    const stage = !components ? 'designing' : appExists ? 'built' : 'approved';
+    return { components, pages: pages.length, approved, built, stage };
+  }
+  const shell = design.kind === 'shell' ? { layouts: shellLayouts(dir, ext).length, layoutsBuilt: 0 } : null;
+  if (shell && appExists) shell.layoutsBuilt = shell.layouts - unbuiltLayouts(dir, ext).length;
+  const total = pages.length + (shell?.layouts ?? 0), done = built + (shell?.layoutsBuilt ?? 0);
   const builds = design.kind === 'design' || design.kind === 'shell';
-  const stage = pages.length && built === pages.length ? 'built'
+  const stage = total && done === total ? 'built'
     : builds && appExists && approved > built ? 'ready'
     : !pages.length || approved < pages.length ? 'designing'
     : 'approved';
-  return { pages: pages.length, approved, built, stage };
+  return { ...shell, pages: pages.length, approved, built, stage };
 }
 
 /**
@@ -272,11 +293,12 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     url: status === 'building' ? `/f/${folder.id}/d/${shell.id}/build` : status === 'on-branch' ? `/f/${folder.id}/d/${shell.id}` : null,
   };
 
+  const ext = readHostConfig(folder.path)?.views ?? '.eta';
   const designs = withDesigns
     ? onMain.filter(design => !entries.some(entry => entry.design === design.id)).map(design => {
       const dir = dirOf(folder.path, design);
       const changed = latest([...listSessions(dir).map(session => session.updatedAt), design.createdAt]);
-      return { ...refOf(design), ...progressOf(design, dir, config.built), changed: changed ? ago(changed, now) : null };
+      return { ...refOf(design), ...progressOf(design, dir, config.built, ext), changed: changed ? ago(changed, now) : null };
     })
     : [];
 

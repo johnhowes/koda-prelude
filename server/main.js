@@ -32,12 +32,12 @@ import { capture } from './capture.js';
 import { DICTATION_KEY, SPEECH_MODELS, createDictation } from './dictation.js';
 import { createDrafts, draftKey, sentFile } from './drafts.js';
 import { createAsked } from './asked.js';
-import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, tell, waitingOf } from './home.js';
+import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, seenAt, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { branchesOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
-import { createTurns, designKey, sessionKey, statusMessage } from './turns.js';
+import { createTurns, designKey, seenKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
 import { lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
 
@@ -106,8 +106,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     live,
     // A turn starting or ending changes what needs the person and what's in
     // its project; one that ended while its session was on screen was seen.
-    turns: createTurns({ runner, live, onChange: ({ key, finished, watched }) => {
-      if (finished && watched) app.seen.mark(key);
+    turns: createTurns({ runner, live, onChange: ({ seen, finished, watched }) => {
+      if (finished && watched) app.seen.mark(seen);
       tell(app, { needs: true, projects: true });
     } }),
     seen: createSeen(home),   // the sessions the person has opened (home.js)
@@ -679,9 +679,10 @@ async function handle(req, res, app) {
 //   POST …/d/<design>/sessions/<id>/stop      stop the agent
 //   GET  …/d/<design>/sessions/<id>/live      the session's live channel
 //   GET  …/d/<design>/preview?screen=<id>     the design surface, showing that screen
+//   GET  …/d/<design>/preview/bar?shown=<v>   the design bar alone, after the agent's changes
 //   POST …/d/<design>/screen                  show a screen, in every window
 //   GET  …/d/<design>/window                  the design surface alone, for a pop-out window
-//   GET  …/d/<design>/live                    the design's channel: "design-changed"
+//   GET  …/d/<design>/live                    the design's channel: "design-changed", "files-changed"
 // The app build's group (step 8): not a page of a design, but the app itself,
 // built in a session of the folder's shell, since the shell is the app's frame.
 const APP_GROUP = { key: '@app', slug: 'app', title: 'The app', routes: [], posts: [], rules: [] };
@@ -1245,6 +1246,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       session: session && { id: session.id, title: session.title, ...(session.build ? { build: { title: session.build.title } } : {}) },
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
+      // What the agent is writing now, so the transcript ends with it.
+      streaming: session ? turns.streaming(folder, design, session.id) : null,
       rules: rulesOf(dir, context),
       questions: notes.questions,
       decisions: notes.decisions,
@@ -1277,7 +1280,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
    * with any overlay already in its region, and the page's one live channel.
    */
   const designPage = (status, model, { session = null, regions = {}, path = url.pathname } = {}) => {
-    const live = session ? `${base}/sessions/${session.id}/live?from=${model.entries.length}` : `${base}/live`;
+    // From the entries it rendered, and the words it shows being written, if any.
+    const live = session
+      ? `${base}/sessions/${session.id}/live?from=${model.entries.length}${model.streaming ? `&streaming=${encodeURIComponent(model.streaming.id)}` : ''}`
+      : `${base}/live`;
     const body = render('./_session', { ...model, live });
     // In the app layout, like Prelude's other pages: the page brings its own
     // stylesheet and asks to fill the window, so Koda swaps it in from Home
@@ -1309,6 +1315,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
     const body = render('./_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }) });
+    if (fragment) return send(res, 200, body);
+    return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
+  }
+
+  // The design bar alone, reloading when the agent changes the design
+  // (files-changed): `shown` is the version the window's frame loaded, so
+  // the bar can say it's behind (R-v2q).
+  if (req.method === 'GET' && rest[0] === 'preview' && rest[1] === 'bar' && rest.length === 2) {
+    const shown = Number.parseInt(url.searchParams.get('shown') ?? '', 10);
+    const body = render('./_design-bar', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }), ...(Number.isNaN(shown) ? {} : { shown }) });
     if (fragment) return send(res, 200, body);
     return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
   }
@@ -1428,7 +1444,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
-    const body = render('./_window', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }) });
+    // The design, as the page has it: what the agent is writing now in the
+    // session the chat shows, too (DesignPage.streaming).
+    const session = sessionOnShow();
+    const body = render('./_window', {
+      ...basics(),
+      rules: rulesOf(dir, context),
+      streaming: session ? turns.streaming(folder, design, session.id) : null,
+      surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }),
+    });
     if (fragment) return send(res, 200, body);
     return send(res, 200, render('./window-layout', { body, path: url.pathname, title: `${design.title} · design`, layout: { live: `${base}/live?view=window` } }));
   }
@@ -2165,8 +2189,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (['working', 'checking'].includes(turns.state(folder, design, session.id).kind)) return true;
     const turn = readEntries(dir, session.id).findLast(item => item.type === 'turn');
     if (!turn || turn.stopped || !(Date.parse(turn.at) > Date.now() - 7 * 24 * 60 * 60 * 1000)) return false;
-    const seenAt = app.seen.all()[sessionKey(folder, design, session.id)];
-    return !(seenAt && seenAt >= turn.at);
+    const seenWhen = seenAt(app.seen.all(), folder, design, session.id);
+    return !(seenWhen && seenWhen >= turn.at);
   };
 
   // A fix's page is at its own address (prelude/fix-something): its latest
@@ -2179,7 +2203,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       return stillOpen(latest) ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
     }
     if (latest) {
-      app.seen.mark(sessionKey(folder, design, latest.id));
+      app.seen.mark(seenKey(folder, design, latest.id));
       tell(app, { needs: true });
     }
     return sessionPage(200, latest ?? null);
@@ -2344,7 +2368,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   if (action === undefined && req.method === 'GET') {
     // Opened: a turn it finished no longer needs the person (R-8hc).
-    app.seen.mark(sessionKey(folder, design, session.id));
+    app.seen.mark(seenKey(folder, design, session.id));
     tell(app, { needs: true });
     return sessionPage(200, session);
   }
@@ -2401,7 +2425,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (action === 'live' && req.method === 'GET') {
     const from = Math.max(0, Number.parseInt(url.searchParams.get('from') ?? '0', 10) || 0);
     // Catch up and subscribe in the same tick, so nothing published in between is missed.
-    return openChannel([sessionKey(folder, design, session.id)], turns.catchUp(folder, design, dir, session.id, from, view));
+    const shown = url.searchParams.get('streaming') || null;
+    return openChannel([sessionKey(folder, design, session.id)], turns.catchUp(folder, design, dir, session.id, from, view, shown));
   }
 
   return notFound();

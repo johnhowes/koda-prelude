@@ -20,6 +20,7 @@ Pop-out window
 <main class="shell-main" id="main" ko-history ko-location="/f/borrower-portal/d/loan-offers/window" ko-scope="/">
 <div class="stack design-page window-page">
 <section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=phone&amp;client=mobile-app" ko-source="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=phone&amp;client=mobile-app">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=window&amp;mode=design&amp;size=phone&amp;client=mobile-app&amp;shown=0">
 <div class="toolbar">
 <details class="menu start">
 <summary class="btn small ghost">
@@ -146,7 +147,7 @@ Long names
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="window">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="phone">
@@ -154,8 +155,6 @@ Capture
 <input name="name" type="hidden" value="Compare offers – Typical – 390×844.png">
 <input name="page" type="hidden" value="/offers/compare">
 <input name="state" type="hidden" value="01-typical">
-<input ko-as="frameWidth" name="frame.width" type="hidden" value="390">
-<input ko-as="frameHeight" name="frame.height" type="hidden" value="844">
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
@@ -304,6 +303,9 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 </ul>
 </details>
 </div>
+</div>
+<input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="390">
+<input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="844">
 <div class="design-frame sized" ko-as="frame">
 <div class="device" ko-as="device" style="--w: 390; --h: 844">
 <iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" title="Compare offers">

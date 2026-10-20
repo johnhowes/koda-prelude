@@ -28,7 +28,7 @@ import { refuseFolder } from './folders.js';
 import { isHosted, readRoutes } from './host.js';
 import { listSessions, readEntries } from './sessions.js';
 import { SNAPSHOTS_DIR } from './snapshots.js';
-import { sessionKey } from './turns.js';
+import { seenKey, sessionKey } from './turns.js';
 import { render } from './views.js';
 
 /**
@@ -72,8 +72,8 @@ export const APP_CHANNEL = 'app';
 export const APP_LIVE = '/live';
 
 /**
- * Which sessions the person has opened, and when: { "<folder>/<design>/<session>": iso }.
- * On this machine only (<home>/seen.json), like the recent list.
+ * Which sessions the person has opened, and when: { "<project>/<design>/<session>": iso },
+ * keyed by turns.js's seenKey. On this machine only (<home>/seen.json), like the recent list.
  */
 export function createSeen(home) {
   const file = join(home, 'seen.json');
@@ -89,6 +89,18 @@ export function createSeen(home) {
       writeFileSync(file, JSON.stringify(all, null, 2) + '\n');
     },
   };
+}
+
+/**
+ * When the person last opened a session, from seen.json's `seen`, or undefined.
+ * One marked before seenKey was the project's is under its branch's worktree
+ * id, so a session's mark under any folder counts: its id is unique enough.
+ */
+export function seenAt(seen, folder, design, sessionId) {
+  const exact = seen[seenKey(folder, design, sessionId)];
+  if (exact) return exact;
+  const tail = `/${design.id}/${sessionId}`;
+  return latest(Object.entries(seen).filter(([key]) => key.endsWith(tail)).map(([, at]) => at)) || undefined;
 }
 
 /** "just now", "4 minutes ago", "yesterday", "2 months ago". */
@@ -126,7 +138,7 @@ function worksOf(app, folder) {
   for (const entry of app.branches.of(folder.id)) {
     // A fix (step 11) is found as a design, though it isn't listed with them.
     const design = listDesigns(entry.path).find(candidate => candidate.id === entry.design) ?? findDesign(entry.path, entry.design.split('/'))?.design;
-    if (design) works.set(design.id, { design, dir: dirOf(entry.path, design), at: { id: entry.id, path: entry.path }, entry });
+    if (design) works.set(design.id, { design, dir: dirOf(entry.path, design), at: { id: entry.id, path: entry.path, branch: entry }, entry });
   }
   return [...works.values()].map(work => ({ ...work, sessions: listSessions(work.dir) }));
 }
@@ -207,7 +219,8 @@ function needsOfWork(app, project, work, { running, seen, now }) {
       needs.push({ ...base, id: `question:${key}`, kind: 'question', at: turn.at, says: `The agent asks: ${clip(sentences(words).at(-1), 220)}`, url });
       return;
     }
-    if ((seen[key] && seen[key] >= turn.at) || !(Date.parse(turn.at) > now - WEEK)) return;
+    const seenWhen = seenAt(seen, at, design, session.id);
+    if ((seenWhen && seenWhen >= turn.at) ||!(Date.parse(turn.at) > now - WEEK)) return;
     const says = !turn.ok ? 'The agent’s turn ended with an error.'
       : words ? `The agent finished its turn: ${clip(sentences(words)[0], 160)}`
       : 'The agent finished its turn.';

@@ -90,6 +90,11 @@ C:\Projects\borrower-portal
 </div>
 <span class="spacer">
 </span>
+<a class="btn" href="/f/borrower-portal/d/fixes/new" title="Ask the agent about this project, or tell it what’s wrong. It changes nothing until you fix it on a branch.">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Ask or fix…
+</a>
 <a class="btn primary" href="/f/borrower-portal/designs/new" ko-target="modal?">
 <span aria-hidden="true" class="icon icon-add">
 </span>
@@ -99,33 +104,6 @@ New design…
 <div class="split" style="--side: 20rem">
 <div class="stack gap-6">
 <div class="stack gap-6" ko-as="work" ko-invoke="event:needs-changed event:projects-changed every:300000" ko-source="/f/borrower-portal/work">
-<section aria-labelledby="needs-title" class="card">
-<h2 id="needs-title">
-Needs you
-</h2>
-<ul class="list">
-<li>
-<a class="item" href="/f/borrower-portal/d/document-upload">
-<span aria-hidden="true" class="icon icon-session">
-</span>
-<span class="item-text">
-<span class="item-title">
-Document upload
-<span class="pill ">
-Turn finished
-</span>
-</span>
-<span class="secondary">
-The agent finished its turn: the upload page now shows each file’s progress.
-</span>
-<span class="muted">
-40 minutes ago
-</span>
-</span>
-</a>
-</li>
-</ul>
-</section>
 <section aria-labelledby="in-progress-title" class="card">
 <h2 id="in-progress-title">
 In progress
@@ -309,7 +287,7 @@ Design system
 </span>
 </span>
 <span class="muted">
-3 pages, all approved · changed yesterday
+tokens and 18 components · changed yesterday
 </span>
 </span>
 </a>

@@ -4,9 +4,12 @@
 // machine only (plan: ground rule 5) - it describes the moment, not the design,
 // so none of it is written to the folder.
 //
-// Every change is announced on the design's channel as `design-changed`, and
-// each design surface reloads itself when it hears it. One event for
-// everything keeps the windows in step without any of them holding state.
+// The person's changes (a page, a state, a size, Reset data, a pop-out) are
+// announced on the design's channel as `design-changed`, and each design
+// surface reloads itself when it hears it, so the windows stay in step
+// without any of them holding state. The agent's (the design's files) are
+// `files-changed`: only the design bar reloads, saying the page on show is
+// behind, and the page loads them when the person asks (R-v2q).
 
 export const designChannel = key => `design:${key}`;
 
@@ -18,19 +21,23 @@ export function createDesignState({ live }) {
     return designs.get(key);
   };
 
-  const announce = key => {
+  const publish = (key, event) => {
     const design = of(key);
     design.version++;
-    live.publish(designChannel(key), `design-changed:${design.version}`);
+    live.publish(designChannel(key), `${event}:${design.version}`);
   };
+  const announce = key => publish(key, 'design-changed');
 
   return {
     version: key => of(key).version,
     current: key => of(key).current,
     windows: key => of(key).windows,
 
-    /** The design's files changed. */
-    filesChanged: announce,
+    /**
+     * The design's files changed (the agent's work, its design system, its
+     * shell): a new version, which the frames on show don't load on their own.
+     */
+    filesChanged: key => publish(key, 'files-changed'),
 
     /**
      * Someone picked a screen, or followed a link to one. Says whether that was

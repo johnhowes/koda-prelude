@@ -313,6 +313,9 @@
     border-radius: var(--radius-lg); overflow: hidden;
   }
   .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+  /* Panel head: the toolbar and the notices under it, as one part (a region
+     that refreshes apart from the body) */
+  .panel-head { flex: none; display: flex; flex-direction: column; }
 
   /* Notice: something the person should know about this page, now. It
      stacks its blocks (a title, paragraphs, actions), so words go in <p>. */
@@ -325,7 +328,7 @@
   .notice.good { background: var(--good-soft); border-color: color-mix(in oklch, var(--good) 30%, transparent); }
   .notice.warn { background: var(--warn-soft); border-color: color-mix(in oklch, var(--warn) 30%, transparent); }
   .notice.danger { background: var(--danger-soft); border-color: color-mix(in oklch, var(--danger) 30%, transparent); color: var(--fg); }
-  .panel > .notice { border-radius: 0; border-width: 0 0 var(--border-width); }
+  .panel > .notice, .panel-head > .notice { border-radius: 0; border-width: 0 0 var(--border-width); }
 
   /* Empty: what goes here, and how it gets here */
   .empty { margin: auto; max-width: var(--measure-narrow); padding: var(--space-6); text-align: center; color: var(--fg-subtle); font-size: var(--text-sm); }

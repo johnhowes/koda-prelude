@@ -254,23 +254,25 @@
 
     <section class="stack gap-3 specimen">
       <h3>Panel, toolbar and empty</h3>
-      <p class="secondary">A panel fills its share of a layout; its toolbar runs across the top.</p>
+      <p class="secondary">A panel fills its share of a layout; its toolbar runs across the top. A <code>.panel-head</code> holds the toolbar and its notices as one part, when they refresh apart from the body.</p>
       <div class="stage tall">
         <section class="panel" aria-label="Design">
-          <div class="toolbar">
-            <span class="segmented" role="group" aria-label="Show">
-              <a class="btn small" href="#" aria-current="true">Design</a>
-              <a class="btn small" href="#">App</a>
-            </span>
-            <span class="muted">0 screens</span>
-            <span class="spacer"></span>
-            <a class="btn small ghost" href="#">Refresh</a>
-            <a class="btn small ghost" href="#" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
-          </div>
-          <div class="notice warn" role="alert">
-            <strong>This repository has its own design host.</strong>
-            <p>It runs <code>npm run host</code> here, with your permissions.</p>
-            <div class="cluster actions"><button class="btn small primary" type="submit">Approve and start it</button></div>
+          <div class="panel-head">
+            <div class="toolbar">
+              <span class="segmented" role="group" aria-label="Show">
+                <a class="btn small" href="#" aria-current="true">Design</a>
+                <a class="btn small" href="#">App</a>
+              </span>
+              <span class="muted">0 screens</span>
+              <span class="spacer"></span>
+              <a class="btn small ghost" href="#">Refresh</a>
+              <a class="btn small ghost" href="#" target="_blank"><span class="icon icon-external" aria-hidden="true"></span>Open in browser</a>
+            </div>
+            <div class="notice warn" role="alert">
+              <strong>This repository has its own design host.</strong>
+              <p>It runs <code>npm run host</code> here, with your permissions.</p>
+              <div class="cluster actions"><button class="btn small primary" type="submit">Approve and start it</button></div>
+            </div>
           </div>
           <div class="panel-body">
             <p class="empty">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>

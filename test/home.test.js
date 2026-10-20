@@ -5,8 +5,9 @@ import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 
 import { folderId } from '../server/folders.js';
-import { ago } from '../server/home.js';
+import { ago, seenAt } from '../server/home.js';
 import { createServer } from '../server/main.js';
+import { seenKey } from '../server/turns.js';
 
 let server;
 let base;
@@ -56,6 +57,20 @@ test('times are said as people say them', () => {
   assert.equal(ago(before(30 * 60), now), 'yesterday');
   assert.equal(ago(before(5 * 24 * 60), now), '5 days ago');
   assert.equal(ago(before(65 * 24 * 60), now), '2 months ago');
+});
+
+test('a session seen on its branch stays seen once the branch is merged', () => {
+  const project = { id: 'project1' };
+  const branch = { id: 'worktree1', branch: { parentId: 'project1' } };
+  const design = { id: 'billing' };
+  assert.equal(seenKey(branch, design, 's1'), seenKey(project, design, 's1'), 'the project\'s key, on its branch or not');
+
+  const at = '2026-10-19T15:26:12.920Z';
+  assert.equal(seenAt({ [seenKey(branch, design, 's1')]: at }, project, design, 's1'), at);
+  // Marked before the key was the project's: under the worktree's own id.
+  assert.equal(seenAt({ 'worktree1/billing/s1': at }, project, design, 's1'), at);
+  assert.equal(seenAt({ 'worktree1/billing/s1': at }, project, design, 's2'), undefined);
+  assert.equal(seenAt({ 'worktree1/other/s1': at }, project, design, 's1'), undefined);
 });
 
 test('first run: the page is the way to open a project, and Open is a modal over it', async () => {

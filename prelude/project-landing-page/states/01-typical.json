@@ -161,8 +161,8 @@
         }
       ],
       "designs": [
-        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
-        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 24, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 2, "layoutsBuilt": 2, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
         { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
         { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
         { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 days ago" },

@@ -1,0 +1,11 @@
+{
+  "title": "Build: Project",
+  "claudeSessionId": "a4b79940-63ad-4503-8e8d-f27ecd269f97",
+  "started": true,
+  "startedAt": "2026-10-19T21:45:02.992Z",
+  "updatedAt": "2026-10-19T21:48:07.968Z",
+  "build": {
+    "group": "/f/:project",
+    "title": "Project"
+  }
+}
