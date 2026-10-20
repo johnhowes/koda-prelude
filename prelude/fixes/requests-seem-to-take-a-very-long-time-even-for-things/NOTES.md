@@ -1,0 +1,3 @@
+# Fix: Requests seem to take a very long time, even for things…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
