@@ -314,8 +314,11 @@
   }
   .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
   /* Inset: a body of blocks (lists, notices, text) kept off the panel's edges;
-     a plain body runs edge to edge, for a surface that fills it */
-  .panel-body.inset { padding: var(--space-4); }
+     a plain body runs edge to edge, for a surface that fills it. A list's
+     rows hang their hover into the padding (.item's negative margin), which
+     the browser counts as overflow past the end padding: it scrolls only
+     up and down. */
+  .panel-body.inset { padding: var(--space-4); overflow-x: hidden; }
   /* Panel head: the toolbar and the notices under it, as one part (a region
      that refreshes apart from the body) */
   .panel-head { flex: none; display: flex; flex-direction: column; }
