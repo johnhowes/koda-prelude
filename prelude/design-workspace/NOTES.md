@@ -430,6 +430,13 @@ Where the app differs from the screens, on purpose:
   takes it. Fix in the app: answer a fragment GET there in place
   (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
   and keeping a draft, which lives on this machine, needn't make a branch.
+  Seen again 2026-10-20, typing in a new session of an existing design: a
+  design merged into main has lost its branch (its worktree is removed), so
+  it's served from the project's address again, and the same applies. This
+  time the design bar alone filled the page: `#design-bar`'s reload
+  (`…/preview/bar`, on `files-changed`) is redirected the same way and
+  lands in `#main`. Every region that reloads at a design's address is
+  exposed until the fix.
 
 - New session doesn't work in the app (the person, 2026-10-19), though
   `…/sessions/new` is answered (`server/main.js:2240`). What happens when
