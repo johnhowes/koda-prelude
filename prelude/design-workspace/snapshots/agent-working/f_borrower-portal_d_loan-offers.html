@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>
-Open questions
+Design page
 </title>
 <link href="/static/icon.svg" rel="icon">
 <link href="/system/tokens.css" rel="stylesheet">
@@ -125,8 +125,8 @@ Loan offers
 <code>
 prelude/loan-offers
 </code>
-<span class="pill">
-Not checked yet
+<span class="pill good">
+Check passes
 </span>
 </a>
 <a class="btn small" href="/f/borrower-portal/d/loan-offers/build">
@@ -144,17 +144,14 @@ Build
 <span aria-hidden="true" class="icon icon-session">
 </span>
 <span class="clip">
-Build: Compare offers
+Equal-cost offers
 </span>
 </summary>
 <ul class="menu-list">
 <li>
 <a aria-current="page" href="/f/borrower-portal/d/loan-offers/sessions/20261017-1305-b7xa">
 <span class="item-title">
-Build: Compare offers
-<span class="pill">
-Build
-</span>
+Equal-cost offers
 </span>
 <span class="muted">
 Today, 13:05
@@ -190,25 +187,18 @@ Yesterday, 15:30
 Tools
 </label>
 </div>
-<div class="notice" role="note">
-<p>
-This session builds
-<strong>
-Compare offers
-</strong>
-into the app, on this design’s branch.
-<a href="/f/borrower-portal/d/loan-offers/build">
-Back to Build
-</a>
-</p>
-</div>
 <div class="transcript-scroll">
 <ol aria-live="polite" class="transcript" id="transcript" ko-region>
 <li class="entry user">
 <div class="stack gap-1 sent">
 <div class="bubble">
-Build Compare offers.
+About “When two offers cost the same in total, which goes first on the compare page?”: the shorter term first, and don’t mark either as cheaper.
 </div>
+<span class="muted looked-at">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+Compare offers · Typical
+</span>
 </div>
 </li>
 <li class="entry tool">
@@ -224,51 +214,39 @@ prelude/loan-offers/views/offers/compare.eta
 Read
 </span>
 <span class="tool-summary">
-src/routes/offers.js
+prelude/loan-offers/states/01-typical.json
 </span>
 </li>
 <li class="entry agent">
 <div class="prose">
 <p>
-The app’s offers controller already loads one offer at a time. I’ll add
-<code>
-GET /offers/compare
-</code>
-, which takes
-<code>
-a
-</code>
-and
-<code>
-b
-</code>
-, and work out each offer’s total cost on the server, as the design’s states have it.
+The compare page marks the cheaper offer by comparing totals, so two equal totals would still mark the first one. I’ll add a state with two offers that cost the same, and order them by term there.
 </p>
 </div>
-</li>
-<li class="entry tool">
-<span class="tool-name">
-Edit
-</span>
-<span class="tool-summary">
-src/routes/offers.js
-</span>
 </li>
 <li class="entry tool">
 <span class="tool-name">
 Write
 </span>
 <span class="tool-summary">
-src/views/offers/compare.eta
+prelude/loan-offers/states/05-same-cost.json
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+<span class="tool-summary">
+prelude/loan-offers/routes.json
 </span>
 </li>
 <li class="entry tool failed">
 <details>
 <summary>
-Bash was refused or failed
+Edit was refused or failed
 </summary>
 <pre>
-npm test -- offers ✖ compare shows the cheaper offer first (4.2ms) AssertionError: expected &#39;off-2291&#39; to equal &#39;off-2307&#39;
+String to replace not found in file. &quot;sort&quot;: &quot;apr&quot;
 </pre>
 </details>
 </li>
@@ -277,24 +255,20 @@ npm test -- offers ✖ compare shows the cheaper offer first (4.2ms) AssertionEr
 Edit
 </span>
 <span class="tool-summary">
-src/views/offers/compare.eta
+prelude/loan-offers/views/offers/compare.eta
 </span>
 </li>
 <li class="entry agent live" id="live-9" ko-region>
 <div class="prose" id="live-9-text" ko-region>
 <p>
-The test was right: the compare page sorted by APR, but the design orders the two offers by
-<strong>
-total cost
-</strong>
-. Now:
+The route had no sort of its own, so the order comes from the view. Now, on the compare page:
 </p>
 <ul>
 <li>
-the cheaper offer over its whole term comes first, marked “Lower total cost”
+the offer that costs less over its whole term comes first, marked “Lower total cost”
 </li>
 <li>
-when both cost the same, neither is marked, and the
+when both cost the same, the shorter term comes first, and neither is marked, and the
 </div>
 </li>
 </ol>
@@ -320,7 +294,7 @@ Cancel
 <div class="status" ko-item role="status">
 <span aria-hidden="true" class="pulse">
 </span>
-<span class="status-step" title="src/views/offers/compare.eta">
+<span class="status-step" title="prelude/loan-offers/views/offers/compare.eta">
 Editing compare.eta
 </span>
 <span class="muted">
@@ -427,18 +401,10 @@ Sending…
 </script>
 </form>
 </section>
-<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser">
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser">
 <input id="lookingSize" type="hidden" value="">
-<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;mode=design&amp;size=fit&amp;client=browser&amp;shown=0">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
-<span aria-label="Show" class="segmented" role="group">
-<a aria-current="true" class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design" title="The design’s views, with its states.">
-Design
-</a>
-<a class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=app&amp;size=fit&amp;client=browser" ko-target="design" title="The app built on this branch, at http://localhost:5173, with its own data.">
-App
-</a>
-</span>
 <details class="menu start">
 <summary class="btn small ghost">
 <span aria-hidden="true" class="icon icon-screen">
@@ -450,7 +416,6 @@ Compare offers
 <div class="menu-list">
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button name="surface.current" type="submit" value="/offers">
@@ -487,7 +452,7 @@ Compare offers
 </button>
 </form>
 <hr>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Refresh
 </span>
@@ -521,7 +486,6 @@ State: Typical
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button aria-current="true" name="surface.state" type="submit" value="01-typical">
@@ -583,7 +547,6 @@ Capture
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <input name="name" type="hidden" value="Compare offers – Typical.png">
@@ -623,7 +586,7 @@ Fit the panel
 </summary>
 <ul class="menu-list">
 <li>
-<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Fit the panel
 </span>
@@ -633,7 +596,7 @@ As wide and tall as the panel
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=phone&amp;client=browser" ko-target="design">
 <span class="item-title">
 Phone
 </span>
@@ -643,7 +606,7 @@ Phone
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=tablet&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=tablet&amp;client=browser" ko-target="design">
 <span class="item-title">
 Tablet
 </span>
@@ -653,7 +616,7 @@ Tablet
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=laptop&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=laptop&amp;client=browser" ko-target="design">
 <span class="item-title">
 Laptop
 </span>
@@ -663,7 +626,7 @@ Laptop
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=desktop&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=desktop&amp;client=browser" ko-target="design">
 <span class="item-title">
 Desktop
 </span>
@@ -675,7 +638,6 @@ Desktop
 <li>
 <form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="custom">
 <input name="surface.client" type="hidden" value="browser">
 <span class="item-title">
@@ -709,7 +671,7 @@ Browser
 </summary>
 <ul class="menu-list">
 <li>
-<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Browser
 </span>
@@ -719,7 +681,7 @@ As a browser shows it
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=mobile-app" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=mobile-app" ko-target="design">
 <span class="item-title">
 Spark mobile app
 </span>
@@ -769,20 +731,7 @@ Pop out
 <span aria-hidden="true" class="icon icon-close">
 </span>
 </button>
-<div id="drawer" ko-focus="region" ko-location="/f/borrower-portal/d/loan-offers/questions" ko-region tabindex="-1">
-<div class="stack gap-6">
-<div class="stack gap-1">
-<h2>
-Open questions
-</h2>
-<p class="secondary">
-What the agent is waiting for you to decide about this design.
-</p>
-</div>
-<p class="empty">
-Nothing waiting on you. When the agent needs a decision, it lands here as well as in the chat.
-</p>
-</div>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
 </div>
 </aside>
 <dialog aria-label="Question" class="shell-modal" id="modal-dialog">

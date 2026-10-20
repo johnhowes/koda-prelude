@@ -423,6 +423,27 @@ Where the app differs from the screens, on purpose:
   .design` was already in `server/public/workspace.css`, so the port is
   the route alone.
 
+## Built: the design page is for designing only (2026-10-20)
+
+- The page's route renders the app's `_session.eta` again. Of the partials
+  it includes, only `_chat.eta` (no New session, no build sessions'
+  variant: `it.builds` is gone), `_entry.eta` (pages that differ in one
+  line, unlisted) and `_design-bar.eta` (no build variants of the review
+  strip; `surface.stage` is gone) changed. `.entry.next` left
+  `server/public/workspace.css`.
+- The model (`pageModel`, `server/main.js`) lost `builds`, the branch's
+  `building` and the surface's `stage`; the header's `stage` is worked out
+  beside the surface now, from the branch entry's own `building`, so it
+  still says "Building …" while a build runs.
+- A build session's page (`buildSessionPage`) still uses the design page's
+  chat, listing the design's build sessions; with New session gone it
+  needed nothing of its own.
+- Not done: `GET …/sessions/new` is still answered (`server/main.js`):
+  nothing in the app links it now, but drafts keep the address
+  (`…/sessions/new/draft`), and an old link still works. The About drawer
+  (`_about.eta`) still reads `branch.building`, which no longer comes, so
+  its ", building …" never shows; the drawer wasn't part of this change.
+
 ## Open questions
 
 - **The surface sometimes takes over the whole page** (reported
