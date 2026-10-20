@@ -10,8 +10,14 @@ offer, plus "Across the design").
 
 Pages: Build (`build/page`, its list `build/_pages`); a page's story
 (`/build/stories/:group`: `build/story`, `_stories`, `_story`,
-`_story-edit`, the `_rewrite` modal). States: typical, split and writing,
-not approved, building, no app, all built. Event: `story-written`.
+`_story-edit`, the `_rewrite` modal); a build session
+(`/sessions/:session`: `build/session`, its check `_check`, one screen
+`_shot`, `_tally`, `_open-app`; `_chat`, `_transcript`, `_entry`,
+`_composer` are a stand-in for the design page's chat). States: typical,
+split and writing, not approved, building, no app, all built; each has a
+build session (typical: mid-build, one differs, two not built; building:
+the agent working, one doesn't render, the app stopped; no app: the app
+stopped; all built: done). Events: `story-written`, `check-done`.
 
 ## What was wrong with it
 
@@ -71,7 +77,43 @@ not approved, building, no app, all built. Event: `story-written`.
   criteria. The design wins where they differ, so an out-of-date story
   can't steer a build wrong; its notice says so.
 
+- **A build session belongs to Build, not the Design Workspace** (the
+  person, 2026-10-20): it's the step after Build starts it, and what's
+  beside the chat is the build, not the design.
+- **Beside the chat is the check, not the design surface** (the person,
+  2026-10-20): each screen of the page being built, in each state, as
+  Matches, Differs, Doesn't render or Not built yet, then the rest of the
+  design, counted unless something there doesn't match (a build can change
+  shared parts; R-9xe). A screen opens in the panel with Built | Approved
+  (| Differences), so the design is one click away without the panel
+  looking like a design session; Open the design in the header goes to the
+  design page. The design's states, since the real app can't reach them.
+- **No App tab; Open the app instead** (the person, 2026-10-20): the real
+  app, with its own data, opens in a window of its own (Start the app first
+  when this branch isn't running it). In the check's toolbar always, and in
+  the "is built" notice once every screen matches.
+- **A screen that differs**: Ask the agent to fix it (sends a message), or
+  Approve it as built, which saves that screen only (R-f6w).
+- **The chat stays the design page's.** The header now says it's a build
+  session, so the chat's "This session builds …" notice goes.
+
+## For the Design Workspace
+
+To paste into a Design Workspace session (this design can't write there):
+a build session's page is now designed in Build (`prelude/build`,
+`/f/:folder/d/:design/sessions/:session` when the session is a build).
+So the design page drops the Design | App switch and App mode (the real app
+opens in its own window from the build session instead), and the chat's
+"This session builds …" notice, since the build session's header says it.
+Design sessions are otherwise unchanged.
+
 ## In the preview only
+
+- The check's pictures are placeholders: in the app, Built is the page as it
+  renders from the branch in that state, Approved the approved PNG,
+  Differences the built one with what changed marked.
+- Start the app posts a hidden `running` so the preview shows it started.
+- The stand-in chat's Stop posts an empty `status`.
 
 - An edited story's rendered text doesn't change (the fake route updates
   the Markdown only); the app renders it again.
@@ -144,13 +186,5 @@ not approved, building, no app, all built. Event: `story-written`.
 
 ## Open questions
 
-- **What a build session's side shows** (raised 2026-10-20). Today it's the
-  design surface, with Design | App. App (plan 10.8) frames the real app on
-  its own data, so it can't reach the design's states, and it only appears
-  with a host, a built app and the host running from this branch. Proposed:
-  in a build session the surface becomes the check (each page in each state,
-  as built, against its approved screen, plus "not built yet"), the Design |
-  App switch goes, and "Open the app" becomes a launch action for testing
-  once the build is done. Not decided. The person thinks the build session
-  belongs in this design, not the Design Workspace (2026-10-20): proposed as
-  a "Build session" page here, with the workspace's chat as it is.
+- **How Differences marks what changed**: a pixel overlay on the built
+  screen, or the two side by side? Placeholders for now.

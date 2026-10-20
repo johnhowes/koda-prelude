@@ -1,0 +1,15 @@
+<%/* The stand-in message box (the app's is _composer.eta). Its answer is the
+     box, emptied, and the transcript again. The hidden `type` and `url` are
+     the design's: a refused message re-renders from the posted fields alone,
+     so the form carries its own address. `it` is the session. */%>
+<form class="composer" action="<%= it.url %>/messages" method="post" ko-target="self" ko-attach="replace">
+  <input type="hidden" name="type" value="user">
+  <input type="hidden" name="url" value="<%= it.url %>">
+  <label class="sr-only" for="message">Message</label>
+  <textarea id="message" name="message" rows="3" placeholder="Tell the agent what to build or fix. Enter to send, Shift+Enter for a new line." <% if (it.$errors?.message) { %>ko-invalid-server="<%= it.$errors.message %>"<% } %>><%= it.$errors ? it.message ?? '' : '' %></textarea>
+  <div class="composer-foot">
+    <div class="composer-tools"></div>
+    <% if (it.$errors?.message) { %><span class="error"><%= it.$errors.message %></span><% } %>
+    <button class="btn small primary" type="submit">Send</button>
+  </div>
+</form>

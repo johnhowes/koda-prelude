@@ -16,6 +16,40 @@
           "building": null,
           "writing": false,
           "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "sessions": [
+            {
+              "id": "20261020-0915-k4tz",
+              "title": "Build: Accept an offer",
+              "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "branch": "prelude/loan-offers",
+              "build": { "title": "Accept an offer", "stories": 1 },
+              "app": { "running": true, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" },
+              "status": null,
+              "entries": [
+                { "id": 1, "type": "user", "message": "Build Accept an offer." },
+                { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/stories/accept/1-confirm-the-bank-account.md" },
+                { "id": 3, "type": "tool", "name": "Read", "summary": "src/views/offers/accept.eta" },
+                { "id": 4, "type": "text", "html": "<p>The story was edited by hand and adds a legal sign-off (LEG-212). I’ll keep the confirmation’s wording exactly as the design has it, so legal reviews what’s approved.</p>" },
+                { "id": 5, "type": "tool", "name": "Edit", "summary": "src/views/offers/accept.eta" },
+                { "id": 6, "type": "tool", "name": "Edit", "summary": "src/routes/offers.js" },
+                { "id": 7, "type": "text", "html": "<p>Accept an offer now shows the monthly payment beside the APR, and refuses an offer whose account isn’t confirmed (R-v8d). Next I’ll build <strong>Confirm your bank account</strong>, the dialog.</p>" },
+                { "id": 8, "type": "note", "text": "Prelude checked every screen: 1 differs from the approved design, 2 aren’t built yet." }
+              ],
+              "check": {
+                "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check",
+                "at": "today at 09:52",
+                "shots": [
+                  { "id": "accept-typical", "group": "Accept an offer", "page": "Accept an offer", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-typical" },
+                  { "id": "accept-no-account", "group": "Accept an offer", "page": "Accept an offer", "state": "No account on file", "status": "differs", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-no-account" },
+                  { "id": "account-typical", "group": "Accept an offer", "page": "Confirm your bank account", "state": "Typical", "status": "unbuilt", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-typical" },
+                  { "id": "account-unchecked", "group": "Accept an offer", "page": "Confirm your bank account", "state": "Account couldn’t be checked", "status": "unbuilt", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-unchecked" }
+                ],
+                "elsewhere": { "matching": 14, "pages": 4 }
+              }
+            }
+          ],
           "groups": [
             {
               "id": "offers",
@@ -84,7 +118,7 @@
                 { "icon": "document", "text": "1 new form, 1 changed" },
                 { "icon": "rule", "text": "New rule R-v8d: An offer is accepted only once the bank account it pays into is confirmed." }
               ],
-              "session": { "title": "Accept an offer (16 Oct)", "url": "/f/borrower-portal/d/loan-offers/sessions/20261016-1530-a8vn" },
+              "session": { "title": "Build: Accept an offer", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" },
               "story": {
                 "written": "yesterday at 16:05",
                 "outOfDate": "Since then, Use a different account also asks for the account holder’s name, and a new state shows an account that couldn’t be checked.",

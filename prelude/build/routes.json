@@ -22,6 +22,39 @@
     "answer": { "redirect": "/f/:folder/d/:design/build/stories/:group" }
   },
 
+  "/f/:folder/d/:design/sessions/:session": { "view": "build/session", "title": "Build session", "data": "folders/:folder/designs/:design/sessions/:session" },
+  "/f/:folder/d/:design/sessions/:session/check": { "view": "build/_check", "data": "folders/:folder/designs/:design/sessions/:session" },
+  "/f/:folder/d/:design/sessions/:session/check/tally": { "view": "build/_tally", "data": "folders/:folder/designs/:design/sessions/:session/check" },
+  "/f/:folder/d/:design/sessions/:session/check/:shot": { "view": "build/_shot", "data": "folders/:folder/designs/:design/sessions/:session/check/shots/:shot" },
+  "POST /f/:folder/d/:design/sessions/:session/check/:shot/approve": {
+    "update": "folders/:folder/designs/:design/sessions/:session/check/shots/:shot",
+    "answer": {
+      "view": "build/_shot", "data": "folders/:folder/designs/:design/sessions/:session/check/shots/:shot",
+      "also": [{ "into": "check-tally", "view": "build/_tally", "data": "folders/:folder/designs/:design/sessions/:session/check" }]
+    }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/check/:shot/fix": {
+    "add": "folders/:folder/designs/:design/sessions/:session/entries",
+    "answer": { "view": "build/_entry", "data": "folders/:folder/designs/:design/sessions/:session/entries/:new" }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/messages": {
+    "add": "folders/:folder/designs/:design/sessions/:session/entries",
+    "require": ["message"],
+    "form": "build/_composer",
+    "answer": {
+      "view": "build/_composer", "data": "folders/:folder/designs/:design/sessions/:session",
+      "also": [{ "into": "transcript", "view": "build/_transcript", "data": "folders/:folder/designs/:design/sessions/:session" }]
+    }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/stop": {
+    "update": "folders/:folder/designs/:design/sessions/:session",
+    "answer": { "redirect": "/f/:folder/d/:design/sessions/:session" }
+  },
+  "POST /f/:folder/d/:design/sessions/:session/app/start": {
+    "update": "folders/:folder/designs/:design/sessions/:session/app",
+    "answer": { "redirect": "/f/:folder/d/:design/sessions/:session" }
+  },
+
   "/f/:folder/d/:design/build/stories/:group/story/:story": { "view": "@app/server/views/build/_story", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
   "/f/:folder/d/:design/build/stories/:group/story/:story/edit": { "view": "@app/server/views/build/_story-edit", "data": "folders/:folder/designs/:design/groups/:group/story/stories/:story" },
   "POST /f/:folder/d/:design/build/stories/:group/story/:story": {

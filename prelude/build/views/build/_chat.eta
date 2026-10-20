@@ -1,0 +1,23 @@
+<%/* A stand-in for the design page's chat (server/views/_chat.eta), which a
+     build session keeps as it is: its toolbar, the transcript, the status
+     line and the message box. Only enough of it to see the page whole. Its
+     "This session builds …" notice goes: the header says so now.
+     `it` is the session. */%>
+<section class="panel side chat" aria-label="Session">
+  <div class="toolbar">
+    <span class="muted clip"><%= it.title %></span><span class="pill">Build</span>
+    <span class="spacer"></span>
+    <label class="choice"><input type="checkbox" class="show-tools" ko-persist="chat.showTools" ko-persist-in="local"> Tools</label>
+  </div>
+  <div class="transcript-scroll">
+    <ol id="transcript" class="transcript" ko-region aria-live="polite"><%~ include('./_transcript', it) %></ol>
+  </div>
+  <% if (it.status) { %>
+  <div class="status" role="status">
+    <span class="pulse" aria-hidden="true"></span>
+    <span class="status-step"><%= it.status.says %></span>
+    <form action="<%= it.url %>/stop" method="post"><input type="hidden" name="status" value=""><button class="btn small ghost" type="submit">Stop</button></form>
+  </div>
+  <% } %>
+  <%~ include('./_composer', it) %>
+</section>

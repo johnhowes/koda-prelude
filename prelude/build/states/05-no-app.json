@@ -16,6 +16,32 @@
           "building": null,
           "writing": false,
           "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "sessions": [
+            {
+              "id": "20261020-0915-k4tz",
+              "title": "Build: Accept an offer",
+              "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "branch": "prelude/loan-offers",
+              "build": { "title": "Accept an offer", "stories": 1 },
+              "app": { "running": false, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" },
+              "status": null,
+              "entries": [
+                { "id": 1, "type": "user", "message": "Build Accept an offer." },
+                { "id": 2, "type": "text", "html": "<p>Accept an offer, and its dialog, are built. Every screen matches.</p>" }
+              ],
+              "check": {
+                "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check",
+                "at": "today at 10:31",
+                "shots": [
+                  { "id": "accept-typical", "group": "Accept an offer", "page": "Accept an offer", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-typical" },
+                  { "id": "account-typical", "group": "Accept an offer", "page": "Confirm your bank account", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-typical" }
+                ],
+                "elsewhere": { "matching": 14, "pages": 4 }
+              }
+            }
+          ],
           "groups": [
             {
               "id": "offers",

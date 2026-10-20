@@ -1,0 +1,43 @@
+<%/* A build session: the agent building one page of the design into the app,
+     on the design's branch. The chat is the design page's, as it is (_chat
+     here stands in for it). Beside it, where a design session shows the
+     design, is the check: each screen of the page being built, in each
+     state, as built, against its approved screen. The design is one click
+     away (Approved, on any screen; Open the design, in the header), and the
+     real app, with its own data, opens in a window of its own.
+     `it` is the session. */%>
+<link rel="stylesheet" href="/static/workspace.css">
+<div class="stack gap-3 design-page build-session fills">
+  <header class="cluster gap-3 design-head">
+    <div class="stack gap-0">
+      <nav class="crumbs" aria-label="Where you are">
+        <a href="/">Projects</a><span aria-hidden="true">›</span>
+        <a href="<%= it.folder.url %>"><%= it.folder.name %></a><span aria-hidden="true">›</span>
+        <a href="<%= it.design.url %>"><%= it.design.title %></a><span aria-hidden="true">›</span>
+        <a href="<%= it.design.url %>/build">Build</a>
+      </nav>
+      <h1>Building <%= it.build.title %></h1>
+      <p class="stage secondary"><strong>Build session</strong> · on <code><%= it.branch %></code>, from the design and the page’s <%= it.build.stories === 1 ? 'story' : 'stories' %>, checked against the approved screens.</p>
+    </div>
+    <span class="spacer"></span>
+    <div class="cluster">
+      <a class="btn small ghost" href="<%= it.design.url %>" title="The design, with its states, in a design session."><span class="icon icon-screen" aria-hidden="true"></span>Open the design</a>
+      <a class="btn small" href="<%= it.design.url %>/build"><span class="icon icon-code" aria-hidden="true"></span>Back to Build</a>
+    </div>
+  </header>
+  <div class="split gap-3 workspace" style="--side: 26rem">
+    <%~ include('./_chat', it) %>
+    <section class="panel check" aria-label="Check">
+      <div class="toolbar">
+        <span class="item-title">Check</span>
+        <span id="check-tally" class="cluster gap-1" ko-region><%~ include('./_tally', it.check) %></span>
+        <span class="spacer"></span>
+        <%~ include('./_open-app', it.app) %>
+      </div>
+      <div class="panel-body" ko-scope="<%= it.check.url %>" ko-source="<%= it.check.url %>" ko-invoke="event:check-done"><%~ include('./_check', it) %></div>
+    </section>
+  </div>
+  <%/* The session's own channel, as on the design page (the app's `live`);
+       the layout's carries check-done in the preview. */%>
+  <% if (it.live) { %><div hidden ko-connect="<%= it.live %>"></div><% } %>
+</div>

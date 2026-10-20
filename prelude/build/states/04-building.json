@@ -20,6 +20,44 @@
           },
           "writing": false,
           "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "sessions": [
+            {
+              "id": "20261019-0930-r7bx",
+              "title": "Build: Compare offers",
+              "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "branch": "prelude/loan-offers",
+              "build": { "title": "Compare offers", "stories": 1 },
+              "app": { "running": false, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx" },
+              "status": { "says": "Editing compare.eta" },
+              "entries": [
+                { "id": 1, "type": "user", "message": "Build Compare offers." },
+                { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+                { "id": 3, "type": "tool", "name": "Read", "summary": "src/routes/offers.js" },
+                { "id": 4, "type": "text", "html": "<p>The app’s offers controller already loads one offer at a time. I’ll add <code>GET /offers/compare</code>, which takes <code>a</code> and <code>b</code>, and work out each offer’s total cost on the server.</p>" },
+                { "id": 5, "type": "tool", "name": "Edit", "summary": "src/routes/offers.js" },
+                { "id": 6, "type": "tool", "name": "Write", "summary": "src/views/offers/compare.eta" },
+                { "id": 7, "type": "tool", "name": "Edit", "summary": "src/views/offers/_cost.eta" },
+                { "id": 8, "type": "note", "text": "Prelude checked every screen: 1 doesn’t render, 1 differs from the approved design, 2 aren’t built yet." },
+                { "id": 9, "type": "user", "message": "Carry on with the drawer." },
+                { "id": 10, "type": "tool", "name": "Edit", "summary": "src/views/offers/compare.eta" }
+              ],
+              "check": {
+                "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check",
+                "at": "today at 09:58",
+                "shots": [
+                  { "id": "compare-typical", "group": "Compare offers", "page": "Compare offers", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/compare-typical" },
+                  { "id": "compare-same-total", "group": "Compare offers", "page": "Compare offers", "state": "Same total cost", "status": "fails", "error": "compare.eta, line 41: it.cheaper is undefined", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/compare-same-total" },
+                  { "id": "compare-long-names", "group": "Compare offers", "page": "Compare offers", "state": "Long lender names", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/compare-long-names" },
+                  { "id": "change-typical", "group": "Compare offers", "page": "Change offer", "state": "Typical", "status": "unbuilt", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/change-typical" },
+                  { "id": "change-two-offers", "group": "Compare offers", "page": "Change offer", "state": "Two offers", "status": "unbuilt", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/change-two-offers" },
+                  { "id": "offers-many", "group": "Offers", "page": "Offers", "state": "Many offers", "status": "differs", "url": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/check/offers-many" }
+                ],
+                "elsewhere": { "matching": 11, "pages": 4 }
+              }
+            }
+          ],
           "groups": [
             {
               "id": "offers",

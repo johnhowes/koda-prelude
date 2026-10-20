@@ -1,0 +1,12 @@
+<%/* One entry of the stand-in transcript (the app's is _entry.eta): the
+     person's message, the agent's words, a tool it used, or Prelude's note.
+     `it` is the entry. */%>
+<% if (it.type === 'user') { %>
+<li class="entry user"><div class="bubble"><%= it.message %></div></li>
+<% } else if (it.type === 'text') { %>
+<li class="entry agent"><div class="prose"><%~ it.html %></div></li>
+<% } else if (it.type === 'tool') { %>
+<li class="entry tool"><span class="tool-name"><%= it.name %></span> <%= it.summary %></li>
+<% } else { %>
+<li class="entry note"><%= it.text %></li>
+<% } %>

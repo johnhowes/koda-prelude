@@ -1,0 +1,2 @@
+<%/* The session's entries, oldest first. `it` is the session. */%>
+<% for (const entry of it.entries) { %><%~ include('./_entry', entry) %><% } %>
