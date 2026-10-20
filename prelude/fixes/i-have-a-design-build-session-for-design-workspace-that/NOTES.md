@@ -1,0 +1,3 @@
+# Fix: I have a design/build session for Design Workspace that…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
