@@ -78,8 +78,10 @@
 </li>
 <% } %>
 <% if (e.type === 'check' && e.differ?.length) { %>
+<%/* One line, the pages folded under it: a change can touch every page in
+     every state, and the review strip under the design bar lists them too. */%>
 <li class="entry note">
-  <details open><summary><%= e.differ.length === 1 ? '1 page differs' : `${e.differ.length} pages differ` %> from the approved screens. If that’s what you asked for, approve them again in the design bar.</summary>
+  <details><summary><%= e.differ.length === 1 ? '1 page differs' : `${e.differ.length} pages differ` %> from the approved screens. If that’s what you asked for, approve them again in the design bar.</summary>
   <ul class="check-list"><% for (const d of e.differ) { %><li><code><%= d.path %></code> · <%= d.stateTitle %> <%~ show(d) %></li><% } %></ul></details>
 </li>
 <% } %>

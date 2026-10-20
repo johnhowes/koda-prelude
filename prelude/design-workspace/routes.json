@@ -60,7 +60,7 @@
     "form": "_composer",
     "answer": {
       "view": "_composer", "data": "folders/:folder/designs/:design",
-      "also": [{ "into": "transcript", "view": "@app/server/views/_transcript", "data": "folders/:folder/designs/:design" }]
+      "also": [{ "into": "transcript", "view": "_transcript", "data": "folders/:folder/designs/:design" }]
     }
   },
   "POST /f/:folder/d/:design/sessions/:session/queue": {

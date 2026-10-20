@@ -34,7 +34,9 @@ the record picker, was dropped).
   there's something to do: a page that doesn't render, pages that differ
   (with Approve again), or none approved yet. Its menu lists the pages;
   each shows that page in the state the check named. The chat's check
-  entries have Show beside each page too. The page count is gone.
+  entries have Show beside each page too. Pages that differ are folded
+  there under their one line (the person, 2026-10-20: a change can make
+  60 differ); pages that don't render stay open. The page count is gone.
 - **Size and client are not states** (the person asked, 2026-10-17). States
   are data; size and client are how one window looks at it. They're per
   window (in the surface's URL, like Design/App), so the pop-out can show a
