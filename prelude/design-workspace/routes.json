@@ -23,6 +23,7 @@
     }
   },
   "/f/:folder/d/:design/preview": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/preview/bar": { "view": "@app/server/views/_design-bar", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/screen": {
     "update": "folders/:folder/designs/:design",
     "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }

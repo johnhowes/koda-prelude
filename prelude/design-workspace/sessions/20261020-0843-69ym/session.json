@@ -1,0 +1,11 @@
+{
+  "title": "Build: Across the design",
+  "claudeSessionId": "4486c674-575c-4878-bb92-ebd0b817ccef",
+  "started": true,
+  "startedAt": "2026-10-20T13:43:50.813Z",
+  "updatedAt": "2026-10-20T13:45:46.732Z",
+  "build": {
+    "group": "@across",
+    "title": "Across the design"
+  }
+}

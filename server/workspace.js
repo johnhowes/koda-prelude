@@ -37,6 +37,7 @@ import { presentEntry as presentWords } from './views.js';
  * @property {{ id: string, title: string, build?: { title: string } }|null} session
  * @property {TurnState} state
  * @property {object[]} entries      transcript entries, presented (presentEntry)
+ * @property {{ id: string, html: string }|null} [streaming]  what the agent is writing now: its live entry's id, and the words so far as markdown
  * @property {Rule[]} rules
  * @property {{ id: string, text: string, asked: string|null }[]} questions
  * @property {{ title: string, why: string }[]} decisions
@@ -47,6 +48,7 @@ import { presentEntry as presentWords } from './views.js';
  * @property {Draft} draft
  * @property {Surface} surface
  * @property {string} [live]         the page's channel (the app's; no state has one)
+ * @property {number} [shown]        the design bar's: the design's version the window's frame loaded (R-v2q)
  *
  * @typedef {object} Branch
  * @property {string} id
@@ -108,7 +110,7 @@ import { presentEntry as presentWords } from './views.js';
  * @property {{ failures: PageNamed[], differ: PageNamed[] }} review
  * @property {{ id: string, title: string, says?: string, width?: number, height?: number }[]} sizes
  * @property {{ id: string, title: string, says: string, attributes?: object }[]} clients
- * @property {number} [version]     the design's version, so the frame reloads when it changes
+ * @property {number} [version]     the design's version: the frame loads it, and the bar says when the frame is behind it
  * @property {boolean} [screensOnly] a design of plain screens/*.html, not views
  *
  * @typedef {{ path: string, title: string, state: string|null, stateTitle: string|null, error?: string }} PageNamed

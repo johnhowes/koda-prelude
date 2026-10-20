@@ -15,7 +15,10 @@
     .workspace > .chat { flex: 2 1 0; }
     .workspace > .design { flex: 3 1 0; }
   }
-  .window-page > .design { flex: 1; }
+  /* The pop-out: the surface fills the window. The page is the scope's root
+     itself, so it's named with :scope; a bare .window-page would have to be
+     inside .design-page and never match. */
+  :scope.window-page > .design { flex: 1; }
 
   /* A one-line header: the title at a section's size, not a page's. */
   .design-head h1 { font-size: var(--text-xl); }
@@ -31,7 +34,7 @@
   .workspace:has(> .design.popped) > .chat { flex: 1; }
 
   /* Show: Agent, Tools. Unchecking one hides those entries. */
-  .chat:has(.show-agent:not(:checked)) .entry.agent,
+  /* Tools: the agent's tool calls show only while it's on. */
   .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
   .show-page { display: inline; }
 
@@ -69,6 +72,12 @@
   .queued .bubble { opacity: 0.7; border: var(--border-width) dashed var(--accent); }
   .queued .entry.user { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
   .queued form { display: contents; }
+
+  /* The agent's words as they stream in, before any have come. */
+  .entry.live .prose:empty::after { content: "…"; color: var(--fg-subtle); }
+  /* A message just sent, shown before the server has it: quieter until
+     the transcript comes back with it. */
+  .entry.sending .bubble { opacity: 0.7; }
 }
 
 /* The image, full size, in the modal (its own scope: the modal isn't inside

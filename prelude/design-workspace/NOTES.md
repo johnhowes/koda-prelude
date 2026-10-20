@@ -185,6 +185,48 @@ the record picker, was dropped).
   from a sketch or a screenshot". All from what Prelude already has (the
   check, NOTES.md, RULES.md, the last session's last line), none written by
   the agent. State `08-new-session` shows it; `05-new-design` the first.
+- **The chat's toolbar is quieter** (the person, 2026-10-19). Agent's
+  messages always show (no checkbox); tool calls only with Tools on, off
+  by default, remembered in the browser (`ko-persist`, local storage):
+  a preference of the person's, not the design's (R-t7w). New session
+  left the toolbar for the top of the sessions menu: rarely wanted, since
+  opening a design starts one when the last is finished. To design it,
+  `_session.eta` came back into the design (`"from"` on its route) with
+  every partial it includes, since includes resolve only in the design's
+  views. `_chat.eta` changed; `_surface.eta` split into it and
+  `_design-bar.eta` (below), and `_window.eta` came back to include it.
+- **The agent's changes don't reload the page on show** (the person,
+  2026-10-20): reviewing was hard while every edit reloaded the frame.
+  The person's own changes (page, state, size, Reset, Show, a pop-out)
+  still reload the whole surface in every window (`design-changed`). The
+  agent's (files of the design, its system, its shell) send
+  `files-changed`, which reloads only the head (`#design-bar`,
+  `…/preview/bar`, `_design-bar.eta`): page list, states, rules, review
+  strip. When the design's version is past the one the frame loaded
+  (`shown`, in the bar's URL), "Updated · Load changes" beside the page
+  menu reloads the surface. Never on its own, not even when the turn
+  ends (the person: never, for now); no Live switch yet (later, if
+  needed). Capture's frame size inputs moved beside the frame
+  (`form="capture-form"`) so they outlast the bar's reloads. Added
+  `.panel-head` to the design system. In the app: split the event in
+  `design-state.js` (`filesChanged` publishes `files-changed`) and add the
+  bar's route. Send event "The agent changes the design" shows it here.
+- **A sent message shows at once** (the person, 2026-10-20: there was a
+  lag). The composer's script, on submit, clones a `<template>` bubble
+  (words as text, the tray's thumbnails), marked "Sending…", into
+  `#transcript` (or `#queued` while the agent works). The answer's
+  transcript replaces it; a refusal's composer removes any left (R-s4n).
+- **The agent's words stream as markdown** (the person, 2026-10-20: raw
+  markdown showed until the message was whole). `_live-entry.eta` is a
+  `.prose` of the words so far, rendered; each push replaces it with all
+  of them rendered afresh, not appended text, so the saved entry that
+  takes its place looks the same. A reload finds it in the transcript
+  (`it.streaming`). In the app: `flush` (turns.js) renders the block's
+  whole text with the entries' markdown into `push-delta` without
+  `ko-attach="last"` (perhaps a slower flush than 50ms, since it resends
+  the whole text), and the page model gets `streaming` from the turn's
+  block instead of pushing it on connect. State `04-building` shows one
+  mid-sentence.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -279,8 +321,52 @@ Where the app differs from the screens, on purpose:
   person had seen it under the branch's worktree, not the project
   (2026-10-19; prelude/fixes/when-i-try-to-open-an-existing-design-the-preview-pane).
 
+## Built: the agent's changes, the chat's toolbar, sending (2026-10-20)
+
+- **Files-changed**: `filesChanged` (`server/design-state.js`) still moves
+  the design's version on, but publishes `files-changed`, not
+  `design-changed`; the watches in `openChannel` (`server/main.js`) call it
+  for the design's files, its system and its shell. The bar alone is
+  `GET …/preview/bar` (`server/views/_design-bar.eta`), with `shown` from
+  its URL (R-v2q).
+- **Streaming**: each flush (`server/turns.js`, now every 150ms) renders
+  the whole message so far as markdown into `push-delta`, replacing
+  `#<id>-text`. The page model has `streaming` from the turn's block, and
+  the page's channel says which live entry it rendered
+  (`…/live?from=N&streaming=<id>`): catching up brings that one up to date,
+  or takes it away if it was saved meanwhile (`push-remove.eta`; the saved
+  entry comes with the others), or adds one the page never had.
+- **The server's own events** (events.json) come from where each change
+  happens, over the page's one channel (`openChannel`, `server/main.js`):
+  `dictation-changed` from the download in `server/dictation.js` (as it
+  goes, and when the model is in), and `files-changed` from
+  `filesChanged` (`server/design-state.js`), when the watches see the
+  design's, its system's or its shell's files change. Neither event has
+  push views: the microphone (`#dictation`) and the bar (`#design-bar`)
+  reload themselves on hearing them.
+- **The pop-out window shows only its bar** (an open question since
+  2026-10-19): `.window-page > .design` could never match inside
+  `@scope (.design-page)`, since the window's page is the scope's root.
+  `server/public/workspace.css` now has the design's
+  `:scope.window-page > .design`.
+
 ## Open questions
 
+- **The surface sometimes takes over the whole page** (reported
+  2026-10-19, typing in the box or Start with this). Likely cause, from
+  the code (`server/main.js`, the `/d/` routing): a design with no branch
+  is served from the project's own address; the first POST (the draft
+  kept while typing, Start with this) makes its branch, and from then on
+  every GET there is redirected to the worktree's address. The surface's
+  next reload (`design-changed`) comes back from another address, outside
+  its own scope, so Koda routes it by scope and `#main` (`ko-scope="/"`)
+  takes it. Fix in the app: answer a fragment GET there in place
+  (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
+  and keeping a draft, which lives on this machine, needn't make a branch.
+
+- New session doesn't work in the app (the person, 2026-10-19), though
+  `…/sessions/new` is answered (`server/main.js:2240`). What happens when
+  it's clicked isn't known yet; perhaps the same redirect as above.
 - A message may be images alone (rule R-b6d), but the design's route still
   requires text: its `require` can't say "text or an image".
 - Not taken on yet for the message box: @ mentions of pages, states,

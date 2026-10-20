@@ -84,6 +84,11 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   side column, whose main column keeps a readable width beside it (46rem
   can't hold a `.split`). Added for "Project Landing Page"
   (prelude/project-landing-page): the project's page, its work beside its setup.
+- **Panel head** (`.panel-head`): a panel's toolbar and the notices under
+  it as one part, for a head that refreshes apart from the body; its
+  notices run edge to edge as a panel's own do. Added for "Design
+  Workspace" (prelude/design-workspace): the design bar refreshes when the
+  agent changes the design, while the page under it stays as it was.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).

@@ -1,0 +1,11 @@
+{
+  "title": "Build: Design page",
+  "claudeSessionId": "599c7ed9-be0b-419c-80a4-c999bcb3d065",
+  "started": true,
+  "startedAt": "2026-10-20T13:01:53.774Z",
+  "updatedAt": "2026-10-20T13:10:20.900Z",
+  "build": {
+    "group": "/f/:folder/d/:design",
+    "title": "Design page"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Build: Pop-out window",
+  "claudeSessionId": "6cfd775e-bd4f-44c5-ad25-c08621d18c55",
+  "started": true,
+  "startedAt": "2026-10-20T13:12:47.374Z",
+  "updatedAt": "2026-10-20T13:15:24.315Z",
+  "build": {
+    "group": "/f/:folder/d/:design/window",
+    "title": "Pop-out window"
+  }
+}
