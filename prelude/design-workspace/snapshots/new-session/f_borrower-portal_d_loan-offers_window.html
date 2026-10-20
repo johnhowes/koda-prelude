@@ -19,8 +19,8 @@ Pop-out window
 <body class="shell fill bare">
 <main class="shell-main" id="main" ko-history ko-location="/f/borrower-portal/d/loan-offers/window" ko-scope="/">
 <div class="stack design-page window-page">
-<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser">
-<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=window&amp;mode=design&amp;size=fit&amp;client=browser&amp;shown=0">
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=window&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
 <details class="menu start">
 <summary class="btn small ghost">
@@ -33,7 +33,6 @@ Offers
 <div class="menu-list">
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="window">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button aria-current="true" name="surface.current" type="submit" value="/offers">
@@ -70,7 +69,7 @@ Compare offers
 </button>
 </form>
 <hr>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Refresh
 </span>
@@ -104,7 +103,6 @@ State: Typical
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="window">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button aria-current="true" name="surface.state" type="submit" value="01-typical">
@@ -149,7 +147,6 @@ Capture
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="window">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <input name="name" type="hidden" value="Offers – Typical.png">
@@ -189,7 +186,7 @@ Fit the panel
 </summary>
 <ul class="menu-list">
 <li>
-<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Fit the panel
 </span>
@@ -199,7 +196,7 @@ As wide and tall as the panel
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=phone&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=phone&amp;client=browser" ko-target="design">
 <span class="item-title">
 Phone
 </span>
@@ -209,7 +206,7 @@ Phone
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=tablet&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=tablet&amp;client=browser" ko-target="design">
 <span class="item-title">
 Tablet
 </span>
@@ -219,7 +216,7 @@ Tablet
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;mode=design&amp;size=laptop&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=laptop&amp;client=browser" ko-target="design">
 <span class="item-title">
 Laptop
 </span>
@@ -231,7 +228,6 @@ Laptop
 <li>
 <form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="window">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="custom">
 <input name="surface.client" type="hidden" value="browser">
 <span class="item-title">
@@ -275,7 +271,6 @@ Show it
 <div class="menu-list">
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="window">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <input name="surface.state" type="hidden" value="04-long-names">

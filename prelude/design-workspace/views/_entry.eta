@@ -1,5 +1,6 @@
 <%/* One transcript entry. Renders nothing for entries that show nothing
-     (a tool's successful result, a turn that ended normally). A page the
+     (a tool's successful result, a turn that ended normally, and an old
+     build turn's "Next:", which is its session's page's now: prelude/build). A page the
      check names as not rendering has Show beside it, which puts that page,
      in that state, in the design surface; one of another design (a fix's
      check, step 11) has Open, its design's page. `it` has entry (presented:
@@ -38,25 +39,6 @@
 <li class="entry note">Prelude rendered every page of the designs this fix touches (<% e.designs.forEach((d, i) => { %><%= i ? ', ' : '' %><a href="<%= d.url %>"><%= d.title %></a><% }) %>)<%= e.rendered ? `, ${e.rendered} in all` : '' %>, and they all render.</li>
 <% } else if (e.type === 'check') { %>
 <li class="entry note">Prelude rendered every page and form in every state<%= e.rendered ? ` (${e.rendered})` : '' %>, and they all render.</li>
-<% } else if (e.type === 'next') { %>
-<%/* After a build turn (10.7): where the app is running, and what's next,
-     from the turn's check. Shown to the person, never told to the agent. */%>
-<li class="entry note next">
-  <% if (e.app?.running) { %><p>The app on this branch, with its own data, is running at <code><%= e.app.url %></code> · <a href="<%= e.app.open %>" target="_blank">Open<span class="icon icon-external" aria-hidden="true"></span></a></p><% } %>
-  <% if (e.firstPorted) { %><p>The design window now shows the app’s own views for the pages built, with the design’s states as their data.</p><% } %>
-  <p><strong>Next:</strong>
-  <% if (!e.built) { %>
-    <%= e.group %> isn’t built yet. Send the next message to carry on.
-  <% } else if (!e.checked) { %>
-    Prelude didn’t check the pages this turn (see above). Once they’re checked, finish the branch on <a href="<%= e.finish.url %>">the project page</a>: <%= e.finish.label %>.
-  <% } else if (e.failures) { %>
-    <%= e.failures === 1 ? '1 page doesn’t' : `${e.failures} pages don’t` %> render yet. The agent is told with your next message.
-  <% } else { %>
-    <% if (e.differ) { %><%= e.differ === 1 ? '1 page differs' : `${e.differ} pages differ` %> from the approved screens: look at them in the design window, and if they’re right, Approve again in the design bar. Then<% } else { %>When you’re happy with it,<% } %>
-    finish the branch on <a href="<%= e.finish.url %>">the project page</a>: <%= e.finish.label %>.
-  <% } %>
-  </p>
-</li>
 <% } else if (e.type === 'note') { %>
 <li class="entry note<%= e.failed ? ' failed' : '' %>"><%= e.text %></li>
 <% } else if (e.type === 'turn' && e.stopped) { %>

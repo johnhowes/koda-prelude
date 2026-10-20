@@ -69,11 +69,9 @@
           "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
           "surface": {
             "view": "inline",
-            "mode": "design",
             "size": "fit",
             "client": "browser",
             "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
-            "app": null,
             "host": null,
             "popped": false,
             "notice": null,

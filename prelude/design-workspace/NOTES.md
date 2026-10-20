@@ -10,7 +10,7 @@ Pages: Design page, with drawers (About the design, Rules, Open
 questions) and modals (an image, Mark up, Turn on dictation); Pop-out
 window. The fake project is a lender's borrower portal, so sizes (phone,
 tablet) and a second client (its mobile app) mean something. States:
-typical, pages differ, doesn't render, building, new design, update
+typical, pages differ, doesn't render, agent working, new design, update
 clashed, popped out, new session.
 
 All seven items of the first review are now designed or settled (item 4,
@@ -26,9 +26,17 @@ the record picker, was dropped).
   uses, and what the agent can read. An update that clashed also shows as a
   notice above the work, since it holds the branch.
 - **The chat owns its toolbar**: sessions menu, Show Agent/Tools, New
-  session. A build session says so in a notice at the top of the chat.
-- **The design bar reads "what am I looking at", then "how"**: Design/App,
-  page (Refresh and Open in browser moved into its menu, since they act on
+  session.
+- **The design page is for designing only** (the person, 2026-10-20): every
+  build session opens in Build (`prelude/build`), so the design page has no
+  Design | App switch or App mode, no "This session builds …" notice, no
+  "Next:" entry, no Build pill or build sessions in the sessions menu, and
+  no build variants of the review strip ("The build changed how … looks",
+  "All pages match", "Nothing is approved to check against"): a build's
+  check is its session's. The header's Build button, to the Build page,
+  stays. The app already dropped all but the strip's variants
+  (`_design-bar.eta`, `s.stage`), which the build removes.
+- **The design bar reads "what am I looking at", then "how"**: page (Refresh and Open in browser moved into its menu, since they act on
   the page), state, Send event, Reset data; then size, client, Pop out.
 - **Review strip under the bar** (a `.notice`, edge to edge), only when
   there's something to do: a page that doesn't render, pages that differ
@@ -40,7 +48,7 @@ the record picker, was dropped).
   The page count is gone.
 - **Size and client are not states** (the person asked, 2026-10-17). States
   are data; size and client are how one window looks at it. They're per
-  window (in the surface's URL, like Design/App), so the pop-out can show a
+  window (in the surface's URL), so the pop-out can show a
   phone while the panel fits. Page and state stay shared, as today.
 - **Sizes**: Fit the panel (default), then fixed sizes, then Custom (width
   and height fields, 200-4000 px; the person, 2026-10-17). One size at a
@@ -116,7 +124,7 @@ the record picker, was dropped).
 - **Capture the page** (the person, 2026-10-17): Capture in the design bar
   (after Reset data: it acts on what's on show), a menu of What's in view
   or The whole page. The server renders the page as that window shows it
-  (page, state, size, client, or the app) and adds the PNG to the message
+  (page, state, size, client) and adds the PNG to the message
   box (`POST …/capture`); a line beside it says so, and the tray reloads on
   `draft-changed`, so a capture from the pop-out reaches the chat. At Fit,
   "in view" is the frame's size, measured by a ResizeObserver script. The
@@ -135,8 +143,7 @@ the record picker, was dropped).
   it in `frame.at` (beside the frame, `form="capture-form"`), and the
   server opens that instead of `page` when it's a path its routes answer,
   an overlay route rendering over its page as deep links do; the name
-  takes that route's title. App mode still opens the page picked (Prelude
-  can't add to the app's pages). Opened afresh, what's typed isn't in it,
+  takes that route's title. Opened afresh, what's typed isn't in it,
   so in the desktop app What's in view is the app's own picture of the
   frame: `desktop.js` takes a click on `[data-capture-shown]` (closing the
   menu first, so it isn't in the picture), asks the shell for the frame's
@@ -262,12 +269,7 @@ the record picker, was dropped).
   `.prose` of the words so far, rendered; each push replaces it with all
   of them rendered afresh, not appended text, so the saved entry that
   takes its place looks the same. A reload finds it in the transcript
-  (`it.streaming`). In the app: `flush` (turns.js) renders the block's
-  whole text with the entries' markdown into `push-delta` without
-  `ko-attach="last"` (perhaps a slower flush than 50ms, since it resends
-  the whole text), and the page model gets `streaming` from the turn's
-  block instead of pushing it on connect. State `04-building` shows one
-  mid-sentence.
+  (`it.streaming`). State `04-agent-working` shows one mid-sentence.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -323,9 +325,8 @@ Where the app differs from the screens, on purpose:
   memory, in `turns.js`): their images move into the session's folder as
   they're queued, and come back into the box on Stop (R-9cn). Cancelling
   one deletes its images.
-- **Entries keep two kinds the design doesn't show**: a build turn's
-  "Next:" entry and the check's "ahead of the app" note, as the app had
-  them; no state has one.
+- **Entries keep a kind the design doesn't show**: the check's "ahead of
+  the app" note, as the app had it; no state has one.
 - **The design host's log** still shows under the bar when there is one
   (the design shows only the approval).
 - **Send event** still says when its markup didn't render or no page
@@ -436,14 +437,6 @@ Where the app differs from the screens, on purpose:
   (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
   and keeping a draft, which lives on this machine, needn't make a branch.
 
-- **What's left of build sessions on the design page** (2026-10-20): a
-  page's build has its own page in Build (`prelude/build`), but the app
-  build and the shell's layouts build still run on the design page
-  (`isPageBuild`, `server/main.js`). Waiting on a fix that moves them to
-  Build too; then remove the chat's "This session builds …" notice, the
-  "Next:" entry, the Build pill and build sessions from the sessions menu,
-  the Design | App switch and App mode, and make `04-building` a design
-  session with the agent working.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
 
