@@ -1409,9 +1409,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return surfaceAnswer(fromForm(form), notice);
   }
 
-  // Capture (R-k7c): the page as this window shows it - its page, state,
-  // size and client, or the app - as a picture, into the message box of the
+  // Capture (R-w8p, R-3qz): the page where the frame is now - a page reached
+  // by its links, a drawer or modal open over it - in this window's state,
+  // size and client, or the app, as a picture, into the message box of the
   // session the chat shows. Every chat reloads its tray on draft-changed.
+  // The desktop app posts its own picture of the frame as it is on screen
+  // (`picture`, desktop.js), kept as it is; otherwise the page is opened
+  // afresh at its address, without what's typed.
   if (req.method === 'POST' && rest[0] === 'capture' && rest.length === 1) {
     const form = await readForm(req);
     const looking = fromForm(form);
@@ -1421,21 +1425,39 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const inApp = Boolean(built) && looking.mode === 'app';
     const known = hosted ? Boolean(matchRoute(routes, page)) : listScreens(dir).some(screen => screen.file === page);
     if (!known) return answer({ error: 'That page is no longer in the design.' });
-    const { sizes, clients } = sizesAndClients(folder.path);
-    const size = looking.size === 'custom' ? designs.custom(dKey) : sizes.find(candidate => candidate.id === looking.size && candidate.width);
-    const measured = value => { const n = Math.round(Number(value)); return n >= 50 && n <= 8000 ? n : null; };
-    const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
-    const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
-    const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
-    const at = inApp ? `${built.url}${page}` : hosted ? `${designOrigin(req, folder, design)}${page}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+    // Where the frame is (its page says, _surface.eta): opened instead of the
+    // page picked when it's an address the design answers, an overlay over
+    // its page as a deep link is. The app's pages can't say, so App mode
+    // opens the page picked.
+    const where = String(form.get('frame.at') ?? '');
+    const whereRoute = hosted && !inApp && where.startsWith('/') ? matchRoute(routes, new URL(where, 'http://localhost').pathname)?.route : null;
+    const target = whereRoute ? where : page;
+    const whole = form.get('whole') === 'true';
+    const posted = form.get('picture');
+    const picture = !whole && posted && typeof posted === 'object' && posted.size ? Buffer.from(await posted.arrayBuffer()) : null;
     let bytes;
-    try {
-      bytes = await capture({ url: at, width, height, whole: form.get('whole') === 'true', attributes: client.attributes ?? {} });
-    } catch (error) {
-      return answer({ error: `Couldn’t capture the page: ${error.message}` });
+    if (picture) {
+      if (!picture.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return answer({ error: 'The window’s picture of the page wasn’t a PNG.' });
+      bytes = picture;
+    } else {
+      const { sizes, clients } = sizesAndClients(folder.path);
+      const size = looking.size === 'custom' ? designs.custom(dKey) : sizes.find(candidate => candidate.id === looking.size && candidate.width);
+      const measured = value => { const n = Math.round(Number(value)); return n >= 50 && n <= 8000 ? n : null; };
+      const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
+      const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
+      const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
+      const at = inApp ? `${built.url}${page}` : hosted ? `${designOrigin(req, folder, design)}${target}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+      try {
+        bytes = await capture({ url: at, width, height, whole, attributes: client.attributes ?? {} });
+      } catch (error) {
+        return answer({ error: `Couldn’t capture the page: ${error.message}` });
+      }
     }
     const session = sessionOnShow();
-    const name = String(form.get('name') ?? '').trim() || 'Capture.png';
+    // Named after the page where the frame was, when it's another.
+    const said = String(form.get('name') ?? '').trim();
+    const looks = said.split(' – ').slice(1);
+    const name = (whereRoute?.title && target !== page ? (looks.length ? [whereRoute.title, ...looks].join(' – ') : `${whereRoute.title}.png`) : said) || 'Capture.png';
     const added = app.drafts.addImage(folder, design, session?.id ?? null, { name, bytes });
     if (added.error) return answer({ error: added.error });
     live.publish(designChannel(dKey), 'draft-changed');

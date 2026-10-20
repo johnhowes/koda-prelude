@@ -3,12 +3,14 @@
 // The shell brings `window.preludeDesktop` on Prelude's own origin. Controls
 // only the shell can drive are marked `data-desktop-only` and shown only when
 // it is here; links it can do better are taken over - Pop out gets a real
-// window, Open in browser the system's browser. In a browser none of this
-// runs, and nothing is lost: the links work as links.
+// window, Open in browser the system's browser, Capture's What's in view the
+// frame exactly as it is on screen. In a browser none of this runs, and
+// nothing is lost: the links work as links, and the form as a form.
 //
 // This is the device's half: it relays between the page and the shell, and
 // decides nothing. It is a script because it is genuinely imperative - a
-// native dialog, a native window - which no binding or action expresses.
+// native dialog, a native window, the window's own pixels - which no binding
+// or action expresses.
 
 const desktop = window.preludeDesktop ?? null;
 
@@ -16,8 +18,11 @@ if (desktop) {
   // The page's root: .prelude in the app's layout, the document in the shell's.
   (document.querySelector('.prelude') ?? document.documentElement).setAttribute('data-desktop', '');
 
+  const taken = desktop.capture
+    ? '[data-pick-folder], a[data-pop-out], a[target="_blank"], [data-capture-shown]'
+    : '[data-pick-folder], a[data-pop-out], a[target="_blank"]';
   document.addEventListener('click', event => {
-    const control = event.target.closest?.('[data-pick-folder], a[data-pop-out], a[target="_blank"]');
+    const control = event.target.closest?.(taken);
     if (!control || event.defaultPrevented || event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
@@ -34,7 +39,41 @@ async function run(control) {
     form.requestSubmit();
     return;
   }
+  if (control.matches('[data-capture-shown]')) return captureShown(control);
   const url = new URL(control.getAttribute('href'), location.href).href;
   if (control.matches('[data-pop-out]')) await desktop.popOut(url, control.getAttribute('target'));
   else await desktop.openInBrowser(url);
+}
+
+/**
+ * Capture's What's in view (R-3qz): the frame as it is on screen, with what's
+ * typed or drawn in it, which no page opened afresh can hold. The menu closes
+ * first, so it isn't in the picture; the shell pictures the frame's box, at
+ * the page's own pixels when a size scales it down (1 / --scale); the PNG goes
+ * in the form's `picture`, which the server keeps as it is. If the shell
+ * can't, the form goes without it, and the server opens the page afresh.
+ */
+async function captureShown(button) {
+  const form = button.form;
+  const input = form.querySelector('[data-capture-picture]');
+  const frame = button.closest('.design')?.querySelector('.design-frame iframe');
+  const menu = button.closest('details');
+  if (menu) menu.open = false;
+  if (input) input.value = '';
+  if (input && frame) {
+    try {
+      // Two frames: the menu's closing is painted before the picture.
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const box = frame.getBoundingClientRect();
+      const scale = Number(getComputedStyle(frame.closest('.device') ?? frame).getPropertyValue('--scale')) || 1;
+      const answer = JSON.parse(await desktop.capture({ x: box.left + scrollX, y: box.top + scrollY, width: box.width, height: box.height }, 1 / scale));
+      const bytes = Uint8Array.from(atob(answer.data), c => c.charCodeAt(0));
+      const files = new DataTransfer();
+      files.items.add(new File([bytes], form.elements.namedItem('name')?.value || 'Capture.png', { type: 'image/png' }));
+      input.files = files.files;
+    } catch (error) {
+      console.error('Prelude desktop: the window couldn’t picture the frame, so the page is opened afresh.', error);
+    }
+  }
+  form.requestSubmit(button);
 }

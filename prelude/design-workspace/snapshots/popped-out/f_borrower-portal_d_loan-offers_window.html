@@ -142,12 +142,12 @@ Long names
 </form>
 </details>
 <details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="window">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="phone">
@@ -155,12 +155,16 @@ Capture
 <input name="name" type="hidden" value="Compare offers – Typical – 390×844.png">
 <input name="page" type="hidden" value="/offers/compare">
 <input name="state" type="hidden" value="01-typical">
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
-<span class="muted">
-390 × 844, as the frame shows it
+<span class="muted" data-browser-only>
+390 × 844, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+390 × 844, exactly as it is now, with what you’ve typed
 </span>
 </button>
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
@@ -168,7 +172,7 @@ What’s in view
 The whole page
 </span>
 <span class="muted">
-Scrolled to its end, 390 wide
+Scrolled to its end, 390 wide, opened afresh
 </span>
 </button>
 </form>
@@ -306,6 +310,7 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 </div>
 <input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="390">
 <input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="844">
+<input form="capture-form" ko-as="frameAt" name="frame.at" type="hidden" value="">
 <div class="design-frame sized" ko-as="frame">
 <div class="device" ko-as="device" style="--w: 390; --h: 844">
 <iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" title="Compare offers">
@@ -315,6 +320,9 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 // At a size the page keeps its own width and height, and is shown scaled // down to the box the panel gives it: a measured scale, which no rule can // work out from two lengths. const { device, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { device.element.style.setProperty('--scale', String(entry.contentRect.width / 390)); }); observer.observe(device.element); onRemove(() => observer.disconnect());
 </script>
 </div>
+<script type="koda">
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
+</script>
 </section>
 </div>
 </main>

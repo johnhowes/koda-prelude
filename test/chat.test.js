@@ -294,6 +294,28 @@ test('each session keeps its own draft; images only, kept until sent', async () 
   assert.match(await (await get(sessionUrl)).text(), /<textarea[^>]*><\/textarea>/, 'sending empties the draft');
 });
 
+test('a capture the desktop app pictured is kept as it is (R-3qz)', async () => {
+  const id = readdirSync(join(designDir, 'sessions'))[0];
+  await get(`${designUrl}/sessions/${id}`);
+  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d49444154789c63000100000500010d0a2db40000000049454e44ae426082', 'hex');
+  const captureOf = picture => {
+    const form = new FormData();
+    form.append('name', 'Sign up – Typed in.png');
+    form.append('page', '01-sign-up.html');
+    form.append('whole', 'false');
+    form.append('picture', new Blob([picture], { type: 'image/png' }), 'Sign up – Typed in.png');
+    return fetch(`${base}${designUrl}/capture`, { method: 'POST', body: form, headers: { 'x-koda-fragment': '1' } });
+  };
+  const taken = await (await captureOf(png)).text();
+  assert.match(taken, /Captured: it’s in the message box/);
+  const tray = taken.match(/name="attachments" value="(img-[a-z0-9]+)"/g) ?? [];
+  const imageId = tray.at(-1).match(/(img-[a-z0-9]+)/)[1];
+  const file = Buffer.from(await (await fetch(`${base}${designUrl}/images/${imageId}/file`)).arrayBuffer());
+  assert.ok(file.equals(png), 'the window’s own pixels, not a page opened afresh');
+  assert.match(await (await captureOf(Buffer.from('not a picture'))).text(), /wasn’t a PNG/);
+  await post(`${designUrl}/sessions/${id}/attachments/${imageId}/remove`, {});
+});
+
 test('what the person is looking at goes with the message, unless they turn it off', async () => {
   const id = readdirSync(join(designDir, 'sessions'))[0];
   const sessionUrl = `${designUrl}/sessions/${id}`;

@@ -340,7 +340,7 @@ Sending…
 </li>
 </template>
 <script type="koda">
-// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { const item = document.createElement('li'); item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { // An .attachment, as in the tray: the system sizes .thumb only there. const item = document.createElement('li'); item.className = 'attachment'; item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
 </script>
 </form>
 </section>
@@ -468,12 +468,12 @@ Long names
 </form>
 </details>
 <details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
@@ -481,12 +481,16 @@ Capture
 <input name="name" type="hidden" value="Offer – Typical.png">
 <input name="page" type="hidden" value="/offers/off-2291">
 <input name="state" type="hidden" value="01-typical">
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
-<span class="muted">
-As much as fits the frame now
+<span class="muted" data-browser-only>
+As much as fits the frame, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+As much as fits the frame, exactly as it is now, with what you’ve typed
 </span>
 </button>
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
@@ -494,7 +498,7 @@ As much as fits the frame now
 The whole page
 </span>
 <span class="muted">
-Scrolled to its end, as wide as the frame
+Scrolled to its end, as wide as the frame, opened afresh
 </span>
 </button>
 </form>
@@ -632,6 +636,7 @@ Offer · Long names
 </div>
 <input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="">
 <input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="">
+<input form="capture-form" ko-as="frameAt" name="frame.at" type="hidden" value="">
 <div class="design-frame" ko-as="frame">
 <div class="device" ko-as="device">
 <iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291" title="Offer">
@@ -640,6 +645,9 @@ Offer · Long names
 </div>
 <script type="koda">
 // At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
+</script>
+<script type="koda">
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
 </script>
 </section>
 </div>

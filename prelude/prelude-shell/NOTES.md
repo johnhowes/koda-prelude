@@ -85,6 +85,10 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   `data-desktop`, which shows `[data-desktop-only]`). Prelude can't run a
   client; these show what the page itself shows in it. Added for "Design
   Workspace" (prelude/design-workspace).
+- **`[data-browser-only]`**: hidden in the desktop app, so a control that
+  works differently there can say so in each (`[data-desktop-only]` beside
+  it). Added for "Design Workspace" (prelude/design-workspace): Capture's
+  hints.
 
 ## Connected to the app (2026-10-16)
 

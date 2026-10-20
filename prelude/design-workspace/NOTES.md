@@ -34,7 +34,9 @@ the record picker, was dropped).
   there's something to do: a page that doesn't render, pages that differ
   (with Approve again), or none approved yet. Its menu lists the pages;
   each shows that page in the state the check named. The chat's check
-  entries have Show beside each page too. The page count is gone.
+  entries have Show beside each page too. Pages that differ are folded
+  there under their one line (the person, 2026-10-20: a change can make
+  60 differ); pages that don't render stay open. The page count is gone.
 - **Size and client are not states** (the person asked, 2026-10-17). States
   are data; size and client are how one window looks at it. They're per
   window (in the surface's URL, like Design/App), so the pop-out can show a
@@ -120,6 +122,36 @@ the record picker, was dropped).
   server renders it (a headless browser), not the client: a cross-origin
   frame can't be read from the page, and it works the same in both
   clients. Captures are named "Page – State – 390×844.png".
+- **Capture pictures where the frame is, and the desktop app what's on
+  screen** (the person, 2026-10-20: capturing over the Mark up modal gave
+  the page beneath). The server opened the page picked, never a drawer or
+  modal over it (no address changes when one opens) or a page reached by a
+  link. Now the framed page reports where it is: the design's origin adds a
+  script to the pages it serves into a frame (beside `withClient`,
+  host.js), which on each `koda:attached` and popstate posts
+  `{ type: 'prelude:where', at }` to the parent: an open overlay region's
+  `ko-location` (`#modal`, `#drawer`), else its own path. The surface keeps
+  it in `frame.at` (beside the frame, `form="capture-form"`), and the
+  server opens that instead of `page` when it's a path its routes answer,
+  an overlay route rendering over its page as deep links do; the name
+  takes that route's title. App mode still opens the page picked (Prelude
+  can't add to the app's pages). Opened afresh, what's typed isn't in it,
+  so in the desktop app What's in view is the app's own picture of the
+  frame: `desktop.js` takes a click on `[data-capture-shown]` (closing the
+  menu first, so it isn't in the picture), asks the shell for the frame's
+  pixels (`preludeDesktop.capture(rect, scale)`: WebView2's DevTools
+  `Page.captureScreenshot` clipped to the iframe, scaled by `1 / --scale`
+  so a sized frame keeps its real pixels), puts the PNG in the form's
+  `picture` input and submits; the server stores a posted `picture` as
+  is. The whole page is opened afresh in both. The menu's hints say which,
+  by client (`[data-browser-only]`, added to the shell) (R-w8p, R-3qz).
+  The preview shows both hints until it's built: the page renders in the
+  app's layout (`layouts.json`), which links the app's copy of the shell's
+  CSS (`server/public/shell.css`), without the new rule; the build copies
+  the shell's `shell.css` over it.
+  To design it, the page's views came back into the design (`"from"` on
+  the page, window, preview and bar routes) with every partial they
+  include; only `_surface.eta` and `_design-bar.eta` changed.
 - **Dictation, transcribed on this computer** (the person, 2026-10-17;
   replaces the browser's speech service): a microphone beside Attach. The
   first press opens a modal to choose a speech model (Quick 142 MB English,
@@ -216,6 +248,8 @@ the record picker, was dropped).
   (words as text, the tray's thumbnails), marked "Sending…", into
   `#transcript` (or `#queued` while the agent works). The answer's
   transcript replaces it; a refusal's composer removes any left (R-s4n).
+  Each image goes in an `li.attachment`, since the system sizes `.thumb`
+  only inside one (it showed full size before, 2026-10-20).
 - **The agent's words stream as markdown** (the person, 2026-10-20: raw
   markdown showed until the message was whole). `_live-entry.eta` is a
   `.prose` of the words so far, rendered; each push replaces it with all
@@ -349,6 +383,39 @@ Where the app differs from the screens, on purpose:
   `@scope (.design-page)`, since the window's page is the scope's root.
   `server/public/workspace.css` now has the design's
   `:scope.window-page > .design`.
+
+## Built: capture where the frame is, and what's on screen (2026-10-20)
+
+- **Where the frame is** (R-w8p): the design's origin adds `WHERE_SCRIPT`
+  beside the client script (`withClient`, `server/host.js`) to each page it
+  serves; in a frame, it posts `prelude:where` on load, on each
+  `koda:attached`, on popstate and when a dialog closes: an open `#modal`
+  or `#drawer` at its `ko-location`, else its own path and query.
+  `_surface.eta` keeps it in `frame.at`. The capture route (`server/main.js`)
+  opens it instead of `page` when the design's routes answer its path (an
+  overlay renders over its page, as a deep link does), and names the
+  picture after that route's title. App mode still opens the page picked.
+- **What's on screen, in the desktop app** (R-3qz): `desktop.js` takes the
+  click on `[data-capture-shown]` when the shell has `capture`, closes the
+  menu, waits two frames, asks `preludeDesktop.capture(rect, 1 / --scale)`
+  and puts the PNG in `picture` before submitting. The shell's `capture`
+  command (`tauri/src-tauri/src/main.rs`) is WebView2's
+  `CallDevToolsProtocolMethod("Page.captureScreenshot")` with a clip, on
+  the webview's thread (`webview2-com` 0.39 and `windows-core` 0.62, the
+  versions Tauri's webview already uses; Windows only, elsewhere it says so
+  and the page is opened afresh). The server keeps a posted `picture` as it
+  is, refusing anything that isn't a PNG; if the shell can't picture it, the
+  form goes without and the server opens the page afresh.
+- **`[data-browser-only]`** is in the app's copy of the shell's CSS
+  (`server/public/shell.css`), added beside `[data-desktop-only]` rather
+  than copying the shell's file over it: the app's copy has its own
+  `.fills` rules the shell's doesn't.
+- The pop-out window's route now renders the app's own `_window.eta`
+  (2026-10-20): the design's `_window.eta` and the partials it includes
+  (`_surface`, `_frame`, `_design-bar`, `_page-menu`, `_review-menu`,
+  `_keep`) matched the app's line for line, and `:scope.window-page >
+  .design` was already in `server/public/workspace.css`, so the port is
+  the route alone.
 
 ## Open questions
 

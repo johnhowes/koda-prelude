@@ -14,6 +14,12 @@ tauri-plugin-opener = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2"
 
+# Capture's picture of the window (main.rs, `capture`): WebView2's own DevTools
+# protocol, at the versions Tauri's webview already uses.
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows-core = "0.62"
+
 [profile.release]
 codegen-units = 1
 lto = true

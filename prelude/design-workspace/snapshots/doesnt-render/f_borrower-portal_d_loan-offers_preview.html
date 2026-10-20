@@ -122,12 +122,12 @@ Long names
 </form>
 </details>
 <details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
@@ -135,12 +135,16 @@ Capture
 <input name="name" type="hidden" value="Offer – Typical.png">
 <input name="page" type="hidden" value="/offers/off-2291">
 <input name="state" type="hidden" value="01-typical">
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
-<span class="muted">
-As much as fits the frame now
+<span class="muted" data-browser-only>
+As much as fits the frame, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+As much as fits the frame, exactly as it is now, with what you’ve typed
 </span>
 </button>
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
@@ -148,7 +152,7 @@ As much as fits the frame now
 The whole page
 </span>
 <span class="muted">
-Scrolled to its end, as wide as the frame
+Scrolled to its end, as wide as the frame, opened afresh
 </span>
 </button>
 </form>
@@ -286,6 +290,7 @@ Offer · Long names
 </div>
 <input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="">
 <input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="">
+<input form="capture-form" ko-as="frameAt" name="frame.at" type="hidden" value="">
 <div class="design-frame" ko-as="frame">
 <div class="device" ko-as="device">
 <iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291" title="Offer">
@@ -294,5 +299,8 @@ Offer · Long names
 </div>
 <script type="koda">
 // At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
+</script>
+<script type="koda">
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
 </script>
 </section>
