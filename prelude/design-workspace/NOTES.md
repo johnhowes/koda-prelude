@@ -220,13 +220,18 @@ the record picker, was dropped).
 - **The chat's toolbar is quieter** (the person, 2026-10-19). Agent's
   messages always show (no checkbox); tool calls only with Tools on, off
   by default, remembered in the browser (`ko-persist`, local storage):
-  a preference of the person's, not the design's (R-t7w). New session
-  left the toolbar for the top of the sessions menu: rarely wanted, since
-  opening a design starts one when the last is finished. To design it,
+  a preference of the person's, not the design's (R-t7w). To design it,
   `_session.eta` came back into the design (`"from"` on its route) with
   every partial it includes, since includes resolve only in the design's
   views. `_chat.eta` changed; `_surface.eta` split into it and
   `_design-bar.eta` (below), and `_window.eta` came back to include it.
+- **No New session** (the person, 2026-10-20; it never worked in the app,
+  and wasn't needed): opening a design starts one when the last is
+  finished (R-o4s), so the sessions menu lists only the sessions. To be
+  added back if it's missed. `_session.eta` came back into the design
+  (`"from"` on the page's route) with every partial it includes; only
+  `_chat.eta` changed. In the app, `GET …/sessions/new` can go too
+  (`server/main.js`), unless something else links it.
 - **The agent's changes don't reload the page on show** (the person,
   2026-10-20): reviewing was hard while every edit reloaded the frame.
   The person's own changes (page, state, size, Reset, Show, a pop-out)
@@ -429,10 +434,6 @@ Where the app differs from the screens, on purpose:
   (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
   and keeping a draft, which lives on this machine, needn't make a branch.
 
-- New session doesn't work in the app (the person, 2026-10-19), though
-  `…/sessions/new` is answered (`server/main.js:2382`). It's a plain link
-  in the sessions menu now (`_chat.eta`); what happens when it's clicked
-  isn't known yet, perhaps the same redirect as above.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
 
@@ -446,5 +447,5 @@ What the fake routes can't do; the app does each.
   Mark up on a just-uploaded image has nothing to open.
 - An image added in the preview (a real upload) has no full-size view: the
   route doesn't add it to the session's images.
-- Session links, New session and the branch actions lead nowhere (the
+- Session links and the branch actions lead nowhere (the
   design shows one session at the design's URL).
