@@ -418,27 +418,9 @@ Where the app differs from the screens, on purpose:
 
 ## Open questions
 
-- **The surface sometimes takes over the whole page** (reported
-  2026-10-19, typing in the box or Start with this). Likely cause, from
-  the code (`server/main.js`, the `/d/` routing): a design with no branch
-  is served from the project's own address; the first POST (the draft
-  kept while typing, Start with this) makes its branch, and from then on
-  every GET there is redirected to the worktree's address. The surface's
-  next reload (`design-changed`) comes back from another address, outside
-  its own scope, so Koda routes it by scope and `#main` (`ko-scope="/"`)
-  takes it. Fix in the app: answer a fragment GET there in place
-  (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
-  and keeping a draft, which lives on this machine, needn't make a branch.
-  Seen again 2026-10-20, typing in a new session of an existing design: a
-  design merged into main has lost its branch (its worktree is removed), so
-  it's served from the project's address again, and the same applies. This
-  time the design bar alone filled the page: `#design-bar`'s reload
-  (`…/preview/bar`, on `files-changed`) is redirected the same way and
-  lands in `#main`. Every region that reloads at a design's address is
-  exposed until the fix. Still unfixed here (`server/main.js:662` redirects
-  every GET); a fix session was started for it on 2026-10-20.
-  New session not working in the app (the person, 2026-10-19) is likely the
-  same: it's a link inside the page's scope, so its GET is redirected too.
+- New session doesn't work in the app (the person, 2026-10-19). Thought
+  to be the redirect that made the surface take over the page (fixed in
+  a fix session, the person confirmed 2026-10-20); to check again.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
 
