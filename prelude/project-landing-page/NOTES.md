@@ -181,9 +181,15 @@ The person asked to launch the app from main on this page. Decided:
   requires both).
 - **Clicking Run is the approval** (the person): the button always shows the
   command beside it (R-h2w). Only once the app is built (on main).
-- **Set on the card**: unset, the card asks for both and has "Save and run";
-  set, "Change how it runs" is a disclosure while it's stopped. Kept on this
-  computer, not in the repository.
+- **The app build gives the default** (the person, 2026-10-20): building or
+  connecting the app, the agent writes a run command and an address of its
+  own into `prelude/prelude.json` (`"run": { "start", "url" }`, beside
+  `host`), so the card starts set (typical). Changed on the card, it's kept
+  on this computer and wins over the project's; the repository isn't
+  touched.
+- **Unset** (an app connected before this, or a build that couldn't say):
+  the card asks for both and has "Save and run" (large project). Set,
+  "Change how it runs" is a disclosure while it's stopped.
 - Starting shows a pulse and Stop; the server opens the browser once it
   answers and says `app-changed` (the app region now reloads on it too);
   running shows its address, Open and Stop; failing shows the last of its
@@ -201,8 +207,6 @@ tree stopped with Prelude.
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
   output folder, or to stop the host first; let the build find out.
-- **Should the app build write a default run command** (it knows the stack)
-  into `prelude/prelude.json`, so the card starts set?
 
 - **New design has nowhere to say why the kind was refused**: designs here
   wait for the app to be connected (or for a custom stack's app to be
