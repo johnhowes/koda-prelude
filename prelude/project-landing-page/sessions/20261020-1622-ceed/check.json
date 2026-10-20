@@ -1,0 +1,175 @@
+{
+  "at": "2026-10-20T21:32:07.440Z",
+  "shots": [
+    {
+      "id": "typical~f_spark-lending",
+      "key": "typical/f_spark-lending",
+      "path": "/f/spark-lending",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Project",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "typical~f_spark-lending_designs_new",
+      "key": "typical/f_spark-lending_designs_new",
+      "path": "/f/spark-lending/designs/new",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "New design",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "typical~f_spark-lending_branches_a41c07_publish",
+      "key": "typical/f_spark-lending_branches_a41c07_publish",
+      "path": "/f/spark-lending/branches/a41c07/publish",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer",
+      "key": "new-project/f_rate-sheet-importer",
+      "path": "/f/rate-sheet-importer",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer_designs_new",
+      "key": "new-project/f_rate-sheet-importer_designs_new",
+      "path": "/f/rate-sheet-importer/designs/new",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal",
+      "key": "app-being-built/f_borrower-portal",
+      "path": "/f/borrower-portal",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_designs_new",
+      "key": "app-being-built/f_borrower-portal_designs_new",
+      "path": "/f/borrower-portal/designs/new",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_branches_e03b51_publish",
+      "key": "app-being-built/f_borrower-portal_branches_e03b51_publish",
+      "path": "/f/borrower-portal/branches/e03b51/publish",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal",
+      "key": "update-clashed/f_borrower-portal",
+      "path": "/f/borrower-portal",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_designs_new",
+      "key": "update-clashed/f_borrower-portal_designs_new",
+      "path": "/f/borrower-portal/designs/new",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_branches_e03b51_publish",
+      "key": "update-clashed/f_borrower-portal_branches_e03b51_publish",
+      "path": "/f/borrower-portal/branches/e03b51/publish",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination",
+      "key": "long-names/f_mortgage-origination",
+      "path": "/f/mortgage-origination",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Project",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_designs_new",
+      "key": "long-names/f_mortgage-origination_designs_new",
+      "path": "/f/mortgage-origination/designs/new",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "New design",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_branches_d81a6c_publish",
+      "key": "long-names/f_mortgage-origination_branches_d81a6c_publish",
+      "path": "/f/mortgage-origination/branches/d81a6c/publish",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "large-project~f_spark-platform",
+      "key": "large-project/f_spark-platform",
+      "path": "/f/spark-platform",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Project",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "large-project~f_spark-platform_designs_new",
+      "key": "large-project/f_spark-platform_designs_new",
+      "path": "/f/spark-platform/designs/new",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "New design",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "large-project~f_spark-platform_branches_b01_publish",
+      "key": "large-project/f_spark-platform_branches_b01_publish",
+      "path": "/f/spark-platform/branches/b01/publish",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "differs"
+    }
+  ]
+}

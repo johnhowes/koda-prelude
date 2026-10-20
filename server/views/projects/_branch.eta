@@ -62,6 +62,12 @@
   </details>
   <% } %>
 
+  <%/* What the last update from main did, said where it was clicked: what
+       came in, or that there was nothing new. Once: a later reload drops it. */%>
+  <% if (w.updated) { const files = Number(w.updated.files) || 0; %>
+  <p class="muted" role="status"><%= files ? `Brought ${w.updated.from} in: ${files === 1 ? '1 file' : `${files} files`} came in. The agent is told with your next message.` : `${w.updated.from} had nothing new for this branch.` %></p>
+  <% } %>
+
   <% if (w.finishError) { %>
   <div class="notice danger" role="alert"><p><%= w.finishError %></p></div>
   <% } %>

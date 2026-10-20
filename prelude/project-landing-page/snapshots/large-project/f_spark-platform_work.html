@@ -289,6 +289,8 @@ An extra payment, and how much sooner the loan ends because of it.
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b03/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="6">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -331,6 +333,8 @@ Check passes
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b04/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="1">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -367,6 +371,9 @@ prelude/document-upload
 Check passes
 </span>
 </div>
+<p class="muted" role="status">
+main had nothing new for this branch.
+</p>
 <div class="cluster actions">
 <a class="btn small" href="/f/spark-platform/branches/b05/publish" ko-target="modal?">
 <span aria-hidden="true" class="icon icon-push">
@@ -654,6 +661,8 @@ Check passes
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b10/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="2">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>

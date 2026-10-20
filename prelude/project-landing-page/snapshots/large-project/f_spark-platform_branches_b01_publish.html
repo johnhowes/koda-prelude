@@ -434,6 +434,8 @@ An extra payment, and how much sooner the loan ends because of it.
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b03/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="6">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -476,6 +478,8 @@ Check passes
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b04/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="1">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -512,6 +516,9 @@ prelude/document-upload
 Check passes
 </span>
 </div>
+<p class="muted" role="status">
+main had nothing new for this branch.
+</p>
 <div class="cluster actions">
 <a class="btn small" href="/f/spark-platform/branches/b05/publish" ko-target="modal?">
 <span aria-hidden="true" class="icon icon-push">
@@ -799,6 +806,8 @@ Check passes
 <div class="cluster actions">
 <form action="/f/spark-platform/branches/b10/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="2">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -2352,7 +2361,7 @@ Try again
 </section>
 </div>
 <aside aria-label="The project’s setup" class="side stack gap-6">
-<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed" ko-source="/f/spark-platform/app">
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed event:app-changed" ko-source="/f/spark-platform/app">
 <h2 id="app-title">
 The app
 </h2>
@@ -2363,6 +2372,39 @@ src/Spark.Web/
 </code>
 . Each design’s Build page builds its features into it.
 </p>
+<form action="/f/spark-platform/app/run" class="stack gap-3" ko-target="runFields" method="post">
+<p class="secondary">
+To run it from here, say how it starts. It runs from spark-platform’s own folder, apart from the copy Prelude renders designs with, so give it an address of its own.
+</p>
+<input name="state" type="hidden" value="starting">
+<div class="stack gap-3" ko-as="runFields">
+<label class="field">
+<span class="label">
+Command
+</span>
+<input autocomplete="off" name="command" placeholder="npm start" spellcheck="false" value="">
+<span class="hint">
+Run in the project’s folder, as you would in a terminal.
+</span>
+</label>
+<label class="field">
+<span class="label">
+Address
+</span>
+<input autocomplete="off" name="url" placeholder="http://localhost:3100" spellcheck="false" value="">
+<span class="hint">
+On this computer, and not the design host’s. Its port is given to the command as PORT.
+</span>
+</label>
+</div>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+Save and run
+</button>
+</div>
+</form>
 <p class="muted">
 Designs here use
 <a href="/f/spark-platform/d/spark-design-system">

@@ -13,14 +13,10 @@
   *shown-on: /f/:project @ typical*
 - **R-h2w.** Once the app is built, it can be run from the project's own folder with a command and address of its own, never the design host's, and the Run button always shows the command it runs, so clicking it is the approval.
   *shown-on: /f/:project @ typical*
-  *proposed*
 - **R-p7c.** Building or connecting the app sets how it runs from here, so a newly built app can be run without setting anything; a command changed on this page applies on this computer only.
   *shown-on: /f/:project @ typical*
-  *proposed*
 - **R-5tj.** The app run from here opens in the browser once it answers at its address, and stops when Prelude quits.
-  *proposed*
 - **R-u9d.** Updating a branch from main brings in every commit it's counted behind, and says beside the branch how many files came in, or that there was nothing new.
   *shown-on: /f/:project @ large-project*
-  *proposed*
 - **R-f0c.** Merged lately shows the project's last five merged branches.
   *shown-on: /f/:project @ typical*

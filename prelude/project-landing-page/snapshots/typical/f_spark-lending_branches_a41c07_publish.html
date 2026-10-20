@@ -381,6 +381,8 @@ Open it
 <div class="cluster actions">
 <form action="/f/spark-lending/branches/c90f13/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="main">
+<input name="updated.files" type="hidden" value="2">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -637,7 +639,7 @@ Try again
 </section>
 </div>
 <aside aria-label="The project’s setup" class="side stack gap-6">
-<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed" ko-source="/f/spark-lending/app">
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed event:app-changed" ko-source="/f/spark-lending/app">
 <h2 id="app-title">
 The app
 </h2>
@@ -648,6 +650,63 @@ app/
 </code>
 . Each design’s Build page builds its features into it.
 </p>
+<form action="/f/spark-lending/app/run/start" class="stack gap-2" ko-target="app" method="post">
+<input name="state" type="hidden" value="starting">
+<div class="cluster actions">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+Run the app
+</button>
+</div>
+<p class="muted">
+Runs
+<code>
+npm start --prefix app
+</code>
+in
+<span class="project-path">
+C:\Projects\spark-lending
+</span>
+, at
+<code>
+http://localhost:3100
+</code>
+.
+</p>
+</form>
+<details class="disclosure">
+<summary>
+Change how it runs
+</summary>
+<form action="/f/spark-lending/app/run" class="stack gap-3" ko-target="runFields" method="post">
+<div class="stack gap-3" ko-as="runFields">
+<label class="field">
+<span class="label">
+Command
+</span>
+<input autocomplete="off" name="command" placeholder="npm start" spellcheck="false" value="npm start --prefix app">
+<span class="hint">
+Run in the project’s folder, as you would in a terminal.
+</span>
+</label>
+<label class="field">
+<span class="label">
+Address
+</span>
+<input autocomplete="off" name="url" placeholder="http://localhost:3100" spellcheck="false" value="http://localhost:3100">
+<span class="hint">
+On this computer, and not the design host’s. Its port is given to the command as PORT.
+</span>
+</label>
+</div>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Save
+</button>
+</div>
+</form>
+</details>
 <p class="muted">
 Designs here use
 <a href="/f/spark-lending/d/spark-design-system">

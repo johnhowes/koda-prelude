@@ -557,7 +557,12 @@ export function createBranches({ home }) {
       if (this.merging(entry)?.unresolved.length) return { error: halfway(into) };
       const remote = remoteOf(parent);
       if (remote) gitOk(parent, 'fetch', '--quiet', 'origin', into);
-      const source = remote && gitOk(parent, 'rev-parse', '--verify', '--quiet', `refs/remotes/origin/${into}`) ? `origin/${into}` : into;
+      // Whichever main is newer, so every commit it's counted behind comes in
+      // (R-u9d): the remote's only when it has all of the local one; the local
+      // one when it's ahead or they've diverged, as status() counts.
+      const remoteMain = `refs/remotes/origin/${into}`;
+      const source = remote && gitOk(parent, 'rev-parse', '--verify', '--quiet', remoteMain)
+        && gitOk(parent, 'merge-base', '--is-ancestor', `refs/heads/${into}`, remoteMain) ? `origin/${into}` : into;
       this.commit(entry, 'Work in progress (committed by Prelude, updating from main)');
       const before = git(entry.path, 'rev-parse', 'HEAD');
       try {

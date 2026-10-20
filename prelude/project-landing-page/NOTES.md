@@ -218,6 +218,43 @@ project, Document upload). The design's form posts `behind` as a stand-in
 for the file count. **Brought back for it**: `_branch` (changed) and
 `_work`, which includes it.
 
+## Built: running the app, and what an update did (2026-10-20)
+
+`_app` and `_branch` are ported over the app's, `_run-fields` is new beside
+them, and `page` gains `event:app-changed`; `_work` was already the app's.
+Every route's view is `@app` now.
+
+- **The runner is `server/runs.js`**: one app per project, started from the
+  project's own folder (never a branch's worktree) with `shell: true`, its
+  `PORT` from its address, and `PRELUDE_HOST` taken out of its environment.
+  It's `starting` until anything answers at the address, then `running`, and
+  the browser opens it; one that exits before answering, or doesn't answer
+  in three minutes, is `failed`, with the last 1500 characters of its output.
+  One that exits after it answered is just `stopped`. Prelude quitting closes
+  the server, which takes each one's whole tree down (R-5tj). Its state
+  changing on its own says `app-changed` down the app's channel.
+- **Where how it runs comes from** (R-p7c): `"run": { "start", "url" }` in
+  `prelude/prelude.json`, which the app build's and the connection's
+  instructions now ask the agent to write; saved on the card, it's kept in
+  `runs.json` in Prelude's home, by the project's folder, and wins.
+- **What the app checks** beyond the design's `require`: the address is
+  `http://` on localhost (or 127.0.0.1), and is neither the design host's
+  (`host.url`) nor Prelude's own port. Settings from the project are checked
+  the same way when Run is clicked; refused there, the card shows it failed
+  with why. Run and Save and run do nothing until the app is built.
+- **A refused change without script** comes back as the page with the card's
+  fields showing why, but not what was typed: the fields show what's saved.
+  With script (the usual case) they come back with what was typed.
+- **Update from main** (R-u9d) merges the remote's main only when it holds
+  all of the local one, and the local one otherwise, so every commit it's
+  counted behind comes in. The work's answer gives that branch `updated`
+  (`from`, and `files`, the count of files that came in); a clash is said by
+  the merging notice instead, and without script the page is answered with
+  it rather than a redirect. The design's hidden `updated.from` /
+  `updated.files` inputs were stand-ins for this and aren't in the app's form.
+- The story (the design system and shell say what they hold) is untouched by
+  this change, and still agrees with the design.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two

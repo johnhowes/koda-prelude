@@ -324,15 +324,17 @@ export function waitingOf(app) {
 /**
  * Something changed in Prelude: say so down the app's channel, so the home
  * page's regions reload (R-p6r), and push the bar's count afresh. Sent once
- * the request that changed it is answered, never holding it up.
+ * the request that changed it is answered, never holding it up. `running`:
+ * an app run from a project's page started, answered or stopped (runs.js).
  */
-export function tell(app, { needs = false, projects = false }) {
+export function tell(app, { needs = false, projects = false, running = false }) {
   if (needs) app.waiting = null;
   setImmediate(() => {
     if (!app.live.listening(APP_CHANNEL)) return;
     try {
       if (needs) app.live.publish(APP_CHANNEL, 'needs-changed');
       if (projects) app.live.publish(APP_CHANNEL, 'projects-changed');
+      if (running) app.live.publish(APP_CHANNEL, 'app-changed');
       if (needs) app.live.publish(APP_CHANNEL, `<div ko-into="waiting">${render('./_waiting', { needsYou: waitingOf(app) }).trim()}</div>`);
     } catch (error) { console.error(error); }
   });

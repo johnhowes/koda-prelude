@@ -241,6 +241,8 @@ tests/Spark.Mortgage.Servicing.Web.Tests/Escrow/ShortageSpreadCalculatorTests.cs
 <div class="cluster actions">
 <form action="/f/mortgage-origination/branches/d81a6c/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
+<input name="updated.from" type="hidden" value="release/2026-q4-servicing">
+<input name="updated.files" type="hidden" value="148">
 <button class="btn small" title="Merge release/2026-q4-servicing into this branch, so it carries on from what’s there now." type="submit">
 Update from release/2026-q4-servicing
 </button>
@@ -397,7 +399,7 @@ Try again
 </section>
 </div>
 <aside aria-label="The project’s setup" class="side stack gap-6">
-<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed" ko-source="/f/mortgage-origination/app">
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed event:app-changed" ko-source="/f/mortgage-origination/app">
 <h2 id="app-title">
 The app
 </h2>
