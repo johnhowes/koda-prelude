@@ -1423,7 +1423,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   }
 
   if (req.method === 'GET' && rest[0] === 'window' && rest.length === 1) {
-    const body = render('./_window', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }) });
+    // The design, as the page has it: what the agent is writing now in the
+    // session the chat shows, too (DesignPage.streaming).
+    const session = sessionOnShow();
+    const body = render('./_window', {
+      ...basics(),
+      rules: rulesOf(dir, context),
+      streaming: session ? turns.streaming(folder, design, session.id) : null,
+      surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }),
+    });
     if (fragment) return send(res, 200, body);
     return send(res, 200, render('./window-layout', { body, path: url.pathname, title: `${design.title} · design`, layout: { live: `${base}/live?view=window` } }));
   }

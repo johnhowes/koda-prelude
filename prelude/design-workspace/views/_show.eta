@@ -1,6 +1,0 @@
-<%/* Show: puts a page the check named, in the state it named, in the design
-     surface (R-pk8). `it.page` has path and state. */%>
-<form class="show-page" action="<%= it.base %>/screen" method="post" ko-target="design">
-  <input type="hidden" name="surface.state" value="<%= it.page.state %>">
-  <button class="link-btn" type="submit" name="surface.current" value="<%= it.page.path %>">Show</button>
-</form>
