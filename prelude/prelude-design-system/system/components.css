@@ -313,6 +313,9 @@
     border-radius: var(--radius-lg); overflow: hidden;
   }
   .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+  /* Inset: a body of blocks (lists, notices, text) kept off the panel's edges;
+     a plain body runs edge to edge, for a surface that fills it */
+  .panel-body.inset { padding: var(--space-4); }
   /* Panel head: the toolbar and the notices under it, as one part (a region
      that refreshes apart from the body) */
   .panel-head { flex: none; display: flex; flex-direction: column; }

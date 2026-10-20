@@ -39,7 +39,7 @@
         <span class="spacer"></span>
         <%~ include('./_open-app', it.app) %>
       </div>
-      <div class="panel-body" ko-scope="<%= it.check.url %>" ko-source="<%= it.check.url %>" ko-invoke="event:check-done"><%~ include('./_check', it) %></div>
+      <div class="panel-body inset" ko-scope="<%= it.check.url %>" ko-source="<%= it.check.url %>" ko-invoke="event:check-done"><%~ include('./_check', it) %></div>
     </section>
   </div>
   <%/* The session's own channel, as on the design page (the app's `live`);
