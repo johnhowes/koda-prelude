@@ -130,6 +130,15 @@ line, and on the project's page; the bar and each card count only what's
 listed. Typical's state lost those rows, and Document upload's is now an
 error. `server/home.js` (`needsYou`) decides; R-n4v, R-8hc, R-w2k changed.
 
+## Projects, only projects (fix, 2026-10-20)
+
+The list showed branch worktrees (`~/.prelude/worktrees/<id>/<branch>`) as
+projects, some "gone" once merged. They get into the recent list when opened
+as a plain folder (as step 8 builds did); `app.folders.recent()` doesn't
+leave them out. The views and states were already right; R-c7w (proposed)
+says it, and the build should filter worktrees out of `recent()` (or of
+`server/home.js`'s list) and drop such records.
+
 ## Open questions
 
 - In the preview the bar's count doesn't follow an event: it comes from the
