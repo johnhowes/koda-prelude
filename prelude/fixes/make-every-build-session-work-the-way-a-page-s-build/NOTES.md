@@ -1,0 +1,3 @@
+# Fix: Make every build session work the way a page's build…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
