@@ -19,5 +19,8 @@
   *proposed*
 - **R-5tj.** The app run from here opens in the browser once it answers at its address, and stops when Prelude quits.
   *proposed*
+- **R-u9d.** Updating a branch from main brings in every commit it's counted behind, and says beside the branch how many files came in, or that there was nothing new.
+  *shown-on: /f/:project @ large-project*
+  *proposed*
 - **R-f0c.** Merged lately shows the project's last five merged branches.
   *shown-on: /f/:project @ typical*

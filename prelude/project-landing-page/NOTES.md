@@ -202,6 +202,22 @@ copied unchanged. Building it: a runner like `server/hosts.js` but for
 `app.run`, started in the project's folder without `PRELUDE_HOST`, the whole
 tree stopped with Prelude.
 
+## Update from main says what it did (fix, 2026-10-20)
+
+"Update from main" seemed to do nothing (the person). In the app, the
+behind count is against local `main` but the update merges `origin/main`
+when there's a remote, so unpushed local commits never come in and the
+button stays; and what it did was said only on the design's page. The app
+needs to update from whichever main is newer (local when diverged, as the
+count is): a fix for "Ask or fix", not this design (R-u9d).
+
+Here, the branch now says what the update did (`updated`: `from`,
+`files`, given once with the work's answer, as `finishError` is): "Brought
+main in: 2 files came in…" or "main had nothing new for this branch" (large
+project, Document upload). The design's form posts `behind` as a stand-in
+for the file count. **Brought back for it**: `_branch` (changed) and
+`_work`, which includes it.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two
