@@ -1,0 +1,3 @@
+# Fix: A design's page sometimes gets swapped for a single piece…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
