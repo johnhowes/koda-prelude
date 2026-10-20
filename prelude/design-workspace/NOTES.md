@@ -410,9 +410,12 @@ Where the app differs from the screens, on purpose:
   (`server/public/shell.css`), added beside `[data-desktop-only]` rather
   than copying the shell's file over it: the app's copy has its own
   `.fills` rules the shell's doesn't.
-- The pop-out window's route still carries `"from"` (not in this change), so
-  it renders through the design's `_window.eta` and its copies of
-  `_surface.eta` and `_design-bar.eta`, which now match the app's.
+- The pop-out window's route now renders the app's own `_window.eta`
+  (2026-10-20): the design's `_window.eta` and the partials it includes
+  (`_surface`, `_frame`, `_design-bar`, `_page-menu`, `_review-menu`,
+  `_keep`) matched the app's line for line, and `:scope.window-page >
+  .design` was already in `server/public/workspace.css`, so the port is
+  the route alone.
 
 ## Open questions
 
