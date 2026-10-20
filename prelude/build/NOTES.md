@@ -141,3 +141,14 @@ not approved, building, no app, all built. Event: `story-written`.
   session (the old page said it waits); starting it is refused, saying why.
 - **The shell's layouts** don't need approved screens to build, but Start a
   build session only shows once the design is approved.
+
+## Open questions
+
+- **What a build session's side shows** (raised 2026-10-20). Today it's the
+  design surface, with Design | App. App (plan 10.8) frames the real app on
+  its own data, so it can't reach the design's states, and it only appears
+  with a host, a built app and the host running from this branch. Proposed:
+  in a build session the surface becomes the check (each page in each state,
+  as built, against its approved screen, plus "not built yet"), the Design |
+  App switch goes, and "Open the app" becomes a launch action for testing
+  once the build is done. Not decided.
