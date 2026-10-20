@@ -271,8 +271,10 @@ ${DELETING}`,
           try { if (existsSync(file) && statSync(file).isFile() && statSync(file).size === 0) rmSync(file); } catch { /* left for the person */ }
         }
         // Render what the agent made, and say what doesn't: to the person now,
-        // and to the agent with the next message.
-        if (check && result.ok) {
+        // and to the agent with the next message. A build checks every screen
+        // each time its turn ends, stopped or not (R-9xe): what it changed
+        // before it stopped is in the app.
+        if (check && (result.ok || mode === 'build')) {
           ctx.checking = true;
           publishState();
           try {

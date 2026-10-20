@@ -139,6 +139,16 @@ export function compareSnapshots(designDir, renders) {
   return { approved: true, differ };
 }
 
+/**
+ * Approve one screen as built (R-f6w): "<state>/<name>" becomes its render,
+ * and every other snapshot stays as it was, still checked against.
+ */
+export function writeSnapshot(designDir, key, html) {
+  const [state, file] = key.split('/');
+  mkdirSync(join(designDir, SNAPSHOTS_DIR, state), { recursive: true });
+  writeFileSync(join(designDir, SNAPSHOTS_DIR, state, `${file}.html`), normalise(html));
+}
+
 /** Approve: replace the design's snapshots with these renders. Returns how many. */
 export function writeSnapshots(designDir, renders) {
   const root = join(designDir, SNAPSHOTS_DIR);

@@ -1,0 +1,3 @@
+<%/* The stand-in chat's entries, oldest first (the app's is ../_transcript).
+     `it` is the session (BuildSession, server/check.js). */%>
+<% for (const entry of it.entries ?? []) { %><%~ include('./_entry', entry) %><% } %>

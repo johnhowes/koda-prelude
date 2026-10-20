@@ -16,6 +16,40 @@
           "building": null,
           "writing": false,
           "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "sessions": [
+            {
+              "id": "20261020-0915-k4tz",
+              "title": "Build: Accept an offer",
+              "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+              "folder": { "id": "borrower-portal", "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "id": "loan-offers", "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "branch": "prelude/loan-offers",
+              "build": { "title": "Accept an offer", "stories": 1 },
+              "app": { "running": true, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" },
+              "status": null,
+              "entries": [
+                { "id": 1, "type": "user", "message": "Build Accept an offer." },
+                { "id": 2, "type": "tool", "name": "Edit", "summary": "src/views/offers/accept.eta" },
+                { "id": 3, "type": "tool", "name": "Write", "summary": "src/views/offers/_account.eta" },
+                { "id": 4, "type": "tool", "name": "Edit", "summary": "src/routes/offers.js" },
+                { "id": 5, "type": "user", "message": "Accept an offer in No account on file differs from its approved screen. Make it match the design." },
+                { "id": 6, "type": "tool", "name": "Edit", "summary": "src/views/offers/accept.eta" },
+                { "id": 7, "type": "text", "html": "<p>Fixed: with no account on file, Accept this offer goes straight to entering one, as the design has it. Confirm your bank account is built too, and checks the routing number before going on. Every acceptance criterion in the story holds, including R-v8d; the confirmation’s wording is the design’s, word for word, for legal’s sign-off (LEG-212).</p>" },
+                { "id": 8, "type": "note", "text": "Prelude checked every screen, and they all match the approved design." }
+              ],
+              "check": {
+                "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check",
+                "at": "today at 10:31",
+                "shots": [
+                  { "id": "accept-typical", "group": "Accept an offer", "page": "Accept an offer", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-typical" },
+                  { "id": "accept-no-account", "group": "Accept an offer", "page": "Accept an offer", "state": "No account on file", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-no-account" },
+                  { "id": "account-typical", "group": "Accept an offer", "page": "Confirm your bank account", "state": "Typical", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-typical" },
+                  { "id": "account-unchecked", "group": "Accept an offer", "page": "Confirm your bank account", "state": "Account couldn’t be checked", "status": "matches", "url": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-unchecked" }
+                ],
+                "elsewhere": { "matching": 14, "pages": 4 }
+              }
+            }
+          ],
           "groups": [],
           "unchanged": [
             { "title": "Offers" },

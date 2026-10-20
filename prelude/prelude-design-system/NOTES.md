@@ -97,6 +97,11 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   notices run edge to edge as a panel's own do. Added for "Design
   Workspace" (prelude/design-workspace): the design bar refreshes when the
   agent changes the design, while the page under it stays as it was.
+- **Inset panel body** (`.panel-body.inset`): a body of lists, notices and
+  text kept off the panel's edges (a plain body runs edge to edge, for a
+  surface that fills it). Added for "Build" (prelude/build): the build
+  session's check ran into the panel's edges. It scrolls only up and down:
+  a list's rows hang into the padding, which scrolled sideways.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).

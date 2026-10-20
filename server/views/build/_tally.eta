@@ -1,0 +1,10 @@
+<%/* The check in a few words, beside its name: what needs the person, then
+     what's still to build; or that every screen matches. `it` is the
+     check (Check, server/check.js). */%>
+<% const all = it.shots;
+   const count = status => all.filter(shot => shot.status === status).length;
+   const fails = count('fails'), differs = count('differs'), unbuilt = count('unbuilt'); %>
+<% if (fails) { %><span class="pill danger"><%= fails %> <%= fails === 1 ? 'doesn’t render' : 'don’t render' %></span><% } %>
+<% if (differs) { %><span class="pill warn"><%= differs %> <%= differs === 1 ? 'differs' : 'differ' %></span><% } %>
+<% if (unbuilt) { %><span class="pill"><%= unbuilt %> not built yet</span><% } %>
+<% if (!fails && !differs && !unbuilt) { %><span class="pill good">Every screen matches</span><% } %>

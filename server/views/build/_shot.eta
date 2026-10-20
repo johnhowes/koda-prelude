@@ -1,0 +1,62 @@
+<%/* One screen of the check: a page in a state, as built, beside the way back
+     to the list. Built, Approved (the design's screen, as approved) and, when
+     they differ, Differences (the built screen with what changed marked).
+     Approving it as built saves this screen alone; the rest are still
+     checked against the design (R-f6w). `it` is the screen (Shot,
+     server/check.js). */%>
+<% const differs = it.status === 'differs'; const checkUrl = it.url.slice(0, it.url.lastIndexOf('/'));
+   const views = [['built', 'Built'], ['approved', 'Approved'], ...(differs ? [['differences', 'Differences']] : [])];
+   const show = views.some(([id]) => id === it.$query?.show) ? it.$query.show : 'built';
+   const pictures = {
+     built: `${it.page} in ${it.state}, as built`,
+     approved: `${it.page} in ${it.state}, as approved`,
+     differences: `${it.page} in ${it.state}, as built, with what differs from the approved screen marked`,
+   }; %>
+<div class="stack gap-4">
+  <div class="cluster">
+    <a class="btn small ghost" href="<%= checkUrl %>"><span class="icon icon-back" aria-hidden="true"></span>Every screen</a>
+    <h3 class="shot-title"><%= it.page %> · <%= it.state %></h3>
+    <span class="spacer"></span>
+    <% if (it.status !== 'unbuilt' && it.status !== 'fails') { %>
+    <span class="segmented" role="group" aria-label="Show">
+      <% for (const [id, label] of views) { %>
+      <a class="btn small" href="<%= it.url %>?show=<%= id %>" <% if (id === show) { %>aria-current="true"<% } %>><%= label %></a>
+      <% } %>
+    </span>
+    <% } %>
+  </div>
+
+  <% if (differs) { %>
+  <div class="notice warn" role="status">
+    <p><strong>This screen differs from its approved design.</strong> Ask the agent to fix it, or approve it as built if the change is what you want.</p>
+    <div class="cluster actions">
+      <form action="<%= it.url %>/fix" method="post" ko-target="transcript" ko-attach="last">
+        <input type="hidden" name="type" value="user">
+        <input type="hidden" name="message" value="<%= it.page %> in <%= it.state %> differs from its approved screen. Make it match the design.">
+        <button class="btn small" type="submit">Ask the agent to fix it</button>
+      </form>
+      <form action="<%= it.url %>/approve" method="post">
+        <input type="hidden" name="status" value="matches">
+        <button class="btn small ghost" type="submit" title="Save this screen as it renders now. Only this one: the others are still checked against the design.">Approve it as built</button>
+      </form>
+    </div>
+  </div>
+  <% } else if (it.status === 'fails') { %>
+  <div class="notice danger" role="alert">
+    <p><strong>This screen doesn’t render.</strong> The agent is told with your next message.</p>
+    <pre><%= it.error %></pre>
+  </div>
+  <% } else if (it.status === 'unbuilt') { %>
+  <div class="notice" role="status">
+    <p><strong>Not built yet.</strong> Until the agent builds it, this is the design’s own view, so there’s nothing to compare.</p>
+  </div>
+  <% } %>
+
+  <% if (it.status !== 'fails') { %>
+  <%/* The screen's picture: still the design's placeholder (NOTES.md, Open
+       questions). */%>
+  <figure class="shot<%= show === 'differences' ? ' marked' : '' %>">
+    <span class="muted"><%= it.status === 'unbuilt' ? `${it.page} in ${it.state}, from the design` : pictures[show] %></span>
+  </figure>
+  <% } %>
+</div>
