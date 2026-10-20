@@ -14,7 +14,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { backlogOf } from './backlog.js';
-import { filesAt, textAt } from './branches.js';
+import { filesAt, textsOf } from './branches.js';
 import { parseEvents } from './events.js';
 import { listStates, lookup, parsePostRoutes, parseRoutes, readPostRoutes, readRoutes, samplePaths } from './host.js';
 import { parseRules, readRules } from './rules.js';
@@ -83,7 +83,9 @@ function groupKeyFor(pattern, keys) {
 export function incrementOf({ repo, base, designId, designDir, ext = '.eta' }) {
   const prefix = `prelude/${designId}/`;
   const baseFiles = base ? filesAt(repo, base, prefix) : new Map();
-  const at = rel => (baseFiles.has(rel) ? textAt(repo, base, prefix + rel) : null);
+  // The baseline's files, all read in one go (its sessions aren't compared).
+  const baseTexts = textsOf(repo, [...baseFiles].filter(([rel]) => !rel.startsWith('sessions/')).map(([, id]) => id));
+  const at = rel => (baseFiles.has(rel) ? baseTexts.get(baseFiles.get(rel)) ?? null : null);
   const designNew = !baseFiles.has('design.json');
 
   const routes = readRoutes(designDir);

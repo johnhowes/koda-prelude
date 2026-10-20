@@ -423,6 +423,10 @@ test('with a remote, finishing pushes the branch after asking, and a merge on th
   git(clone, 'merge', '-q', '--no-ff', '-m', 'Merge pull request', 'origin/prelude/borrowers');
   git(clone, 'push', '-q', 'origin', 'main');
 
+  // The page answers at once; the fetch runs beside it, and the tidy follows
+  // (then the page's regions reload, told down the channel).
+  await get(`/f/${fid}`);
+  await until(() => !existsSync(worktree));
   const after = await (await get(`/f/${fid}`)).text();
   assert.match(after, /Merged lately[\s\S]*<code>prelude\/borrowers<\/code> merged into main just now\./);
   assert.equal(existsSync(worktree), false, 'its worktree is gone');

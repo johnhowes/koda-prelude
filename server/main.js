@@ -21,7 +21,7 @@ import { readSnapshots, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief } from './build.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -101,6 +101,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     branches,
     tidied: new Map(),   // folder id -> when its merged branches were last tidied
     tidyEvery,           // how often, at most: tidying fetches from the remote
+    fetching: new Set(), // folder ids whose remote is being fetched, before tidying
     references: createReferences(home),
     live,
     // A turn starting or ending changes what needs the person and what's in
@@ -380,7 +381,8 @@ async function handle(req, res, app) {
       const entry = app.folders.get(branchMatch[1])?.branch;
       if (!entry || entry.parentId !== folder.id) return redirect(res, here);
       const action = branchMatch[2];
-      const branchNow = () => branchesOf(app, folder, helpers).find(item => item.id === entry.id) ?? null;
+      // This branch alone, and not its stories: the modal shows neither the others nor those.
+      const branchNow = () => branchesOf(app, folder, { ...helpers, storiesOf: () => [], only: entry.id })[0] ?? null;
       // Pushing is always asked first, saying which branch goes to which
       // remote; nothing is pushed until the person says yes (R-k4n).
       const ask = () => {
@@ -404,8 +406,9 @@ async function handle(req, res, app) {
       if (action === 'merge') {
         const merged = app.branches.merge(entry, `Merge ${entry.branch}: ${design.title} (merged by Prelude)`);
         if (merged.error) return work(409, merged.error);
+        // Tidied now, so the answer has it gone; merged here, there's nothing to fetch.
         app.tidied.delete(folder.id);
-        tidy();
+        if (repository) tidyFolder(app, folder, { fetch: false });
         tell(app, { needs: true, projects: true });
         return work(200);
       }
@@ -807,15 +810,30 @@ function askedFromLayout(req, layout) {
  * Remove the worktrees and branches of a folder's designs merged into main
  * (here, or by a pull request on the server), at most every 30 seconds per
  * folder. A branch tidied away changes what needs the person (R-w2k).
+ *
+ * With a remote, it fetches first without holding up the request (a fetch is
+ * a network call, and git runs synchronously here): the page answers with
+ * what it has, and once the fetch is in, whatever was tidied is said down
+ * the channel, so the page's regions reload. `fetch: false` tidies now.
  */
-function tidyFolder(app, folder) {
+function tidyFolder(app, folder, { fetch = true } = {}) {
   if (folder.branch || Date.now() - (app.tidied.get(folder.id) ?? 0) < app.tidyEvery) return;
   if (gitState(folder.path) !== 'repository') return;
   app.tidied.set(folder.id, Date.now());
-  try {
-    const notes = app.branches.tidy(folder, { beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
-    if (notes.length) tell(app, { needs: true, projects: true });
-  } catch { /* git couldn't say: try again next time */ }
+  const tidyNow = () => {
+    try {
+      const notes = app.branches.tidy(folder, { fetch: false, beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
+      if (notes.length) tell(app, { needs: true, projects: true });
+    } catch { /* git couldn't say: try again next time */ }
+  };
+  if (!fetch || !remoteOf(folder.path)) return tidyNow();
+  // One fetch at a time per project.
+  if (app.fetching.has(folder.id)) return;
+  app.fetching.add(folder.id);
+  fetchRemote(folder.path).then(() => {
+    app.fetching.delete(folder.id);
+    if (existsSync(folder.path)) tidyNow();
+  });
 }
 
 /** Whether a design has pages to build: a feature, or the shell's own (its Settings, say). */
@@ -852,18 +870,21 @@ function groupsOf(app, { entry, design, dir }) {
   let increment = null;
   let shared = [];
   let repo = null;
+  let tip = entry?.branch;
   if (entry) {
     try {
       repo = entry.repo ?? app.folders.get(entry.parentId)?.path ?? null;
       const base = repo && baselineOf(repo, entry.branch);
       if (base) increment = incrementOf({ repo, base, designId: design.id, designDir: dir, ext });
-      shared = app.branches.status(entry).alsoChanges;
+      const status = app.branches.status(entry);
+      shared = status.alsoChanges;
+      tip = status.tip;
     } catch { /* git couldn't say: whole pages, as without a branch */ }
   }
   // Built as of a build's commit, and the design not changed since (step 10).
   const builtSince = key => {
     const builtAt = entry?.built?.[key];
-    return Boolean(builtAt && repo && designCommitsSince(repo, builtAt, entry.branch, design.id).length === 0);
+    return Boolean(builtAt && repo && designCommitsSince(repo, builtAt, tip, design.id).length === 0);
   };
   const described = (group, changes) => ({ ...group, changes, fingerprint: fingerprintOf({ dir, group, changes, ext }) });
   // The shell's layouts (8c): once the app exists, the ones it hasn't got are

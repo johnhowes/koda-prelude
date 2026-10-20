@@ -86,6 +86,15 @@ or form control; focus shows the ring; icons are `aria-hidden`; a status line is
 `color-scheme`. Check every screen in light and dark.
 *Why:* Prelude follows the person's system, and the desktop app does too.
 
+**12. What's pressed says it's working.** Every link and button shows it's busy
+while its request is out: Koda sets `ko-busy` on it, and components.css shows a
+spinner (or a pulse) after a moment. A page adds nothing for it. A region that's
+slow to read on its own arrives later (`ko-defer`, with a `.skeleton`), and
+that's rare: a slow answer is first a thing to make fast.
+*Why:* a press with no answer reads as a press that didn't take, and gets pressed again.
+- Do: `<a class="btn" href="…/publish" ko-target="modal?">`, and nothing else.
+- Don't: a "Loading…" label swapped in by script, or a `ko-defer` around a whole page.
+
 ## Words
 
 Prelude's words, with the ones to avoid. Sentence case everywhere; curly

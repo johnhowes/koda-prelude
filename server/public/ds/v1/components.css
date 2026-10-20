@@ -113,6 +113,20 @@
   .iconbtn:disabled { opacity: 0.35; cursor: default; }
   .iconbtn.danger { color: var(--danger); }
   button[ko-busy], form[ko-loading] .btn { opacity: 0.7; }
+  /* Busy, as the design system's components.css has it: the control pressed,
+     while its request is out (Koda's ko-busy). */
+  :is(.btn, .linkish, .icon-btn, .iconbtn, a)[ko-busy] { cursor: progress; }
+  :is(.btn, .linkish)[ko-busy]::after {
+    content: ""; flex: none; display: inline-block; inline-size: 0.9em; block-size: 0.9em;
+    border: 0.15em solid currentColor; border-inline-end-color: transparent; border-radius: var(--radius-full);
+    vertical-align: -0.12em;
+    animation: busy-wait 150ms step-end, spin 0.7s linear infinite;
+  }
+  .linkish[ko-busy]::after { margin-inline-start: var(--space-1); }
+  :is(.icon-btn, .iconbtn)[ko-busy], a:not(.btn, .icon-btn, .iconbtn)[ko-busy] { animation: busy-pulse 1.2s ease 150ms infinite; }
+  @keyframes busy-wait { from { opacity: 0; } }
+  @keyframes spin { to { rotate: 1turn; } }
+  @keyframes busy-pulse { 50% { opacity: 0.3; } }
 
   .actions { display: grid; gap: var(--space-3); margin-top: var(--space-6); }
   .actions .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
