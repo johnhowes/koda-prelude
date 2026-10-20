@@ -21,7 +21,8 @@
         "path": "src/Borrower.Web",
         "existing": false,
         "branch": "prelude/borrower-shell",
-        "url": "/f/borrower-portal/d/borrower-shell"
+        "url": "/f/borrower-portal/d/borrower-shell",
+        "run": { "command": null, "url": null, "state": "stopped", "log": null }
       },
       "defaultStack": "Node with Eta",
       "system": { "id": "borrower-design-system", "title": "Borrower Design System" },

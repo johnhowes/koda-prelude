@@ -16,5 +16,20 @@
     "update": "projects/spark-lending/inProgress/7e2d9b",
     "with": { "check": "passing", "failures": 0, "building": { "title": "Lock a rate", "stopped": false } },
     "send": "projects-changed"
+  },
+  "app-running": {
+    "title": "The app answers at its address",
+    "update": "projects/spark-lending/app/run",
+    "with": { "state": "running", "log": null },
+    "send": "app-changed"
+  },
+  "app-failed": {
+    "title": "The app stops before it answers",
+    "update": "projects/spark-lending/app/run",
+    "with": {
+      "state": "failed",
+      "log": "> spark-lending@1.4.0 start\n> node server.js\n\nnode:internal/modules/cjs/loader:1228\n  throw err;\n  ^\n\nError: Cannot find module 'eta'\nRequire stack:\n- C:\\Projects\\spark-lending\\app\\server.js\n\n(the app stopped, exit 1)"
+    },
+    "send": "app-changed"
   }
 }

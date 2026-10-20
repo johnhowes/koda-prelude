@@ -170,7 +170,39 @@ states too, so the filter agrees with the line: a system with components is
 a shell is `built` when its layouts and own pages all are. The story and the
 design agree.
 
+## Run the app from here (redesign, 2026-10-20)
+
+The person asked to launch the app from main on this page. Decided:
+
+- **A separate instance**, not the design host: its own command and
+  address (`app.run`: `command`, `url`, `state` stopped / starting /
+  running / failed, `log`). Its port is given as `PORT`; the address must be
+  on this machine and not the host's (the app checks; the design only
+  requires both).
+- **Clicking Run is the approval** (the person): the button always shows the
+  command beside it (R-h2w). Only once the app is built (on main).
+- **Set on the card**: unset, the card asks for both and has "Save and run";
+  set, "Change how it runs" is a disclosure while it's stopped. Kept on this
+  computer, not in the repository.
+- Starting shows a pulse and Stop; the server opens the browser once it
+  answers and says `app-changed` (the app region now reloads on it too);
+  running shows its address, Open and Stop; failing shows the last of its
+  output and "Run it again" (events `app-running`, `app-failed`).
+- States: typical has it set and stopped; large project hasn't set it.
+
+**Brought back for it**: `_app` (changed), `_run-fields` (new) and `page`
+(its `ko-invoke` gains `event:app-changed`); page's other partials are
+copied unchanged. Building it: a runner like `server/hosts.js` but for
+`app.run`, started in the project's folder without `PRELUDE_HOST`, the whole
+tree stopped with Prelude.
+
 ## Open questions
+
+- **Running it while the design host runs in the same folder**: two
+  `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
+  output folder, or to stop the host first; let the build find out.
+- **Should the app build write a default run command** (it knows the stack)
+  into `prelude/prelude.json`, so the card starts set?
 
 - **New design has nowhere to say why the kind was refused**: designs here
   wait for the app to be connected (or for a custom stack's app to be

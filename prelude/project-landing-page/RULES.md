@@ -11,5 +11,10 @@
   *shown-on: /f/:project/designs/new @ new-project*
 - **R-r6b.** A design under Designs says it's ready to build when it has approved pages not yet built, and only once the project's app exists.
   *shown-on: /f/:project @ typical*
+- **R-h2w.** Once the app is built, it can be run from the project's own folder with a command and address of its own, never the design host's, and the Run button always shows the command it runs, so clicking it is the approval.
+  *shown-on: /f/:project @ typical*
+  *proposed*
+- **R-5tj.** The app run from here opens in the browser once it answers at its address, and stops when Prelude quits.
+  *proposed*
 - **R-f0c.** Merged lately shows the project's last five merged branches.
   *shown-on: /f/:project @ typical*
