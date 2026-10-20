@@ -66,7 +66,8 @@ import { whenWords } from './workspace.js';
  * @property {string | null} branch
  * @property {{ built: boolean, onBranch: boolean, stack: string, url: string }} app
  *   built: the project has an app; onBranch: this design's branch has it too
- * @property {boolean} approved
+ * @property {boolean} approved  approved as it is now: not when it's changed since
+ * @property {boolean} [changed]  approved, then changed: to approve again before building
  * @property {{ group: string, title: string, session: { title: string, url: string } } | null} building
  * @property {boolean} writing   Write every story is under way
  * @property {string | null} updateUrl  Update from main

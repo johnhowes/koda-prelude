@@ -33,6 +33,22 @@
       <button class="btn small primary" type="submit">Update from main</button>
     </form>
   </div>
+  <% } else if (it.changed && pages.length) { %>
+  <%/* Approved, then changed: a build would be checked against screens
+       that aren't the design any more, so it waits for approval again. */%>
+  <div class="notice warn" role="status">
+    <strong>The design changed since you approved it.</strong>
+    <p>Look at what’s different on the design’s page, and approve it again when it’s what you want built. Each build is checked against the approved screens, so they have to be the design as it is now.</p>
+    <div class="cluster actions">
+      <a class="btn small primary" href="<%= it.base %>">Show what changed</a>
+      <form action="<%= it.base %>/approve" method="post">
+        <input type="hidden" name="back" value="<%= it.base %>/build">
+        <input type="hidden" name="approved" value="true">
+        <input type="hidden" name="changed" value="false">
+        <button class="btn small" type="submit">Approve again</button>
+      </form>
+    </div>
+  </div>
   <% } else if (!it.approved && pages.length) { %>
   <div class="notice warn" role="status">
     <strong>Approve the design before building it.</strong>

@@ -1,0 +1,65 @@
+{
+  "layout": { "needsYou": 1, "agents": [] },
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "base": "/f/borrower-portal/d/loan-offers",
+          "branch": "prelude/loan-offers",
+          "app": { "built": true, "onBranch": true, "stack": "", "url": "/f/borrower-portal#app" },
+          "approved": false,
+          "changed": true,
+          "building": null,
+          "writing": false,
+          "updateUrl": "/f/borrower-portal/branches/loan-offers/update",
+          "sessions": [],
+          "groups": [
+            {
+              "id": "offers",
+              "key": "/offers",
+              "title": "Offers",
+              "kind": "changed",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "Offers looks different in Typical and Many offers" },
+                { "icon": "rule", "text": "New rule R-m7t: Offers are listed with the lowest monthly payment first." }
+              ],
+              "session": null,
+              "story": null
+            },
+            {
+              "id": "compare",
+              "key": "/offers/compare",
+              "title": "Compare offers",
+              "kind": "new",
+              "url": "/f/borrower-portal/d/loan-offers/build/stories/compare",
+              "folder": { "name": "borrower-portal", "url": "/f/borrower-portal" },
+              "design": { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
+              "writing": false,
+              "instruction": "",
+              "changes": [
+                { "icon": "screen", "text": "New page: Compare offers" }
+              ],
+              "session": null,
+              "story": null
+            }
+          ],
+          "unchanged": [
+            { "title": "Offer details" },
+            { "title": "Accept an offer" },
+            { "title": "Documents" }
+          ]
+        }
+      ]
+    }
+  ]
+}

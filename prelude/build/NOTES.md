@@ -325,6 +325,20 @@ are otherwise unchanged.
   the build sessions under it. Unchanged; the project page is where the
   app build is followed.
 
+## Changed since approved (fix, 2026-10-20)
+
+Build treated a design as approved once it had ever been approved, so a
+design changed since offered Start a build session, and the build was checked
+against screens that weren't the design any more
+(prelude/fixes/if-i-haven-t-approved-a-design-i-shouldn-t-be-able-to-go-to).
+Now `approved` is the design as it is now, and `changed` says it was approved
+and has changed since: the notice "The design changed since you approved it"
+takes the not-approved notice's place, with Show what changed (the design's
+page, whose review strip lists the pages) and Approve again, and Start a build
+session hides (R-q3d). Starting one anyway is refused, saying why. A new state,
+changed since approved, shows it. What a build session's check finds is the
+build's, so it doesn't count as the design changing.
+
 ## Open questions
 
 - **How Differences marks what changed**: a pixel overlay on the built

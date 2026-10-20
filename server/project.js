@@ -21,6 +21,7 @@ import { filterModel, isHosted, shellLayouts, unbuiltLayouts } from './host.js';
 import { readHostConfig } from './hosts.js';
 import { listSessions, readEntries } from './sessions.js';
 import { readSnapshots } from './snapshots.js';
+import { changedSinceApproved } from './workspace.js';
 
 /**
  * @typedef {import('./home.js').NeedKind} NeedKind
@@ -78,9 +79,10 @@ import { readSnapshots } from './snapshots.js';
  * @property {number} [layouts]      the app shell's
  * @property {number} [layoutsBuilt] the shell's layouts the app has (none before it exists)
  * @property {number} pages          a shell's are its own, not its gallery's
- * @property {number} approved
+ * @property {number} approved     none while it's changed since it was approved
  * @property {number} built
  * @property {'ready' | 'designing' | 'approved' | 'built'} stage
+ * @property {boolean} [changedSinceApproved]  approved, then changed: to approve again before it's built
  * @property {string | null} changed   "yesterday"
  *
  * @typedef {object} App
@@ -156,7 +158,8 @@ function componentsOf(dir) {
  * shell's gallery isn't built), and its stage: ready (approved pages not yet
  * built, once the app exists: R-r6b), designing (pages still to approve, or
  * none yet), approved, or built. Approval is the design's, all its pages at
- * once, so `approved` is all of them or none. The design system has no pages,
+ * once, so `approved` is all of them or none, and none once the design has
+ * changed since it was approved (it's designing again). The design system has no pages,
  * so it's counted by its components, and is built once the app exists; the
  * shell's layouts count beside its own pages, built once they're ported
  * (unbuiltLayouts says which aren't).
@@ -166,7 +169,9 @@ function progressOf(design, dir, appExists, ext) {
     ? backlogOf(dir).groups.filter(group => group.page && !(design.kind === 'shell' && group.page.view.startsWith('gallery/')))
     : [];
   const built = pages.filter(group => group.built).length;
-  const approved = pages.length && readSnapshots(dir)?.size ? pages.length : 0;
+  // A design changed since it was approved isn't approved as it is now.
+  const changed = changedSinceApproved(dir);
+  const approved = pages.length && readSnapshots(dir)?.size && !changed ? pages.length : 0;
   if (design.kind === 'system') {
     const components = componentsOf(dir);
     const stage = !components ? 'designing' : appExists ? 'built' : 'approved';
@@ -180,7 +185,7 @@ function progressOf(design, dir, appExists, ext) {
     : builds && appExists && approved > built ? 'ready'
     : !pages.length || approved < pages.length ? 'designing'
     : 'approved';
-  return { ...shell, pages: pages.length, approved, built, stage };
+  return { ...shell, pages: pages.length, approved, built, stage, ...(changed ? { changedSinceApproved: true } : {}) };
 }
 
 /**

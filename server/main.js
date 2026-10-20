@@ -40,7 +40,7 @@ import { branchesOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
 import { createTurns, designKey, seenKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
-import { lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
+import { changedSinceApproved, lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const kodaDir = dirname(fileURLToPath(import.meta.resolve('@kodalang/core')));
@@ -1955,6 +1955,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const toBuild = groups.filter(group => group.toBuild);
     // Pages build one at a time, on the design's branch.
     const building = entry?.building ? toBuild.find(group => group.key === entry.building.group) ?? null : null;
+    const changed = changedSinceApproved(dir);
     return {
       id: design.id,
       title: design.title,
@@ -1963,8 +1964,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       branch: entry?.branch ?? null,
       // There's an app once main (or this folder) has one; it's built into once this branch has it.
       app: { built: appHere.built || appOnMain.built, onBranch: appHere.built, stack: appHere.stack ?? appOnMain.stack ?? '', url: `/f/${parentId}#app` },
-      // Builds wait for approved screens (10.9); the Build page offers Approve.
-      approved: Boolean(readSnapshots(dir)?.size),
+      // Builds wait for approved screens (10.9), of the design as it is now:
+      // changed since, it's approved again first. The Build page offers Approve.
+      approved: Boolean(readSnapshots(dir)?.size) && !changed,
+      changed,
       building: building && { group: building.slug, title: building.title, session: sessionOf(building.key) ?? { title: building.title, url: base } },
       writing: app.stories.writingAll(dir),
       updateUrl: entry ? `/f/${parentId}/branches/${entry.id}/update` : null,
@@ -2295,8 +2298,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     }
     // A build is checked against the approved screens, so they come first (10.9).
     // The app build and the shell's layouts aren't checked against screens.
-    if (![APP_GROUP.key, LAYOUTS_GROUP.key].includes(group.key) && !readSnapshots(dir)?.size) {
-      return refuse('Approve the design first: a build is checked against its approved screens, so there has to be something to check against.');
+    if (![APP_GROUP.key, LAYOUTS_GROUP.key].includes(group.key)) {
+      if (!readSnapshots(dir)?.size) return refuse('Approve the design first: a build is checked against its approved screens, so there has to be something to check against.');
+      if (changedSinceApproved(dir)) return refuse('The design changed since you approved it. Look at what’s different on the design’s page, and approve it again before building: a build is checked against the approved screens.');
     }
     if (!isApp && entry.building && entry.building.group !== key && work.some(g => g.key === entry.building.group && g.toBuild)) {
       return refuse(`This design is building ${entry.building.title} now. Groups are built one at a time.`);

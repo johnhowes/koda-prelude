@@ -147,6 +147,17 @@ only its own branch. The remote is fetched beside the request, not in it: a
 pull request merged on the Git server leaves In progress for Merged lately a
 moment after the page arrives (its regions reload on `projects-changed`),
 rather than as it arrives. The views and states are unchanged.
+
+## Changed since approved isn't ready to build (fix, 2026-10-20)
+
+A design approved once, then changed, was still "Ready to build" and "all
+approved", so its Build page offered a build checked against screens that
+weren't the design any more
+(prelude/fixes/if-i-haven-t-approved-a-design-i-shouldn-t-be-able-to-go-to).
+Now such a design is designing again, with no pill, and its line says "N pages,
+changed since approved" (`changedSinceApproved` on the design; R-r6b) until
+it's approved again. Large project's Save and resume shows it.
+
 ## The design system and shell by what they are (redesign, 2026-10-19)
 
 They said "nothing designed yet" (the person): the app counts pages, and the
