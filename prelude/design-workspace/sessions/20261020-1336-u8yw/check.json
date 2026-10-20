@@ -1,0 +1,545 @@
+{
+  "at": "2026-10-20T18:41:37.878Z",
+  "shots": [
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers",
+      "key": "typical/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_about",
+      "key": "typical/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_rules",
+      "key": "typical/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_questions",
+      "key": "typical/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_window",
+      "key": "typical/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_images_img-4k2",
+      "key": "typical/f_borrower-portal_d_loan-offers_images_img-4k2",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-4k2",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "An image, full size",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_images_img-4k2_markup",
+      "key": "typical/f_borrower-portal_d_loan-offers_images_img-4k2_markup",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-4k2/markup",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Mark up an image",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_dictation",
+      "key": "typical/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers_about",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers_rules",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers_questions",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers_window",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "pages-differ~f_borrower-portal_d_loan-offers_dictation",
+      "key": "pages-differ/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "pages-differ",
+      "state": "Pages differ",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers_about",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers_rules",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers_questions",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers_window",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "doesnt-render~f_borrower-portal_d_loan-offers_dictation",
+      "key": "doesnt-render/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "doesnt-render",
+      "state": "Doesnt render",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers",
+      "key": "agent-working/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers_about",
+      "key": "agent-working/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers_rules",
+      "key": "agent-working/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers_questions",
+      "key": "agent-working/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers_window",
+      "key": "agent-working/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "agent-working~f_borrower-portal_d_loan-offers_dictation",
+      "key": "agent-working/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "agent-working",
+      "state": "Agent working",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers",
+      "key": "new-design/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_about",
+      "key": "new-design/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_rules",
+      "key": "new-design/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_questions",
+      "key": "new-design/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_window",
+      "key": "new-design/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_images_img-7pa",
+      "key": "new-design/f_borrower-portal_d_loan-offers_images_img-7pa",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-7pa",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "An image, full size",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_images_img-7pa_markup",
+      "key": "new-design/f_borrower-portal_d_loan-offers_images_img-7pa_markup",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-7pa/markup",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Mark up an image",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-design~f_borrower-portal_d_loan-offers_dictation",
+      "key": "new-design/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "new-design",
+      "state": "New design",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers_about",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers_rules",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers_questions",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers_window",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_d_loan-offers_dictation",
+      "key": "update-clashed/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers",
+      "key": "popped-out/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_about",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_rules",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_questions",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_window",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_images_img-2hd",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_images_img-2hd",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-2hd",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "An image, full size",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_images_img-2hd_markup",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_images_img-2hd_markup",
+      "path": "/f/borrower-portal/d/loan-offers/images/img-2hd/markup",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Mark up an image",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "popped-out~f_borrower-portal_d_loan-offers_dictation",
+      "key": "popped-out/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "popped-out",
+      "state": "Popped out",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers",
+      "key": "new-session/f_borrower-portal_d_loan-offers",
+      "path": "/f/borrower-portal/d/loan-offers",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "Design page",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers_about",
+      "key": "new-session/f_borrower-portal_d_loan-offers_about",
+      "path": "/f/borrower-portal/d/loan-offers/about",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "About the design",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers_rules",
+      "key": "new-session/f_borrower-portal_d_loan-offers_rules",
+      "path": "/f/borrower-portal/d/loan-offers/rules",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "Rules",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers_questions",
+      "key": "new-session/f_borrower-portal_d_loan-offers_questions",
+      "path": "/f/borrower-portal/d/loan-offers/questions",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "Open questions",
+      "group": "Design page",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers_window",
+      "key": "new-session/f_borrower-portal_d_loan-offers_window",
+      "path": "/f/borrower-portal/d/loan-offers/window",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "Pop-out window",
+      "group": "Pop-out window",
+      "status": "matches"
+    },
+    {
+      "id": "new-session~f_borrower-portal_d_loan-offers_dictation",
+      "key": "new-session/f_borrower-portal_d_loan-offers_dictation",
+      "path": "/f/borrower-portal/d/loan-offers/dictation",
+      "stateId": "new-session",
+      "state": "New session",
+      "page": "Turn on dictation",
+      "group": "Design page",
+      "status": "matches"
+    }
+  ]
+}

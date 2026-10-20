@@ -100,11 +100,9 @@
           },
           "surface": {
             "view": "inline",
-            "mode": "design",
             "size": "fit",
             "client": "browser",
             "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
-            "app": { "url": "http://localhost:5173", "running": true, "approved": true, "start": "/f/borrower-portal/host/start" },
             "host": null,
             "popped": false,
             "notice": null,
