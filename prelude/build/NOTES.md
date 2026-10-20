@@ -151,4 +151,6 @@ not approved, building, no app, all built. Event: `story-written`.
   in a build session the surface becomes the check (each page in each state,
   as built, against its approved screen, plus "not built yet"), the Design |
   App switch goes, and "Open the app" becomes a launch action for testing
-  once the build is done. Not decided.
+  once the build is done. Not decided. The person thinks the build session
+  belongs in this design, not the Design Workspace (2026-10-20): proposed as
+  a "Build session" page here, with the workspace's chat as it is.
