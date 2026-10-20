@@ -22,7 +22,7 @@ import { backlogOf } from './backlog.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, screensOf, shotView, writeCheck } from './check.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, gitState, gitUser, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -263,7 +263,10 @@ async function handle(req, res, app) {
     const value = cleanPath(form.get('path'));
     const error = refuseFolder(value);
     if (error) return openForm(422, { path: value, $errors: { path: error } });
-    const folder = folders.open(value);
+    // A design's worktree opens its project, where its work shows (R-c7w).
+    const project = folders.worktree(value) ? repositoryOf(value) : value;
+    const folder = project && folders.open(project);
+    if (!folder) return openForm(422, { path: value, $errors: { path: 'That folder is a design’s branch Prelude made, and it no longer belongs to a project. Open the project itself.' } });
     tell(app, { needs: true, projects: true });
     return redirect(res, `/f/${folder.id}`);
   }
@@ -495,7 +498,8 @@ async function handle(req, res, app) {
     }
 
     if (rest === '' && req.method === 'GET') {
-      folders.open(folder.path);
+      // A design's branch isn't a project of its own (R-c7w): its project is.
+      if (!folder.branch) folders.open(folder.path);
       tidy();
       return projectPage(200);
     }

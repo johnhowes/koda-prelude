@@ -12,4 +12,6 @@
 - **R-h9b.** A recent project whose folder has gone stays listed, saying so, until the person removes it; removing it leaves the disk alone.
   *shown-on: /*
 - **R-z3g.** The bar shows how many things are waiting on the person across all their projects, and leads home; it shows nothing when none are.
+- **R-c7w.** Only projects are listed: the folders Prelude makes to work on a design's branch never appear as projects of their own, even one opened directly, and their work shows in their project's card instead.
+  *shown-on: /*
 - **R-d0y.** If Prelude can't read part of the home page, that part says so and offers to try again, and the rest of the page still works.
