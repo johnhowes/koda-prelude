@@ -86,8 +86,11 @@ stopped; all built: done). Events: `story-written`, `check-done`.
   design, counted unless something there doesn't match (a build can change
   shared parts; R-9xe). A screen opens in the panel with Built | Approved
   (| Differences), so the design is one click away without the panel
-  looking like a design session; Open the design in the header goes to the
-  design page. The design's states, since the real app can't reach them.
+  looking like a design session.
+- **Open the design opens the design's pop-out window** (the person,
+  2026-10-20): the design viewer alone (pages, states, sizes), as Pop out
+  opens it from the design page, in the same named window. Not a design
+  session: for that, go back to the design and start one. The design's states, since the real app can't reach them.
 - **No App tab; Open the app instead** (the person, 2026-10-20): the real
   app, with its own data, opens in a window of its own (Start the app first
   when this branch isn't running it). In the check's toolbar always, and in

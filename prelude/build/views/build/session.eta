@@ -3,7 +3,8 @@
      here stands in for it). Beside it, where a design session shows the
      design, is the check: each screen of the page being built, in each
      state, as built, against its approved screen. The design is one click
-     away (Approved, on any screen; Open the design, in the header), and the
+     away (Approved, on any screen; Open the design, in the header, which
+     opens the design's pop-out window, not a design session), and the
      real app, with its own data, opens in a window of its own.
      `it` is the session. */%>
 <link rel="stylesheet" href="/static/workspace.css">
@@ -21,7 +22,11 @@
     </div>
     <span class="spacer"></span>
     <div class="cluster">
-      <a class="btn small ghost" href="<%= it.design.url %>" title="The design, with its states, in a design session."><span class="icon icon-screen" aria-hidden="true"></span>Open the design</a>
+      <%/* The design's pop-out window, as the design page's Pop out opens it:
+           the design viewer alone, with its pages and states, and no chat. A
+           named target, so the browser reuses one window for the design; in
+           the desktop app, data-pop-out makes it a real window. */%>
+      <a class="btn small ghost" href="<%= it.design.url %>/window" target="prelude-<%= it.folder.id %>-<%= it.design.id %>" data-pop-out title="The design, with its pages and states, in a window of its own."><span class="icon icon-external" aria-hidden="true"></span>Open the design</a>
       <a class="btn small" href="<%= it.design.url %>/build"><span class="icon icon-code" aria-hidden="true"></span>Back to Build</a>
     </div>
   </header>
