@@ -120,6 +120,32 @@ the record picker, was dropped).
   server renders it (a headless browser), not the client: a cross-origin
   frame can't be read from the page, and it works the same in both
   clients. Captures are named "Page – State – 390×844.png".
+- **Capture pictures where the frame is, and the desktop app what's on
+  screen** (the person, 2026-10-20: capturing over the Mark up modal gave
+  the page beneath). The server opened the page picked, never a drawer or
+  modal over it (no address changes when one opens) or a page reached by a
+  link. Now the framed page reports where it is: the design's origin adds a
+  script to the pages it serves into a frame (beside `withClient`,
+  host.js), which on each `koda:attached` and popstate posts
+  `{ type: 'prelude:where', at }` to the parent: an open overlay region's
+  `ko-location` (`#modal`, `#drawer`), else its own path. The surface keeps
+  it in `frame.at` (beside the frame, `form="capture-form"`), and the
+  server opens that instead of `page` when it's a path its routes answer,
+  an overlay route rendering over its page as deep links do; the name
+  takes that route's title. App mode still opens the page picked (Prelude
+  can't add to the app's pages). Opened afresh, what's typed isn't in it,
+  so in the desktop app What's in view is the app's own picture of the
+  frame: `desktop.js` takes a click on `[data-capture-shown]` (closing the
+  menu first, so it isn't in the picture), asks the shell for the frame's
+  pixels (`preludeDesktop.capture(rect, scale)`: WebView2's DevTools
+  `Page.captureScreenshot` clipped to the iframe, scaled by `1 / --scale`
+  so a sized frame keeps its real pixels), puts the PNG in the form's
+  `picture` input and submits; the server stores a posted `picture` as
+  is. The whole page is opened afresh in both. The menu's hints say which,
+  by client (`[data-browser-only]`, added to the shell) (R-w8p, R-3qz).
+  To design it, the page's views came back into the design (`"from"` on
+  the page, window, preview and bar routes) with every partial they
+  include; only `_surface.eta` and `_design-bar.eta` changed.
 - **Dictation, transcribed on this computer** (the person, 2026-10-17;
   replaces the browser's speech service): a microphone beside Attach. The
   first press opens a modal to choose a speech model (Quick 142 MB English,

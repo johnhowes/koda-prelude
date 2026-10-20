@@ -1,0 +1,9 @@
+<%/* The message box's words: its own region, so dictation can answer with
+     it, the text as typed with what was said added at the end. `it` has
+     message (and $errors when a message was refused), and the placeholder
+     when the box isn't a design's. */%>
+<% const error = it.$errors?.message; %>
+<label class="sr-only" for="message">Message</label>
+<textarea id="message" name="message" ko-as="message" rows="3" required
+          placeholder="<%= it.placeholder ?? 'Describe what to design, or paste a sketch or a screenshot.' %> Enter to send, Shift+Enter for a new line."
+          <% if (error) { %>ko-invalid-server="<%= error %>" aria-describedby="message-error"<% } %>><%= it.message ?? '' %></textarea>

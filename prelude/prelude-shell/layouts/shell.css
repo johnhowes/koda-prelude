@@ -36,9 +36,11 @@
   .shell.bare > .shell-main { padding: var(--space-2); }
 
   /* What only the desktop app can do is shown only in it: its script marks
-     the root with data-desktop. */
+     the root with data-desktop. What it does differently says so in both,
+     the browser's words marked data-browser-only. */
   [data-desktop-only] { display: none; }
   [data-desktop] [data-desktop-only] { display: inline-flex; }
+  [data-desktop] [data-browser-only] { display: none; }
 
   /* Notice: a sentence about what just happened, at the window's corner,
      over the page. Gone when empty, or when the person closes it. */
