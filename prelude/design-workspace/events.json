@@ -10,5 +10,11 @@
     "update": "folders/borrower-portal/designs/loan-offers/dictation",
     "with": { "status": "ready", "progress": 100 },
     "send": "dictation-changed"
+  },
+  "files-changed": {
+    "title": "The agent changes the design",
+    "update": "folders/borrower-portal/designs/loan-offers/surface",
+    "with": { "version": 1 },
+    "send": "files-changed"
   }
 }

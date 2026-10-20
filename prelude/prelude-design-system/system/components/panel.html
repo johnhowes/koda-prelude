@@ -1,6 +1,9 @@
 <!-- Panel: a bordered region that fills its share of a layout - the chat, the design
      surface. It holds a .toolbar, then a .panel-body that scrolls (or a transcript,
-     status and composer). The layout around it is the shell's, not the panel's. -->
+     status and composer). The layout around it is the shell's, not the panel's.
+     When the toolbar and the notices under it refresh together, apart from the
+     body (a region of their own), wrap them in a .panel-head: its notices still
+     run edge to edge, as a panel's own do. -->
 <section class="panel" aria-label="Design">
   <div class="toolbar">
     <span class="muted">3 screens</span>
@@ -9,5 +12,19 @@
   </div>
   <div class="panel-body">
     <p class="empty">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
+  </div>
+</section>
+
+<section class="panel" aria-label="Design">
+  <div class="panel-head">
+    <div class="toolbar">
+      <span class="muted">3 screens</span>
+      <span class="spacer"></span>
+      <a class="btn small ghost" href="#">Refresh</a>
+    </div>
+    <div class="notice warn" role="status"><p>The design changed since you approved it: 2 pages differ.</p></div>
+  </div>
+  <div class="panel-body">
+    <p class="empty">The page, which the head's refresh leaves alone.</p>
   </div>
 </section>

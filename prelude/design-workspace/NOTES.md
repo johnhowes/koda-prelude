@@ -193,7 +193,24 @@ the record picker, was dropped).
   opening a design starts one when the last is finished. To design it,
   `_session.eta` came back into the design (`"from"` on its route) with
   every partial it includes, since includes resolve only in the design's
-  views; only `_chat.eta` changed.
+  views. `_chat.eta` changed; `_surface.eta` split into it and
+  `_design-bar.eta` (below), and `_window.eta` came back to include it.
+- **The agent's changes don't reload the page on show** (the person,
+  2026-10-20): reviewing was hard while every edit reloaded the frame.
+  The person's own changes (page, state, size, Reset, Show, a pop-out)
+  still reload the whole surface in every window (`design-changed`). The
+  agent's (files of the design, its system, its shell) send
+  `files-changed`, which reloads only the head (`#design-bar`,
+  `…/preview/bar`, `_design-bar.eta`): page list, states, rules, review
+  strip. When the design's version is past the one the frame loaded
+  (`shown`, in the bar's URL), "Updated · Load changes" beside the page
+  menu reloads the surface. Never on its own, not even when the turn
+  ends (the person: never, for now); no Live switch yet (later, if
+  needed). Capture's frame size inputs moved beside the frame
+  (`form="capture-form"`) so they outlast the bar's reloads. Added
+  `.panel-head` to the design system. In the app: split the event in
+  `design-state.js` (`filesChanged` publishes `files-changed`) and add the
+  bar's route. Send event "The agent changes the design" shows it here.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does

@@ -11,7 +11,7 @@
     "update": "folders/:folder/designs/:design/draft",
     "answer": { "view": "@app/server/views/_answering", "data": "folders/:folder/designs/:design/draft" }
   },
-  "/f/:folder/d/:design/window": { "view": "@app/server/views/_window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window" },
+  "/f/:folder/d/:design/window": { "view": "_window", "from": "@app/server/views/_window", "title": "Pop-out window", "data": "folders/:folder/designs/:design", "layout": "window" },
   "/f/:folder/d/:design/looking-at": { "view": "@app/server/views/_looking-at", "data": "folders/:folder/designs/:design" },
   "/f/:folder/d/:design/images/:image": { "view": "@app/server/views/_image", "title": "An image, full size", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
   "/f/:folder/d/:design/images/:image/markup": { "view": "@app/server/views/_markup", "title": "Mark up an image", "data": "folders/:folder/designs/:design/images/:image", "over": "/f/:folder/d/:design", "in": "modal" },
@@ -22,26 +22,27 @@
       "also": [{ "into": "modal?" }]
     }
   },
-  "/f/:folder/d/:design/preview": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/preview": { "view": "_surface", "from": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" },
+  "/f/:folder/d/:design/preview/bar": { "view": "_design-bar", "data": "folders/:folder/designs/:design" },
   "POST /f/:folder/d/:design/screen": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/state": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/size": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/reset": {
     "update": "folders/:folder/designs/:design",
-    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/approve": {
     "remove": "folders/:folder/designs/:design/surface/review",
-    "answer": { "view": "@app/server/views/_surface", "data": "folders/:folder/designs/:design" }
+    "answer": { "view": "_surface", "data": "folders/:folder/designs/:design" }
   },
   "POST /f/:folder/d/:design/events": {
     "update": "folders/:folder/designs/:design",
