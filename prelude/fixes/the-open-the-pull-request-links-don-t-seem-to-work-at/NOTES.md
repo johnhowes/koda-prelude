@@ -1,0 +1,3 @@
+# Fix: The "Open the Pull Request" links don't seem to work, at…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
