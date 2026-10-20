@@ -1,1 +1,1 @@
-<div ko-into="<%= it.id %>-text?" ko-attach="last"><%= it.text %></div>
+<div ko-into="<%= it.id %>-text?"><%~ it.html %></div>

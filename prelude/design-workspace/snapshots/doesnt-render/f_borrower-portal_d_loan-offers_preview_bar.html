@@ -1,0 +1,282 @@
+<div class="toolbar">
+<details class="menu start">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="clip">
+Offer
+</span>
+</summary>
+<div class="menu-list">
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button name="surface.current" type="submit" value="/offers">
+<span class="item-title">
+Offers
+</span>
+<span class="muted">
+/offers
+</span>
+</button>
+<button aria-current="true" name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer
+</span>
+<span class="muted">
+/offers/off-2291
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291/accept">
+<span class="item-title">
+Offer › Accept the offer
+</span>
+<span class="muted">
+/offers/off-2291/accept
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/compare">
+<span class="item-title">
+Compare offers
+</span>
+<span class="muted">
+/offers/compare
+</span>
+</button>
+</form>
+<hr>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Refresh
+</span>
+<span class="muted">
+Load this page again
+</span>
+</a>
+<a href="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291" target="_blank">
+<span class="item-title">
+Open in browser
+</span>
+<span class="muted">
+http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291
+</span>
+</a>
+</div>
+</details>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 2 are shown on this page.">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+Rules
+<span class="pill">
+2
+</span>
+</a>
+<details class="menu start">
+<summary class="btn small ghost">
+<span class="clip">
+State: Typical
+</span>
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button aria-current="true" name="surface.state" type="submit" value="01-typical">
+<span class="item-title">
+Typical
+</span>
+<span class="muted">
+01-typical.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="02-no-offers">
+<span class="item-title">
+No offers yet
+</span>
+<span class="muted">
+02-no-offers.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="03-expired">
+<span class="item-title">
+An offer expired
+</span>
+<span class="muted">
+03-expired.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="04-long-names">
+<span class="item-title">
+Long names
+</span>
+<span class="muted">
+04-long-names.json
+</span>
+</button>
+</form>
+</details>
+<details class="menu start" ko-as="captureMenu">
+<summary class="btn small ghost" title="Put a picture of this page in the message box, to send to the agent or mark up.">
+<span aria-hidden="true" class="icon icon-capture">
+</span>
+Capture
+</summary>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<input name="name" type="hidden" value="Offer – Typical.png">
+<input name="page" type="hidden" value="/offers/off-2291">
+<input name="state" type="hidden" value="01-typical">
+<button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<span class="item-title">
+What’s in view
+</span>
+<span class="muted">
+As much as fits the frame now
+</span>
+</button>
+<button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
+<span class="item-title">
+The whole page
+</span>
+<span class="muted">
+Scrolled to its end, as wide as the frame
+</span>
+</button>
+</form>
+</details>
+<span id="capture-status" ko-region role="status">
+</span>
+<span class="spacer">
+</span>
+<details class="menu">
+<summary class="btn small ghost" title="The size this window lays the page out at.">
+<span aria-hidden="true" class="icon icon-fit">
+</span>
+Fit the panel
+</summary>
+<ul class="menu-list">
+<li>
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Fit the panel
+</span>
+<span class="muted">
+As wide and tall as the panel
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=browser" ko-target="design">
+<span class="item-title">
+Phone
+</span>
+<span class="muted">
+390 × 844
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=tablet&amp;client=browser" ko-target="design">
+<span class="item-title">
+Tablet
+</span>
+<span class="muted">
+820 × 1180
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=laptop&amp;client=browser" ko-target="design">
+<span class="item-title">
+Laptop
+</span>
+<span class="muted">
+1440 × 900
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=desktop&amp;client=browser" ko-target="design">
+<span class="item-title">
+Desktop
+</span>
+<span class="muted">
+1920 × 1080
+</span>
+</a>
+</li>
+<li>
+<form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="custom">
+<input name="surface.client" type="hidden" value="browser">
+<span class="item-title">
+Custom size
+</span>
+<div class="inline">
+<label class="sr-only" for="size-width-inline">
+Width in pixels
+</label>
+<input id="size-width-inline" max="4000" min="200" name="surface.custom.width" placeholder="Width" required type="number" value="">
+<span aria-hidden="true" class="muted">
+×
+</span>
+<label class="sr-only" for="size-height-inline">
+Height in pixels
+</label>
+<input id="size-height-inline" max="4000" min="200" name="surface.custom.height" placeholder="Height" required type="number" value="">
+<button class="btn small" type="submit">
+Use this size
+</button>
+</div>
+</form>
+</li>
+</ul>
+</details>
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
+<span aria-hidden="true" class="icon icon-external">
+</span>
+Pop out
+</a>
+</div>
+<div class="notice danger review" role="alert">
+<div class="cluster">
+<p>
+<strong>
+1 page doesn’t render.
+</strong>
+The agent is told with your next message.
+</p>
+<span class="spacer">
+</span>
+<details class="menu">
+<summary class="btn small">
+Show it
+</summary>
+<div class="menu-list">
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.mode" type="hidden" value="design">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<input name="surface.state" type="hidden" value="04-long-names">
+<button name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer · Long names
+</span>
+<span class="muted">
+/offers/off-2291: Cannot read properties of undefined (reading &#39;name&#39;) in offers/detail.eta, line 14
+</span>
+</button>
+</form>
+</div>
+</details>
+</div>
+</div>

@@ -676,9 +676,10 @@ async function handle(req, res, app) {
 //   POST …/d/<design>/sessions/<id>/stop      stop the agent
 //   GET  …/d/<design>/sessions/<id>/live      the session's live channel
 //   GET  …/d/<design>/preview?screen=<id>     the design surface, showing that screen
+//   GET  …/d/<design>/preview/bar?shown=<v>   the design bar alone, after the agent's changes
 //   POST …/d/<design>/screen                  show a screen, in every window
 //   GET  …/d/<design>/window                  the design surface alone, for a pop-out window
-//   GET  …/d/<design>/live                    the design's channel: "design-changed"
+//   GET  …/d/<design>/live                    the design's channel: "design-changed", "files-changed"
 // The app build's group (step 8): not a page of a design, but the app itself,
 // built in a session of the folder's shell, since the shell is the app's frame.
 const APP_GROUP = { key: '@app', slug: 'app', title: 'The app', routes: [], posts: [], rules: [] };
@@ -1224,6 +1225,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       session: session && { id: session.id, title: session.title, ...(session.build ? { build: { title: session.build.title } } : {}) },
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
+      // What the agent is writing now, so the transcript ends with it.
+      streaming: session ? turns.streaming(folder, design, session.id) : null,
       rules: rulesOf(dir, context),
       questions: notes.questions,
       decisions: notes.decisions,
@@ -1256,7 +1259,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
    * with any overlay already in its region, and the page's one live channel.
    */
   const designPage = (status, model, { session = null, regions = {}, path = url.pathname } = {}) => {
-    const live = session ? `${base}/sessions/${session.id}/live?from=${model.entries.length}` : `${base}/live`;
+    // From the entries it rendered, and the words it shows being written, if any.
+    const live = session
+      ? `${base}/sessions/${session.id}/live?from=${model.entries.length}${model.streaming ? `&streaming=${encodeURIComponent(model.streaming.id)}` : ''}`
+      : `${base}/live`;
     const body = render('./_session', { ...model, live });
     // In the app layout, like Prelude's other pages: the page brings its own
     // stylesheet and asks to fill the window, so Koda swaps it in from Home
@@ -1288,6 +1294,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   if (req.method === 'GET' && rest[0] === 'preview' && rest.length === 1) {
     const body = render('./_surface', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }) });
+    if (fragment) return send(res, 200, body);
+    return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
+  }
+
+  // The design bar alone, reloading when the agent changes the design
+  // (files-changed): `shown` is the version the window's frame loaded, so
+  // the bar can say it's behind (R-v2q).
+  if (req.method === 'GET' && rest[0] === 'preview' && rest[1] === 'bar' && rest.length === 2) {
+    const shown = Number.parseInt(url.searchParams.get('shown') ?? '', 10);
+    const body = render('./_design-bar', { ...basics(), rules: rulesOf(dir, context), surface: surfaceOf({ ...fromQuery(), showing: true }), ...(Number.isNaN(shown) ? {} : { shown }) });
     if (fragment) return send(res, 200, body);
     return send(res, 200, render('./window-layout', { body: `<div class="stack design-page window-page">${body}</div>`, path: url.pathname, title, layout: { live: `${base}/live` } }));
   }
@@ -2380,7 +2396,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   if (action === 'live' && req.method === 'GET') {
     const from = Math.max(0, Number.parseInt(url.searchParams.get('from') ?? '0', 10) || 0);
     // Catch up and subscribe in the same tick, so nothing published in between is missed.
-    return openChannel([sessionKey(folder, design, session.id)], turns.catchUp(folder, design, dir, session.id, from, view));
+    const shown = url.searchParams.get('streaming') || null;
+    return openChannel([sessionKey(folder, design, session.id)], turns.catchUp(folder, design, dir, session.id, from, view, shown));
   }
 
   return notFound();

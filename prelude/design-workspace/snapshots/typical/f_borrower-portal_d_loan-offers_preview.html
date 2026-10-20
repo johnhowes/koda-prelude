@@ -1,5 +1,6 @@
 <section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser">
 <input id="lookingSize" type="hidden" value="">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;mode=design&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
 <span aria-label="Show" class="segmented" role="group">
 <a aria-current="true" class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design" title="The design’s views, with its states.">
@@ -159,7 +160,7 @@ offer-added
 </span>
 Capture
 </summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" ko-target="capture-status" method="post">
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
@@ -167,8 +168,6 @@ Capture
 <input name="name" type="hidden" value="Compare offers – Typical.png">
 <input name="page" type="hidden" value="/offers/compare">
 <input name="state" type="hidden" value="01-typical">
-<input ko-as="frameWidth" name="frame.width" type="hidden" value="">
-<input ko-as="frameHeight" name="frame.height" type="hidden" value="">
 <button ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
@@ -312,6 +311,9 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 Pop out
 </a>
 </div>
+</div>
+<input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="">
+<input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="">
 <div class="design-frame" ko-as="frame">
 <div class="device" ko-as="device">
 <iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare" title="Compare offers">

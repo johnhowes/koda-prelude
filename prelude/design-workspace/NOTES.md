@@ -316,16 +316,29 @@ Where the app differs from the screens, on purpose:
   always went to the latest session, even one long finished or a finished
   build (the person, 2026-10-19; prelude/fixes/from-the-project-landing-page-when-i-click-on-a-design-it).
 
+## Built: the agent's changes, the chat's toolbar, sending (2026-10-20)
+
+- **Files-changed**: `filesChanged` (`server/design-state.js`) still moves
+  the design's version on, but publishes `files-changed`, not
+  `design-changed`; the watches in `openChannel` (`server/main.js`) call it
+  for the design's files, its system and its shell. The bar alone is
+  `GET …/preview/bar` (`server/views/_design-bar.eta`), with `shown` from
+  its URL (R-v2q).
+- **Streaming**: each flush (`server/turns.js`, now every 150ms) renders
+  the whole message so far as markdown into `push-delta`, replacing
+  `#<id>-text`. The page model has `streaming` from the turn's block, and
+  the page's channel says which live entry it rendered
+  (`…/live?from=N&streaming=<id>`): catching up brings that one up to date,
+  or takes it away if it was saved meanwhile (`push-remove.eta`; the saved
+  entry comes with the others), or adds one the page never had.
+- **The pop-out window shows only its bar** (an open question since
+  2026-10-19): `.window-page > .design` could never match inside
+  `@scope (.design-page)`, since the window's page is the scope's root.
+  `server/public/workspace.css` now has the design's
+  `:scope.window-page > .design`.
+
 ## Open questions
 
-- **The pop-out window shows only its bar** (found 2026-10-19). In
-  `@scope (.design-page)`, `.window-page > .design` can never match: the
-  window's page is the scope's root, and a bare selector there must be
-  inside it. So the surface never fills the window and its frame (a size
-  container) collapses to nothing. Fixed in `styles.css`
-  (`:scope.window-page > .design`); the app's copy,
-  `server/public/workspace.css` line 25, needs the same one-line change,
-  in a build or a fix.
 - **The surface sometimes takes over the whole page** (reported
   2026-10-19, typing in the box or Start with this). Likely cause, from
   the code (`server/main.js`, the `/d/` routing): a design with no branch

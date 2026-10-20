@@ -7,10 +7,12 @@
 // nothing and sees nothing twice.
 //
 // The agent's words stream as they're written: a "live" entry is pushed when a
-// message starts, its text arrives in small batches, and when the message ends
-// it is saved and the live entry is replaced by the finished one, rendered as
-// markdown. Only finished messages are saved; the live text exists only on the
-// pages watching.
+// message starts, and every little while it is replaced by all its words so
+// far, rendered as markdown afresh (a list or a code block isn't markdown
+// until it's whole enough). When the message ends it is saved and the live
+// entry is replaced by the finished one, looking the same. Only finished
+// messages are saved; the live text is in memory, and a page rendered
+// mid-sentence shows it as far as it has got (`streaming`).
 //
 // Messages sent while the agent works wait (R-z4k): each session's in the
 // order written. When a turn ends, `onIdle` is told, and sends them together
@@ -26,11 +28,15 @@ import { randomUUID } from 'node:crypto';
 
 import { DELETING, designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
-import { render } from './views.js';
+import { presentEntry as presentWords, render } from './views.js';
 import { presentEntry, sinceWords, stepOf } from './workspace.js';
 
 const MAX_RESULT = 2000;
-const FLUSH_MS = 50;
+// Each push carries the whole message so far, so not too often.
+const FLUSH_MS = 150;
+
+/** The words so far, as the transcript will show them once saved. */
+const wordsHtml = text => presentWords({ type: 'text', text }).html;
 
 export const designKey = (folder, design) => `${folder.id}/${design.id}`;
 export const sessionKey = (folder, design, sessionId) => `${folder.id}/${design.id}/${sessionId}`;
@@ -88,19 +94,21 @@ export function createTurns({ runner, live, onChange = () => {} }) {
   };
 
   // The message being written: { id, text, sent } - `sent` is how much of the
-  // text has been published, so a page joining now gets exactly that much.
+  // text has been published, so a flush with nothing new sends nothing.
   const flush = ctx => {
     const block = ctx.block;
     clearTimeout(ctx.timer);
     ctx.timer = null;
     if (!block || block.sent === block.text.length) return;
-    live.publish(ctx.key, render('./push-delta', { id: block.id, text: block.text.slice(block.sent) }));
+    live.publish(ctx.key, render('./push-delta', { id: block.id, html: wordsHtml(block.text) }));
     block.sent = block.text.length;
   };
 
+  const liveEntry = block => render('./push-entry', { html: render('./_live-entry', { id: block.id, html: wordsHtml(block.text) }).trim() });
+
   const startText = ctx => {
     ctx.block = { id: `live-${++liveCount}`, text: '', sent: 0 };
-    live.publish(ctx.key, render('./push-entry', { html: render('./_live-entry', { id: ctx.block.id, text: '' }).trim() }));
+    live.publish(ctx.key, liveEntry(ctx.block));
   };
 
   const endText = (ctx, text) => {
@@ -355,19 +363,34 @@ ${DELETING}`,
     },
 
     /**
-     * The messages a newly connected page needs: entries it hasn't rendered,
-     * the message being written (as far as it has been published), then the
-     * status.
+     * What the agent is writing in a session now, for a page to render in
+     * its transcript: { id, html } (the words so far, as markdown), or null.
      */
-    catchUp(folder, design, designDir, sessionId, from, view = plainView) {
-      const messages = readEntries(designDir, sessionId, from)
-        .map(entry => entryMessage(entry, view))
-        .filter(Boolean);
+    streaming(folder, design, sessionId) {
       const turn = running.get(designKey(folder, design));
       const block = turn?.sessionId === sessionId ? turn.ctx.block : null;
+      return block && { id: block.id, html: wordsHtml(block.text) };
+    },
+
+    /**
+     * The messages a newly connected page needs: entries it hasn't rendered,
+     * the message being written, then the status. `shown` is the live entry
+     * the page rendered (its id), if any: brought up to date while it's
+     * still being written, and taken away once it's been saved, since the
+     * saved entry comes with the others.
+     */
+    catchUp(folder, design, designDir, sessionId, from, view = plainView, shown = null) {
+      const messages = [];
+      const turn = running.get(designKey(folder, design));
+      const block = turn?.sessionId === sessionId ? turn.ctx.block : null;
+      if (shown && shown !== block?.id) messages.push(render('./push-remove', { id: shown }));
+      messages.push(...readEntries(designDir, sessionId, from)
+        .map(entry => entryMessage(entry, view))
+        .filter(Boolean));
       if (block) {
-        const html = render('./_live-entry', { id: block.id, text: block.text.slice(0, block.sent) }).trim();
-        messages.push(render('./push-entry', { html }));
+        messages.push(block.id === shown
+          ? render('./push-delta', { id: block.id, html: wordsHtml(block.text) })
+          : liveEntry(block));
       }
       messages.push(statusMessage(this.state(folder, design, sessionId)));
       return messages;

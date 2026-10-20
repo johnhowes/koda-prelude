@@ -53,11 +53,24 @@ This is required.
 <span class="muted" ko-as="draftKept" ko-region role="status">
 </span>
 </div>
-<button class="btn small primary" type="submit">
+<button class="btn small primary" ko-as="send" type="submit">
 Send
 </button>
 </div>
+<template ko-as="sending">
+<li class="entry user sending">
+<div class="stack gap-1 sent">
+<ul aria-label="Images" class="attachments">
+</ul>
+<div class="bubble">
+</div>
+<span class="muted looked-at">
+Sending…
+</span>
+</div>
+</li>
+</template>
 <script type="koda">
-// Two things no binding or trigger expresses: Enter to send, and taking // an image the person pastes or drops, which means moving a File into // the upload's input (it then uploads as if chosen there). Listened for // on the form, since dictation replaces the box itself. const { message, upload } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { const item = document.createElement('li'); item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
 </script>
 </form>

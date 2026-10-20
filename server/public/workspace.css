@@ -22,7 +22,10 @@
     .workspace > .chat { flex: 2 1 0; }
     .workspace > .design { flex: 3 1 0; }
   }
-  .window-page > .design { flex: 1; }
+  /* The pop-out: the surface fills the window. The page is the scope's root
+     itself, so it's named with :scope; a bare .window-page would have to be
+     inside .design-page and never match. */
+  :scope.window-page > .design { flex: 1; }
   /* A fix (step 11) has no design surface: the chat takes the page, at a
      readable width in the middle of it (prelude/fix-something). Narrower,
      the page is a column already, and the chat fills it. */
@@ -45,8 +48,7 @@
   .workspace > .design.popped { flex: none; min-inline-size: 0; }
   .workspace:has(> .design.popped) > .chat { flex: 1; }
 
-  /* Show: Agent, Tools. Unchecking one hides those entries. */
-  .chat:has(.show-agent:not(:checked)) .entry.agent,
+  /* Tools: the agent's tool calls show only while it's on. */
   .chat:has(.show-tools:not(:checked)) .entry.tool { display: none; }
   .show-page { display: inline; }
 
@@ -85,10 +87,11 @@
   .host-log { padding-inline: var(--space-4); font-size: var(--text-xs); }
   .host-log pre { max-block-size: 12rem; overflow: auto; white-space: pre-wrap; }
 
-  /* The agent's words as they stream in (_live-entry.eta), before they're
-     saved and shown as markdown. */
-  .entry.live .say { white-space: pre-wrap; }
-  .entry.live .say:empty::after { content: "…"; color: var(--fg-subtle); }
+  /* The agent's words as they stream in (_live-entry.eta), before any have come. */
+  .entry.live .prose:empty::after { content: "…"; color: var(--fg-subtle); }
+  /* A message just sent, shown before the server has it: quieter until
+     the transcript comes back with it. */
+  .entry.sending .bubble { opacity: 0.7; }
   /* After a build turn: where the app runs, and what's next. */
   .entry.next p { margin: 0 0 var(--space-1); }
   .entry.next p:last-child { margin-block-end: 0; }
