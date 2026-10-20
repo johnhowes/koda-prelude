@@ -201,6 +201,28 @@ export function changedSince(worktree, base) {
   } catch { return []; }
 }
 
+/**
+ * What a worktree has changed since a commit, committed or not, new files
+ * included: [{ path, how: 'added' | 'changed' | 'removed' }], by path. A
+ * build session with no screens of its own shows it (prelude/build).
+ */
+export function filesChangedSince(worktree, base) {
+  try {
+    const files = new Map();
+    for (const line of git(worktree, 'diff', '--name-status', '--no-renames', base).split('\n')) {
+      const [status, path] = line.trim().split('\t');
+      if (path) files.set(path, status.startsWith('A') ? 'added' : status.startsWith('D') ? 'removed' : 'changed');
+    }
+    for (const path of git(worktree, 'ls-files', '--others', '--exclude-standard').split('\n').map(line => line.trim()).filter(Boolean)) files.set(path, 'added');
+    return [...files].map(([path, how]) => ({ path, how })).sort((a, b) => a.path.localeCompare(b.path));
+  } catch { return []; }
+}
+
+/** The commit a worktree is at, or null. */
+export function headOf(worktree) {
+  try { return git(worktree, 'rev-parse', 'HEAD'); } catch { return null; }
+}
+
 /** git's user name where a folder is, as a commit there would be signed, or '' with none. */
 export function gitUser(folderPath) {
   try { return git(folderPath, 'config', 'user.name'); } catch { return ''; }

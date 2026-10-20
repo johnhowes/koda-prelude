@@ -1,0 +1,54 @@
+<%/* What's next in a build session: one notice, at the top of what's beside
+     the chat, so it reloads with it after each turn (check-done). First what
+     needs the person (a screen that doesn't render or differs; an app that
+     doesn't start, or waits for approval), then what's left to build, then
+     that it's built: where to try it (Open the app) and how to finish the
+     branch, on the project page. Nothing while the agent works: it all runs
+     again when its turn ends. Shown to the person, never told to the agent.
+
+     It was a "Next:" entry in the transcript after each build turn; it's the
+     build's, so it's here now. `it` is the session (BuildSession,
+     server/check.js). */%>
+<% const shots = it.check?.shots ?? [];
+   const count = status => shots.filter(shot => shot.status === status).length;
+   const fails = count('fails'), differs = count('differs'), unbuilt = count('unbuilt');
+   const start = it.result?.start ?? null;
+   const what = it.kind === 'app' ? 'The app' : it.kind === 'layouts' ? 'The shell’s layouts' : it.build.title;
+   const finish = it.next.finish; %>
+<% if (fails) { %>
+<div class="notice danger" role="alert">
+  <p><strong><%= fails === 1 ? '1 screen doesn’t render.' : `${fails} screens don’t render.` %></strong> The agent is told with your next message.</p>
+</div>
+<% } else if (differs) { %>
+<div class="notice warn" role="status">
+  <p><strong><%= differs === 1 ? '1 screen differs' : `${differs} screens differ` %> from the approved design.</strong> Open <%= differs === 1 ? 'it' : 'one' %> to compare. Ask the agent to fix it, or approve it as built if the change is what you want.</p>
+</div>
+<% } else if (it.status) { %>
+<% } else if (start?.status === 'fails') { %>
+<div class="notice danger" role="alert">
+  <p><strong>The app doesn’t start from this branch.</strong> What it printed is below. Ask the agent to fix it: it’s sent what the app printed.</p>
+  <form class="cluster actions" action="<%= it.result.url %>/fix" method="post" ko-target="transcript" ko-attach="last">
+    <input type="hidden" name="type" value="user">
+    <input type="hidden" name="message" value="The app doesn’t start from this branch. Make it start.">
+    <button class="btn small" type="submit">Ask the agent to fix it</button>
+  </form>
+</div>
+<% } else if (start?.status === 'unapproved' && it.app) { %>
+<div class="notice warn" role="status">
+  <p><strong>Approve the app to start it.</strong> Prelude starts it with <code><%= it.app.command %></code>, on this machine, with your permissions, outside its sandbox. Once you approve it for this project, Prelude starts it again after each of the agent’s turns, to say whether it starts.</p>
+  <div class="cluster actions"><%~ include('./_open-app', it.app) %></div>
+</div>
+<% } else if (unbuilt || !it.next.built) { %>
+<div class="notice" role="status">
+  <p><strong>Next:</strong> <%= what %> <%= it.kind === 'layouts' ? 'aren’t' : 'isn’t' %> built yet. Send the agent the next message to carry on.</p>
+</div>
+<% } else { %>
+<div class="notice good" role="status">
+  <strong><%= what %> <%= it.kind === 'layouts' ? 'are' : 'is' %> built.</strong>
+  <p><% if (it.kind === 'page') { %>Every screen matches its approved design. <% } else if (start?.status === 'starts') { %>The app starts from this branch<% if (it.app) { %>, at <code><%= it.app.url %></code><% } %>. <% } %>Try it in the app, with its own data, then finish the branch on the project page: <%= finish.label %>.</p>
+  <div class="cluster actions">
+    <% if (it.app) { %><%~ include('./_open-app', it.app) %><% } %>
+    <a class="btn small ghost" href="<%= finish.url %>"><span class="icon icon-push" aria-hidden="true"></span>Finish on the project page</a>
+  </div>
+</div>
+<% } %>

@@ -1,11 +1,21 @@
-<%/* A build session: the agent building one page of the design into the app,
-     on the design's branch. The chat is the design page's, as it is (_chat).
-     Beside it, where a design session shows the design, is the check: each
-     screen of the page being built, in each state, as built, against its
-     approved screen. The design is one click away (Approved, on any screen;
-     Open the design, in the header, which opens the design's pop-out window,
-     not a design session), and the real app, with its own data, opens in a
-     window of its own. `it` is the session (BuildSession, server/check.js). */%>
+<%/* A build session: the agent building part of the design into the app, on
+     the design's branch: a page of it, the app itself, or the shell's
+     layouts. The chat is the design page's, as it is (_chat), listing the
+     design's build sessions. Beside it, where a design session shows the
+     design, is the build: for a page, the check, each screen of the page in
+     each state, as built, against its approved screen; for the app or the
+     shell's layouts, which have no screens of their own, what the build did
+     (_result). Either starts with what's next (_next). The design is one
+     click away (Approved, on any screen; Open the design, in the header,
+     which opens the design's pop-out window, not a design session), and the
+     real app, with its own data, opens in a window of its own. `it` is the
+     session (BuildSession, server/check.js). */%>
+<% const page = it.kind !== 'app' && it.kind !== 'layouts';
+   const heading = it.kind === 'app' ? (it.title === 'Connect the app' ? 'Connecting the app' : 'Building the app')
+     : it.kind === 'layouts' ? 'Building the shell’s layouts' : `Building ${it.build.title}`;
+   const from = page ? `from the design and the page’s ${it.build.stories === 1 ? 'story' : 'stories'}, checked against the approved screens`
+     : it.kind === 'layouts' ? 'from the shell’s layouts, into the app' : 'from the shell, the design system and the designs';
+   const panel = page ? { label: 'Check', url: it.check.url } : { label: 'The build', url: it.result.url }; %>
 <link rel="stylesheet" href="/static/workspace.css">
 <div class="stack gap-3 design-page build-session fills">
   <header class="cluster gap-3 design-head">
@@ -16,8 +26,8 @@
         <a href="<%= it.design.url %>"><%= it.design.title %></a><span aria-hidden="true">›</span>
         <a href="<%= it.design.url %>/build">Build</a>
       </nav>
-      <h1>Building <%= it.build.title %></h1>
-      <p class="stage secondary"><strong>Build session</strong> · on <code><%= it.branch %></code>, from the design and the page’s <%= it.build.stories === 1 ? 'story' : 'stories' %>, checked against the approved screens.</p>
+      <h1><%= heading %></h1>
+      <p class="stage secondary"><strong>Build session</strong> · on <code><%= it.branch %></code>, <%= from %>.</p>
     </div>
     <span class="spacer"></span>
     <div class="cluster">
@@ -31,17 +41,18 @@
   </header>
   <div class="split gap-3 workspace" style="--side: 26rem">
     <%~ include('./_chat', it) %>
-    <section class="panel check" aria-label="Check">
+    <section class="panel check" aria-label="<%= panel.label %>">
       <div class="toolbar">
-        <span class="item-title">Check</span>
-        <span id="check-tally" class="cluster gap-1" ko-region><%~ include('./_tally', it.check) %></span>
+        <span class="item-title"><%= panel.label %></span>
+        <% if (page) { %><span id="check-tally" class="cluster gap-1" ko-region><%~ include('./_tally', it.check) %></span><% } %>
         <span class="spacer"></span>
         <% if (it.app) { %><%~ include('./_open-app', it.app) %><% } %>
       </div>
-      <div class="panel-body inset" ko-scope="<%= it.check.url %>" ko-source="<%= it.check.url %>" ko-invoke="event:check-done"><%~ include('./_check', it) %></div>
+      <div class="panel-body inset" ko-scope="<%= panel.url %>" ko-source="<%= panel.url %>" ko-invoke="event:check-done"><%~ include(page ? './_check' : './_result', it) %></div>
     </section>
   </div>
   <%/* The session's own channel, as on the design page: the transcript as the
-       agent writes it, and check-done once each turn's check has run. */%>
+       agent writes it, and check-done once each turn's check, or the app's
+       start, has run. */%>
   <% if (it.live) { %><div hidden ko-connect="<%= it.live %>"></div><% } %>
 </div>

@@ -25,6 +25,10 @@
               "design": { "id": "loan-offers", "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
               "branch": "prelude/loan-offers",
               "build": { "title": "Accept an offer", "stories": 1 },
+              "kind": "page",
+              "started": "today at 09:15",
+              "next": { "built": false, "finish": { "url": "/f/borrower-portal", "label": "Merge into main" } },
+              "result": null,
               "app": { "running": true, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" },
               "status": null,
               "entries": [

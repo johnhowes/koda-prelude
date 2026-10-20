@@ -12,12 +12,16 @@ Pages: Build (`build/page`, its list `build/_pages`); a page's story
 (`/build/stories/:group`: `build/story`, `_stories`, `_story`,
 `_story-edit`, the `_rewrite` modal); a build session
 (`/sessions/:session`: `build/session`, its check `_check`, one screen
-`_shot`, `_tally`, `_open-app`; `_chat`, `_transcript`, `_entry`,
-`_composer` are a stand-in for the design page's chat). States: typical,
-split and writing, not approved, building, no app, all built; each has a
-build session (typical: mid-build, one differs, two not built; building:
-the agent working, one doesn't render, the app stopped; no app: the app
-stopped; all built: done). Events: `story-written`, `check-done`.
+`_shot`, `_tally`, `_open-app`, what's next `_next`, and for the app build
+and the shell's layouts what the build did, `_result`; `_chat`,
+`_transcript`, `_entry`, `_composer` are a stand-in for the design page's
+chat). States: typical, split and writing, not approved, building, no app,
+all built; each has a page's build session (typical: mid-build, one
+differs, two not built; building: the agent working, one doesn't render,
+the app stopped; no app: the app stopped; all built: done). Then three on
+the borrower-portal's App shell: app build (waiting for approval), app
+doesn't start (with what it printed), layouts built (done, the app
+running). Events: `story-written`, `check-done`.
 
 ## What was wrong with it
 
@@ -100,15 +104,70 @@ stopped; all built: done). Events: `story-written`, `check-done`.
 - **The chat stays the design page's.** The header now says it's a build
   session, so the chat's "This session builds …" notice goes.
 
+- **Every build session opens in Build** (the person, 2026-10-20), the app
+  build and the shell's layouts build too, not only a page's. The header
+  says which: Building the app (Connecting the app), Building the shell's
+  layouts, Building <page>.
+- **The app and layouts builds show what the build did** (proposed, agreed
+  2026-10-20): they have no screens of their own, so beside the chat, where
+  a page's build has the check, is "The build": whether the app starts
+  from the branch (Starts, Doesn't start with what it printed, Waiting for
+  you, Not started), the shell's layouts each Built (the app's file) or Not
+  built yet, for the layouts build, and every file the build changed since
+  the session started (Added, Changed, Removed). Open the app or Start the
+  app is in its toolbar, as in the check's.
+- **"Starts" is Prelude's own start after each turn** (the person,
+  2026-10-20, on the recommendation): no separate probe. Prelude already
+  starts the app afresh after a build turn; it starts if it answers
+  Prelude's health check in time. That's not that every page works: Open
+  the app is for that.
+- **The app is approved from the build session**: the first app build
+  always waits for it (its host settings are new). "Approve and start the
+  app" names the command Prelude runs, and approves it for the project, as
+  the design bar's approval does. A build turn's note that it waits points
+  here, not at the design bar.
+- **An app that doesn't start**: Ask the agent to fix it sends the
+  person's line; the agent is also told what the app printed.
+- **What's next is the session page's, not the transcript's** (the person,
+  2026-10-20): one notice at the top of what's beside the chat, reloaded
+  with it after each turn. What needs the person first (doesn't render,
+  differs, doesn't start, approve it), then "Next: … isn't built yet", then
+  "… is built" with Open the app and Finish on the project page (Merge into
+  main, or Push and open a pull request). Nothing while the agent works.
+- **Build sessions are listed on Build**, newest first, under "Build
+  sessions"; a build session's chat lists only the design's build
+  sessions, with no New session (builds start from Build).
+
+## What moved from the design page, and why (2026-10-20)
+
+Every build session is Build's now, so the design page keeps nothing of
+builds. From the design page (`prelude/design-workspace`'s pages, the app's
+`_chat`, `_entry`, `_design-bar`, `_surface`):
+
+- The chat's "This session builds …" notice: the build session's header
+  says it.
+- The "Next:" entry after each build turn: it's the build session page's
+  "What's next" (`_next`), where the check, the app and the way to finish
+  are. Old transcripts' "Next:" entries now show nothing. Its line that the
+  design window shows the app's own views once a page is ported went: the
+  check says which screens are built.
+- The Build pill, and build sessions in the design's sessions menu: they're
+  listed on Build. A design's latest session (R-o4s), its "Carry on
+  from…", and the page under a drawer or modal are never a build session.
+- The Design | App switch and App mode: the real app opens in its own
+  window from the build session (Open the app, Start the app), as decided
+  above. Capture is of the design only.
+
 ## For the Design Workspace
 
 To paste into a Design Workspace session (this design can't write there):
-a build session's page is now designed in Build (`prelude/build`,
-`/f/:folder/d/:design/sessions/:session` when the session is a build).
-So the design page drops the Design | App switch and App mode (the real app
-opens in its own window from the build session instead), and the chat's
-"This session builds …" notice, since the build session's header says it.
-Design sessions are otherwise unchanged.
+every build session's page is designed in Build (`prelude/build`,
+`/f/:folder/d/:design/sessions/:session` when the session is a build: a
+page's, the app's or the shell's layouts'). The app's design page no longer
+has the Design | App switch and App mode, the chat's "This session builds
+…" notice, the "Next:" entry, the Build pill or build sessions in the
+sessions menu, so its states and notes can drop them too. Design sessions
+are otherwise unchanged.
 
 ## In the preview only
 
@@ -189,12 +248,12 @@ Design sessions are otherwise unchanged.
 
 ## Built into the app (a build session, 2026-10-20)
 
-- A page's build session (not the app build or the shell's layouts, which
-  have no screens of their own) is `server/views/build/session.eta`, with
+- A page's build session is `server/views/build/session.eta`, with
   `_check`, `_shot`, `_tally` and `_open-app` beside it, answered in
   `main.js` (`buildSessionPage`; its model `buildSessionView`, typed in
   `server/check.js`). It renders in the app layout like the Build page. A
-  design session's page is unchanged.
+  design session's page is unchanged. (Since 2026-10-20 every build
+  session's page is: see below.)
 - **The chat is the design page's own** (`server/views/_chat.eta`, given
   `chat`, the design page's model), with its transcript, queue, images and
   Stop. Its "This session builds …" notice doesn't show: the chat is given
@@ -230,6 +289,41 @@ Design sessions are otherwise unchanged.
   app don't show.
 - **The screens' pictures** are still the design's placeholders (see Open
   questions): snapshots are HTML, so there's no approved picture to show yet.
+
+## Built into the app (every build session, 2026-10-20)
+
+- Every session with a `build` opens `build/session` (`buildKind`: page,
+  app, layouts). A page's has the check; the app's and the shell's
+  layouts' have `build/_result`, at `…/sessions/:session/result`, with
+  `…/result/fix`. `…/check` is a page's only, `…/result` the others'.
+- After an app or layouts build turn, the turn's check starts the app
+  afresh (`startApp`) and keeps the outcome with the session,
+  `sessions/<id>/result.json` (`{ at, start: { status, log? } }`), then
+  sends `check-done`. One that doesn't start isn't rendered from; one
+  waiting for approval leaves the transcript a note that says so. A
+  shell with pages still has them checked after it starts.
+- What the build changed is git's: files changed since the commit the
+  branch was at when the session started (`from`, in `session.json`), the
+  design's sessions left out. A build session from before this has no
+  `from`, so it lists the branch's changes since it began, and says so.
+- Start the app from a build session (`…/app/start`) with `approve=true`
+  approves the app for the project first. For the app build and the
+  layouts, it's then the session's start (`startApp`), so a failure shows
+  with what it printed; not while the agent works.
+- `afterBranchTurn` no longer writes a `next` entry; `_entry` doesn't show
+  one. `buildSessionView`'s `next` is whether it's built (`builtNow`, as
+  the turn decides it) and where the branch is finished.
+- The design page's model lists only design sessions (`designSessions`);
+  a build session's chat lists its build sessions, with `builds` set, so
+  `_chat` leaves out New session. The surface has no `mode` or `app`.
+
+### Where the design is silent
+
+- **No `from`**: see above.
+- **The shell's Build page while the app is built**: it has no pages to
+  build (the gallery isn't built), so it says everything is built, with
+  the build sessions under it. Unchanged; the project page is where the
+  app build is followed.
 
 ## Open questions
 

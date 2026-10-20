@@ -73,6 +73,26 @@
   </div>
   <% } %>
 
+  <%/* Every build session of the design, newest first: a page's, the app's
+       (a shell's), the shell's layouts'. They're Build's, so they're listed
+       here, not in the design page's sessions menu. */%>
+  <% if (it.sessions?.length) { %>
+  <section class="stack gap-2" aria-labelledby="build-sessions">
+    <h2 class="group-label" id="build-sessions">Build sessions (<%= it.sessions.length %>)</h2>
+    <ul class="list">
+      <% for (const session of it.sessions) { %>
+      <li><a class="item" href="<%= session.url %>">
+        <span class="icon icon-session" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= session.title %></span>
+          <span class="muted"><%= session.started %></span>
+        </span>
+      </a></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+
   <% if (it.unchanged?.length) { %>
   <details class="disclosure">
     <summary>Built, and not changed by this design (<%= it.unchanged.length %>)</summary>
