@@ -42,7 +42,16 @@ async function run(control) {
   if (control.matches('[data-capture-shown]')) return captureShown(control);
   const url = new URL(control.getAttribute('href'), location.href).href;
   if (control.matches('[data-pop-out]')) await desktop.popOut(url, control.getAttribute('target'));
-  else await desktop.openInBrowser(url);
+  else {
+    // The shell opens only what it trusts (its server, the preview, https);
+    // anything else it refuses still opens, as the link would have.
+    try {
+      await desktop.openInBrowser(url);
+    } catch (error) {
+      console.warn('Prelude desktop: the system browser wasn’t allowed this address, so it opens here.', error);
+      window.open(url, '_blank', 'noopener');
+    }
+  }
 }
 
 /**
