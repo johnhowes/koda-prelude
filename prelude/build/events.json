@@ -27,6 +27,6 @@
     "update": "folders/borrower-portal/designs/loan-offers/sessions/20261020-0915-k4tz/check/shots/account-typical",
     "with": { "status": "matches" },
     "send": "check-done",
-    "push": [{ "into": "check-tally?", "view": "build/_tally", "data": "folders/borrower-portal/designs/loan-offers/sessions/20261020-0915-k4tz/check" }]
+    "push": [{ "into": "check-tally?", "view": "@app/server/views/build/_tally", "data": "folders/borrower-portal/designs/loan-offers/sessions/20261020-0915-k4tz/check" }]
   }
 }

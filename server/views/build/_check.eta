@@ -1,10 +1,9 @@
 <%/* The check, as a list: every screen of the page being built, in every
      state, against its approved screen; then the rest of the design, which a
      build can change too, listed only where it doesn't match (the rest
-     counted). One notice
-     says what to do first. Each screen opens in this panel to compare. It
-     runs again after each of the agent's turns (check-done).
-     `it` is the session. */%>
+     counted; R-9xe). One notice says what to do first. Each screen opens in
+     this panel to compare. It runs again after each of the agent's turns
+     (check-done). `it` is the session (BuildSession, server/check.js). */%>
 <% const check = it.check; const all = check.shots;
    const shots = all.filter(shot => shot.group === it.build.title);
    const others = all.filter(shot => shot.group !== it.build.title);
@@ -30,7 +29,7 @@
   <div class="notice good" role="status">
     <strong><%= it.build.title %> is built.</strong>
     <p>Every screen matches its approved design. Try it in the app, with its own data, then finish the branch from the project’s page.</p>
-    <div class="cluster actions"><%~ include('./_open-app', it.app) %></div>
+    <% if (it.app) { %><div class="cluster actions"><%~ include('./_open-app', it.app) %></div><% } %>
   </div>
   <% } %>
 

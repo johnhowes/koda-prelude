@@ -15,7 +15,5 @@
 - **R-c9r.** A story never repeats what's already built: no built rules, no pages the app already has, and no rule from another page's story.
 - **R-f6w.** Approving a screen as built in a build session saves only that screen; every other screen is still checked against the design.
   *shown-on: /f/:folder/d/:design/sessions/:session/check/:shot*
-  *proposed*
 - **R-9xe.** A build session checks every screen again each time the agent's turn ends, including pages of the design it isn't building.
   *shown-on: /f/:folder/d/:design/sessions/:session*
-  *proposed*

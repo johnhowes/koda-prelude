@@ -1,8 +1,13 @@
-<%/* A stand-in for the design page's chat (server/views/_chat.eta), which a
-     build session keeps as it is: its toolbar, the transcript, the status
-     line and the message box. Only enough of it to see the page whole. Its
-     "This session builds …" notice goes: the header says so now.
-     `it` is the session. */%>
+<%/* The session's chat: the design page's (server/views/_chat.eta), as it is,
+     with its transcript, status line and message box; `it.chat` is its
+     model. Its "This session builds …" notice goes: the header says so now.
+
+     The design's states have no chat model (they describe the build session,
+     not the design page), so for them this is the design's stand-in: its
+     toolbar, the transcript, the status line and the message box, only
+     enough to see the page whole. `it` is the session (BuildSession,
+     server/check.js). */%>
+<% if (it.chat) { %><%~ include('../_chat', it.chat) %><% } else { %>
 <section class="panel side chat" aria-label="Session">
   <div class="toolbar">
     <span class="muted clip"><%= it.title %></span><span class="pill">Build</span>
@@ -21,3 +26,4 @@
   <% } %>
   <%~ include('./_composer', it) %>
 </section>
+<% } %>

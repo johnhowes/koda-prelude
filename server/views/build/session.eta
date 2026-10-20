@@ -1,12 +1,11 @@
 <%/* A build session: the agent building one page of the design into the app,
-     on the design's branch. The chat is the design page's, as it is (_chat
-     here stands in for it). Beside it, where a design session shows the
-     design, is the check: each screen of the page being built, in each
-     state, as built, against its approved screen. The design is one click
-     away (Approved, on any screen; Open the design, in the header, which
-     opens the design's pop-out window, not a design session), and the
-     real app, with its own data, opens in a window of its own.
-     `it` is the session. */%>
+     on the design's branch. The chat is the design page's, as it is (_chat).
+     Beside it, where a design session shows the design, is the check: each
+     screen of the page being built, in each state, as built, against its
+     approved screen. The design is one click away (Approved, on any screen;
+     Open the design, in the header, which opens the design's pop-out window,
+     not a design session), and the real app, with its own data, opens in a
+     window of its own. `it` is the session (BuildSession, server/check.js). */%>
 <link rel="stylesheet" href="/static/workspace.css">
 <div class="stack gap-3 design-page build-session fills">
   <header class="cluster gap-3 design-head">
@@ -37,12 +36,12 @@
         <span class="item-title">Check</span>
         <span id="check-tally" class="cluster gap-1" ko-region><%~ include('./_tally', it.check) %></span>
         <span class="spacer"></span>
-        <%~ include('./_open-app', it.app) %>
+        <% if (it.app) { %><%~ include('./_open-app', it.app) %><% } %>
       </div>
       <div class="panel-body inset" ko-scope="<%= it.check.url %>" ko-source="<%= it.check.url %>" ko-invoke="event:check-done"><%~ include('./_check', it) %></div>
     </section>
   </div>
-  <%/* The session's own channel, as on the design page (the app's `live`);
-       the layout's carries check-done in the preview. */%>
+  <%/* The session's own channel, as on the design page: the transcript as the
+       agent writes it, and check-done once each turn's check has run. */%>
   <% if (it.live) { %><div hidden ko-connect="<%= it.live %>"></div><% } %>
 </div>

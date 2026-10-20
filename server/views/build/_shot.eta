@@ -2,7 +2,8 @@
      to the list. Built, Approved (the design's screen, as approved) and, when
      they differ, Differences (the built screen with what changed marked).
      Approving it as built saves this screen alone; the rest are still
-     checked against the design (R-f6w). `it` is the screen. */%>
+     checked against the design (R-f6w). `it` is the screen (Shot,
+     server/check.js). */%>
 <% const differs = it.status === 'differs'; const checkUrl = it.url.slice(0, it.url.lastIndexOf('/'));
    const views = [['built', 'Built'], ['approved', 'Approved'], ...(differs ? [['differences', 'Differences']] : [])];
    const show = views.some(([id]) => id === it.$query?.show) ? it.$query.show : 'built';
@@ -52,8 +53,8 @@
   <% } %>
 
   <% if (it.status !== 'fails') { %>
-  <%/* In the app, the screen's picture: the approved PNG, or the page as it
-       renders now from the branch, in this state. */%>
+  <%/* The screen's picture: still the design's placeholder (NOTES.md, Open
+       questions). */%>
   <figure class="shot<%= show === 'differences' ? ' marked' : '' %>">
     <span class="muted"><%= it.status === 'unbuilt' ? `${it.page} in ${it.state}, from the design` : pictures[show] %></span>
   </figure>

@@ -70,6 +70,27 @@
   .story-title { font-size: var(--text-lg); }
 }
 
+/* A build session (prelude/build): the design page's frame (workspace.css lays
+   out the chat and the header), with the check where the design surface was.
+   It takes the room the chat leaves, never wrapping; stacked under it when
+   narrow, sharing the height. */
+@scope (.build-session) {
+  .workspace > .check { flex: 1 1 0; min-inline-size: 0; min-block-size: 0; }
+  .check > .panel-body { flex: 1; min-block-size: 0; overflow: auto; }
+  @container (width < 52rem) {
+    .workspace > .check { flex: 3 1 0; }
+  }
+
+  /* A screen of the check: its picture, at the page's shape, on the sunken
+     ground the design surface uses. Marked, the differences show. */
+  .shot-title { font-size: var(--text-md); }
+  .shot {
+    display: grid; place-items: center; aspect-ratio: 16 / 10; margin: 0;
+    background: var(--surface-sunken); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
+  }
+  .shot.marked { border-color: var(--warn); }
+}
+
 /* Home's own rules (prelude/landing-page): what the design system can't say. */
 @scope (.home) {
   /* A folder's path is one long word; let it wrap rather than push the card. */

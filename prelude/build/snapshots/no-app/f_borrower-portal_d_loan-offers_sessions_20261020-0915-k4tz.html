@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Build session
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz" ko-scope="/">
+<link href="/static/workspace.css" rel="stylesheet">
+<div class="stack gap-3 design-page build-session fills">
+<header class="cluster gap-3 design-head">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal">
+borrower-portal
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal/d/loan-offers">
+Loan offers
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal/d/loan-offers/build">
+Build
+</a>
+</nav>
+<h1>
+Building Accept an offer
+</h1>
+<p class="stage secondary">
+<strong>
+Build session
+</strong>
+· on
+<code>
+prelude/loan-offers
+</code>
+, from the design and the page’s story, checked against the approved screens.
+</p>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers" title="The design, with its pages and states, in a window of its own.">
+<span aria-hidden="true" class="icon icon-external">
+</span>
+Open the design
+</a>
+<a class="btn small" href="/f/borrower-portal/d/loan-offers/build">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Back to Build
+</a>
+</div>
+</header>
+<div class="split gap-3 workspace" style="--side: 26rem">
+<section aria-label="Session" class="panel side chat">
+<div class="toolbar">
+<span class="muted clip">
+Build: Accept an offer
+</span>
+<span class="pill">
+Build
+</span>
+<span class="spacer">
+</span>
+<label class="choice">
+<input class="show-tools" ko-persist-in="local" ko-persist="chat.showTools" type="checkbox">
+Tools
+</label>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="transcript" ko-region>
+<li class="entry user">
+<div class="bubble">
+Build Accept an offer.
+</div>
+</li>
+<li class="entry agent">
+<div class="prose">
+<p>
+Accept an offer, and its dialog, are built. Every screen matches.
+</p>
+</div>
+</li>
+</ol>
+</div>
+<form action="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/messages" class="composer" ko-attach="replace" ko-target="self" method="post">
+<input name="type" type="hidden" value="user">
+<input name="url" type="hidden" value="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz">
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" name="message" placeholder="Tell the agent what to build or fix. Enter to send, Shift+Enter for a new line." rows="3">
+</textarea>
+<div class="composer-foot">
+<div class="composer-tools">
+</div>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+</form>
+</section>
+<section aria-label="Check" class="panel check">
+<div class="toolbar">
+<span class="item-title">
+Check
+</span>
+<span class="cluster gap-1" id="check-tally" ko-region>
+<span class="pill good">
+Every screen matches
+</span>
+</span>
+<span class="spacer">
+</span>
+<form action="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start" method="post">
+<input name="back" type="hidden" value="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz">
+<input name="running" type="hidden" value="true">
+<button class="btn small" title="Start the app from this branch at http://localhost:5173, with its own data. If another branch’s app is running there, it stops." type="submit">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+Start the app
+</button>
+</form>
+</div>
+<div class="panel-body inset" ko-invoke="event:check-done" ko-scope="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check" ko-source="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check">
+<div class="stack gap-5">
+<div class="notice good" role="status">
+<strong>
+Accept an offer is built.
+</strong>
+<p>
+Every screen matches its approved design. Try it in the app, with its own data, then finish the branch from the project’s page.
+</p>
+<div class="cluster actions">
+<form action="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/app/start" method="post">
+<input name="back" type="hidden" value="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz">
+<input name="running" type="hidden" value="true">
+<button class="btn small" title="Start the app from this branch at http://localhost:5173, with its own data. If another branch’s app is running there, it stops." type="submit">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+Start the app
+</button>
+</form>
+</div>
+</div>
+<section aria-label="Accept an offer" class="stack gap-1">
+<h3 class="group-label">
+Accept an offer
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/accept-typical">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Typical
+<span class="pill good">
+Matches
+</span>
+</span>
+<span class="muted">
+As approved
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Confirm your bank account" class="stack gap-1">
+<h3 class="group-label">
+Confirm your bank account
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz/check/account-typical">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Typical
+<span class="pill good">
+Matches
+</span>
+</span>
+<span class="muted">
+As approved
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="The rest of the design" class="stack gap-1">
+<h3 class="group-label">
+The rest of the design
+</h3>
+<p class="muted">
+All 14 screens on 4 other pages match.
+</p>
+</section>
+<p class="muted" role="status">
+Checked today at 10:31, after the agent’s last turn.
+</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

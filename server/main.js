@@ -16,10 +16,11 @@ import { fileURLToPath } from 'node:url';
 import { appBuildPrompt, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
 import { fixSlug, listFixes } from './fixes.js';
-import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
-import { readSnapshots, writeSnapshots } from './snapshots.js';
+import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
+import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief } from './build.js';
+import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief, storyCount } from './build.js';
+import { checkView, readCheck, screensOf, shotView, writeCheck } from './check.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, gitState, gitUser, mainBranch, remoteOf, removedUnder, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
@@ -1689,6 +1690,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
           }
           const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
           const result = { failures: review.failures, rendered: [...review.renders.values()].filter(Boolean).length, differ: review.differ, warnings: review.warnings, ahead: review.ahead };
+          // A page's build session shows every screen's status beside the chat (R-9xe).
+          if (isPageBuild(session)) checkDone(session, review);
           // A feature that changed the shell on its branch: its gallery is checked too.
           if (entry && shell) {
             let changed = [];
@@ -2066,6 +2069,72 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       },
     });
   }
+
+  /**
+   * Whether a session builds a page of the design, so its page is the build
+   * session's (prelude/build): the chat beside the check. The app build and
+   * the shell's layouts have no screens of their own, and stay on the design page.
+   */
+  function isPageBuild(session) {
+    return Boolean(session?.build && hosted && ![APP_GROUP.key, LAYOUTS_GROUP.key].includes(session.build.group));
+  }
+
+  /** A build session's check as it last ran (check.js); before its first, as the build found it. */
+  function checkOf(session) {
+    return readCheck(dir, session.id) ?? { at: session.startedAt, shots: screensOf(dir, session.build.title) };
+  }
+
+  /**
+   * A build session's page (BuildSession, check.js): where it builds, the
+   * page's stories counted, the app on this branch, what the agent is doing,
+   * and the check. While Prelude checks after a turn, the agent isn't working.
+   */
+  function buildSessionView(session) {
+    const url = `${base}/sessions/${session.id}`;
+    const project = { id: parentId, name: folder.branch?.parentName ?? folder.name };
+    const slug = session.build.group === ACROSS.key ? ACROSS.slug : backlogOf(dir).groups.find(group => group.key === session.build.group)?.slug;
+    const running = entry && appRunning(app, entry);
+    const state = turns.state(folder, design, session.id);
+    return {
+      id: session.id,
+      title: session.title,
+      url,
+      folder: { id: project.id, name: project.name, url: `/f/${project.id}` },
+      design: { id: design.id, title: design.title, url: base },
+      branch: entry?.branch ?? '',
+      build: { title: session.build.title, stories: slug ? storyCount(dir, slug) : 0 },
+      app: running ? { running: running.running, url: running.url, open: running.open, start: `${url}/app/start`, back: url } : null,
+      status: state.kind === 'working' ? { says: state.step?.says ?? 'Working…' } : null,
+      check: checkView(checkOf(session), { url: `${url}/check`, building: session.build.title }),
+    };
+  }
+
+  /**
+   * A build session's page, in the app layout like the Build page: the
+   * design page's chat (its model, without the "This session builds …"
+   * notice, which the header replaces) and its channel, beside the check.
+   */
+  function buildSessionPage(status, session) {
+    designs.showSession(dKey, session.id);
+    const chat = pageModel({ session });
+    const live = `${base}/sessions/${session.id}/live?from=${chat.entries.length}${chat.streaming ? `&streaming=${encodeURIComponent(chat.streaming.id)}` : ''}`;
+    const body = render('./build/session', { ...buildSessionView(session), chat: { ...chat, session: { id: session.id, title: session.title } }, live });
+    if (fragment && askedFromLayout(req, 'app')) return send(res, status, body);
+    return send(res, status, render('./layout', { body, path: `${base}/sessions/${session.id}`, title: `${session.build.title} · Build · ${title}`, layout: { live: APP_LIVE, needsYou: waitingOf(app) }, system: true }));
+  }
+
+  /**
+   * A build turn's check has run, over every screen of the design (R-9xe):
+   * each screen's status is kept with the session, and its page hears
+   * check-done down the session's channel, which reloads the check, with
+   * the tally afresh.
+   */
+  function checkDone(session, review) {
+    writeCheck(dir, session.id, { at: new Date().toISOString(), shots: screensOf(dir, session.build.title, review) });
+    const key = sessionKey(folder, design, session.id);
+    live.publish(key, 'check-done');
+    live.publish(key, envelope('check-tally?', render('./build/_tally', buildSessionView(session).check)).trim());
+  }
   /**
    * Start a turn in a session with the person's messages: one, or those that
    * waited, together in the order written (R-z4k). Each item: { text,
@@ -2196,7 +2265,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   }
 
   const [section, sessionId, action, ...extra] = rest;
-  if (extra.length > 0) return notFound();
+  // A build session's check and app go deeper (…/check/:shot/approve, …/app/start).
+  const deeper = section === 'sessions' && ['check', 'app'].includes(action);
+  if (extra.length > 0 && !deeper) return notFound();
 
   // The page: a session, or - with none yet, or asked for - a new one.
   const sessionPage = (status, session, extraModel = {}) => {
@@ -2392,7 +2463,82 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // Opened: a turn it finished no longer needs the person (R-8hc).
     app.seen.mark(seenKey(folder, design, session.id));
     tell(app, { needs: true });
-    return sessionPage(200, session);
+    return isPageBuild(session) ? buildSessionPage(200, session) : sessionPage(200, session);
+  }
+
+  // A build session's check (prelude/build):
+  //   GET  …/sessions/:session/check                 every screen
+  //   GET  …/sessions/:session/check/tally           the check in a few words
+  //   GET  …/sessions/:session/check/:shot           one screen; ?show= built, approved or differences
+  //   POST …/sessions/:session/check/:shot/approve   approve it as built: that screen alone (R-f6w)
+  //   POST …/sessions/:session/check/:shot/fix       ask the agent to fix it, as a message
+  //   POST …/sessions/:session/app/start             start the app from this branch, and come back
+  // A part asked for cold is the page.
+  if (deeper) {
+    if (!isPageBuild(session)) return notFound();
+    const sessionUrl = `${base}/sessions/${session.id}`;
+    const checkUrl = `${sessionUrl}/check`;
+    const [shotId, verb, ...beyond] = extra;
+    if (beyond.length) return notFound();
+
+    // As the project page's Start does: one address serves one branch at a
+    // time, so this stops whichever had it. One that fails says why in its log.
+    if (action === 'app') {
+      if (shotId !== 'start' || verb !== undefined || req.method !== 'POST') return notFound();
+      await readForm(req);
+      const config = readHostConfig(folder.path);
+      if (config && app.hosts.approved(folder, config)) {
+        try { await app.hosts.start(folder, config); } catch { /* its log says why */ }
+      }
+      tell(app, { projects: true });
+      return redirect(res, sessionUrl);
+    }
+
+    const part = (status, view, data, also = '') => (fragment && askedFromLayout(req, 'app') ? sendView(status, view, data, also) : buildSessionPage(status, session));
+    if (shotId === undefined && req.method === 'GET') return part(200, 'build/_check', buildSessionView(session));
+    if (shotId === 'tally' && verb === undefined && req.method === 'GET') return part(200, 'build/_tally', buildSessionView(session).check);
+    const shot = checkOf(session).shots.find(one => one.id === shotId);
+    if (!shot) return notFound();
+    const shotModel = () => shotView(checkOf(session), shot.id, { url: checkUrl, query: Object.fromEntries(url.searchParams.entries()) });
+    if (verb === undefined && req.method === 'GET') return part(200, 'build/_shot', shotModel());
+
+    // Approve it as built: this screen, as it renders now, becomes its
+    // approved screen, and no other does (R-f6w). Kept on the branch.
+    if (verb === 'approve' && req.method === 'POST') {
+      await readForm(req);
+      const rendered = await renderPath({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir, path: shot.path, stateId: shot.stateId });
+      const ok = rendered.status === 200;
+      if (ok) {
+        writeSnapshot(dir, shot.key, rendered.html);
+        if (entry && !turns.busy(folder, design)) {
+          try { app.branches.commit(entry, `${design.title}: ${shot.page} in ${shot.state}, approved as built (committed by Prelude)`); } catch (error) { console.error(error); }
+        }
+      }
+      const kept = checkOf(session);
+      const now = ({ error: _, ...one }) => (ok ? { ...one, status: 'matches' } : { ...one, status: 'fails', error: rendered.error ?? `It answered ${rendered.status}.` });
+      writeCheck(dir, session.id, { ...kept, shots: kept.shots.map(one => (one.id === shot.id ? now(one) : one)) });
+      if (!fragment) return redirect(res, `${checkUrl}/${shot.id}`);
+      return sendView(ok ? 200 : 409, 'build/_shot', shotModel(), envelope('check-tally', render('./build/_tally', buildSessionView(session).check)));
+    }
+
+    // Ask the agent to fix it: the form's message, sent as the person's, or
+    // waiting while the agent works (R-z4k). The transcript has it from the
+    // session's channel, as every message the agent is sent.
+    if (verb === 'fix' && req.method === 'POST') {
+      const form = await readForm(req);
+      const text = String(form.get('message') ?? '').trim() || `${shot.page} in ${shot.state} differs from its approved screen. Make it match the design.`;
+      const item = { sessionId: session.id, text, images: [], lookingAt: null, prompt: text };
+      if (turns.busy(folder, design)) {
+        turns.enqueue(folder, design, item);
+        live.publish(sessionKey(folder, design, session.id), statusMessage(turns.state(folder, design, session.id)));
+        return fragment ? send(res, 200, envelope('queued', render('./_queued', pageModel({ session })))) : redirect(res, sessionUrl);
+      }
+      const started = startTurn(session, [item]);
+      if (!fragment) return redirect(res, sessionUrl);
+      if (started.error) return send(res, 409, render('./_entry', { entry: { type: 'note', failed: true, text: started.error }, base }));
+      return send(res, 200, '');
+    }
+    return notFound();
   }
 
   // A message: sent now, or - while the agent works - waiting to go when its

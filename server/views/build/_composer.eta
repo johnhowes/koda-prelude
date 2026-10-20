@@ -1,7 +1,8 @@
-<%/* The stand-in message box (the app's is _composer.eta). Its answer is the
-     box, emptied, and the transcript again. The hidden `type` and `url` are
-     the design's: a refused message re-renders from the posted fields alone,
-     so the form carries its own address. `it` is the session. */%>
+<%/* The stand-in message box (the app's is ../_composer, which a build
+     session's chat answers with). Its answer is the box, emptied, and the
+     transcript again. The hidden `type` and `url` are the design's: a refused
+     message re-renders from the posted fields alone, so the form carries its
+     own address. `it` is the session (BuildSession, server/check.js). */%>
 <form class="composer" action="<%= it.url %>/messages" method="post" ko-target="self" ko-attach="replace">
   <input type="hidden" name="type" value="user">
   <input type="hidden" name="url" value="<%= it.url %>">

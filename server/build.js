@@ -367,3 +367,6 @@ export function storiesBrief(dir, id, story, designPath) {
 
 /** Whether a page has a story written, without reading it. */
 export const hasStory = (dir, id) => existsSync(storiesDir(dir, id)) && storyFiles(storiesDir(dir, id)).length > 0;
+
+/** How many stories a page has, without reading them (a build session's header). */
+export const storyCount = (dir, id) => (existsSync(storiesDir(dir, id)) ? storyFiles(storiesDir(dir, id)).length : 0);

@@ -1,4 +1,4 @@
-<%/* One entry of the stand-in transcript (the app's is _entry.eta): the
+<%/* One entry of the stand-in transcript (the app's is ../_entry): the
      person's message, the agent's words, a tool it used, or Prelude's note.
      `it` is the entry. */%>
 <% if (it.type === 'user') { %>
