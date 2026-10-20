@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>
-Turn on dictation
+Design page
 </title>
 <link href="/static/icon.svg" rel="icon">
 <link href="/system/tokens.css" rel="stylesheet">
@@ -125,8 +125,8 @@ Loan offers
 <code>
 prelude/loan-offers
 </code>
-<span class="pill">
-Not checked yet
+<span class="pill good">
+Check passes
 </span>
 </a>
 <a class="btn small" href="/f/borrower-portal/d/loan-offers/build">
@@ -144,29 +144,18 @@ Build
 <span aria-hidden="true" class="icon icon-session">
 </span>
 <span class="clip">
-Build: Compare offers
+Equal-cost offers
 </span>
 </summary>
 <ul class="menu-list">
 <li>
-<a href="/f/borrower-portal/d/loan-offers/sessions/new">
-<span class="item-title">
-<span aria-hidden="true" class="icon icon-add">
-</span>
-New session
-</span>
-<span class="muted">
-Start afresh from the design’s files and its NOTES.md
-</span>
-</a>
-</li>
-<li>
-<hr>
-</li>
-<li>
 <a aria-current="page" href="/f/borrower-portal/d/loan-offers/sessions/20261017-1305-b7xa">
 <span class="item-title">
+<<<<<<< HEAD:prelude/design-workspace/snapshots/building/f_borrower-portal_d_loan-offers.html
 Build: Compare offers
+=======
+Equal-cost offers
+>>>>>>> origin/main:prelude/design-workspace/snapshots/agent-working/f_borrower-portal_d_loan-offers.html
 </span>
 <span class="muted">
 Today, 13:05
@@ -207,8 +196,13 @@ Tools
 <li class="entry user">
 <div class="stack gap-1 sent">
 <div class="bubble">
-Build Compare offers.
+About “When two offers cost the same in total, which goes first on the compare page?”: the shorter term first, and don’t mark either as cheaper.
 </div>
+<span class="muted looked-at">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+Compare offers · Typical
+</span>
 </div>
 </li>
 <li class="entry tool">
@@ -224,51 +218,39 @@ prelude/loan-offers/views/offers/compare.eta
 Read
 </span>
 <span class="tool-summary">
-src/routes/offers.js
+prelude/loan-offers/states/01-typical.json
 </span>
 </li>
 <li class="entry agent">
 <div class="prose">
 <p>
-The app’s offers controller already loads one offer at a time. I’ll add
-<code>
-GET /offers/compare
-</code>
-, which takes
-<code>
-a
-</code>
-and
-<code>
-b
-</code>
-, and work out each offer’s total cost on the server, as the design’s states have it.
+The compare page marks the cheaper offer by comparing totals, so two equal totals would still mark the first one. I’ll add a state with two offers that cost the same, and order them by term there.
 </p>
 </div>
-</li>
-<li class="entry tool">
-<span class="tool-name">
-Edit
-</span>
-<span class="tool-summary">
-src/routes/offers.js
-</span>
 </li>
 <li class="entry tool">
 <span class="tool-name">
 Write
 </span>
 <span class="tool-summary">
-src/views/offers/compare.eta
+prelude/loan-offers/states/05-same-cost.json
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+<span class="tool-summary">
+prelude/loan-offers/routes.json
 </span>
 </li>
 <li class="entry tool failed">
 <details>
 <summary>
-Bash was refused or failed
+Edit was refused or failed
 </summary>
 <pre>
-npm test -- offers ✖ compare shows the cheaper offer first (4.2ms) AssertionError: expected &#39;off-2291&#39; to equal &#39;off-2307&#39;
+String to replace not found in file. &quot;sort&quot;: &quot;apr&quot;
 </pre>
 </details>
 </li>
@@ -277,24 +259,20 @@ npm test -- offers ✖ compare shows the cheaper offer first (4.2ms) AssertionEr
 Edit
 </span>
 <span class="tool-summary">
-src/views/offers/compare.eta
+prelude/loan-offers/views/offers/compare.eta
 </span>
 </li>
 <li class="entry agent live" id="live-9" ko-region>
 <div class="prose" id="live-9-text" ko-region>
 <p>
-The test was right: the compare page sorted by APR, but the design orders the two offers by
-<strong>
-total cost
-</strong>
-. Now:
+The route had no sort of its own, so the order comes from the view. Now, on the compare page:
 </p>
 <ul>
 <li>
-the cheaper offer over its whole term comes first, marked “Lower total cost”
+the offer that costs less over its whole term comes first, marked “Lower total cost”
 </li>
 <li>
-when both cost the same, neither is marked, and the
+when both cost the same, the shorter term comes first, and neither is marked, and the
 </div>
 </li>
 </ol>
@@ -320,7 +298,7 @@ Cancel
 <div class="status" ko-item role="status">
 <span aria-hidden="true" class="pulse">
 </span>
-<span class="status-step" title="src/views/offers/compare.eta">
+<span class="status-step" title="prelude/loan-offers/views/offers/compare.eta">
 Editing compare.eta
 </span>
 <span class="muted">
@@ -765,76 +743,7 @@ Pop out
 <span aria-hidden="true" class="icon icon-close">
 </span>
 </button>
-<div id="modal" ko-focus="region" ko-location="/f/borrower-portal/d/loan-offers/dictation" ko-region tabindex="-1">
-<div class="stack gap-4">
-<h2>
-Dictate your messages?
-</h2>
-<p class="secondary">
-Press the microphone and speak, then press it again: what you said is typed into the message box, for you to check and send. It’s turned into text here, on this computer. Nothing you say leaves it.
-</p>
-<form action="/f/borrower-portal/d/loan-offers/dictation" class="stack gap-4" ko-target="dictation" method="post">
-<input name="status" type="hidden" value="downloading">
-<input name="progress" type="hidden" value="0">
-<fieldset class="stack gap-2">
-<legend class="label">
-It needs a speech model, downloaded once
-</legend>
-<div class="choices">
-<label class="choice">
-<input name="model" required type="radio" value="base.en">
-<span class="stack gap-0">
-<strong>
-Quick · 142 MB
-</strong>
-<span class="muted">
-English only. Fast on any computer, but misses more.
-</span>
-</span>
-</label>
-<label class="choice">
-<input checked name="model" required type="radio" value="small">
-<span class="stack gap-0">
-<strong>
-Balanced · 466 MB
-</strong>
-<span class="muted">
-Many languages. A second or two per sentence on most laptops.
-</span>
-</span>
-</label>
-<label class="choice">
-<input name="model" required type="radio" value="large-v3-turbo">
-<span class="stack gap-0">
-<strong>
-Most accurate · 1.6 GB
-</strong>
-<span class="muted">
-Many languages, and best with technical words. Slow without a graphics card.
-</span>
-</span>
-</label>
-</div>
-</fieldset>
-<div class="notice warn">
-<p>
-This downloads the model from Hugging Face (
-<code>
-huggingface.co
-</code>
-) into Prelude’s folder on this computer. You can remove it later.
-</p>
-</div>
-<div class="cluster actions">
-<button class="btn primary" type="submit">
-Download and turn on dictation
-</button>
-<button class="btn ghost" command="--koda-empty" commandfor="modal" type="button">
-Not now
-</button>
-</div>
-</form>
-</div>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
 </div>
 </dialog>
 <div hidden ko-connect="/_prelude/live">

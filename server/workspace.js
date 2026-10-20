@@ -34,7 +34,6 @@ import { presentEntry as presentWords } from './views.js';
  * @property {{ branch: string, into: string, when: string }|null} merged
  * @property {Branch|null} branch
  * @property {SessionItem[]} sessions  the design's sessions; on a build session's page, its build sessions
- * @property {boolean} [builds]     the chat is a build session's (prelude/build): no New session
  * @property {{ id: string, title: string }|null} session
  * @property {TurnState} state
  * @property {object[]} entries      transcript entries, presented (presentEntry)
@@ -60,7 +59,6 @@ import { presentEntry as presentWords } from './views.js';
  * @property {number} behind
  * @property {boolean} worked
  * @property {boolean} remote
- * @property {{ title: string }|null} building
  * @property {string[]} alsoChanges
  * @property {{ running: boolean, approved: boolean, url: string, open: string, start: string }|null} running
  * @property {{ from: string, unresolved: string[] }|null} merging

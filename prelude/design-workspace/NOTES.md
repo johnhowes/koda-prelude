@@ -10,7 +10,7 @@ Pages: Design page, with drawers (About the design, Rules, Open
 questions) and modals (an image, Mark up, Turn on dictation); Pop-out
 window. The fake project is a lender's borrower portal, so sizes (phone,
 tablet) and a second client (its mobile app) mean something. States:
-typical, pages differ, doesn't render, building, new design, update
+typical, pages differ, doesn't render, agent working, new design, update
 clashed, popped out, new session.
 
 All seven items of the first review are now designed or settled (item 4,
@@ -25,21 +25,29 @@ the record picker, was dropped).
   drawer (`/about`) with the branch in full and its actions, what the design
   uses, and what the agent can read. An update that clashed also shows as a
   notice above the work, since it holds the branch.
-- **The chat owns its toolbar**: sessions menu, Show Agent/Tools, New
-  session. A build session says so in a notice at the top of the chat.
-- **The design bar reads "what am I looking at", then "how"**: Design/App,
-  page (Refresh and Open in browser moved into its menu, since they act on
+- **The chat owns its toolbar**: sessions menu, Show Agent/Tools.
+- **The design page is for designing only** (the person, 2026-10-20): every
+  build session opens in Build (`prelude/build`), so the design page has no
+  Design | App switch or App mode, no "This session builds …" notice, no
+  "Next:" entry, no Build pill or build sessions in the sessions menu, and
+  no build variants of the review strip ("The build changed how … looks",
+  "All pages match", "Nothing is approved to check against"): a build's
+  check is its session's. The header's Build button, to the Build page,
+  stays. The app already dropped all but the strip's variants
+  (`_design-bar.eta`, `s.stage`), which the build removes.
+- **The design bar reads "what am I looking at", then "how"**: page (Refresh and Open in browser moved into its menu, since they act on
   the page), state, Send event, Reset data; then size, client, Pop out.
 - **Review strip under the bar** (a `.notice`, edge to edge), only when
   there's something to do: a page that doesn't render, pages that differ
   (with Approve again), or none approved yet. Its menu lists the pages;
-  each shows that page in the state the check named. The chat's check
-  entries have Show beside each page too. Pages that differ are folded
-  there under their one line (the person, 2026-10-20: a change can make
-  60 differ); pages that don't render stay open. The page count is gone.
+  each shows that page in the state the check named. In the chat, a
+  check's pages that don't render are listed, each with Show; pages that
+  differ are only counted in one line, with no list (the person,
+  2026-10-20: a change can make 60 differ, and the strip lists them).
+  The page count is gone.
 - **Size and client are not states** (the person asked, 2026-10-17). States
   are data; size and client are how one window looks at it. They're per
-  window (in the surface's URL, like Design/App), so the pop-out can show a
+  window (in the surface's URL), so the pop-out can show a
   phone while the panel fits. Page and state stay shared, as today.
 - **Sizes**: Fit the panel (default), then fixed sizes, then Custom (width
   and height fields, 200-4000 px; the person, 2026-10-17). One size at a
@@ -115,7 +123,7 @@ the record picker, was dropped).
 - **Capture the page** (the person, 2026-10-17): Capture in the design bar
   (after Reset data: it acts on what's on show), a menu of What's in view
   or The whole page. The server renders the page as that window shows it
-  (page, state, size, client, or the app) and adds the PNG to the message
+  (page, state, size, client) and adds the PNG to the message
   box (`POST …/capture`); a line beside it says so, and the tray reloads on
   `draft-changed`, so a capture from the pop-out reaches the chat. At Fit,
   "in view" is the frame's size, measured by a ResizeObserver script. The
@@ -134,8 +142,7 @@ the record picker, was dropped).
   it in `frame.at` (beside the frame, `form="capture-form"`), and the
   server opens that instead of `page` when it's a path its routes answer,
   an overlay route rendering over its page as deep links do; the name
-  takes that route's title. App mode still opens the page picked (Prelude
-  can't add to the app's pages). Opened afresh, what's typed isn't in it,
+  takes that route's title. Opened afresh, what's typed isn't in it,
   so in the desktop app What's in view is the app's own picture of the
   frame: `desktop.js` takes a click on `[data-capture-shown]` (closing the
   menu first, so it isn't in the picture), asks the shell for the frame's
@@ -220,13 +227,18 @@ the record picker, was dropped).
 - **The chat's toolbar is quieter** (the person, 2026-10-19). Agent's
   messages always show (no checkbox); tool calls only with Tools on, off
   by default, remembered in the browser (`ko-persist`, local storage):
-  a preference of the person's, not the design's (R-t7w). New session
-  left the toolbar for the top of the sessions menu: rarely wanted, since
-  opening a design starts one when the last is finished. To design it,
+  a preference of the person's, not the design's (R-t7w). To design it,
   `_session.eta` came back into the design (`"from"` on its route) with
   every partial it includes, since includes resolve only in the design's
   views. `_chat.eta` changed; `_surface.eta` split into it and
   `_design-bar.eta` (below), and `_window.eta` came back to include it.
+- **No New session** (the person, 2026-10-20, and again the same day: it
+  never worked in the app, and isn't needed; to be added back if it's
+  missed): opening a design starts one when the last is finished (R-o4s),
+  so the sessions menu lists only the sessions. Built on this branch
+  (below); main still has the button until the branch is merged. In the
+  app, `GET …/sessions/new` can go too (`server/main.js`), unless
+  something else links it.
 - **The agent's changes don't reload the page on show** (the person,
   2026-10-20): reviewing was hard while every edit reloaded the frame.
   The person's own changes (page, state, size, Reset, Show, a pop-out)
@@ -255,12 +267,7 @@ the record picker, was dropped).
   `.prose` of the words so far, rendered; each push replaces it with all
   of them rendered afresh, not appended text, so the saved entry that
   takes its place looks the same. A reload finds it in the transcript
-  (`it.streaming`). In the app: `flush` (turns.js) renders the block's
-  whole text with the entries' markdown into `push-delta` without
-  `ko-attach="last"` (perhaps a slower flush than 50ms, since it resends
-  the whole text), and the page model gets `streaming` from the turn's
-  block instead of pushing it on connect. State `04-building` shows one
-  mid-sentence.
+  (`it.streaming`). State `04-agent-working` shows one mid-sentence.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -316,9 +323,8 @@ Where the app differs from the screens, on purpose:
   memory, in `turns.js`): their images move into the session's folder as
   they're queued, and come back into the box on Stop (R-9cn). Cancelling
   one deletes its images.
-- **Entries keep two kinds the design doesn't show**: a build turn's
-  "Next:" entry and the check's "ahead of the app" note, as the app had
-  them; no state has one.
+- **Entries keep a kind the design doesn't show**: the check's "ahead of
+  the app" note, as the app had it; no state has one.
 - **The design host's log** still shows under the bar when there is one
   (the design shows only the approval).
 - **Send event** still says when its markup didn't render or no page
@@ -415,21 +421,54 @@ Where the app differs from the screens, on purpose:
   `_keep`) matched the app's line for line, and `:scope.window-page >
   .design` was already in `server/public/workspace.css`, so the port is
   the route alone.
+- **The surface or the bar no longer takes over the whole page**
+  (2026-10-20, the fix in `prelude/fixes/a-design-s-page-sometimes-gets-swapped-for-a-single-piece/`).
+  A design with no branch is served from the project's own address; once
+  a post had made its branch, every GET there was redirected to the
+  worktree's, so a region's reload (the surface on `design-changed`, the
+  bar on `files-changed`) came back from outside its scope and Koda gave
+  it to `#workspace` (`ko-scope="/"`). The app (`server/main.js`, the
+  `/d/` routing) now answers a fragment GET there in place, with the
+  worktree, and moves only a cold load. Keeping the draft, Start with
+  this, answering a question and the tray's images change only the draft,
+  kept on this computer, so they no longer make the branch; when another
+  post makes it, the draft moves with the design.
+
+## Built: the design page is for designing only (2026-10-20)
+
+- The page's route renders the app's `_session.eta` again. Of the partials
+  it includes, only `_chat.eta` (no New session, no build sessions'
+  variant: `it.builds` is gone), `_entry.eta` (pages that differ in one
+  line, unlisted) and `_design-bar.eta` (no build variants of the review
+  strip; `surface.stage` is gone) changed. `.entry.next` left
+  `server/public/workspace.css`.
+- The model (`pageModel`, `server/main.js`) lost `builds`, the branch's
+  `building` and the surface's `stage`; the header's `stage` is worked out
+  beside the surface now, from the branch entry's own `building`, so it
+  still says "Building …" while a build runs.
+- A build session's page (`buildSessionPage`) still uses the design page's
+  chat, listing the design's build sessions; with New session gone it
+  needed nothing of its own.
+- Not done: `GET …/sessions/new` is still answered (`server/main.js`):
+  nothing in the app links it now, but drafts keep the address
+  (`…/sessions/new/draft`), and an old link still works. The About drawer
+  (`_about.eta`) still reads `branch.building`, which no longer comes, so
+  its ", building …" never shows; the drawer wasn't part of this change.
 
 ## Open questions
 
-- New session doesn't work in the app (the person, 2026-10-19). Thought
-  to be the redirect that made the surface take over the page (fixed in
-  a fix session, the person confirmed 2026-10-20); to check again.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
 
-## Limits of the preview (not questions)
+## Limits of the preview
 
-- A message may be images alone (R-b6d), but the design's route still
-  requires text: `require` can't say "text or an image".
-- A marked-up copy shows no thumbnail, Mark up on a just-uploaded image has
-  nothing to open, and a real upload has no full-size view: the fake routes
-  can't store files.
-- Session links, New session and the branch actions lead nowhere (the
+What the fake routes can't do; the app does each.
+
+- A message may be images alone (R-b6d), but the route requires text: its
+  `require` can't say "text or an image".
+- A marked-up copy shows no thumbnail (the route can't store the file), and
+  Mark up on a just-uploaded image has nothing to open.
+- An image added in the preview (a real upload) has no full-size view: the
+  route doesn't add it to the session's images.
+- Session links and the branch actions lead nowhere (the
   design shows one session at the design's URL).

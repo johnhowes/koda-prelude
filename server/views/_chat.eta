@@ -4,12 +4,10 @@
      about the project (a fix with no sessions yet) has no sessions to list
      or to add to.
 
-     New session is the first item of the sessions menu, not a button of its
-     own: it's rarely wanted, since opening a design starts one when the last
-     is finished. On a new session's page it's the current item. The menu
-     lists the design's sessions; build sessions are Build's. On a build
-     session's page (prelude/build, `it.builds`) it lists the design's build
-     sessions instead, and has no New session: builds start from Build.
+     There's no New session: opening a design starts one when the last is
+     finished, and nothing else needed it. On a new session's page the
+     sessions menu is titled so, with no item current. The menu lists the
+     design's sessions only: build sessions are Build's (prelude/build).
 
      The agent's words always show. Its tool calls are hidden unless Tools is
      on: a preference of the person's, remembered in this browser
@@ -21,13 +19,6 @@
     <details class="menu start sessions-menu">
       <summary class="btn small ghost"><span class="icon icon-session" aria-hidden="true"></span><span class="clip"><%= it.session ? it.session.title : 'New session' %></span></summary>
       <ul class="menu-list">
-        <% if (!it.builds) { %>
-        <li><a href="<%= base %>/sessions/new" <% if (!it.session) { %>aria-current="page"<% } %>>
-          <span class="item-title"><span class="icon icon-add" aria-hidden="true"></span> New session</span>
-          <span class="muted">Start afresh from the design’s files and its NOTES.md</span>
-        </a></li>
-        <li><hr></li>
-        <% } %>
         <% for (const s of it.sessions) { %>
         <li><a href="<%= base %>/sessions/<%= s.id %>" <% if (it.session && s.id === it.session.id) { %>aria-current="page"<% } %>>
           <span class="item-title"><%= s.title %></span>
@@ -49,6 +40,7 @@
     <a class="btn small ghost" href="<%= base %>/questions" ko-target="drawer?" title="Open questions: what the agent is waiting for you to decide."><span class="icon icon-question" aria-hidden="true"></span>Questions <span class="pill accent"><%= it.questions.length %></span></a>
     <% } %>
   </div>
+
   <%/* The scroller is a reversed column, so it starts at the bottom and stays
        there as entries arrive - unless the person has scrolled up to read. */%>
   <div class="transcript-scroll">

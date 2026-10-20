@@ -644,6 +644,10 @@ async function handle(req, res, app) {
       // there is moved to it, and anything posted is answered there, the branch
       // made first if the design has none yet. Starting a build in a folder
       // that isn't a repository makes it one, and the design's branch with it.
+      // A region reloading its part is answered there in place, not moved: a
+      // part from another address lands outside the region's scope, so Koda
+      // gives it to the page's own region and it fills the page. What only
+      // changes the draft, kept on this computer, makes no branch.
       const startsBuild = req.method === 'POST' && segments.at(-1) === 'builds';
       if (repository || (!folder.branch && startsBuild && buildable(folder.path))) {
         const onMain = findDesign(folder.path, segments);
@@ -653,13 +657,15 @@ async function handle(req, res, app) {
         const design = onMain?.design ?? onBranch?.found?.design;
         if (design) {
           let entry = app.branches.forDesign(folder.id, design.id);
-          if (!entry && req.method === 'POST') {
+          if (!entry && req.method === 'POST' && !(onMain && changesDraftOnly(onMain.rest))) {
             const made = branchFor(design.id, design.title);
             if (made.error) return page(409, 'not-found', { what: made.error }, 'Couldn’t make the design’s branch');
             entry = made.entry;
+            // Drafts are kept by folder: what was typed here goes with the design.
+            app.drafts.move(folder, design, app.folders.get(entry.id), design);
           }
           if (entry) {
-            if (req.method === 'GET') return redirect(res, `/f/${entry.id}${rest}${url.search}`);
+            if (req.method === 'GET' && !fragment) return redirect(res, `/f/${entry.id}${rest}${url.search}`);
             const worktree = app.folders.get(entry.id);
             const found = findDesign(worktree.path, segments);
             if (found) return handleDesign({ req, res, url, page, app, folder: worktree, ...found });
@@ -688,6 +694,18 @@ async function handle(req, res, app) {
 //   POST …/d/<design>/screen                  show a screen, in every window
 //   GET  …/d/<design>/window                  the design surface alone, for a pop-out window
 //   GET  …/d/<design>/live                    the design's channel: "design-changed", "files-changed"
+/**
+ * Whether a post to a design only changes its draft (R-d3v): what's typed,
+ * its images, or a message started in the box (R-y3h). [segment] after the
+ * design's id.
+ */
+function changesDraftOnly(rest) {
+  const parts = rest[0] === 'sessions' && rest.length >= 3 ? rest.slice(2) : rest;
+  if (['draft', 'attachments'].includes(parts[0])) return true;
+  if (rest[0] === 'images' && rest[2] === 'markup') return true;
+  return (rest[0] === 'start' && rest.length === 1) || (rest[0] === 'questions' && rest[2] === 'answer' && rest.length === 3);
+}
+
 // The app build's group (step 8): not a page of a design, but the app itself,
 // built in a session of the folder's shell, since the shell is the app's frame.
 const APP_GROUP = { key: '@app', slug: 'app', title: 'The app', routes: [], posts: [], rules: [] };
@@ -1125,7 +1143,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         events: readEvents(dir).map(event => ({ name: event.name, title: event.title })),
         approved: readSnapshots(dir)?.size ?? 0,
         review,
-        stage: stageOf(review),
       };
     }
     // Plain screens/*.html (the design system's gallery): served as files.
@@ -1140,7 +1157,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       states: [], state: null, changed: false, events: [], approved: 0,
       review: { failures: [], differ: [] },
       screensOnly: true,
-      stage: null,
     };
   };
 
@@ -1168,7 +1184,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return {
       id: state.id, branch: state.branch, into: state.into, check: state.check, failures: state.failures,
       behind: state.behind, worked: state.worked, remote: state.remote,
-      building: state.building ? { title: state.building.title } : null,
       alsoChanges: state.alsoChanges ?? [],
       running: state.running ? { running: state.running.running, approved: state.running.approved, url: state.running.url, open: state.running.open, start: state.running.start } : null,
       merging: state.merging ? { from: state.merging.from, unresolved: state.merging.unresolved } : null,
@@ -1185,7 +1200,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (!hosted || design.kind === 'system') return null;
     const groups = backlogOf(dir).groups.filter(group => !isGallery(design, group));
     const approved = Boolean(readSnapshots(dir)?.size);
-    if (branch?.building) return { step: 'building', label: `Building ${branch.building.title}`, next: 'checked against the approved design' };
+    if (entry?.building) return { step: 'building', label: `Building ${entry.building.title}`, next: 'checked against the approved design' };
     if (groups.length && groups.every(group => group.built)) {
       return { step: 'built', label: 'Built', next: !branch ? 'nothing left to build' : branch.remote ? 'push and open a pull request' : `merge into ${branch.into}` };
     }
@@ -1238,8 +1253,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         // Where the latest session ended, for "Carry on from…" (R-e9t).
         ...(i === 0 && !session?.build ? { lastLine: lastLineOf(readEntries(dir, item.id)) } : {}),
       })),
-      // On a build session's page, its chat starts no design session.
-      ...(session?.build ? { builds: true } : {}),
       session: session && { id: session.id, title: session.title },
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
@@ -1254,7 +1267,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       images: [],
       draft: draftOf(session?.id ?? null),
       surface: surfaceModel,
-      stage: surfaceModel.stage,   // where the design stands, for the header (10.9)
+      stage: stageOf(surfaceModel.review),   // where the design stands, for the header (10.9)
       // What's wrong in the project, for a fix's starting points (prelude/fix-something).
       ...(design.kind === 'fix' ? { troubles: troublesOf(app, app.folders.get(parentId)) } : {}),
       ...extra,

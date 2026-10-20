@@ -1,7 +1,6 @@
 <%/* The page on show: an iframe on the design's own origin, titled with the
-     page, in the shape of a page. At a size, the
-     page is laid out at that width and height and scaled down to fit the
-     panel; Fit fills the panel.
+     page, in the shape of a page. At a size, the page is laid out at that
+     width and height and scaled down to fit the panel; Fit fills the panel.
 
      A client is attributes on the page's root (the desktop app's script
      marks it data-desktop), so what only that client shows appears (R-4tw).
