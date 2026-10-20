@@ -137,6 +137,29 @@ progress's pill. The states lost their pull request, ready to build and
 finished rows: typical keeps Rate lock's stopped build, update clashed has no
 Needs you card now, and large project keeps 3 of its 9.
 
+## The design system and shell by what they are (redesign, 2026-10-19)
+
+They said "nothing designed yet" (the person): the app counts pages, and the
+system has none (its screens are a gallery) and the shell's gallery is left
+out on purpose. Now the system says "tokens and 29 components" and the shell
+"2 layouts, all built" (its own non-gallery pages added, "2 layouts and 1
+page"; built only once the app exists). "Nothing designed yet" stays for none.
+
+- **Brought back for it**: `_designs` (changed) and `page`, which includes it;
+  `page`'s other partials are copied unchanged, since a design view's
+  includes resolve in the design. Their own fragment routes stay `@app`.
+- **Building it**: `progressOf()` in `server/project.js` gives a system
+  `components` (its `system/components/*.html`) and a shell `layouts` (its
+  layouts) and `layoutsBuilt` (those ported: `unbuiltLayouts` says which).
+
+Built (2026-10-19): `_designs` is ported over the app's; `page` was already
+the app's, unchanged. `progressOf()` counts as above, with `layoutsBuilt` 0
+until the app exists (nothing is ported before it). The `stage` follows the
+states too, so the filter agrees with the line: a system with components is
+`built` once the app exists and `approved` before, and `designing` with none;
+a shell is `built` when its layouts and own pages all are. The story and the
+design agree.
+
 ## Open questions
 
 - **New design has nowhere to say why the kind was refused**: designs here
