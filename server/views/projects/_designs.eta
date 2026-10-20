@@ -6,7 +6,8 @@
      its layouts (its gallery isn't pages) and any pages of its own, built
      once the app exists. `stage` is prepared by the app: ready (approved
      pages not yet built, once the app exists), designing (pages still to
-     approve), approved, or built. */%>
+     approve, or changed since they were: changedSinceApproved), approved,
+     or built. */%>
 <% const p = it, designs = p.designs ?? [], merged = p.merged ?? [];
    const q = it.$query?.q ?? '', stage = it.$query?.stage ?? '', filtered = Boolean(q || stage);
    const appBuilt = p.app?.status === 'built';
@@ -31,6 +32,7 @@
      const count = counted(pages, 'page', 'pages');
      if (built === pages) return `${count}, all built`;
      if (built) return `${count}, ${built} built`;
+     if (design.changedSinceApproved) return `${count}, changed since approved`;
      if (approved === pages) return `${count}, all approved`;
      if (approved) return `${count}, ${approved} approved`;
      return `${count}, none approved yet`;

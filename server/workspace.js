@@ -336,17 +336,40 @@ function approvedAt(designDir) {
 }
 
 /**
- * What the last check of the design found, in any session, as the review
- * strip shows it: pages that don't render, and pages that differ from the
- * approved screens - until they're approved again.
+ * The last check of the design in its own sessions. A build session's check
+ * is the build's (prelude/build): what differs there is the app's port, not
+ * the design.
  */
-export function reviewOf(designDir, context) {
+function lastCheck(designDir) {
   let last = null;
   for (const session of listSessions(designDir)) {
+    if (session.build) continue;
     for (const entry of readEntries(designDir, session.id)) {
       if (entry.type === 'check' && (!last || entry.at > last.at)) last = entry;
     }
   }
+  return last;
+}
+
+/**
+ * Whether the design was approved and has changed since: its last check,
+ * after the approval, found pages that differ from the approved screens.
+ * Such a design isn't approved as it is now, so it isn't ready to build
+ * until it's approved again.
+ */
+export function changedSinceApproved(designDir) {
+  const at = approvedAt(designDir);
+  const last = at ? lastCheck(designDir) : null;
+  return Boolean(last && Date.parse(last.at) >= at && last.differ?.length);
+}
+
+/**
+ * What the last check of the design found, in its own sessions, as the
+ * review strip shows it: pages that don't render, and pages that differ from
+ * the approved screens - until they're approved again.
+ */
+export function reviewOf(designDir, context) {
+  const last = lastCheck(designDir);
   if (!last) return { failures: [], differ: [], rendered: 0 };
   const check = presentCheck(last, context);
   const stale = Date.parse(last.at) < approvedAt(designDir);

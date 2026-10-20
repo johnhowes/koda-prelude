@@ -30,6 +30,7 @@ import { listSessions, readEntries } from './sessions.js';
 import { SNAPSHOTS_DIR } from './snapshots.js';
 import { seenKey, sessionKey } from './turns.js';
 import { render } from './views.js';
+import { changedSinceApproved } from './workspace.js';
 
 /**
  * @typedef {'question' | 'stopped' | 'finished' | 'to-build' | 'pull-request'} NeedKind
@@ -190,8 +191,9 @@ function needsOfWork(app, project, work, { running, seen, now }) {
     return needs;
   }
 
-  // Approved pages the app doesn't have yet, once there's an app to build them into.
-  if ((design.kind === 'design' || design.kind === 'shell') && isHosted(dir) && appOf(at.path).built) {
+  // Approved pages the app doesn't have yet, once there's an app to build them
+  // into. A design changed since it was approved isn't ready until it's approved again.
+  if ((design.kind === 'design' || design.kind === 'shell') && isHosted(dir) && appOf(at.path).built && !changedSinceApproved(dir)) {
     const approvedAt = mtime(join(dir, SNAPSHOTS_DIR));
     const left = approvedAt ? backlogOf(dir).groups.filter(group => !group.built && !(design.kind === 'shell' && (!group.page || group.page.view.startsWith('gallery/')))).length : 0;
     if (left) {

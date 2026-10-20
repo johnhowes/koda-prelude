@@ -455,6 +455,13 @@ Where the app differs from the screens, on purpose:
   (`…/sessions/new/draft`), and an old link still works. The About drawer
   (`_about.eta`) still reads `branch.building`, which no longer comes, so
   its ", building …" never shows; the drawer wasn't part of this change.
+- (fix, 2026-10-20) The review strip and the header's stage read the last
+  check of the design's own sessions only (`reviewOf`, `server/workspace.js`),
+  as the strip's comment always said: a build session's check is the build's,
+  so a port that differs no longer reads as "The design changed since you
+  approved it". The same check now keeps a design changed since it was
+  approved from being ready to build (prelude/build, R-q3d). Views and states
+  unchanged.
 
 ## Open questions
 

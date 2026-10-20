@@ -5,7 +5,7 @@
 
 import { strict as assert } from 'node:assert';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
@@ -77,7 +77,9 @@ before(async () => {
   wid = started.headers.get('location').match(/^\/f\/([0-9a-f]+)\//)[1];
   worktree = canonical(git(repo, 'worktree', 'list').split('\n').find(line => line.includes('[prelude/loans]')).split(/\s+/)[0]);
   const [, sid] = started.headers.get('location').match(/\/sessions\/(.+)$/);
-  await until(() => readEntries(join(worktree, 'prelude', 'loans'), sid).some(e => e.type === 'note'));
+  // Its turn ended, so its check is recorded (before the turn is) ahead of the approval below.
+  await until(() => readEntries(join(worktree, 'prelude', 'loans'), sid).some(e => e.type === 'note')
+    && readEntries(join(worktree, 'prelude', 'loans'), sid).some(e => e.type === 'turn'));
 
   const table = JSON.parse(readFileSync(join(worktree, 'prelude', 'loans', 'routes.json'), 'utf8'));
   // A redesign of the built list: its view brought back into the design.
@@ -92,6 +94,9 @@ before(async () => {
   write(worktree, 'prelude/loans/states/03-no-notes.json', { loans: [{ id: 1, name: 'Harbor Street Bakery', notes: [] }] });
   write(worktree, 'prelude/loans/RULES.md', '# Rules: Loans\n\n- **R-abc.** Loans show the newest first, then by name.\n  *shown-on: /loans*\n- ~~**R-old.** Names are shown in full.~~\n  *retired: long names wrap now*\n- **R-n0t.** A note says who wrote it.\n  *shown-on: /loans/:id/notes*\n  *proposed*\n');
   write(worktree, 'prelude/loans/snapshots/typical/loans.html', '<ul class="redesigned">\n<li>\n<a href="/loans/1/notes">\nHarbor Street Bakery\n</a>\n</li>\n</ul>\n');
+  // Approved now, after the design session's check, as Approve does: else the
+  // design has changed since it was approved, and isn't ready to build.
+  utimesSync(join(worktree, 'prelude', 'loans', 'snapshots'), new Date(), new Date());
   git(worktree, 'add', '-A');
   git(worktree, 'commit', '-q', '-m', 'Design notes');
 });

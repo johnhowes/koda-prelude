@@ -74,7 +74,7 @@
         { "id": "declarations", "title": "Declarations", "kind": "design", "area": "Applications", "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
         { "id": "credit-authorization", "title": "Credit authorization", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "last month" },
         { "id": "application-summary", "title": "Application summary", "kind": "design", "area": "Applications", "pages": 2, "approved": 2, "built": 2, "stage": "built", "changed": "2 weeks ago" },
-        { "id": "save-and-resume", "title": "Save and resume", "kind": "design", "area": "Applications", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changed": "6 days ago" },
+        { "id": "save-and-resume", "title": "Save and resume", "kind": "design", "area": "Applications", "pages": 2, "approved": 0, "built": 0, "stage": "designing", "changedSinceApproved": true, "changed": "6 days ago" },
 
         { "id": "conditions-list", "title": "Conditions list", "kind": "design", "area": "Underwriting", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "3 weeks ago" },
         { "id": "condition-clearing", "title": "Condition clearing", "kind": "design", "area": "Underwriting", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "2 weeks ago" },
