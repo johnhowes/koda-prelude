@@ -33,10 +33,11 @@ the record picker, was dropped).
 - **Review strip under the bar** (a `.notice`, edge to edge), only when
   there's something to do: a page that doesn't render, pages that differ
   (with Approve again), or none approved yet. Its menu lists the pages;
-  each shows that page in the state the check named. The chat's check
-  entries have Show beside each page too. Pages that differ are folded
-  there under their one line (the person, 2026-10-20: a change can make
-  60 differ); pages that don't render stay open. The page count is gone.
+  each shows that page in the state the check named. In the chat, a
+  check's pages that don't render are listed, each with Show; pages that
+  differ are only counted in one line, with no list (the person,
+  2026-10-20: a change can make 60 differ, and the strip lists them).
+  The page count is gone.
 - **Size and client are not states** (the person asked, 2026-10-17). States
   are data; size and client are how one window looks at it. They're per
   window (in the surface's URL, like Design/App), so the pop-out can show a
@@ -230,7 +231,8 @@ the record picker, was dropped).
   finished (R-o4s), so the sessions menu lists only the sessions. To be
   added back if it's missed. `_session.eta` came back into the design
   (`"from"` on the page's route) with every partial it includes; only
-  `_chat.eta` changed. In the app, `GET …/sessions/new` can go too
+  `_chat.eta` changed, and `_entry.eta` (pages that differ, under the
+  review strip's decision). In the app, `GET …/sessions/new` can go too
   (`server/main.js`), unless something else links it.
 - **The agent's changes don't reload the page on show** (the person,
   2026-10-20): reviewing was hard while every edit reloaded the frame.
