@@ -116,6 +116,13 @@
           <button class="btn large primary" type="submit">Start the app build</button>
           <button class="link-btn" type="button">Copy</button>
         </div>
+        <p class="secondary">Busy: the one pressed, while its request is out. Koda marks it (<code>ko-busy</code>); a page does nothing for it.</p>
+        <div class="cluster actions">
+          <button class="btn primary" type="submit" ko-busy>Push and open the pull request</button>
+          <a class="btn small" href="#" ko-busy>Refresh</a>
+          <button class="link-btn" type="button" ko-busy>Copy</button>
+          <button class="icon-btn" type="button" aria-label="Close" ko-busy><span class="icon icon-close" aria-hidden="true"></span></button>
+        </div>
       </div>
     </section>
 

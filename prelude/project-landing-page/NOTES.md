@@ -137,6 +137,17 @@ progress's pill. The states lost their pull request, ready to build and
 finished rows: typical keeps Rate lock's stopped build, update clashed has no
 Needs you card now, and large project keeps 3 of its 9.
 
+## Faster, and a merge on the Git server shows a moment later (fix, 2026-10-20)
+
+The page, its work region and Push's modal ran git synchronously dozens of
+times each (prelude/fixes/requests-seem-to-take-a-very-long-time-even-for-things),
+holding up every request. Now a branch's baseline files are read in one go,
+what's worked out from commits is kept until they move, and Push's modal reads
+only its own branch. The remote is fetched beside the request, not in it: a
+pull request merged on the Git server leaves In progress for Merged lately a
+moment after the page arrives (its regions reload on `projects-changed`),
+rather than as it arrives. The views and states are unchanged.
+
 ## Open questions
 
 - **New design has nowhere to say why the kind was refused**: designs here

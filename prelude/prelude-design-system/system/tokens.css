@@ -71,9 +71,11 @@
     --ease: cubic-bezier(0.2, 0, 0, 1);
     --duration-fast: 120ms;
     --duration-pulse: 1.2s;
+    --duration-spin: 0.7s;
+    --delay-busy: 150ms;   /* how long a request is out before its control says it's busy */
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :root { --duration-fast: 0ms; --duration-pulse: 0s; }
+    :root { --duration-fast: 0ms; --duration-pulse: 0s; --duration-spin: 0s; }
   }
 }

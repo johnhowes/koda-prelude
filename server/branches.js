@@ -17,7 +17,7 @@
 // or by a pull request on the server - its worktree and branch are removed,
 // and the folder says so.
 
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
@@ -31,6 +31,25 @@ import { listSessions, updateSession } from './sessions.js';
 const NO_MONITOR = ['-c', 'core.fsmonitor=false', '-c', 'core.useBuiltinFSMonitor=false'];
 const git = (cwd, ...args) => execFileSync('git', [...NO_MONITOR, ...args], { cwd, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const gitOk = (cwd, ...args) => { try { git(cwd, ...args); return true; } catch { return false; } };
+
+// Git runs synchronously, so every call holds up every request. What a commit
+// or a blob holds never changes, so answers keyed by their ids are kept: a
+// page read again with nothing moved costs a call or two, not dozens.
+const kept = (limit) => {
+  const map = new Map();
+  return {
+    get: key => map.get(key),
+    set(key, value) {
+      map.set(key, value);
+      if (map.size > limit) map.delete(map.keys().next().value);
+      return value;
+    },
+  };
+};
+const SHA = /^[0-9a-f]{40}$/;
+const blobs = kept(4000);
+const trees = kept(200);
+const commitsSince = kept(500);
 
 const slug = text => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'design';
 
@@ -68,14 +87,51 @@ export function baselineOf(repo, branch) {
 
 /** The files under a path at a commit, relative to it: Map(relative path -> blob id). */
 export function filesAt(repo, rev, prefix) {
+  const key = SHA.test(rev) ? `${repo}\n${rev}\n${prefix}` : null;
+  const known = key && trees.get(key);
+  if (known) return new Map(known);
   const files = new Map();
   try {
     for (const line of git(repo, 'ls-tree', '-r', rev, '--', prefix).split('\n').filter(Boolean)) {
       const [meta, path] = line.split('\t');
       files.set(path.slice(prefix.length), meta.split(' ')[2]);
     }
-  } catch { /* nothing there */ }
+  } catch { return files; /* nothing there */ }
+  if (key) trees.set(key, new Map(files));
   return files;
+}
+
+/**
+ * Blobs' texts by their ids, in one git process however many there are (one
+ * `git show` each was most of a project page's time): Map(id -> text). An id
+ * git hasn't got is left out.
+ */
+export function textsOf(repo, ids) {
+  const texts = new Map();
+  const wanted = [...new Set(ids)].filter(id => {
+    const text = blobs.get(id);
+    if (text !== undefined) texts.set(id, text);
+    return text === undefined;
+  });
+  if (!wanted.length) return texts;
+  let out;
+  try {
+    out = execFileSync('git', [...NO_MONITOR, 'cat-file', '--batch'], { cwd: repo, input: `${wanted.join('\n')}\n`, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 });
+  } catch { return texts; }
+  // Each answer: "<id> <type> <size>\n<size bytes>\n", or "<id> missing\n".
+  let at = 0;
+  while (at < out.length) {
+    const end = out.indexOf(0x0a, at);
+    if (end < 0) break;
+    const [id, type, size] = out.subarray(at, end).toString('utf8').split(' ');
+    at = end + 1;
+    if (type === 'missing' || size === undefined) continue;
+    const length = Number(size);
+    const text = out.subarray(at, at + length).toString('utf8');
+    at += length + 1;
+    if (type === 'blob') texts.set(id, blobs.set(id, text));
+  }
+  return texts;
 }
 
 /** A file's text as it was at a commit, or null. */
@@ -104,11 +160,27 @@ export function beforeRemoval(repo, path) {
   } catch { return null; }
 }
 
-/** The commits on a branch since a commit that touched a design (its sessions and approved screens aside). */
-export function designCommitsSince(repo, from, branch, designId) {
+/**
+ * The commits on a branch since a commit that touched a design (its sessions
+ * and approved screens aside). `to` is the branch's name, or its tip's id:
+ * by ids, the answer is kept.
+ */
+export function designCommitsSince(repo, from, to, designId) {
+  const key = SHA.test(from) && SHA.test(to) ? `${repo}\n${from}\n${to}\n${designId}` : null;
+  const known = key && commitsSince.get(key);
+  if (known) return [...known];
   try {
-    return git(repo, 'log', '--format=%H', `${from}..refs/heads/${branch}`, '--', `prelude/${designId}`, `:(exclude)prelude/${designId}/sessions`, `:(exclude)prelude/${designId}/snapshots`).split('\n').filter(Boolean);
+    const commits = git(repo, 'log', '--format=%H', `${from}..${SHA.test(to) ? to : `refs/heads/${to}`}`, '--', `prelude/${designId}`, `:(exclude)prelude/${designId}/sessions`, `:(exclude)prelude/${designId}/snapshots`).split('\n').filter(Boolean);
+    if (key) commitsSince.set(key, [...commits]);
+    return commits;
   } catch { return []; }
+}
+
+/** Fetch a repository's remote without holding up anything else: resolves true once fetched, false if it couldn't. */
+export function fetchRemote(folderPath, ...args) {
+  return new Promise(resolve => {
+    execFile('git', [...NO_MONITOR, 'fetch', '--quiet', 'origin', ...args], { cwd: folderPath, windowsHide: true }, error => resolve(!error));
+  });
 }
 
 /**
@@ -259,6 +331,8 @@ export function createBranches({ home }) {
   // The repository a branch belongs to: recorded when it was made, or (for an
   // older record) found from the worktree.
   const parentPath = entry => entry.repo ?? canonical(join(git(entry.path, 'rev-parse', '--git-common-dir'), '..'));
+  // Branches' status, by where their refs are (status()).
+  const statuses = kept(200);
   const halfway = into => `${into} is half brought into this branch: send the agent a message to resolve the files that clash, or abandon the update, first.`;
 
   return {
@@ -358,18 +432,29 @@ export function createBranches({ home }) {
     status(entry, repo = null) {
       const parent = repo ?? parentPath(entry);
       const into = mainBranch(parent);
-      const targets = [into, ...(gitOk(parent, 'rev-parse', '--verify', '--quiet', `refs/remotes/origin/${into}`) ? [`origin/${into}`] : [])];
-      // Read from the repository by name: it holds even once the worktree is gone.
-      const tip = git(parent, 'rev-parse', `refs/heads/${entry.branch}`);
+      // Where the branch, main and the remote's main are, in one call. Read
+      // from the repository by name: it holds even once the worktree is gone.
+      const names = [`refs/heads/${entry.branch}`, `refs/heads/${into}`, `refs/remotes/origin/${into}`];
+      const refs = new Map(git(parent, 'for-each-ref', '--format=%(refname) %(objectname)', ...names).split('\n').filter(Boolean).map(line => line.split(' ')));
+      const tip = refs.get(names[0]);
+      const main = refs.get(names[1]);
+      if (!tip || !main) throw new Error(`git has no ${tip ? into : entry.branch}`);
+      const origin = refs.get(names[2]) ?? null;
+      // While none of them moves, the answer is the one worked out last time.
+      const key = `${parent}\n${entry.design}\n${entry.base}\n${tip}\n${into}\n${main}\n${origin}`;
+      const known = statuses.get(key);
+      if (known) return { ...known, alsoChanges: [...known.alsoChanges] };
+      const targets = [main, ...(origin ? [origin] : [])];
       const worked = tip !== entry.base;
       const merged = worked && targets.some(target => gitOk(parent, 'merge-base', '--is-ancestor', tip, target));
       const count = range => Number(git(parent, 'rev-list', '--count', range) || 0);
-      const behind = count(`${tip}..${into}`);
-      const ahead = count(`${into}..${tip}`);
+      const behind = count(`${tip}..${main}`);
+      const ahead = count(`${main}..${tip}`);
       const own = `prelude/${entry.design}/`;
-      const alsoChanges = git(parent, 'diff', '--name-only', `${into}...${tip}`).split('\n').filter(Boolean)
+      const alsoChanges = git(parent, 'diff', '--name-only', `${main}...${tip}`).split('\n').filter(Boolean)
         .filter(path => !path.startsWith(own) && !/\/(sessions|snapshots)\//.test(path));
-      return { into, merged, worked, behind, ahead, alsoChanges };
+      statuses.set(key, { into, merged, worked, behind, ahead, alsoChanges, tip });
+      return { into, merged, worked, behind, ahead, alsoChanges: [...alsoChanges], tip };
     },
 
     /**
@@ -512,9 +597,10 @@ export function createBranches({ home }) {
     /**
      * Remove the worktrees and branches of the folder's designs whose work is
      * in the main branch now - merged here or on the server - and keep a note
-     * of each. Returns the notes it made.
+     * of each. Returns the notes it made. With `fetch: false`, the remote's
+     * branches are as last fetched (fetchRemote fetches without blocking).
      */
-    tidy(folder, { beforeRemove = () => {} } = {}) {
+    tidy(folder, { beforeRemove = () => {}, fetch = true } = {}) {
       const notes = [];
       // Folders of tidied branches that were still in use last time.
       const leftovers = read().$leftovers ?? [];
@@ -524,7 +610,7 @@ export function createBranches({ home }) {
         all.$leftovers = still;
         write(all);
       }
-      if (remoteOf(folder.path)) gitOk(folder.path, 'fetch', '--quiet', 'origin');
+      if (fetch && remoteOf(folder.path)) gitOk(folder.path, 'fetch', '--quiet', 'origin');
       for (const entry of this.of(folder.id)) {
         let state;
         if (!entry.repo) update(entry.id, { repo: canonical(folder.path) });

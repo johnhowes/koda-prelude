@@ -166,14 +166,15 @@ function progressOf(design, dir, appExists) {
  * The designs in progress on the project's branches, each as the page shows
  * it. `branchOf(entry, design)` is where the branch stands (main.js's
  * branchState), `storiesOf(entry, design)` its stories; `finishError` is
- * { id, message } when finishing that branch just failed.
+ * { id, message } when finishing that branch just failed. `only` is one
+ * branch's worktree id, for a page that shows just that one (Push's modal).
  * @returns {Branch[]}
  */
-export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null }) {
+export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null, only = null }) {
   if (folder.branch) return [];
   const remote = remoteOf(folder.path);
   const onMain = listDesigns(folder.path);
-  return app.branches.of(folder.id)
+  return app.branches.of(folder.id).filter(entry => !only || entry.id === only)
     // A fix (step 11) is found as a design, though it isn't listed with them.
     .map(entry => ({ entry, design: listDesigns(entry.path).find(design => design.id === entry.design) ?? onMain.find(design => design.id === entry.design) ?? findDesign(entry.path, entry.design.split('/'))?.design }))
     .filter(({ design }) => design)

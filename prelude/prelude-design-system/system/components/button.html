@@ -24,3 +24,14 @@
 
 <!-- A button that reads as a link, inside a sentence or a dense row. -->
 <button class="link-btn" type="button">Copy</button>
+
+<!-- Busy: Koda sets ko-busy on the link or button pressed until its request is
+     answered. After a moment it shows a spinner beside its words; an icon
+     button's glyph pulses, as does any other link. Never write it by hand: a
+     page does nothing for it. Reach for ko-defer only for a region that's slow
+     to read on its own, and give it a skeleton. -->
+<div class="cluster actions">
+  <button class="btn primary" type="submit" ko-busy>Push and open the pull request</button>
+  <a class="btn small" href="#" ko-busy><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
+  <button class="link-btn" type="button" ko-busy>Copy</button>
+</div>

@@ -129,6 +129,15 @@
       <h3>11. Both themes, always</h3>
       <p class="secondary">Prelude follows the person’s system. Check every screen in light and dark (the switch is at the top).</p>
     </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>12. What’s pressed says it’s working</h3>
+      <p class="secondary">A press with no answer reads as a press that didn’t take. Koda marks the link or button pressed (<code>ko-busy</code>) until it’s answered, and the components show it; a page adds nothing. <code>ko-defer</code> only for a region that’s slow on its own, which is rare.</p>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><button class="btn small" type="button" ko-busy>Push and open a pull request…</button></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A “Loading…” label swapped in by script, or <code>ko-defer</code> around a whole page.</span></div>
+      </div>
+    </section>
   </div>
 
   <div class="card">

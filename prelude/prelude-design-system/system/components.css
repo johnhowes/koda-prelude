@@ -153,6 +153,23 @@
   .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: default; transform: none; }
   button[ko-busy], form[ko-loading] .btn { opacity: 0.7; }
 
+  /* Busy: the control the person pressed, while its request is out. Koda sets
+     ko-busy on that link or button until it's answered (and the events it
+     raised have run), so no page does anything for it. After a moment (a
+     quick answer doesn't flicker) a button shows a spinner beside its words,
+     an icon button's glyph pulses, and any other link's words pulse. */
+  :is(.btn, .link-btn, .icon-btn, a)[ko-busy] { cursor: progress; }
+  :is(.btn, .link-btn)[ko-busy]::after {
+    content: ""; flex: none; display: inline-block; inline-size: 0.9em; block-size: 0.9em;
+    border: 0.15em solid currentColor; border-inline-end-color: transparent; border-radius: var(--radius-full);
+    vertical-align: -0.12em;
+    animation: busy-wait var(--delay-busy) step-end, spin var(--duration-spin) linear infinite;
+  }
+  .link-btn[ko-busy]::after { margin-inline-start: var(--space-1); }
+  .icon-btn[ko-busy] > .icon, a:not(.btn, .icon-btn)[ko-busy] { animation: pulse var(--duration-pulse) var(--ease) var(--delay-busy) infinite; }
+  @keyframes busy-wait { from { opacity: 0; } }
+  @keyframes spin { to { rotate: 1turn; } }
+
   .icon-btn {
     display: inline-grid; place-items: center; min-width: var(--control-md); min-height: var(--control-md);
     padding: 0; border: var(--border-width) solid transparent; border-radius: var(--radius-md);

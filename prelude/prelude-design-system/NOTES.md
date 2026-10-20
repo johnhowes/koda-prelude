@@ -84,6 +84,14 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   side column, whose main column keeps a readable width beside it (46rem
   can't hold a `.split`). Added for "Project Landing Page"
   (prelude/project-landing-page): the project's page, its work beside its setup.
+- **Busy** (`[ko-busy]` on `.btn`, `.link-btn`, `.icon-btn` and any link;
+  tokens `--delay-busy`, `--duration-spin`; guideline 12): the control
+  pressed says it's working while its request is out - after 150ms, a
+  spinner beside a button's words, a pulsing glyph or link - with nothing
+  per page, since Koda sets the attribute. Only `button[ko-busy]` dimmed
+  before, so a link styled as a button (Push and open a pull request…) showed
+  nothing. The same rules are copied into ds/v1. Added by the fix "Requests
+  seem to take a very long time" (prelude/fixes/requests-seem-to-take-a-very-long-time-even-for-things).
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).
