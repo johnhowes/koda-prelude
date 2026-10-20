@@ -141,7 +141,3 @@ not approved, building, no app, all built. Event: `story-written`.
   session (the old page said it waits); starting it is refused, saying why.
 - **The shell's layouts** don't need approved screens to build, but Start a
   build session only shows once the design is approved.
-
-## Open questions
-
-- None open.
