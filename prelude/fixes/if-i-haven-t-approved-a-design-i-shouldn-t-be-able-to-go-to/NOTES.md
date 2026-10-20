@@ -1,0 +1,3 @@
+# Fix: If I haven't approved a design I shouldn't be able to go to…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
