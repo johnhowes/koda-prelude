@@ -25,8 +25,7 @@ the record picker, was dropped).
   drawer (`/about`) with the branch in full and its actions, what the design
   uses, and what the agent can read. An update that clashed also shows as a
   notice above the work, since it holds the branch.
-- **The chat owns its toolbar**: sessions menu, Show Agent/Tools, New
-  session.
+- **The chat owns its toolbar**: sessions menu, Show Agent/Tools.
 - **The design page is for designing only** (the person, 2026-10-20): every
   build session opens in Build (`prelude/build`), so the design page has no
   Design | App switch or App mode, no "This session builds …" notice, no
@@ -233,14 +232,13 @@ the record picker, was dropped).
   every partial it includes, since includes resolve only in the design's
   views. `_chat.eta` changed; `_surface.eta` split into it and
   `_design-bar.eta` (below), and `_window.eta` came back to include it.
-- **No New session** (the person, 2026-10-20; it never worked in the app,
-  and wasn't needed): opening a design starts one when the last is
-  finished (R-o4s), so the sessions menu lists only the sessions. To be
-  added back if it's missed. `_session.eta` came back into the design
-  (`"from"` on the page's route) with every partial it includes; only
-  `_chat.eta` changed, and `_entry.eta` (pages that differ, under the
-  review strip's decision). In the app, `GET …/sessions/new` can go too
-  (`server/main.js`), unless something else links it.
+- **No New session** (the person, 2026-10-20, and again the same day: it
+  never worked in the app, and isn't needed; to be added back if it's
+  missed): opening a design starts one when the last is finished (R-o4s),
+  so the sessions menu lists only the sessions. Built on this branch
+  (below); main still has the button until the branch is merged. In the
+  app, `GET …/sessions/new` can go too (`server/main.js`), unless
+  something else links it.
 - **The agent's changes don't reload the page on show** (the person,
   2026-10-20): reviewing was hard while every edit reloaded the frame.
   The person's own changes (page, state, size, Reset, Show, a pop-out)
@@ -335,7 +333,8 @@ Where the app differs from the screens, on purpose:
   `_dictation.eta` take an `error`.
 - **Capture** uses Edge or Chrome already on the computer, headless, over
   the DevTools protocol with Node's own WebSocket (`server/capture.js`; no
-  new dependency; `PRELUDE_BROWSER` names another).
+  new dependency; `PRELUDE_BROWSER` names another), or in the desktop app
+  its own picture of the frame (below).
 - **Dictation** runs whisper.cpp's `whisper-cli` with the downloaded ggml
   model, after `ffmpeg` turns the recording into 16 kHz WAV
   (`server/dictation.js`; `PRELUDE_WHISPER`, `PRELUDE_FFMPEG`). Both are
@@ -464,27 +463,6 @@ Where the app differs from the screens, on purpose:
   unchanged.
 
 ## Open questions
-
-- New session doesn't work in the app (the person, 2026-10-19), though
-  `…/sessions/new` is answered (`server/main.js`, `sessionId === 'new'`).
-  Probably not the redirect above: the link is in `#workspace`, whose
-  scope is `/`, so even a redirected answer lands where it should. On a
-  page already showing a new session it's the current item, and reloads
-  the same empty session. What happens when it's clicked still needs
-  reproducing.
-- A message may be images alone (rule R-b6d), but the design's route still
-  requires text: its `require` can't say "text or an image".
-- **The surface sometimes takes over the whole page** (reported
-  2026-10-19, typing in the box or Start with this). Likely cause, from
-  the code (`server/main.js`, the `/d/` routing): a design with no branch
-  is served from the project's own address; the first POST (the draft
-  kept while typing, Start with this) makes its branch, and from then on
-  every GET there is redirected to the worktree's address. The surface's
-  next reload (`design-changed`) comes back from another address, outside
-  its own scope, so Koda routes it by scope and `#main` (`ko-scope="/"`)
-  takes it. Fix in the app: answer a fragment GET there in place
-  (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
-  and keeping a draft, which lives on this machine, needn't make a branch.
 
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
