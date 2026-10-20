@@ -101,7 +101,9 @@
       if (words) bubble.textContent = words; else bubble.remove();
       const tray = entry.querySelector('.attachments');
       for (const image of images) {
+        // An .attachment, as in the tray: the system sizes .thumb only there.
         const item = document.createElement('li');
+        item.className = 'attachment';
         item.append(image.cloneNode());
         tray.append(item);
       }

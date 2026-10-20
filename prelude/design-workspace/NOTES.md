@@ -246,6 +246,8 @@ the record picker, was dropped).
   (words as text, the tray's thumbnails), marked "Sending…", into
   `#transcript` (or `#queued` while the agent works). The answer's
   transcript replaces it; a refusal's composer removes any left (R-s4n).
+  Each image goes in an `li.attachment`, since the system sizes `.thumb`
+  only inside one (it showed full size before, 2026-10-20).
 - **The agent's words stream as markdown** (the person, 2026-10-20: raw
   markdown showed until the message was whole). `_live-entry.eta` is a
   `.prose` of the words so far, rendered; each push replaces it with all
