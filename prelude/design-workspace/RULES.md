@@ -15,7 +15,7 @@
 - **R-r7h.** Each message tells the agent what the person was looking at when they sent it (the page, the state, and the size and client when they aren’t the defaults), unless they turned that off for it.
   *shown-on: /f/:folder/d/:design @ typical*
 - **R-z4k.** Messages sent while the agent is working wait, and go to it together, in the order they were written, when its turn ends.
-  *shown-on: /f/:folder/d/:design @ building*
+  *shown-on: /f/:folder/d/:design @ agent-working*
 - **R-9cn.** Stopping the agent sends nothing that was waiting: the waiting messages go back into the message box, to send or change.
 - **R-d3v.** Each session keeps its own unsent message, words and images, until it’s sent: a reload, or going to another session and back, finds it as it was left.
   *shown-on: /f/:folder/d/:design @ typical*

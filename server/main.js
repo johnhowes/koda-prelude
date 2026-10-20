@@ -1125,7 +1125,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         events: readEvents(dir).map(event => ({ name: event.name, title: event.title })),
         approved: readSnapshots(dir)?.size ?? 0,
         review,
-        stage: stageOf(review),
       };
     }
     // Plain screens/*.html (the design system's gallery): served as files.
@@ -1140,7 +1139,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       states: [], state: null, changed: false, events: [], approved: 0,
       review: { failures: [], differ: [] },
       screensOnly: true,
-      stage: null,
     };
   };
 
@@ -1168,7 +1166,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return {
       id: state.id, branch: state.branch, into: state.into, check: state.check, failures: state.failures,
       behind: state.behind, worked: state.worked, remote: state.remote,
-      building: state.building ? { title: state.building.title } : null,
       alsoChanges: state.alsoChanges ?? [],
       running: state.running ? { running: state.running.running, approved: state.running.approved, url: state.running.url, open: state.running.open, start: state.running.start } : null,
       merging: state.merging ? { from: state.merging.from, unresolved: state.merging.unresolved } : null,
@@ -1185,7 +1182,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (!hosted || design.kind === 'system') return null;
     const groups = backlogOf(dir).groups.filter(group => !isGallery(design, group));
     const approved = Boolean(readSnapshots(dir)?.size);
-    if (branch?.building) return { step: 'building', label: `Building ${branch.building.title}`, next: 'checked against the approved design' };
+    if (entry?.building) return { step: 'building', label: `Building ${entry.building.title}`, next: 'checked against the approved design' };
     if (groups.length && groups.every(group => group.built)) {
       return { step: 'built', label: 'Built', next: !branch ? 'nothing left to build' : branch.remote ? 'push and open a pull request' : `merge into ${branch.into}` };
     }
@@ -1238,8 +1235,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         // Where the latest session ended, for "Carry on from…" (R-e9t).
         ...(i === 0 && !session?.build ? { lastLine: lastLineOf(readEntries(dir, item.id)) } : {}),
       })),
-      // On a build session's page, its chat starts no design session.
-      ...(session?.build ? { builds: true } : {}),
       session: session && { id: session.id, title: session.title },
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
@@ -1254,7 +1249,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       images: [],
       draft: draftOf(session?.id ?? null),
       surface: surfaceModel,
-      stage: surfaceModel.stage,   // where the design stands, for the header (10.9)
+      stage: stageOf(surfaceModel.review),   // where the design stands, for the header (10.9)
       // What's wrong in the project, for a fix's starting points (prelude/fix-something).
       ...(design.kind === 'fix' ? { troubles: troublesOf(app, app.folders.get(parentId)) } : {}),
       ...extra,

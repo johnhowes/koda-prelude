@@ -149,21 +149,6 @@ Monthly payment and compare
 </summary>
 <ul class="menu-list">
 <li>
-<a href="/f/borrower-portal/d/loan-offers/sessions/new">
-<span class="item-title">
-<span aria-hidden="true" class="icon icon-add">
-</span>
-New session
-</span>
-<span class="muted">
-Start afresh from the design’s files and its NOTES.md
-</span>
-</a>
-</li>
-<li>
-<hr>
-</li>
-<li>
 <a aria-current="page" href="/f/borrower-portal/d/loan-offers/sessions/20261017-0912-k2pd">
 <span class="item-title">
 Monthly payment and compare
@@ -490,22 +475,14 @@ Sending…
 </li>
 </template>
 <script type="koda">
-// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { // An .attachment, as in the tray: the system sizes .thumb only there. const item = document.createElement('li'); item.className = 'attachment'; item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { const item = document.createElement('li'); item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
 </script>
 </form>
 </section>
-<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser">
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser">
 <input id="lookingSize" type="hidden" value="">
-<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;mode=design&amp;size=fit&amp;client=browser&amp;shown=0">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
-<span aria-label="Show" class="segmented" role="group">
-<a aria-current="true" class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design" title="The design’s views, with its states.">
-Design
-</a>
-<a class="btn small" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=app&amp;size=fit&amp;client=browser" ko-target="design" title="The app built on this branch, at http://localhost:5173, with its own data.">
-App
-</a>
-</span>
 <details class="menu start">
 <summary class="btn small ghost">
 <span aria-hidden="true" class="icon icon-screen">
@@ -517,7 +494,6 @@ Compare offers
 <div class="menu-list">
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button name="surface.current" type="submit" value="/offers">
@@ -554,7 +530,7 @@ Compare offers
 </button>
 </form>
 <hr>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Refresh
 </span>
@@ -588,7 +564,6 @@ State: Typical
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <button aria-current="true" name="surface.state" type="submit" value="01-typical">
@@ -658,7 +633,6 @@ Capture
 </summary>
 <form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
 <input name="name" type="hidden" value="Compare offers – Typical.png">
@@ -698,7 +672,7 @@ Fit the panel
 </summary>
 <ul class="menu-list">
 <li>
-<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Fit the panel
 </span>
@@ -708,7 +682,7 @@ As wide and tall as the panel
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=phone&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=phone&amp;client=browser" ko-target="design">
 <span class="item-title">
 Phone
 </span>
@@ -718,7 +692,7 @@ Phone
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=tablet&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=tablet&amp;client=browser" ko-target="design">
 <span class="item-title">
 Tablet
 </span>
@@ -728,7 +702,7 @@ Tablet
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=laptop&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=laptop&amp;client=browser" ko-target="design">
 <span class="item-title">
 Laptop
 </span>
@@ -738,7 +712,7 @@ Laptop
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=desktop&amp;client=browser" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=desktop&amp;client=browser" ko-target="design">
 <span class="item-title">
 Desktop
 </span>
@@ -750,7 +724,6 @@ Desktop
 <li>
 <form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
-<input name="surface.mode" type="hidden" value="design">
 <input name="surface.size" type="hidden" value="custom">
 <input name="surface.client" type="hidden" value="browser">
 <span class="item-title">
@@ -784,7 +757,7 @@ Browser
 </summary>
 <ul class="menu-list">
 <li>
-<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=browser" ko-target="design">
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
 Browser
 </span>
@@ -794,7 +767,7 @@ As a browser shows it
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;mode=design&amp;size=fit&amp;client=mobile-app" ko-target="design">
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=mobile-app" ko-target="design">
 <span class="item-title">
 Spark mobile app
 </span>
