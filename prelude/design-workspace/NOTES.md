@@ -331,6 +331,14 @@ Where the app differs from the screens, on purpose:
   (`…/live?from=N&streaming=<id>`): catching up brings that one up to date,
   or takes it away if it was saved meanwhile (`push-remove.eta`; the saved
   entry comes with the others), or adds one the page never had.
+- **The server's own events** (events.json) come from where each change
+  happens, over the page's one channel (`openChannel`, `server/main.js`):
+  `dictation-changed` from the download in `server/dictation.js` (as it
+  goes, and when the model is in), and `files-changed` from
+  `filesChanged` (`server/design-state.js`), when the watches see the
+  design's, its system's or its shell's files change. Neither event has
+  push views: the microphone (`#dictation`) and the bar (`#design-bar`)
+  reload themselves on hearing them.
 - **The pop-out window shows only its bar** (an open question since
   2026-10-19): `.window-page > .design` could never match inside
   `@scope (.design-page)`, since the window's page is the scope's root.
