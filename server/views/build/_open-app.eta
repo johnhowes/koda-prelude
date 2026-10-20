@@ -1,10 +1,18 @@
 <%/* The real app, from this branch, with its own data: opened in a window of
      its own to try it, never in the check, which shows the design's states.
      Stopped, it's started first: one address serves one branch at a time, so
-     starting it here stops whichever branch had it. `it` is the app
-     (BuildSession.app, server/check.js). */%>
+     starting it here stops whichever branch had it. Not approved yet, it's
+     approved and started in one: Prelude runs the project's own command,
+     unsandboxed, so it asks once per project, as the design bar does. `it`
+     is the app (BuildSession.app, server/check.js). */%>
 <% if (it.running) { %>
 <a class="btn small" href="<%= it.open %>" target="_blank" title="The app built on this branch, at <%= it.url %>, with its own data."><span class="icon icon-external" aria-hidden="true"></span>Open the app</a>
+<% } else if (it.approved === false) { %>
+<form action="<%= it.start %>" method="post">
+  <input type="hidden" name="back" value="<%= it.back %>">
+  <input type="hidden" name="approve" value="true">
+  <button class="btn small" type="submit" title="Prelude runs <%= it.command %> on this machine, with your permissions, outside its sandbox. Approving it once lets every branch of this project start it."><span class="icon icon-run" aria-hidden="true"></span>Approve and start the app</button>
+</form>
 <% } else { %>
 <form action="<%= it.start %>" method="post">
   <input type="hidden" name="back" value="<%= it.back %>">

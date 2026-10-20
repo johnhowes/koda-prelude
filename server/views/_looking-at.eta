@@ -3,8 +3,7 @@
      shared by every window), from the server; and the size of the surface
      beside the chat (that window's own), from the page, where the surface
      writes it in `lookingSize`. It reloads when the design changes, so it
-     follows the page and the state as they're picked. In App mode it's the
-     page in the app, with no state. */%>
+     follows the page and the state as they're picked. */%>
 <% const s = it.surface; const cur = s && (s.screens.find(x => x.id === s.current) ?? s.screens[0]);
    const state = s && (s.states.find(x => x.id === s.state) ?? s.states[0]); %>
 <% if (cur) { %><span class="sr-only">Looking at </span><%= cur.title %><% if (state) { %> · <%= state.title %><% } %><span calc-text="lookingSize.value ? ' · ' + lookingSize.value : ''"></span>

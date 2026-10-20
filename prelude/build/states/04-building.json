@@ -29,6 +29,10 @@
               "design": { "id": "loan-offers", "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" },
               "branch": "prelude/loan-offers",
               "build": { "title": "Compare offers", "stories": 1 },
+              "kind": "page",
+              "started": "yesterday at 09:30",
+              "next": { "built": false, "finish": { "url": "/f/borrower-portal", "label": "Merge into main" } },
+              "result": null,
               "app": { "running": false, "url": "http://localhost:5173", "open": "/f/borrower-portal/host/open", "start": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx/app/start", "back": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx" },
               "status": { "says": "Editing compare.eta" },
               "entries": [

@@ -20,9 +20,9 @@ import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost,
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief, storyCount } from './build.js';
-import { checkView, readCheck, screensOf, shotView, writeCheck } from './check.js';
+import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, gitState, gitUser, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
+import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, filesChangedSince, gitState, gitUser, headOf, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
@@ -1045,17 +1045,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // "screens" are its titled pages (routes.json), the frame is on the design's
   // own origin, and there is a state picker for its fake datasets.
   const viewOf = value => (value === 'window' ? 'window' : 'inline');
-  // 'design' (the design's views and states) or 'app' (the built app, 10.8).
-  const modeOf = value => (value === 'app' ? 'app' : 'design');
-  // The app built here, as the design surface shows it: its url, and whether
-  // it's running from this folder (one url serves one branch at a time). Null
-  // until the app exists here.
-  const appHere = () => {
-    const config = readHostConfig(folder.path);
-    if (!config || !appOf(folder.path).built) return null;
-    const status = app.hosts.status(folder, config);
-    return { url: config.url, running: status.running, approved: status.approved, start: `/f/${folder.id}/host/start` };
-  };
   // The folder this design's folder belongs to: itself, or (in a design's
   // worktree) the repository it's a branch of. What the agent may read, and
   // where finishing happens, are the folder's.
@@ -1079,12 +1068,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // How the pages show transcript entries, pushed or rendered.
   const view = { present: item => presentEntry(item, context), base };
 
-  // A window's way of looking at the design (Design or App, its size and its
-  // client), from a form's fields or a URL's query: the design's forms post
-  // surface.view and the like; anything else may say view, mode, size, client.
+  // A window's way of looking at the design (its size and its client), from
+  // a form's fields or a URL's query: the design's forms post surface.view
+  // and the like; anything else may say view, size, client. The real app
+  // isn't shown here: it opens in its own window, from a build session.
   const lookingOf = get => ({
     view: viewOf(get('surface.view') ?? get('view')),
-    mode: modeOf(get('surface.mode') ?? get('mode')),
     size: String(get('surface.size') ?? get('size') ?? 'fit'),
     client: get('surface.client') ?? get('client') ?? null,
   });
@@ -1093,23 +1082,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   /**
    * The design surface, as one window shows it. The page and the state on
-   * show are the design's (R-c2m); Design or App, the size and the client
-   * are the window's. Sizes and clients are the shell's (R-h9x), the custom
-   * size the design's. `showing` takes the "a state's file changed" notice,
-   * which is said once.
+   * show are the design's (R-c2m); the size and the client are the
+   * window's. Sizes and clients are the shell's (R-h9x), the custom size the
+   * design's. `showing` takes the "a state's file changed" notice, which is
+   * said once.
    */
-  const surfaceOf = ({ view: shown = 'inline', mode = 'design', size = 'fit', client = null, notice = null, showing = false } = {}) => {
+  const surfaceOf = ({ view: shown = 'inline', size = 'fit', client = null, notice = null, showing = false } = {}) => {
     const { sizes, clients } = sizesAndClients(folder.path);
     const custom = designs.custom(dKey);
-    const built = hosted ? appHere() : null;
     const reset = showing ? designs.takeReset(dKey) : null;
     const common = {
       view: shown,
-      mode: built && mode === 'app' ? 'app' : 'design',
       size,
       client: clients.some(c => c.id === client) ? client : clients[0].id,
       ...(custom ? { custom } : {}),
-      app: built,
       host: hostFor(),
       popped: designs.windows(dKey) > 0,
       notice,
@@ -1215,12 +1201,17 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     ? turns.queued(folder, design, sessionId).map(item => ({ id: item.id, message: item.text, images: item.images.length }))
     : []);
 
+  /** The design's own sessions, newest first: a build session is Build's (prelude/build). */
+  const designSessions = () => listSessions(dir).filter(item => !item.build);
+
   /**
    * The design page's model (DesignPage, server/workspace.js), for a session
    * or a new one. `surface` is the window's way of looking (surfaceOf).
    */
   const pageModel = ({ session = null, surface = {}, showing = false, extra = {} } = {}) => {
-    const all = listSessions(dir);
+    // A build session's chat lists the design's build sessions; the design
+    // page's, its design sessions only: builds are listed under Build.
+    const all = session?.build ? listSessions(dir).filter(item => item.build) : designSessions();
     const notes = notesOf(folder.path, dir, design.id);
     const system = systemFor();
     const shell = shellFor();
@@ -1244,11 +1235,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         id: item.id,
         title: item.title,
         started: startedWords(item.startedAt),
-        ...(item.build ? { build: true } : {}),
         // Where the latest session ended, for "Carry on from…" (R-e9t).
-        ...(i === 0 ? { lastLine: lastLineOf(readEntries(dir, item.id)) } : {}),
+        ...(i === 0 && !session?.build ? { lastLine: lastLineOf(readEntries(dir, item.id)) } : {}),
       })),
-      session: session && { id: session.id, title: session.title, ...(session.build ? { build: { title: session.build.title } } : {}) },
+      // On a build session's page, its chat starts no design session.
+      ...(session?.build ? { builds: true } : {}),
+      session: session && { id: session.id, title: session.title },
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
       // What the agent is writing now, so the transcript ends with it.
@@ -1299,13 +1291,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   /**
    * An overlay (a drawer or a modal over the page): alone for a fragment
-   * request; a cold load gets the page beneath - the latest session - with
-   * the overlay in its region.
+   * request; a cold load gets the page beneath - the latest design session -
+   * with the overlay in its region.
    */
   const overlay = (name, data, region) => {
     const html = render(`./${name}`, data);
     if (fragment) return send(res, 200, html);
-    const latest = listSessions(dir)[0] ?? null;
+    const latest = designSessions()[0] ?? null;
     designs.showSession(dKey, latest?.id ?? 'new');
     return designPage(200, pageModel({ session: latest, showing: true }), {
       session: latest,
@@ -1416,7 +1408,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
 
   // Capture (R-w8p, R-3qz): the page where the frame is now - a page reached
   // by its links, a drawer or modal open over it - in this window's state,
-  // size and client, or the app, as a picture, into the message box of the
+  // size and client, as a picture, into the message box of the
   // session the chat shows. Every chat reloads its tray on draft-changed.
   // The desktop app posts its own picture of the frame as it is on screen
   // (`picture`, desktop.js), kept as it is; otherwise the page is opened
@@ -1426,16 +1418,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const looking = fromForm(form);
     const answer = (data, also = '') => sendView(200, '_captured', data, also);
     const page = String(form.get('page') ?? '');
-    const built = hosted ? appHere() : null;
-    const inApp = Boolean(built) && looking.mode === 'app';
     const known = hosted ? Boolean(matchRoute(routes, page)) : listScreens(dir).some(screen => screen.file === page);
     if (!known) return answer({ error: 'That page is no longer in the design.' });
     // Where the frame is (its page says, _surface.eta): opened instead of the
     // page picked when it's an address the design answers, an overlay over
-    // its page as a deep link is. The app's pages can't say, so App mode
-    // opens the page picked.
+    // its page as a deep link is.
     const where = String(form.get('frame.at') ?? '');
-    const whereRoute = hosted && !inApp && where.startsWith('/') ? matchRoute(routes, new URL(where, 'http://localhost').pathname)?.route : null;
+    const whereRoute = hosted && where.startsWith('/') ? matchRoute(routes, new URL(where, 'http://localhost').pathname)?.route : null;
     const target = whereRoute ? where : page;
     const whole = form.get('whole') === 'true';
     const posted = form.get('picture');
@@ -1451,7 +1440,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
       const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
       const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
-      const at = inApp ? `${built.url}${page}` : hosted ? `${designOrigin(req, folder, design)}${target}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+      const at = hosted ? `${designOrigin(req, folder, design)}${target}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
       try {
         bytes = await capture({ url: at, width, height, whole, attributes: client.attributes ?? {} });
       } catch (error) {
@@ -1683,19 +1672,25 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       // Pages that differ from their approved snapshots are shown, not told.
       check: views
         ? async () => {
-          if (!isHosted(dir)) return null;
+          // The app build and the shell's layouts have no screens of their
+          // own: whether the app starts from the branch is their check, beside
+          // the chat (prelude/build). One that doesn't start isn't rendered from.
+          const started = ['app', 'layouts'].includes(buildKind(session)) ? await startApp(session) : null;
+          const approveHere = 'this repository’s design host needs your approval first. Approve and start the app beside the chat, then send the next message.';
+          if (started?.status === 'unapproved' && !isHosted(dir)) return { blocked: `Prelude didn’t start the app: ${approveHere}` };
+          if (!isHosted(dir) || started?.status === 'fails') return null;
           // A build turn may have changed the app's code, not just its views:
           // start its host afresh, so the check builds and renders what's there now.
-          if (session?.build) app.hosts.stop(folder);
+          if (session?.build && !started) app.hosts.stop(folder);
           // A host waiting for the person's approval is nobody's failure.
           const host = readHostConfig(folder.path);
           if (host && !app.hosts.approved(folder, host)) {
-            return { blocked: 'Prelude didn’t check the pages: this repository’s design host needs your approval first. Approve it in the design bar, then send the next message.' };
+            return { blocked: `Prelude didn’t check the pages: ${session?.build ? approveHere : 'this repository’s design host needs your approval first. Approve it in the design bar, then send the next message.'}` };
           }
           const review = await reviewDesign({ renderers: app.renderers, hosts: app.hosts }, { folder, design, designDir: dir });
           const result = { failures: review.failures, rendered: [...review.renders.values()].filter(Boolean).length, differ: review.differ, warnings: review.warnings, ahead: review.ahead };
           // A page's build session shows every screen's status beside the chat (R-9xe).
-          if (isPageBuild(session)) checkDone(session, review);
+          if (buildKind(session) === 'page') checkDone(session, review);
           // A feature that changed the shell on its branch: its gallery is checked too.
           if (entry && shell) {
             let changed = [];
@@ -1721,7 +1716,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         const files = app.branches.takeCameIn(entry);
         return files ? `(From Prelude, not the person: the main branch was brought into this branch, and these files came in: ${files.slice(0, 30).join(', ')}${files.length > 30 ? ', …' : ''}. Take them into account.)` : null;
       })() : null].filter(Boolean).join('\n\n') || null,
-      afterTurn: entry ? ({ message, check }) => afterBranchTurn(session, message, check) : null,
+      afterTurn: entry ? ({ message }) => afterBranchTurn(session, message) : null,
       ...buildContext(session, references),
       ...fixContext(references),
       ...askContext(references),
@@ -1824,15 +1819,19 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     };
   };
 
+  // Whether what a build session builds is built now: the app, the shell's
+  // layouts, the design-wide rules, or a page of the design.
+  const builtNow = build => Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built
+    : build.group === LAYOUTS_GROUP.key ? shellLayoutsOf(folder.path)?.unbuilt.length === 0
+    : build.group === ACROSS.key ? !backlogOf(dir).designWide.some(rule => rule.proposed)
+    : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
+
   // After a turn on a design's branch: tidy what building made redundant,
-  // commit the turn, and finish the build once its group is built. A build
-  // turn also says where the app is running and what's next (10.7).
-  const afterBranchTurn = (session, message, check = null) => {
+  // commit the turn, and finish the build once its group is built. What's
+  // next after a build turn is on its session's page (prelude/build), not
+  // in the transcript.
+  const afterBranchTurn = (session, message) => {
     const build = session?.build;
-    const ported = text => {
-      try { return Object.values(JSON.parse(text)).filter(route => typeof route?.view === 'string' && route.view.startsWith('@app/')).length; } catch { return 0; }
-    };
-    const portedBefore = build ? ported(textAt(entry.path, 'HEAD', `${PRELUDE_DIR}/${design.id}/routes.json`)) : 0;
     if (build) {
       const isApp = build.group === APP_GROUP.key;
       const designViews = join(dir, 'views');
@@ -1875,8 +1874,6 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         }
       }
     }
-    const routesFile = join(dir, 'routes.json');
-    const portedNow = build && existsSync(routesFile) ? ported(readFileSync(routesFile, 'utf8')) : 0;
     const wasMerging = app.branches.merging(entry);
     const commit = app.branches.commit(entry, `${build ? build.title : design.title}: ${message.split('\n')[0].slice(0, 60)}`);
     // An update that clashed: committed once the agent has resolved every file, else said what's left.
@@ -1885,37 +1882,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       return { type: 'note', failed: true, text: `${stillMerging.from} is still half brought in: ${stillMerging.unresolved.join(', ')} still ${stillMerging.unresolved.length === 1 ? 'has' : 'have'} conflict markers, so nothing was committed. Ask the agent to resolve ${stillMerging.unresolved.length === 1 ? 'it' : 'them'}, or abandon the update.` };
     }
     const finishedMerge = wasMerging && commit ? ` That finishes bringing ${wasMerging.from} in: every clash is resolved.` : '';
-    let done = false;
-    if (build) {
-      done = Boolean(build.group === APP_GROUP.key ? appOf(folder.path).built
-        : build.group === LAYOUTS_GROUP.key ? shellLayoutsOf(folder.path)?.unbuilt.length === 0
-        : build.group === ACROSS.key ? !backlogOf(dir).designWide.some(rule => rule.proposed)
-        : backlogOf(dir).groups.find(g => g.key === build.group)?.built);
-      if (done) {
-        app.branches.building(entry, null);
-        // Built as of this commit: a later design change makes it due again (step 10).
-        app.branches.markBuilt(entry, build.group);
-      }
+    if (build && builtNow(build)) {
+      app.branches.building(entry, null);
+      // Built as of this commit: a later design change makes it due again (step 10).
+      app.branches.markBuilt(entry, build.group);
     }
-    const committed = commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).${finishedMerge}` };
-    if (!build) return committed;
-    // What's next, from the turn's check: shown to the person, never told to the agent.
-    let into = 'main';
-    try { into = app.branches.status(entry).into; } catch { /* git couldn't say */ }
-    const running = appRunning(app, entry);
-    const next = {
-      type: 'next',
-      group: build.title,
-      built: done,
-      checked: Boolean(check),
-      failures: check?.failures?.length ?? 0,
-      differ: check?.differ?.length ?? 0,
-      app: running && { url: running.url, running: running.running, open: running.open },
-      // The first build turn that makes a route the app's own says what the design window shows now.
-      firstPorted: portedBefore === 0 && portedNow > 0,
-      finish: { url: `/f/${parentId}`, label: remoteOf(entry.path) ? 'Push and open a pull request' : `Merge into ${into}` },
-    };
-    return [committed, next];
+    return commit && { type: 'note', text: `Committed to ${entry.branch} (${commit}).${finishedMerge}` };
   };
 
   // A build session: writes the app, with its own instructions.
@@ -1985,6 +1957,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       updateUrl: entry ? `/f/${parentId}/branches/${entry.id}/update` : null,
       groups: toBuild.map(group => groupView(group, { project, session: sessionOf(group.key) })),
       unchanged: groups.filter(group => !group.toBuild && group.key !== ACROSS.key).map(group => ({ title: group.title })),
+      // Every build session of the design, newest first: they're Build's, not the design page's.
+      sessions: listSessions(dir).filter(session => session.build).map(session => ({ title: session.title, url: `${base}/sessions/${session.id}`, started: startedWords(session.startedAt) })),
     };
   }
 
@@ -2075,12 +2049,41 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   }
 
   /**
-   * Whether a session builds a page of the design, so its page is the build
-   * session's (prelude/build): the chat beside the check. The app build and
-   * the shell's layouts have no screens of their own, and stay on the design page.
+   * What a build session builds, so what its page shows beside the chat
+   * (prelude/build): 'page', a page of the design, with the check; 'app' or
+   * 'layouts', the app itself or the shell's layouts, which have no screens
+   * of their own, with what the build did. Null for a design session.
    */
-  function isPageBuild(session) {
-    return Boolean(session?.build && hosted && ![APP_GROUP.key, LAYOUTS_GROUP.key].includes(session.build.group));
+  function buildKind(session) {
+    if (!session?.build) return null;
+    return session.build.group === APP_GROUP.key ? 'app' : session.build.group === LAYOUTS_GROUP.key ? 'layouts' : 'page';
+  }
+
+  /**
+   * Whether the app starts from this branch, for the app build and the
+   * shell's layouts build: started afresh, as the turn may have changed its
+   * code, and kept with the session (result.json). "Starts" is that it
+   * answered Prelude in time, not that every page of it works. The page
+   * hears check-done down the session's channel. { status, log? }.
+   */
+  async function startApp(session) {
+    const config = readHostConfig(folder.path);
+    let start;
+    if (!config || !appOf(folder.path).built) start = { status: 'none' };
+    else if (!app.hosts.approved(folder, config)) start = { status: 'unapproved' };
+    else {
+      app.hosts.stop(folder);
+      try {
+        await app.hosts.start(folder, config);
+        start = { status: 'starts' };
+      } catch (error) {
+        start = { status: 'fails', log: String(error?.message ?? error) };
+      }
+    }
+    writeResult(dir, session.id, { at: new Date().toISOString(), start });
+    tell(app, { projects: true });
+    live.publish(sessionKey(folder, design, session.id), 'check-done');
+    return start;
   }
 
   /** A build session's check as it last ran (check.js); before its first, as the build found it. */
@@ -2089,40 +2092,67 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   }
 
   /**
+   * What an app or layouts build did (Result, check.js): its last start,
+   * the files changed since the session started (or, for one from before
+   * Prelude noted that, since the branch began), and the shell's layouts.
+   */
+  function resultOf(session, url) {
+    const changes = session.from ? { since: 'session', files: filesChangedSince(folder.path, session.from) }
+      : entry?.base ? { since: 'branch', files: filesChangedSince(folder.path, entry.base) }
+      : { since: 'branch', files: [] };
+    const shell = buildKind(session) === 'layouts' ? shellLayoutsOf(folder.path) : null;
+    const layouts = shell && [
+      ...Object.entries(shell.links).map(([name, file]) => ({ name, file: String(file).replace(/^@app\//, '') })),
+      ...shell.unbuilt.map(name => ({ name, file: null })),
+    ].sort((a, b) => a.name.localeCompare(b.name));
+    return resultView(readResult(dir, session.id), { url, changes, layouts });
+  }
+
+  /**
    * A build session's page (BuildSession, check.js): where it builds, the
    * page's stories counted, the app on this branch, what the agent is doing,
-   * and the check. While Prelude checks after a turn, the agent isn't working.
+   * what's next, and beside the chat the check (a page's build) or what the
+   * build did (the app's, the shell's layouts'). While Prelude checks after
+   * a turn, the agent isn't working.
    */
   function buildSessionView(session) {
     const url = `${base}/sessions/${session.id}`;
+    const kind = buildKind(session);
     const project = { id: parentId, name: folder.branch?.parentName ?? folder.name };
     const slug = session.build.group === ACROSS.key ? ACROSS.slug : backlogOf(dir).groups.find(group => group.key === session.build.group)?.slug;
     const running = entry && appRunning(app, entry);
+    const config = running && readHostConfig(folder.path);
     const state = turns.state(folder, design, session.id);
+    let into = 'main';
+    try { if (entry) into = app.branches.status(entry).into; } catch { /* git couldn't say */ }
     return {
       id: session.id,
       title: session.title,
       url,
+      kind,
       folder: { id: project.id, name: project.name, url: `/f/${project.id}` },
       design: { id: design.id, title: design.title, url: base },
       branch: entry?.branch ?? '',
       build: { title: session.build.title, stories: slug ? storyCount(dir, slug) : 0 },
-      app: running ? { running: running.running, url: running.url, open: running.open, start: `${url}/app/start`, back: url } : null,
+      app: running ? { running: running.running, approved: running.approved, command: config?.start ?? '', url: running.url, open: running.open, start: `${url}/app/start`, back: url } : null,
       status: state.kind === 'working' ? { says: state.step?.says ?? 'Working…' } : null,
-      check: checkView(checkOf(session), { url: `${url}/check`, building: session.build.title }),
+      // What's next (10.7): shown to the person, never told to the agent.
+      next: { built: builtNow(session.build), finish: { url: `/f/${parentId}`, label: entry && remoteOf(entry.path) ? 'Push and open a pull request' : `Merge into ${into}` } },
+      check: kind === 'page' ? checkView(checkOf(session), { url: `${url}/check`, building: session.build.title }) : null,
+      result: kind === 'page' ? null : resultOf(session, `${url}/result`),
     };
   }
 
   /**
    * A build session's page, in the app layout like the Build page: the
-   * design page's chat (its model, without the "This session builds …"
-   * notice, which the header replaces) and its channel, beside the check.
+   * design page's chat (its model, listing the design's build sessions) and
+   * its channel, beside the check or what the build did.
    */
   function buildSessionPage(status, session) {
     designs.showSession(dKey, session.id);
     const chat = pageModel({ session });
     const live = `${base}/sessions/${session.id}/live?from=${chat.entries.length}${chat.streaming ? `&streaming=${encodeURIComponent(chat.streaming.id)}` : ''}`;
-    const body = render('./build/session', { ...buildSessionView(session), chat: { ...chat, session: { id: session.id, title: session.title } }, live });
+    const body = render('./build/session', { ...buildSessionView(session), chat, live });
     if (fragment && askedFromLayout(req, 'app')) return send(res, status, body);
     return send(res, status, render('./layout', { body, path: `${base}/sessions/${session.id}`, title: `${session.build.title} · Build · ${title}`, layout: { live: APP_LIVE, needsYou: waitingOf(app) }, system: true }));
   }
@@ -2262,15 +2292,17 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     app.branches.building(entry, group);
     const connecting = isApp && appOf(folder.path).existing;
     const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : group.key === LAYOUTS_GROUP.key ? 'Build the shell’s layouts.' : `Build ${group.title}.`;
-    const session = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
+    const made = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
+    // Where the branch was when it started: what the build changed is since then.
+    const session = updateSession(dir, made.id, { from: headOf(folder.path) }) ?? made;
     const started = turns.start({ folder, design, designDir: dir, sessionId: session.id, message, stopUrl: `${base}/sessions/${session.id}/stop`, view, onIdle: sendWaiting, ...agentContext(session) });
     if (started.error) return refuse(started.error);
     return redirect(res, `${base}/sessions/${session.id}`);
   }
 
   const [section, sessionId, action, ...extra] = rest;
-  // A build session's check and app go deeper (…/check/:shot/approve, …/app/start).
-  const deeper = section === 'sessions' && ['check', 'app'].includes(action);
+  // A build session's check, result and app go deeper (…/check/:shot/approve, …/result/fix, …/app/start).
+  const deeper = section === 'sessions' && ['check', 'result', 'app'].includes(action);
   if (extra.length > 0 && !deeper) return notFound();
 
   // The page: a session, or - with none yet, or asked for - a new one.
@@ -2293,9 +2325,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // A fix's page is at its own address (prelude/fix-something): its latest
   // session, or Ask or fix's new one. A design's goes to its latest session
   // while that's still open, and is otherwise a new session, with its
-  // starting points (R-o4s).
+  // starting points (R-o4s). Its latest is never a build session: those are
+  // Build's (prelude/build).
   if (section === undefined && req.method === 'GET') {
-    const latest = starting ? null : listSessions(dir)[0];
+    const latest = starting ? null : designSessions()[0];
     if (latest && design.kind !== 'fix') {
       return stillOpen(latest) ? redirect(res, `${base}/sessions/${latest.id}`) : sessionPage(200, null);
     }
@@ -2467,7 +2500,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // Opened: a turn it finished no longer needs the person (R-8hc).
     app.seen.mark(seenKey(folder, design, session.id));
     tell(app, { needs: true });
-    return isPageBuild(session) ? buildSessionPage(200, session) : sessionPage(200, session);
+    return session.build ? buildSessionPage(200, session) : sessionPage(200, session);
   }
 
   // A build session's check (prelude/build):
@@ -2476,29 +2509,68 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   //   GET  …/sessions/:session/check/:shot           one screen; ?show= built, approved or differences
   //   POST …/sessions/:session/check/:shot/approve   approve it as built: that screen alone (R-f6w)
   //   POST …/sessions/:session/check/:shot/fix       ask the agent to fix it, as a message
-  //   POST …/sessions/:session/app/start             start the app from this branch, and come back
+  //   POST …/sessions/:session/app/start             start the app from this branch (approve=true:
+  //                                                  approve it first), and come back
+  // The app build's and the shell's layouts', which have no screens of their own:
+  //   GET  …/sessions/:session/result                whether the app starts, and what the build changed
+  //   POST …/sessions/:session/result/fix            ask the agent to make the app start, with its log
   // A part asked for cold is the page.
   if (deeper) {
-    if (!isPageBuild(session)) return notFound();
+    const kind = buildKind(session);
+    if (!kind || (action === 'check' && kind !== 'page') || (action === 'result' && kind === 'page')) return notFound();
     const sessionUrl = `${base}/sessions/${session.id}`;
     const checkUrl = `${sessionUrl}/check`;
     const [shotId, verb, ...beyond] = extra;
     if (beyond.length) return notFound();
+    const part = (status, view, data, also = '') => (fragment && askedFromLayout(req, 'app') ? sendView(status, view, data, also) : buildSessionPage(status, session));
+
+    /** A message from the person, sent now, or waiting while the agent works (R-z4k). `prompt`: what the agent is told. */
+    const ask = (text, prompt = text) => {
+      const item = { sessionId: session.id, text, images: [], lookingAt: null, prompt };
+      if (turns.busy(folder, design)) {
+        turns.enqueue(folder, design, item);
+        live.publish(sessionKey(folder, design, session.id), statusMessage(turns.state(folder, design, session.id)));
+        return fragment ? send(res, 200, envelope('queued', render('./_queued', pageModel({ session })))) : redirect(res, sessionUrl);
+      }
+      const started = startTurn(session, [item]);
+      if (!fragment) return redirect(res, sessionUrl);
+      if (started.error) return send(res, 409, render('./_entry', { entry: { type: 'note', failed: true, text: started.error }, base }));
+      return send(res, 200, '');
+    };
 
     // As the project page's Start does: one address serves one branch at a
-    // time, so this stops whichever had it. One that fails says why in its log.
+    // time, so this stops whichever had it. Approving it first is the
+    // project's, so every branch has it, as the design bar's approval is.
+    // For the app build and the shell's layouts, the start is what the page
+    // says about it, a failed one with its log.
     if (action === 'app') {
       if (shotId !== 'start' || verb !== undefined || req.method !== 'POST') return notFound();
-      await readForm(req);
+      const form = await readForm(req);
       const config = readHostConfig(folder.path);
+      if (config && form.get('approve') === 'true') app.hosts.approve(folder.branch ? { id: folder.branch.parentId } : folder, config);
       if (config && app.hosts.approved(folder, config)) {
-        try { await app.hosts.start(folder, config); } catch { /* its log says why */ }
+        if (kind === 'page') {
+          try { await app.hosts.start(folder, config); } catch { /* its log says why */ }
+        } else if (!turns.busy(folder, design)) {
+          await startApp(session);
+        }
       }
       tell(app, { projects: true });
       return redirect(res, sessionUrl);
     }
 
-    const part = (status, view, data, also = '') => (fragment && askedFromLayout(req, 'app') ? sendView(status, view, data, also) : buildSessionPage(status, session));
+    if (action === 'result') {
+      if (shotId === undefined && req.method === 'GET') return part(200, 'build/_result', buildSessionView(session));
+      // The person's words show; the agent is also told what the app printed.
+      if (shotId === 'fix' && verb === undefined && req.method === 'POST') {
+        const form = await readForm(req);
+        const text = String(form.get('message') ?? '').trim() || 'The app doesn’t start from this branch. Make it start.';
+        const log = readResult(dir, session.id)?.start?.log?.trim() ?? '';
+        return ask(text, log ? `${text}\n\n(From Prelude: starting it ended with this.)\n\n${log.split('\n').slice(-40).join('\n')}` : text);
+      }
+      return notFound();
+    }
+
     if (shotId === undefined && req.method === 'GET') return part(200, 'build/_check', buildSessionView(session));
     if (shotId === 'tally' && verb === undefined && req.method === 'GET') return part(200, 'build/_tally', buildSessionView(session).check);
     const shot = checkOf(session).shots.find(one => one.id === shotId);
@@ -2530,17 +2602,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     // session's channel, as every message the agent is sent.
     if (verb === 'fix' && req.method === 'POST') {
       const form = await readForm(req);
-      const text = String(form.get('message') ?? '').trim() || `${shot.page} in ${shot.state} differs from its approved screen. Make it match the design.`;
-      const item = { sessionId: session.id, text, images: [], lookingAt: null, prompt: text };
-      if (turns.busy(folder, design)) {
-        turns.enqueue(folder, design, item);
-        live.publish(sessionKey(folder, design, session.id), statusMessage(turns.state(folder, design, session.id)));
-        return fragment ? send(res, 200, envelope('queued', render('./_queued', pageModel({ session })))) : redirect(res, sessionUrl);
-      }
-      const started = startTurn(session, [item]);
-      if (!fragment) return redirect(res, sessionUrl);
-      if (started.error) return send(res, 409, render('./_entry', { entry: { type: 'note', failed: true, text: started.error }, base }));
-      return send(res, 200, '');
+      return ask(String(form.get('message') ?? '').trim() || `${shot.page} in ${shot.state} differs from its approved screen. Make it match the design.`);
     }
     return notFound();
   }

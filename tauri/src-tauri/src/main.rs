@@ -19,7 +19,8 @@
 //   - a native folder picker, beside the typed path;
 //   - a real window per design for Pop out, which remembers its size and
 //     place (on a second monitor, say);
-//   - Open in browser in the system's browser, not another app window;
+//   - Open in browser, and links out (a pull request, say), in the system's
+//     browser, not another app window;
 //   - Capture's What's in view as the window shows the frame, with what's
 //     typed in it, where the server could only open the page afresh.
 
@@ -262,10 +263,15 @@ fn may_pop_out(url: &Url, server: &Url) -> bool {
     same_origin(url, server) && url.path().starts_with("/f/") && url.path().ends_with("/window")
 }
 
-/// The system browser opens this server's pages and its preview origin's, over http(s).
+/// The system browser opens this server's pages and its preview origin's, over
+/// http(s), and any https address beyond them - a pull request on the Git
+/// server, say. Nothing else: no files, no other schemes.
 fn may_open_in_browser(url: &Url, server: &Url) -> bool {
-    matches!(url.scheme(), "http" | "https")
-        && (same_origin(url, server) || (url.host_str() == Some(PREVIEW_HOST) && url.port_or_known_default() == server.port_or_known_default()))
+    match url.scheme() {
+        "https" => true,
+        "http" => same_origin(url, server) || (url.host_str() == Some(PREVIEW_HOST) && url.port_or_known_default() == server.port_or_known_default()),
+        _ => false,
+    }
 }
 
 /// A window label from the page's window name: letters, digits and dashes only.
@@ -320,7 +326,7 @@ fn open_in_browser(app: AppHandle, url: String) -> Result<(), String> {
     let target: Url = url.parse().map_err(|_| format!("{url} is not an address"))?;
     let server: Url = server().parse().map_err(|_| "the server's address is not an address".to_string())?;
     if !may_open_in_browser(&target, &server) {
-        return Err(format!("{url} is not this server's or its preview's"));
+        return Err(format!("{url} is not this server's, its preview's, or an https address"));
     }
     app.opener().open_url(target.as_str(), None::<&str>).map_err(|error| error.to_string())
 }
@@ -460,13 +466,15 @@ mod tests {
     }
 
     #[test]
-    fn the_browser_opens_this_server_and_its_preview_only() {
+    fn the_browser_opens_this_server_its_preview_and_https_only() {
         let server = url("http://localhost:4200");
         assert!(may_open_in_browser(&url("http://preview.localhost:4200/f/a/d/b/files/screens/01.html"), &server));
         assert!(may_open_in_browser(&url("http://localhost:4200/"), &server));
+        assert!(may_open_in_browser(&url("https://github.com/johnhowes/koda-prelude/compare/main...prelude%2Fx?expand=1"), &server));
         assert!(!may_open_in_browser(&url("http://preview.localhost:9999/x"), &server));
+        assert!(!may_open_in_browser(&url("http://example.com"), &server));
         assert!(!may_open_in_browser(&url("file:///C:/Windows/notepad.exe"), &server));
-        assert!(!may_open_in_browser(&url("https://example.com"), &server));
+        assert!(!may_open_in_browser(&url("ms-settings:windowsupdate"), &server));
     }
 
     #[test]

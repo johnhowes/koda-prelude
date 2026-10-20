@@ -135,8 +135,20 @@ test('another stack is described, and its app is built first, on the shell’s b
 
   const folder = await (await get(`/f/${fid}`)).text();
   assert.match(folder, /The app is being built on the app shell’s branch, as ASP\.NET Core MVC with Razor\./);
+  // Its session opens in Build, like a page's (prelude/build): beside the
+  // chat, what the build did, as there are no screens to check.
   const session = await (await get(`/f/${wid}/d/app-shell/sessions/${sid}`)).text();
-  assert.match(session, /This session builds <strong>The app<\/strong> into the app, on this design’s branch/);
+  assert.match(session, /<h1>Building the app<\/h1>/);
+  assert.match(session, /<section class="panel check" aria-label="The build">/);
+  assert.match(session, /Whether it starts<span class="pill ">Not started<\/span>/, 'no app on the branch yet to start');
+  assert.match(session, /<strong>Next:<\/strong> The app isn’t built yet\./);
+  assert.doesNotMatch(session, /This session builds/);
+  assert.equal((await get(`/f/${wid}/d/app-shell/sessions/${sid}/check`)).status, 404, 'no check: it has no screens');
+  const result = await (await get(`/f/${wid}/d/app-shell/sessions/${sid}/result`)).text();
+  assert.match(result, /What the build changed/);
+  // Never on the shell's design page; listed under Build.
+  assert.doesNotMatch(await (await get(`/f/${wid}/d/app-shell/sessions/new`)).text(), /<span class="item-title">Build the app<\/span>/);
+  assert.match(await (await get(`/f/${wid}/d/app-shell/build`)).text(), /Build sessions \(1\)[\s\S]*<span class="item-title">Build the app<\/span>/);
 });
 
 test('the app is built on the shell’s branch, merged into main and tidied up; a feature then updates from main and builds', async () => {
@@ -186,7 +198,12 @@ test('the app is built on the shell’s branch, merged into main and tidied up; 
   assert.equal(ported.status, 200);
   await settled(shellDir, sid, 2);
   const notes = readEntries(shellDir, sid).filter(e => e.type === 'note').map(e => e.text);
-  assert.ok(notes.some(text => /design host needs your approval first/.test(text)), 'an unapproved host waits for the person, failing nothing');
+  assert.ok(notes.some(text => /design host needs your approval first\. Approve and start the app beside the chat/.test(text)), 'an unapproved host waits for the person, failing nothing');
+  // The app build's page asks for the approval itself (prelude/build).
+  assert.equal(JSON.parse(readFileSync(join(shellDir, 'sessions', sid, 'result.json'), 'utf8')).start.status, 'unapproved');
+  const waiting = await (await get(`/f/${wid}/d/shell/sessions/${sid}`)).text();
+  assert.match(waiting, /Approve the app to start it\.<\/strong> Prelude starts it with <code>node app\/server\.js<\/code>/);
+  assert.match(waiting, /<input type="hidden" name="approve" value="true">/);
   assert.equal(existsSync(join(shellDir, 'layouts', 'app.eta')), false, 'the shell’s copy is gone');
   assert.ok(existsSync(join(shellDir, 'layouts', 'app.json')), 'its sample data stays');
   assert.equal(appOf(shell).built, true);
@@ -372,8 +389,17 @@ test('the shell’s layouts are built before the pages that render in them (8c)'
   write(shell, 'prelude/shell/layouts.json', { app: '@app/server/views/layout', workspace: '@app/server/views/workspace' });
   await post(`/f/${wid}/d/shell/sessions/${sid}/messages`, { message: 'Ported' });
   await settled(shellDir, sid, 2);
-  assert.doesNotMatch(await (await get(`/f/${wid}/d/shell/build`)).text(), /The shell’s layouts/, 'built: every layout is the app’s');
+  const shellBuilt = await (await get(`/f/${wid}/d/shell/build`)).text();
+  assert.doesNotMatch(shellBuilt, /id="page-layouts"/, 'built: every layout is the app’s');
+  assert.match(shellBuilt, /<span class="item-title">Build: The shell’s layouts<\/span>/, 'its session is listed under Build');
   assert.equal(existsSync(join(shellDir, 'layouts', 'workspace.eta')), false, 'the shell’s copy goes');
+  // Its session opens in Build (prelude/build): each layout, and what the build changed.
+  const session = await (await get(`/f/${wid}/d/shell/sessions/${sid}`)).text();
+  assert.match(session, /<h1>Building the shell’s layouts<\/h1>/);
+  assert.match(session, /“app”<span class="pill good">Built<\/span>[\s\S]*The app’s <code>server\/views\/layout<\/code>/);
+  assert.match(session, /“workspace”<span class="pill good">Built<\/span>/);
+  assert.match(session, /<code>server\/views\/workspace\.eta<\/code>/, 'a file the build added');
+  assert.match(session, /<strong>The shell’s layouts are built\.<\/strong>/);
 
   // On the shell's branch the feature's page no longer waits, and its brief names the layout.
   const { createBranches } = await import('../server/branches.js');

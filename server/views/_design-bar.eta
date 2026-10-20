@@ -9,25 +9,26 @@
 
      The bar reads left to right as "what am I looking at", then "how am I
      looking at it":
-       - Design or App, the page (with Refresh and Open in browser, which act
-         on it), the state, and what can be done to the state's data (Send
-         event, Reset data);
+       - the page (with Refresh and Open in browser, which act on it), the
+         state, and what can be done to the state's data (Send event, Reset
+         data);
        - then this window's size and client, and Pop out.
      The page and the state are the design's, shared by every window (R-c2m).
-     Design or App, the size and the client are this window's own, in its URL.
+     The size and the client are this window's own, in its URL. The real app
+     isn't shown here: it opens in a window of its own, from a build session
+     (prelude/build).
 
      Under the bar, the review strip says what the check found, only when
      there is something to do: a page that doesn't render, pages that differ
      from their approved screens, or pages not approved yet. It lists the
      pages, and showing one puts it in the frame in its state.
 
-     `it` is the design. How this window looks (view, mode, size, client) is
+     `it` is the design. How this window looks (view, size, client) is
      `it.here` when the surface includes it, or the surface's own when it
      reloads alone; `shown` is the design's version the frame loaded. */%>
 <% const s = it.surface; const q = it.$query ?? {}; const h = it.here ?? q;
    const base = `/f/${it.folder.id}/d/${it.id}`;
    const view = h.view ?? s.view ?? 'inline';
-   const appMode = Boolean(s.app) && (h.mode ?? s.mode) === 'app';
    const pixels = value => { const n = Math.round(Number(value)); return n >= 200 && n <= 4000 ? n : null; };
    /* The custom size is the design's, remembered: every window offers it
       once it's set. Which size a window shows is still its own. */
@@ -36,7 +37,7 @@
    const sizes = custom ? [...s.sizes, custom] : s.sizes;
    const size = sizes.find(x => x.id === (h.size ?? s.size)) ?? sizes[0];
    const client = s.clients.find(x => x.id === (h.client ?? s.client)) ?? s.clients[0];
-   const here = { view, mode: appMode ? 'app' : 'design', size: size.id, client: client.id };
+   const here = { view, size: size.id, client: client.id };
    const surfaceUrl = change => `${base}/preview?${new URLSearchParams(Object.entries({ ...here, ...change }).filter(([, value]) => value !== ''))}`;
    const url = surfaceUrl({});
    const cur = s.screens.find(x => x.id === s.current) ?? s.screens[0] ?? null;
@@ -47,21 +48,13 @@
    /* Building or built (10.9): the check is the build's, against the approved
       design, so the strip reports it and never offers a first approval. */
    const building = ['building', 'built'].includes(s.stage?.step);
-   const origin = appMode ? s.app.url : s.origin;
-   /* The frame is behind when the design has changed since it loaded. The
-      app, in App mode, is the app's own to reload. */
+   const origin = s.origin;
+   /* The frame is behind when the design has changed since it loaded. */
    const shown = Number(it.shown ?? q.shown ?? s.version ?? 0);
-   const behind = !appMode && !popped && cur && Number(s.version ?? 0) > shown;
+   const behind = !popped && cur && Number(s.version ?? 0) > shown;
    const keep = include('./_keep', here);
    const windowName = `prelude-${it.folder.id}-${it.id}`; %>
 <div class="toolbar">
-  <% if (s.app) { %>
-  <span class="segmented" role="group" aria-label="Show">
-    <a class="btn small" href="<%= surfaceUrl({ mode: 'design' }) %>" ko-target="design" <% if (!appMode) { %>aria-current="true"<% } %> title="The design’s views, with its states.">Design</a>
-    <a class="btn small" href="<%= surfaceUrl({ mode: 'app' }) %>" ko-target="design" <% if (appMode) { %>aria-current="true"<% } %> title="The app built on this branch, at <%= s.app.url %>, with its own data.">App</a>
-  </span>
-  <% } %>
-
   <% if (cur) { %>
   <%~ include('./_page-menu', { screens: s.screens, cur, current, base, keep, url, origin, view }) %>
   <%/* The agent changed the design since the frame loaded: the person loads
@@ -77,9 +70,6 @@
   <% } %>
   <% } %>
 
-  <% if (appMode) { %>
-  <span class="muted">The app, with its own data</span>
-  <% } else { %>
   <% if (s.states.length > 1) { %>
   <details class="menu start">
     <summary class="btn small ghost"><span class="clip">State: <%= state.title %></span></summary>
@@ -118,11 +108,10 @@
     <button class="btn small ghost" type="submit" title="Forms have changed this state’s data. Start again from its file.">Reset data</button>
   </form>
   <% } %>
-  <% } %>
 
   <%/* Capture the page, where the frame is now (R-w8p): a page reached by
        following links in it, with a drawer or modal open over it, as this
-       window shows it (state, size, client; or the app). The picture goes in
+       window shows it (state, size, client). The picture goes in
        the message box, to send or mark up.
 
        In a browser the server opens that address afresh and pictures it, so
@@ -137,8 +126,8 @@
        reloads. The line beside it says where the picture went; the tray in
        the chat reloads on draft-changed, so a capture from the pop-out lands
        there too. */%>
-  <% if (cur && !popped && !(appMode && !s.app.running)) { %>
-  <% const shot = `${cur.title} – ${appMode ? 'the app' : state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`;
+  <% if (cur && !popped) { %>
+  <% const shot = `${cur.title} – ${state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`;
      const inView = size.width ? `${size.width} × ${size.height}` : 'As much as fits the frame'; %>
   <details class="menu start" ko-as="captureMenu">
     <summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</summary>
@@ -146,7 +135,7 @@
       <%~ keep %>
       <input type="hidden" name="name" value="<%= shot %>">
       <input type="hidden" name="page" value="<%= current %>">
-      <input type="hidden" name="state" value="<%= appMode ? '' : state?.id ?? '' %>">
+      <input type="hidden" name="state" value="<%= state?.id ?? '' %>">
       <input type="file" name="picture" accept="image/png" hidden data-capture-picture>
       <button type="submit" name="whole" value="false" ko-set="captureMenu.open = false" data-capture-shown>
         <span class="item-title">What’s in view</span>
@@ -232,12 +221,12 @@
 <%/* A state's file changed while forms had changed its data: Prelude threw
      the changes away, so the pages read the file as it is now. Said once,
      in the window that shows it next. */%>
-<% if (s.reset && !appMode) { %>
+<% if (s.reset) { %>
 <div class="notice" role="status"><p><%= s.reset %></p></div>
 <% } %>
 <% if (s.notice) { %>
 <div class="notice good" role="status"><p><%= s.notice %></p></div>
-<% } else if (!appMode && review.failures.length) { %>
+<% } else if (review.failures.length) { %>
 <div class="notice danger review" role="alert">
   <div class="cluster">
     <p><strong><%= review.failures.length === 1 ? '1 page doesn’t render.' : `${review.failures.length} pages don’t render.` %></strong> The agent is told with your next message.</p>
@@ -245,7 +234,7 @@
     <%~ include('./_review-menu', { base, keep, pages: review.failures, current, state, label: review.failures.length === 1 ? 'Show it' : 'Show one' }) %>
   </div>
 </div>
-<% } else if (!appMode && review.differ.length) { %>
+<% } else if (review.differ.length) { %>
 <div class="notice warn review" role="status">
   <div class="cluster">
     <% if (building) { %>
@@ -263,11 +252,11 @@
     </div>
   </div>
 </div>
-<% } else if (!appMode && building && s.approved && review.rendered) { %>
+<% } else if (building && s.approved && review.rendered) { %>
 <div class="notice good review" role="status">
   <p><strong><%= review.rendered === 1 ? 'The page matches' : `All ${review.rendered} pages match` %></strong> the approved design.</p>
 </div>
-<% } else if (!appMode && cur && !s.approved && !s.screensOnly) { %>
+<% } else if (cur && !s.approved && !s.screensOnly) { %>
 <div class="notice review" role="status">
   <div class="cluster">
     <% if (building) { %>
