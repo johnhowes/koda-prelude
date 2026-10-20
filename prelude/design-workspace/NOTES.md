@@ -436,6 +436,14 @@ Where the app differs from the screens, on purpose:
   (`handleDesign` with the worktree, as POSTs are) instead of redirecting;
   and keeping a draft, which lives on this machine, needn't make a branch.
 
+- **What's left of build sessions on the design page** (2026-10-20): a
+  page's build has its own page in Build (`prelude/build`), but the app
+  build and the shell's layouts build still run on the design page
+  (`isPageBuild`, `server/main.js`). Waiting on a fix that moves them to
+  Build too; then remove the chat's "This session builds …" notice, the
+  "Next:" entry, the Build pill and build sessions from the sessions menu,
+  the Design | App switch and App mode, and make `04-building` a design
+  session with the agent working.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
 
