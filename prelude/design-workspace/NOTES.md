@@ -143,6 +143,10 @@ the record picker, was dropped).
   `picture` input and submits; the server stores a posted `picture` as
   is. The whole page is opened afresh in both. The menu's hints say which,
   by client (`[data-browser-only]`, added to the shell) (R-w8p, R-3qz).
+  The preview shows both hints until it's built: the page renders in the
+  app's layout (`layouts.json`), which links the app's copy of the shell's
+  CSS (`server/public/shell.css`), without the new rule; the build copies
+  the shell's `shell.css` over it.
   To design it, the page's views came back into the design (`"from"` on
   the page, window, preview and bar routes) with every partial they
   include; only `_surface.eta` and `_design-bar.eta` changed.
