@@ -327,15 +327,13 @@ Where the app differs from the screens, on purpose:
   `_dictation.eta` take an `error`.
 - **Capture** uses Edge or Chrome already on the computer, headless, over
   the DevTools protocol with Node's own WebSocket (`server/capture.js`; no
-  new dependency; `PRELUDE_BROWSER` names another). This answers the open
-  question below for now.
+  new dependency; `PRELUDE_BROWSER` names another).
 - **Dictation** runs whisper.cpp's `whisper-cli` with the downloaded ggml
   model, after `ffmpeg` turns the recording into 16 kHz WAV
   (`server/dictation.js`; `PRELUDE_WHISPER`, `PRELUDE_FFMPEG`). Both are
   the person's to install; the microphone says so when one is missing.
   Models come from `huggingface.co/ggerganov/whisper.cpp` into
-  `~/.prelude/speech-models/`. This answers the open question below for
-  now.
+  `~/.prelude/speech-models/`.
 - **Questions** are NOTES.md's "Open questions" bullets; a question's id
   is a hash of its words, and its date is the commit that added its line
   (git blame). Decisions are the "Decisions" bullets, the bold lead as the
@@ -432,20 +430,21 @@ Where the app differs from the screens, on purpose:
   and keeping a draft, which lives on this machine, needn't make a branch.
 
 - New session doesn't work in the app (the person, 2026-10-19), though
-  `…/sessions/new` is answered (`server/main.js:2240`). What happens when
-  it's clicked isn't known yet; perhaps the same redirect as above.
-- A message may be images alone (rule R-b6d), but the design's route still
-  requires text: its `require` can't say "text or an image".
+  `…/sessions/new` is answered (`server/main.js:2382`). It's a plain link
+  in the sessions menu now (`_chat.eta`); what happens when it's clicked
+  isn't known yet, perhaps the same redirect as above.
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-- How Prelude runs Whisper (whisper.cpp through a Node binding, or a
-  sidecar binary) and on which hardware: to decide when building.
-- Capture needs a headless browser in Prelude (a new dependency), or the
-  desktop app's own capture. To decide when building.
-- In the design, a marked-up copy shows no thumbnail (the fake route can't
-  store the file), and Mark up on a just-uploaded image has nothing to open.
-- An image added in the preview (a real upload) has no full-size view: the
-  fake route doesn't add it to the session's images.
 
-- In the preview, session links, New session and the branch actions lead
-  nowhere (the design shows one session at the design's URL).
+## Limits of the preview
+
+What the fake routes can't do; the app does each.
+
+- A message may be images alone (R-b6d), but the route requires text: its
+  `require` can't say "text or an image".
+- A marked-up copy shows no thumbnail (the route can't store the file), and
+  Mark up on a just-uploaded image has nothing to open.
+- An image added in the preview (a real upload) has no full-size view: the
+  route doesn't add it to the session's images.
+- Session links, New session and the branch actions lead nowhere (the
+  design shows one session at the design's URL).
