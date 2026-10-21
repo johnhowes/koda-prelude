@@ -273,7 +273,10 @@ Every route's view is `@app` now.
   "Pull request open" is `published` in `builds.json`, set on push and never
   cleared; tidying removes a branch only when its tip is in main, so a
   branch that goes on after its PR merged (this one, after #33) or was
-  squash-merged stays, still claiming the PR is open.
+  squash-merged stays, still claiming the PR is open. Proposed check for
+  squash and rebase merges: a trial merge (`git merge-tree --write-tree`)
+  of the branch, or of the pushed commit, into main that changes nothing
+  means its work is there. `gh`/`az` PR state confirms it when available.
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
