@@ -300,6 +300,60 @@ after its PR merged, or was squash-merged, stays. Decided:
 line, the merged pull request); `page`'s other partials copied unchanged.
 New: `_cleanup`, `_cleaned` (the notice).
 
+## Built: Clean up, and a merged pull request (2026-10-21)
+
+`_work` and `_branch` are ported over the app's; `_cleanup` and `_cleaned`
+are new beside them in `server/views/projects/`. `page` was already the app's
+as designed (only its partials changed), so it's unchanged. Every route's view
+is `@app` again.
+
+- **"In main" is a trial merge** (`isIn()` in `server/branches.js`): ancestry
+  first, then `git merge-tree --write-tree`, in main when the merge's tree is
+  main's own. Kept by the two commits' ids. `status().merged` uses it, so
+  tidying takes squash-merged and rebased branches too (R-t5w).
+- **The pull request** (`pullRequest()`): a push now records the commit
+  pushed (`published.sha`); one pushed before this goes by the remote's copy
+  of the branch. `since` counts the commits after it. Home's pull-request
+  reading uses the same test. After each fetch, a pull request that changed
+  state says `projects-changed`, as a tidy does, so a merge on the Git server
+  shows within a fetch rather than at the next five-minute read.
+- **What Clean up finds** (`leftBehind()`), from git and `builds.json` only:
+  the listed branches merged with commits since, or untouched for a week
+  (R-m2e); `prelude/` branches Prelude no longer lists; folders under its
+  worktrees with no worktree in them; and `origin/prelude/` branches whose
+  work is in main. A worktree Prelude didn't make, and whatever the checkout
+  is on, are the person's own and never listed. Ids are hashes of where and
+  the name. The fetch now prunes, so a branch deleted on the server isn't
+  offered.
+- **Removing** (`clear()`) is only what was posted `true` last for an id
+  (the hidden `false` comes first), matched against what's found again, so a
+  form can't name anything else; one the agent is working in is refused even
+  if posted (R-m2e). A design host in the worktree is stopped first. A branch
+  Prelude lists leaves `builds.json`, so it leaves In progress (the design
+  can't show that). On origin it's `git push origin --delete`; one already
+  gone there just loses its copy here.
+
+What differs from the design, and why:
+
+- **"Merged 3 days ago" is when Prelude first saw it in main**, not the
+  server's merge time: git doesn't record when a squash landed. It's kept, so
+  it doesn't move.
+- **`gh`/`az` don't confirm the pull request's state** (the story suggests
+  it): they'd run synchronously on every read of the work. The trial merge
+  alone decides.
+- **A squash merge that main has changed again since** (the same lines
+  edited after it) clashes in the trial merge, so that branch reads as not in
+  main: it stays In progress, its pull request "open". Rare, but possible.
+- **`unlisted` also covers** a `prelude/` branch with no worktree whose work
+  isn't in main, and a branch in main whose worktree has uncommitted files
+  (its line then says its work is in main, and warns of the files).
+- **"Working" is known only for branches Prelude lists**: an unlisted
+  worktree has no turn Prelude could be running.
+- **A removal that fails is logged and left listed**; the notice names only
+  what went. `_cleaned` has no place to say why one couldn't go.
+
+The stories (a merged pull request, Clean up) agree with the design as built.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two

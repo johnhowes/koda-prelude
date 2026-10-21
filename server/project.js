@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { appOf, DEFAULT_STACK } from './app-config.js';
 import { backlogOf } from './backlog.js';
-import { buildable, gitState, remoteOf } from './branches.js';
+import { buildable, gitState, mainBranch, remoteOf } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
 import { ago, clip, needsOfProject, plain, sentences } from './home.js';
@@ -62,7 +62,8 @@ import { changedSinceApproved } from './workspace.js';
  * @property {number} behind
  * @property {boolean} worked
  * @property {{ name: string, pulls: string | null } | null} remote
- * @property {boolean} pushed      pushed for a pull request, not merged yet
+ * @property {boolean} pushed      pushed for a pull request
+ * @property {PullRequest | null} [pullRequest]   its pull request, once pushed
  * @property {{ title: string, stopped: boolean } | null} building
  * @property {string[]} alsoChanges
  * @property {{ running: boolean, approved: boolean, url: string, open: string } | null} running
@@ -70,6 +71,30 @@ import { changedSinceApproved } from './workspace.js';
  * @property {string | null} finishError
  * @property {Updated} [updated]   what an update from main just did: given once, with the work's answer
  * @property {Story[]} stories
+ *
+ * @typedef {object} PullRequest   A pushed branch's pull request (R-t5w).
+ * @property {'open' | 'merged'} state   merged once what was pushed is in main, however it got there
+ * @property {string} when         when it was pushed, or merged: "3 days ago"
+ * @property {number} since        commits made on the branch after it was pushed
+ *
+ * @typedef {object} Cleanup       What Prelude leaves to the person to tidy (Clean up, R-c3j).
+ * @property {string} into         the main branch
+ * @property {CleanupItem[]} items
+ * @property {Record<string, boolean | string>} removed   what Clean up removed, by id
+ *
+ * @typedef {object} CleanupItem   A branch, worktree or folder Prelude doesn't tidy by itself.
+ * @property {string} id
+ * @property {'local' | 'origin'} where
+ * @property {'pr-merged' | 'merged' | 'untouched' | 'unlisted' | 'leftover'} kind
+ * @property {string} name         the branch, origin/ and all; a leftover's folder name
+ * @property {string | null} [design]   the design's title, if known
+ * @property {string | null} [path]     its worktree or folder; null for a branch alone
+ * @property {string} when         "3 days ago": merged, made, or last committed to
+ * @property {{ commits: number, files: string[] }} [since]   a merged pull request's commits since, and their files
+ * @property {number} [ahead]      commits not in main
+ * @property {number} [uncommitted]  files changed in its worktree and never committed
+ * @property {boolean} [working]   the agent is working in it: it can't be picked (R-m2e)
+ * @property {boolean} [safe]      all its work is in main, or nothing was done: picked to start with
  *
  * @typedef {object} Updated       What the last update from main brought in (R-u9d).
  * @property {string} from         the main branch's name
@@ -141,6 +166,7 @@ import { changedSinceApproved } from './workspace.js';
  * @property {Design[]} designs      as ?q= and ?stage= leave them
  * @property {Merged[]} merged        the last five (R-f0c)
  * @property {Reference[]} references
+ * @property {Cleanup} cleanup        none unless the work is read
  */
 
 /** How the page's route filters its designs: by ?q= (title or area) and ?stage=, as routes.json says. */
@@ -209,7 +235,7 @@ function progressOf(design, dir, appExists, ext) {
  * branch's worktree id, for a page that shows just that one (Push's modal).
  * @returns {Branch[]}
  */
-export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null, updated = null, only = null }) {
+export function branchesOf(app, folder, { branchOf, storiesOf, finishError = null, updated = null, only = null, now = Date.now() }) {
   if (folder.branch) return [];
   const remote = remoteOf(folder.path);
   const onMain = listDesigns(folder.path);
@@ -222,6 +248,9 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
       const state = branchOf(entry, design);
       // A build under way with no turn running has stopped, as Home says.
       const turning = app.turns.state({ id: entry.id, path: entry.path }, design, null).kind !== 'idle';
+      // Open only until what was pushed is in main (R-t5w).
+      let pull = null;
+      if (entry.published) { try { pull = app.branches.pullRequest(entry, folder.path); } catch { pull = { state: 'open', at: entry.published.at, since: 0 }; } }
       return {
         id: entry.id,
         design: refOf(design),
@@ -236,6 +265,7 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
         worked: state.worked,
         remote: remote ? { name: 'origin', pulls: entry.published?.pr ?? pullsOf(remote) } : null,
         pushed: Boolean(entry.published),
+        pullRequest: pull && { state: pull.state, when: ago(pull.at, now), since: pull.since },
         building: entry.building ? { title: entry.building.title, stopped: !turning } : null,
         alsoChanges: state.alsoChanges ?? [],
         running: state.running ? { running: state.running.running, approved: state.running.approved, url: state.running.url, open: state.running.open } : null,
@@ -273,6 +303,45 @@ export function askedOf(app, folder, { now = Date.now() } = {}) {
       when: working ? `Started ${ago(session?.startedAt ?? record.createdAt, now)}` : ago(record.updatedAt ?? record.createdAt, now),
     };
   });
+}
+
+/**
+ * What Clean up lists (branches.js's leftBehind), each with `working`: a
+ * branch Prelude lists whose worktree the agent is in now can't be picked
+ * (R-m2e). Empty for a branch's worktree, or a folder that isn't a repository.
+ */
+export function leftBehindOf(app, folder, { now = Date.now() } = {}) {
+  if (folder.branch || gitState(folder.path) !== 'repository') return [];
+  let items;
+  try { items = app.branches.leftBehind(folder, { now }); } catch { return []; }
+  return items.map(item => ({
+    ...item,
+    working: Boolean(item.entry) && app.turns.state({ id: item.entry, path: item.path }, { id: item.design }, null).kind !== 'idle',
+  }));
+}
+
+/**
+ * Clean up's model (R-c3j, R-9xk): what Prelude leaves to the person, each
+ * with its design's title and times as words. `removed` is what Clean up just
+ * removed, by id; `gone` the items as they were before, so the notice can say which.
+ * @returns {Cleanup}
+ */
+export function cleanupOf(app, folder, { now = Date.now(), designs = [], removed = {}, gone = null } = {}) {
+  const titleOf = (item) => {
+    if (!item.design) return null;
+    const listed = designs.find(design => design.id === item.design);
+    if (listed) return listed.title;
+    const entry = item.entry && app.branches.of(folder.id).find(candidate => candidate.id === item.entry);
+    return (entry && findDesign(entry.path, item.design.split('/'))?.design?.title) ?? null;
+  };
+  const items = (gone ?? leftBehindOf(app, folder, { now })).map(item => ({
+    // A branch Prelude lists is said by its design, which its line names.
+    id: item.id, where: item.where, kind: item.kind, name: item.name, design: titleOf(item) ?? (item.entry ? item.name : null), path: item.path,
+    when: item.at ? ago(item.at, now) : 'a while ago',
+    ...(item.since ? { since: item.since } : {}),
+    ahead: item.ahead, uncommitted: item.uncommitted, working: item.working, safe: item.safe,
+  }));
+  return { into: folder.branch ? 'main' : mainBranch(folder.path), items, removed };
 }
 
 /**
@@ -335,12 +404,14 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     system: system && { id: system.id, title: system.title },
     shell: shell && { id: shell.id, title: shell.title },
     needs: work ? needsOfProject(app, folder, { now }) : [],
-    inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError, updated }) : [],
+    inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError, updated, now }) : [],
     asked: work ? askedOf(app, folder, { now }) : [],
     designs,
     merged: folder.branch ? [] : app.branches.merged(folder.id).slice(0, 5)
       .map(note => ({ id: `${note.branch}@${note.at}`, branch: note.branch, into: note.into, when: ago(note.at, now) })),
     references: app.references.of(folder.id).map(reference => ({ id: referenceId(reference.path), name: reference.name, path: reference.path })),
+    // In progress's Clean up… counts it, so it's read with the work.
+    cleanup: work ? cleanupOf(app, folder, { now, designs: all }) : { into: 'main', items: [], removed: {} },
   };
   return filterModel(model, DESIGNS_FILTER, query);
 }

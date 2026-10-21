@@ -18,8 +18,9 @@
 // and the folder says so.
 
 import { execFile, execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { basename, join, resolve, sep } from 'node:path';
 
 import { canonical, folderId } from './folders.js';
 import { listSessions, updateSession } from './sessions.js';
@@ -50,6 +51,29 @@ const SHA = /^[0-9a-f]{40}$/;
 const blobs = kept(4000);
 const trees = kept(200);
 const commitsSince = kept(500);
+const inMains = kept(2000);
+
+/**
+ * Whether all of a commit's work is in another (main): merging it would
+ * change nothing. A trial merge (git merge-tree --write-tree), which writes
+ * no ref and touches no checkout, so a squash or a rebase counts as well as
+ * a merge commit (R-t5w). One that clashes, or a git too old for it, is not
+ * in. Kept by the two commits' ids.
+ */
+export function isIn(repo, commit, target) {
+  const key = SHA.test(commit) && SHA.test(target) ? `${repo}\n${commit}\n${target}` : null;
+  const known = key && inMains.get(key);
+  if (known !== undefined) return known;
+  let answer = gitOk(repo, 'merge-base', '--is-ancestor', commit, target);
+  if (!answer) {
+    try { answer = git(repo, 'merge-tree', '--write-tree', target, commit).split('\n')[0] === git(repo, 'rev-parse', `${target}^{tree}`); } catch { answer = false; }
+  }
+  return key ? inMains.set(key, answer) : answer;
+}
+
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+const cleanupId = (where, name) => createHash('sha256').update(`${where}:${name}`).digest('hex').slice(0, 10);
+const samePath = (a, b) => canonical(a).toLowerCase() === canonical(b).toLowerCase();
 
 const slug = text => String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'design';
 
@@ -454,7 +478,8 @@ export function createBranches({ home }) {
     /**
      * Where a branch stands against the main branch:
      * { into, merged, worked, behind, ahead, alsoChanges: [paths outside its design] }.
-     * "merged" counts what the main branch here, or the remote's, already has.
+     * "merged" counts what the main branch here, or the remote's, already has,
+     * however it got there: squashed or rebased too (isIn).
      */
     status(entry, repo = null) {
       const parent = repo ?? parentPath(entry);
@@ -473,7 +498,7 @@ export function createBranches({ home }) {
       if (known) return { ...known, alsoChanges: [...known.alsoChanges] };
       const targets = [main, ...(origin ? [origin] : [])];
       const worked = tip !== entry.base;
-      const merged = worked && targets.some(target => gitOk(parent, 'merge-base', '--is-ancestor', tip, target));
+      const merged = worked && targets.some(target => isIn(parent, tip, target));
       const count = range => Number(git(parent, 'rev-list', '--count', range) || 0);
       const behind = count(`${tip}..${main}`);
       const ahead = count(`${main}..${tip}`);
@@ -622,8 +647,179 @@ export function createBranches({ home }) {
       const compare = remote.host === 'github' ? `${web}/compare/${into}...${encodeURIComponent(entry.branch)}?expand=1`
         : remote.host === 'azure' ? `${web}/pullrequestcreate?sourceRef=${encodeURIComponent(entry.branch)}&targetRef=${into}`
         : null;
-      update(entry.id, { published: { at: new Date().toISOString(), pr } });
+      // The commit pushed: its pull request is merged once that's in main (pullRequest()).
+      let sha = null;
+      try { sha = git(entry.path, 'rev-parse', 'HEAD'); } catch { /* the remote's copy says, later */ }
+      update(entry.id, { published: { at: new Date().toISOString(), pr, sha } });
       return { pushed: true, pr, compare };
+    },
+
+    /**
+     * A pushed branch's pull request (R-t5w): { state: 'open' | 'merged', at,
+     * since }, or null for one never pushed. It's merged once the commit
+     * pushed is in main, here or the remote's, however it was merged (isIn);
+     * `since` counts the commits made on the branch after it. `at` is when it
+     * was pushed, or when Prelude first saw it merged. A push from before the
+     * commit was recorded goes by the remote's copy of the branch.
+     */
+    pullRequest(entry, repo = null) {
+      const published = read()[entry.id]?.published ?? entry.published;
+      if (!published) return null;
+      const parent = repo ?? parentPath(entry);
+      const into = mainBranch(parent);
+      const names = [`refs/heads/${entry.branch}`, `refs/remotes/origin/${entry.branch}`, `refs/heads/${into}`, `refs/remotes/origin/${into}`];
+      let refs;
+      try { refs = new Map(git(parent, 'for-each-ref', '--format=%(refname) %(objectname)', ...names).split('\n').filter(Boolean).map(line => line.split(' '))); } catch { refs = new Map(); }
+      const tip = refs.get(names[0]);
+      const sha = published.sha ?? refs.get(names[1]);
+      const targets = [refs.get(names[2]), refs.get(names[3])].filter(Boolean);
+      if (!tip || !sha) return { state: 'open', at: published.at, since: 0 };
+      const merged = targets.some(target => isIn(parent, sha, target));
+      let since = 0;
+      try { since = Number(git(parent, 'rev-list', '--count', `${sha}..${tip}`) || 0); } catch { /* git couldn't say */ }
+      // When it was first seen merged, kept; a main moved back un-merges it.
+      if (merged && !published.mergedAt) update(entry.id, { published: { ...published, mergedAt: new Date().toISOString() } });
+      if (!merged && published.mergedAt) update(entry.id, { published: { ...published, mergedAt: null } });
+      const mergedAt = published.mergedAt ?? new Date().toISOString();
+      return { state: merged ? 'merged' : 'open', at: merged ? mergedAt : published.at, since };
+    },
+
+    /**
+     * What Prelude leaves to the person in a project, found in git and its own
+     * list of worktrees, never by asking the agent (Clean up, R-c3j):
+     *   pr-merged   a branch it lists whose pull request merged, with commits since
+     *   untouched   a branch it lists, made a week ago or more and never worked on (R-m2e)
+     *   merged      a prelude/ branch it no longer lists, its work in main
+     *   unlisted    one it no longer lists, with work not in main or files never committed
+     *   leftover    a folder in its worktrees with no worktree left in it
+     * and on origin, its prelude/ branches whose work is in main (merged, or
+     * pr-merged for a pull request it pushed). A worktree it didn't make (not
+     * under <home>/worktrees/<project>) and what the checkout is on are the
+     * person's own, never listed. Each: { id, where, kind, name, branch, path,
+     * entry (its id, if listed), design (an id, or null), at, ahead,
+     * uncommitted, since: { commits, files } (pr-merged), safe }.
+     */
+    leftBehind(folder, { now = Date.now() } = {}) {
+      const repo = canonical(folder.path);
+      const into = mainBranch(repo);
+      const root = join(home, 'worktrees', folder.id);
+      const mine = path => canonical(path).toLowerCase().startsWith(`${canonical(root).toLowerCase()}${sep}`);
+      const refs = new Map(git(repo, 'for-each-ref', '--format=%(refname) %(objectname) %(committerdate:iso-strict)', 'refs/heads/prelude/', 'refs/remotes/origin/prelude/', `refs/heads/${into}`, `refs/remotes/origin/${into}`)
+        .split('\n').filter(Boolean).map(line => { const [name, sha, date] = line.split(' '); return [name, { sha, date }]; }));
+      const targets = [refs.get(`refs/heads/${into}`)?.sha, refs.get(`refs/remotes/origin/${into}`)?.sha].filter(Boolean);
+      const main = targets[0];
+      if (!main) return [];
+      const inMain = sha => targets.some(target => isIn(repo, sha, target));
+      const count = range => { try { return Number(git(repo, 'rev-list', '--count', range) || 0); } catch { return 0; } };
+      const uncommitted = path => { try { return git(path, 'status', '--porcelain').split('\n').filter(Boolean).length; } catch { return 0; } };
+      const all = read();
+      const listed = this.of(folder.id);
+      const notes = all.$merged.filter(note => note.parentId === folder.id);
+      const noteOf = branch => notes.find(note => note.branch === branch) ?? null;
+      // git's worktrees: [{ path, branch }], the checkout first.
+      const worktrees = (() => { try { return git(repo, 'worktree', 'list', '--porcelain'); } catch { return ''; } })()
+        .split(/\n\s*\n/).map(block => ({
+          path: block.match(/^worktree (.+)$/m)?.[1] ?? null,
+          branch: block.match(/^branch refs\/heads\/(.+)$/m)?.[1] ?? null,
+        })).filter(worktree => worktree.path);
+      const items = [];
+
+      for (const entry of listed) {
+        const tip = refs.get(`refs/heads/${entry.branch}`)?.sha;
+        if (!tip) continue;
+        const pull = entry.published ? this.pullRequest(entry, repo) : null;
+        if (pull?.state === 'merged' && pull.since) {
+          const sha = all[entry.id]?.published?.sha ?? refs.get(`refs/remotes/origin/${entry.branch}`)?.sha;
+          let files = [];
+          try { files = git(repo, 'diff', '--name-only', sha, tip).split('\n').filter(Boolean); } catch { /* git couldn't say */ }
+          items.push({
+            where: 'local', kind: 'pr-merged', name: entry.branch, branch: entry.branch, path: entry.path, entry: entry.id, design: entry.design,
+            at: pull.at, ahead: count(`${main}..${tip}`), uncommitted: uncommitted(entry.path), since: { commits: pull.since, files }, safe: false,
+          });
+        } else if (entry.base && tip === entry.base && !entry.building && Date.parse(entry.createdAt) <= now - WEEK) {
+          const changed = uncommitted(entry.path);
+          if (!changed) items.push({ where: 'local', kind: 'untouched', name: entry.branch, branch: entry.branch, path: entry.path, entry: entry.id, design: entry.design, at: entry.createdAt, ahead: 0, uncommitted: 0, safe: true });
+        }
+      }
+
+      const listedBranches = new Set(listed.map(entry => entry.branch));
+      const checkedOut = worktrees.find(worktree => samePath(worktree.path, repo))?.branch ?? null;
+      for (const [ref, { sha, date }] of refs) {
+        if (!ref.startsWith('refs/heads/prelude/')) continue;
+        const branch = ref.slice('refs/heads/'.length);
+        if (listedBranches.has(branch) || branch === checkedOut) continue;
+        const worktree = worktrees.find(candidate => candidate.branch === branch) ?? null;
+        if (worktree && !mine(worktree.path)) continue;
+        const changed = worktree ? uncommitted(worktree.path) : 0;
+        const done = inMain(sha);
+        const note = noteOf(branch);
+        items.push({
+          where: 'local', kind: done && !changed ? 'merged' : 'unlisted', name: branch, branch, path: worktree?.path ?? null, entry: null,
+          design: note?.design ?? null, at: note?.at ?? date, ahead: done ? 0 : count(`${main}..${sha}`), uncommitted: changed, safe: done && !changed,
+        });
+      }
+
+      // Folders under Prelude's worktrees that no worktree or listed branch is in.
+      let folders = [];
+      try { folders = readdirSync(root, { withFileTypes: true }).filter(item => item.isDirectory()).map(item => join(root, item.name)); } catch { /* none yet */ }
+      for (const path of folders) {
+        if (worktrees.some(worktree => samePath(worktree.path, path))) continue;
+        if (Object.values(all).some(entry => entry?.path && samePath(entry.path, path))) continue;
+        const name = basename(path);
+        const note = notes.find(candidate => candidate.branch.replace(/\//g, '-') === name) ?? null;
+        let at = note?.at ?? null;
+        if (!at) { try { at = statSync(path).mtime.toISOString(); } catch { at = null; } }
+        items.push({ where: 'local', kind: 'leftover', name, branch: null, path, entry: null, design: note?.design ?? null, at, ahead: 0, uncommitted: 0, safe: true });
+      }
+
+      // On origin, only what's in main: a branch still being worked on there is somebody's.
+      for (const [ref, { sha, date }] of refs) {
+        if (!ref.startsWith('refs/remotes/origin/prelude/')) continue;
+        const branch = ref.slice('refs/remotes/origin/'.length);
+        if (!inMain(sha)) continue;
+        const entry = listed.find(candidate => candidate.branch === branch && candidate.published);
+        const pull = entry ? this.pullRequest(entry, repo) : null;
+        items.push({
+          where: 'origin', kind: pull?.state === 'merged' ? 'pr-merged' : 'merged', name: `origin/${branch}`, branch, path: null, entry: null,
+          design: entry?.design ?? noteOf(branch)?.design ?? null, at: pull?.state === 'merged' ? pull.at : noteOf(branch)?.at ?? date, ahead: 0, uncommitted: 0, safe: false,
+        });
+      }
+      return items.map(item => ({ id: cleanupId(item.where, item.name), ...item }));
+    },
+
+    /**
+     * Remove one thing Clean up listed, once the person picked it (R-c3j): a
+     * branch and its worktree (whatever runs from it stopped first, by
+     * `beforeRemove`), a leftover folder, or a branch on origin. A branch
+     * Prelude lists leaves its list. {} or { error }.
+     */
+    clear(folder, item, { beforeRemove = () => {} } = {}) {
+      const repo = canonical(folder.path);
+      try {
+        if (item.where === 'origin') {
+          try { git(repo, 'push', '--quiet', 'origin', '--delete', item.branch); } catch (error) {
+            // Gone from the server already: only the copy here is left.
+            if (!/remote ref does not exist/i.test(String(error.stderr ?? ''))) throw error;
+          }
+          gitOk(repo, 'branch', '-d', '-r', `origin/${item.branch}`);
+          return {};
+        }
+        if (item.path && existsSync(item.path)) {
+          try { beforeRemove({ path: item.path }); } catch { /* nothing to stop */ }
+          if (item.kind !== 'leftover') gitOk(repo, 'worktree', 'remove', '--force', item.path);
+          rmSync(item.path, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+        }
+        gitOk(repo, 'worktree', 'prune');
+        if (item.branch) git(repo, 'branch', '-D', item.branch);
+        const all = read();
+        if (item.entry) delete all[item.entry];
+        if (item.path) all.$leftovers = (all.$leftovers ?? []).filter(path => !samePath(path, item.path));
+        write(all);
+        if (item.path && existsSync(item.path)) return { error: `${item.path} is still in use, so it wasn’t removed.` };
+        return {};
+      } catch (error) {
+        return { error: gitError(`git couldn’t remove ${item.name}`, error) };
+      }
     },
 
     /**
