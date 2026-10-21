@@ -1,0 +1,169 @@
+<div class="stack gap-5">
+<div class="notice danger" role="alert">
+<p>
+<strong>
+The app doesn’t start from this branch.
+</strong>
+What it printed is below. Ask the agent to fix it: it’s sent what the app printed.
+</p>
+<form action="/f/borrower-portal/d/app-shell/sessions/20261020-1040-a2pp/result/fix" class="cluster actions" ko-attach="last" ko-target="transcript" method="post">
+<input name="type" type="hidden" value="user">
+<input name="message" type="hidden" value="The app doesn’t start from this branch. Make it start.">
+<button class="btn small" type="submit">
+Ask the agent to fix it
+</button>
+</form>
+</div>
+<section aria-label="The app" class="stack gap-1">
+<h3 class="group-label">
+The app
+</h3>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+<span class="item-text">
+<span class="item-title">
+Whether it starts
+<span class="pill danger">
+Doesn’t start
+</span>
+</span>
+<span class="muted">
+It stopped, or didn’t answer, before it was ready
+</span>
+</span>
+</span>
+</li>
+</ul>
+<details class="disclosure" open>
+<summary>
+What it printed
+</summary>
+<pre>
+The design host stopped before it was ready. $ node app/server.js node:internal/modules/cjs/loader:1228 throw err; ^ Error: Cannot find module &#39;express&#39; Require stack: - C:\Projects\borrower-portal\app\server.js at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15) at Module._load (node:internal/modules/cjs/loader:1051:27) (the host stopped, exit 1)
+</pre>
+</details>
+</section>
+<section aria-label="What the build changed" class="stack gap-1">
+<h3 class="group-label">
+What the build changed
+</h3>
+<details class="disclosure" open>
+<summary>
+Added (5)
+</summary>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+app/public/app.css
+</code>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+app/routes/index.js
+</code>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+app/server.js
+</code>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+app/views/layouts/app.eta
+</code>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+prelude/app-shell/layouts.json
+</code>
+</span>
+</span>
+</li>
+</ul>
+</details>
+<details class="disclosure" open>
+<summary>
+Changed (2)
+</summary>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+package.json
+</code>
+</span>
+</span>
+</li>
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+prelude/prelude.json
+</code>
+</span>
+</span>
+</li>
+</ul>
+</details>
+<details class="disclosure" open>
+<summary>
+Removed (1)
+</summary>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<code>
+prelude/app-shell/layouts/app.eta
+</code>
+</span>
+</span>
+</li>
+</ul>
+</details>
+<p class="muted">
+Every file changed on the branch since this session started, committed or not.
+</p>
+</section>
+<p class="muted" role="status">
+Started today at 11:06, after the agent’s last turn.
+</p>
+</div>

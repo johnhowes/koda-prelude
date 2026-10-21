@@ -19,7 +19,7 @@ import { fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, readStory, saveStory, storiesBrief, storyCount } from './build.js';
+import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, filesChangedSince, gitState, gitUser, headOf, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
@@ -1968,6 +1968,13 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         }
       }
     }
+    // A page built: its stories are done (R-p4w), marked so before the turn's
+    // commit takes it, so the page's next change starts with no story.
+    const built = Boolean(build && builtNow(build));
+    if (built) {
+      const slug = build.group === ACROSS.key ? ACROSS.slug : backlogOf(dir).groups.find(g => g.key === build.group)?.slug;
+      if (slug) markStoriesBuilt(dir, slug, { session: session.id });
+    }
     const wasMerging = app.branches.merging(entry);
     const commit = app.branches.commit(entry, `${build ? build.title : design.title}: ${message.split('\n')[0].slice(0, 60)}`);
     // An update that clashed: committed once the agent has resolved every file, else said what's left.
@@ -1976,7 +1983,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       return { type: 'note', failed: true, text: `${stillMerging.from} is still half brought in: ${stillMerging.unresolved.join(', ')} still ${stillMerging.unresolved.length === 1 ? 'has' : 'have'} conflict markers, so nothing was committed. Ask the agent to resolve ${stillMerging.unresolved.length === 1 ? 'it' : 'them'}, or abandon the update.` };
     }
     const finishedMerge = wasMerging && commit ? ` That finishes bringing ${wasMerging.from} in: every clash is resolved.` : '';
-    if (build && builtNow(build)) {
+    if (built) {
       app.branches.building(entry, null);
       // Built as of this commit: a later design change makes it due again (step 10).
       app.branches.markBuilt(entry, build.group);

@@ -1,0 +1,19 @@
+<form action="undefined/messages" class="composer" ko-attach="replace" ko-target="self" method="post">
+<input name="type" type="hidden" value="user">
+<input name="url" type="hidden" value="undefined">
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" ko-invalid-server="This is required." name="message" placeholder="Tell the agent what to build or fix. Enter to send, Shift+Enter for a new line." rows="3">
+</textarea>
+<div class="composer-foot">
+<div class="composer-tools">
+</div>
+<span class="error">
+This is required.
+</span>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+</form>

@@ -1,0 +1,12 @@
+{
+  "title": "Build: Build",
+  "claudeSessionId": "d1911b0e-d7be-4417-aa40-fed908136127",
+  "started": true,
+  "startedAt": "2026-10-21T14:52:38.890Z",
+  "updatedAt": "2026-10-21T14:56:56.515Z",
+  "build": {
+    "group": "/f/:folder/d/:design/build",
+    "title": "Build"
+  },
+  "from": "006806f4209c29e6f00c90f1ef7de99b11152dda"
+}

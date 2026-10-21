@@ -352,6 +352,23 @@ session hides (R-q3d). Starting one anyway is refused, saying why. A new state,
 changed since approved, shows it. What a build session's check finds is the
 build's, so it doesn't count as the design changing.
 
+## Built into the app (a built page's stories, 2026-10-21)
+
+- R-p4w is `markStoriesBuilt` (build.js), called from `afterBranchTurn`
+  (main.js) when a build turn finds its page built (`builtNow`), before the
+  turn's commit, so the mark is committed with the build. It sets
+  `story.json`'s `built: { at, session }`; a page with no story files is left
+  alone. Across the design's stories are marked the same way.
+- A built page's stories are read as none: `readStory` (so Build, the
+  story's page and `storiesBrief`), `hasStory` (so Write the story's brief
+  isn't a rewrite) and `storyCount`. An edit can't be saved to one
+  (`saveStory` is false). The story writer's prompt doesn't say "again" for
+  them; once the agent writes the new story, the old files are removed as a
+  rewrite removes them, and `story.json` starts afresh without `built`.
+- The views didn't change: the approved screens were the app's views as they
+  were. No state shows a page built and then changed again, so R-p4w has no
+  shown-on (see the design session of 2026-10-21).
+
 ## Open questions
 
 - **How Differences marks what changed**: a pixel overlay on the built

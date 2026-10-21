@@ -18,6 +18,5 @@
 - **R-q3d.** A page builds only from a design approved as it is now: one that changed since it was approved says so on Build, with no Start a build session, until it's approved again.
   *shown-on: /f/:folder/d/:design/build @ changed-since-approved*
 - **R-p4w.** Once a page is built, its stories are done: when the design changes that page again, Build shows it with no story yet, and its next build session isn't given the old ones.
-  *proposed*
 - **R-9xe.** A build session checks every screen again each time the agent's turn ends, including pages of the design it isn't building.
   *shown-on: /f/:folder/d/:design/sessions/:session*
