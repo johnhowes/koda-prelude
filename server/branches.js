@@ -242,6 +242,11 @@ export function filesChangedSince(worktree, base) {
   } catch { return []; }
 }
 
+/** How many files a worktree has changed and never committed, new ones included; 0 if git can't say. */
+export function uncommittedIn(worktree) {
+  try { return git(worktree, 'status', '--porcelain').split('\n').filter(Boolean).length; } catch { return 0; }
+}
+
 /** The commit a worktree is at, or null. */
 export function headOf(worktree) {
   try { return git(worktree, 'rev-parse', 'HEAD'); } catch { return null; }
@@ -711,7 +716,7 @@ export function createBranches({ home }) {
       if (!main) return [];
       const inMain = sha => targets.some(target => isIn(repo, sha, target));
       const count = range => { try { return Number(git(repo, 'rev-list', '--count', range) || 0); } catch { return 0; } };
-      const uncommitted = path => { try { return git(path, 'status', '--porcelain').split('\n').filter(Boolean).length; } catch { return 0; } };
+      const uncommitted = uncommittedIn;
       const all = read();
       const listed = this.of(folder.id);
       const notes = all.$merged.filter(note => note.parentId === folder.id);
@@ -820,6 +825,21 @@ export function createBranches({ home }) {
       } catch (error) {
         return { error: gitError(`git couldn’t remove ${item.name}`, error) };
       }
+    },
+
+    /**
+     * Discard a branch unfinished (R-w8p): its worktree and branch go without
+     * being merged or pushed, whatever runs from it stopped first, and it
+     * leaves the list, with no note under Merged lately. Its copy on origin
+     * goes only when `remote` is true, and first: one that can't go there
+     * leaves everything here as it was. {} or { error }.
+     */
+    discard(folder, entry, { remote = false, beforeRemove = () => {} } = {}) {
+      if (remote && remoteOf(folder.path)) {
+        const gone = this.clear(folder, { where: 'origin', name: `origin/${entry.branch}`, branch: entry.branch });
+        if (gone.error) return gone;
+      }
+      return this.clear(folder, { where: 'local', kind: 'discarded', name: entry.branch, branch: entry.branch, path: entry.path, entry: entry.id }, { beforeRemove });
     },
 
     /**

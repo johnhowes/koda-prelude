@@ -7,7 +7,8 @@ across projects and links here; this page holds the project's whole picture.
 
 Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
 `/f/:project/branches/:branch/publish` (Push a branch, modal),
-`/f/:project/cleanup` (Clean up, modal). Fragments:
+`/f/:project/cleanup` (Clean up, modal), `/f/:project/branches/:branch/discard`
+(Discard a branch, modal). Fragments:
 `/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
 project, app being built, update clashed (with the app on the shell's branch
 and a failed push), long names (an existing app to connect, no remote),
@@ -354,6 +355,61 @@ What differs from the design, and why:
 
 The stories (a merged pull request, Clean up) agree with the design as built.
 
+## Discard a branch unfinished (redesign, 2026-10-21)
+
+Several designs and builds were ideas that went nowhere, and there was no way
+to drop one without merging it or opening a pull request (the person). Decided:
+
+- **Discard… on the branch's own card** (the person's suggestion), not in
+  Clean up: Clean up stays for what Prelude left behind. "Discard", not
+  "Remove" (the person): it says the work is thrown away. A quiet ghost
+  button at the end of the card's actions, shown on every branch (clashed
+  update included) except one the agent is working in (R-w8p).
+- **It asks first in the modal** (`GET …/branches/:branch/discard`) and says
+  what goes: the design itself when it's never been merged (`inMain` false),
+  otherwise only the branch's changes; `ahead` commits, `uncommitted` files,
+  built stories' code, a build, files outside the design, the app running
+  from it. Nothing done on it says nothing is lost. The confirm is `.danger`.
+- **A pushed branch's copy on origin** is a separate box, never ticked to
+  start with (`remote`); deleting it closes an open pull request.
+- Discarded, the modal closes and the page refreshes; no notice (the branch
+  leaving In progress says it, as for Merge). A design in main is listed
+  under Designs again (R-2hx); the design can't show that.
+- The branch model gains `ahead`, `uncommitted`, `inMain`, `working` (Clean
+  up's items already have the first three and `working`).
+
+**Brought back for it**: `page`, `_work` (unchanged, so their includes resolve
+here) and `_branch` (changed); page's other partials copied unchanged. New:
+`_discard`. The POST answers now render the design's `page` and `_work`.
+
+## Built: Discard a branch (2026-10-21)
+
+`_branch` is ported over the app's and `_discard` is new beside it in
+`server/views/projects/`; `page` and `_work` were already the app's as
+designed, so they're unchanged. Every route's view is `@app` again.
+
+- **The model** (`branchesOf()` in `server/project.js`): `ahead` is the
+  count `status()` already made; `uncommitted` is `git status --porcelain` in
+  the branch's worktree (`uncommittedIn()` in `server/branches.js`, which
+  Clean up now shares), one more git call per branch on each read of the
+  work; `inMain` is whether the design is listed on main; `working` is
+  whether a turn is running in the worktree, as Clean up reads it.
+- **Discarding** (`discard()` in `server/branches.js`) is Clean up's `clear()`
+  for the branch: whatever runs from the worktree stopped, the worktree and
+  branch deleted, and the branch out of `builds.json`, so it leaves In
+  progress; no note under Merged lately, since nothing was merged. The copy on
+  origin goes first, and only when `remote` was posted `true` last (the hidden
+  `false` comes first) for a branch Prelude pushed: one that can't be deleted
+  there leaves everything here as it was. One already gone there just loses
+  its copy here.
+- **A turn running** refuses the POST too (409), answering the question
+  again, which then says the agent is working (R-w8p); the page doesn't offer
+  Discard then either.
+- **A discard that fails** says why beside its branch (`finishError`), with
+  the page, as a failed push does. Done, the modal closes and the page comes
+  back into `workspace` (the design's `main`), no notice, as designed.
+- The stories (a merged pull request, Clean up) were written before Discard
+  and don't mention it; nothing in them disagrees with the design.
 ## A shell's linked layouts count (fix, 2026-10-21)
 
 A shell whose layouts are all the app's files (named in its `layouts.json`,

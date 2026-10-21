@@ -320,11 +320,12 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/app                       the app, a region
     //   GET  /f/<id>/designs/new               New design, in the modal over the page
     //   GET  /f/<id>/branches/<b>/publish      Push a branch: asked first, in the modal (R-k4n)
-    //   GET  /f/<id>/cleanup                   Clean up, in the modal over the page (R-c3j)
+    //   GET  /f/<id>/branches/<b>/discard      Discard a branch unfinished: asked first, in the modal (R-w8p)
+    //   GET  /f/<id>/cleanup                  Clean up, in the modal over the page (R-c3j)
     //   POST /f/<id>/cleanup                   remove what's picked: the page, and a notice
     //   POST /f/<id>/designs                   make one: its page, or the fields refused
     //   …    /f/<id>/d/fixes/<slug or new>/…   a conversation about the project, kept on this computer (handleDesign)
-    //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
+    //   POST /f/<id>/branches/<b>/<action>     publish, discard: the page; update, abandon, merge, start: the work
     //   POST /f/<id>/app/build                 start the app build: the app
     //   POST /f/<id>/app/run                   how the app runs from here (and run it): the fields, and the app
     //   POST /f/<id>/app/run/<start or stop>   run the app from here, or stop it: the app
@@ -384,11 +385,12 @@ async function handle(req, res, app) {
     };
 
     // A design's branch: push it for a pull request (asked first), bring main
-    // into it or abandon that, merge it into main here, or start its app.
-    // Each answers with the work, as the branch's forms ask; a push, which
-    // asks in the modal, with the page and a notice.
-    const branchMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(publish|update|abandon|merge|start)$/);
-    if (branchMatch && !folder.branch && (req.method === 'POST' || (req.method === 'GET' && branchMatch[2] === 'publish'))) {
+    // into it or abandon that, merge it into main here, start its app, or
+    // discard it unfinished (asked first). Each answers with the work, as the
+    // branch's forms ask; a push and a discard, which ask in the modal, with
+    // the page (and a push with a notice).
+    const branchMatch = rest.match(/^\/branches\/([0-9a-f]+)\/(publish|update|abandon|merge|start|discard)$/);
+    if (branchMatch && !folder.branch && (req.method === 'POST' || (req.method === 'GET' && ['publish', 'discard'].includes(branchMatch[2])))) {
       const entry = app.folders.get(branchMatch[1])?.branch;
       if (!entry || entry.parentId !== folder.id) return redirect(res, here);
       const action = branchMatch[2];
@@ -400,7 +402,13 @@ async function handle(req, res, app) {
         const branch = branchNow();
         return branch ? overlay(200, render('./projects/_publish', branch)) : redirect(res, here);
       };
-      if (req.method === 'GET') return ask();
+      // Discarding is asked first too, saying what goes with it; its stories
+      // are read, since the question counts those built (R-w8p).
+      const askDiscard = (status = 200) => {
+        const branch = branchesOf(app, folder, { ...helpers, only: entry.id })[0] ?? null;
+        return branch ? overlay(status, render('./projects/_discard', branch)) : redirect(res, here);
+      };
+      if (req.method === 'GET') return action === 'discard' ? askDiscard() : ask();
 
       const form = await readForm(req);
       const design = findDesign(entry.path, entry.design.split('/'))?.design ?? { id: entry.design, title: entry.design };
@@ -413,6 +421,24 @@ async function handle(req, res, app) {
         if (!fragment) return failed || updated ? projectPage(status, { model: projectModel({ finishError, updated }) }) : redirect(res, here);
         return projectPart(status, 'projects/_work', { parts: { designs: false }, finishError, updated });
       };
+
+      // Discarded, the branch and its worktree go without a merge or a pull
+      // request; its copy on origin only if the person ticked it (the hidden
+      // false comes first, so the last value counts). Never while the agent
+      // is working in it: the question says so instead (R-w8p). The modal
+      // closes and the page shows it gone; a design in main is under Designs
+      // again (R-2hx). One that couldn't go says why beside its branch.
+      if (action === 'discard') {
+        if (app.turns.state({ id: entry.id, path: entry.path }, design, null).kind !== 'idle') return askDiscard(409);
+        const remote = form.getAll('remote').at(-1) === 'true' && Boolean(entry.published);
+        const discarded = app.branches.discard(folder, entry, { remote, beforeRemove: worktree => app.hosts.stop(worktree) });
+        if (discarded.error) console.error(`Discarding ${entry.branch} failed: ${discarded.error}`);
+        else tell(app, { needs: true, projects: true });
+        const status = discarded.error ? 409 : 200;
+        const model = projectModel(discarded.error ? { finishError: { id: entry.id, message: discarded.error } } : {});
+        if (!fragment) return discarded.error ? projectPage(status, { model }) : redirect(res, here);
+        return send(res, status, [envelope('modal?'), envelope('workspace', render('./projects/page', model))].join('\n'));
+      }
 
       // Merged, the branch leaves In progress and its design is under Designs again (R-2hx).
       if (action === 'merge') {
@@ -885,7 +911,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/publish))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }

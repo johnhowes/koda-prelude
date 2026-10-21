@@ -1,0 +1,59 @@
+<%/* Discard a branch unfinished, asked first in the modal: for an idea that
+     went nowhere. Its branch and worktree go without being merged or pushed
+     for a pull request, and the page shows it gone from In progress. It
+     says what's lost: a design never merged goes altogether (`inMain` is
+     false); one that's in main stays as it is there. `ahead` counts the
+     commits not in main, `uncommitted` the files changed and never
+     committed. A pushed branch's copy on the remote stays unless the person
+     ticks it too, never ticked to start with (R-9xk). One the agent is
+     working in can't be discarded until its turn ends (R-m2e). `it` is one
+     of the project's inProgress. */%>
+<% const w = it, stories = w.stories ?? [], into = w.into ?? 'main', title = w.design.title;
+   const fix = w.design.kind === 'fix';
+   const built = stories.filter(story => story.state === 'built').length;
+   const counted = (n, one, many) => `${n} ${n === 1 ? one : many}`; %>
+<div class="stack gap-4">
+<% if (w.working) { %>
+  <h2>The agent is working on <%= title %></h2>
+  <p class="secondary">It can’t be discarded while a turn is running in it. Once the turn ends, Discard is on its branch again.</p>
+  <div class="cluster actions">
+    <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
+  </div>
+<% } else { %>
+  <h2>Discard <%= title %>?</h2>
+  <p class="secondary">This deletes <code><%= w.branch %></code> and its worktree, without merging it into <%= into %> or opening a pull request.</p>
+  <% if (!w.worked) { %>
+  <p class="secondary">Nothing was done on it, so nothing is lost.</p>
+  <% } else { %>
+  <div class="notice danger">
+    <p><strong>What goes with it, and can’t be brought back from Prelude:</strong></p>
+    <ul class="stack gap-1">
+      <% if (!w.inMain) { %>
+      <li><%= fix ? 'The fix: none of it is in ' + into + '.' : `${title} itself: it has never been merged, so its pages, data and sessions go.` %></li>
+      <% } else { %>
+      <li>What changed on this branch. <%= title %> stays as it is in <%= into %>.</li>
+      <% } %>
+      <% if (w.ahead) { %><li><%= counted(w.ahead, 'commit', 'commits') %> not in <%= into %>.</li><% } %>
+      <% if (w.uncommitted) { %><li><%= counted(w.uncommitted, 'file', 'files') %> changed and never committed.</li><% } %>
+      <% if (built) { %><li>The code built for <%= counted(built, 'story', 'stories') %>.</li><% } %>
+      <% if (w.building) { %><li>Its build, <%= w.building.stopped ? 'stopped' : 'running' %> on <%= w.building.title %>.</li><% } %>
+      <% if (w.alsoChanges?.length) { %><li>Its changes to <%= counted(w.alsoChanges.length, 'file', 'files') %> outside the design.</li><% } %>
+      <% if (w.running?.running) { %><li>The app running from it, at <code><%= w.running.url %></code>, stops.</li><% } %>
+    </ul>
+  </div>
+  <% } %>
+  <form class="stack gap-4" action="<%= w.finish %>/discard" method="post">
+    <% if (w.pushed && w.remote) { %>
+    <fieldset class="choices">
+      <legend class="sr-only">On <%= w.remote.name %></legend>
+      <input type="hidden" name="remote" value="false">
+      <label class="choice"><input type="checkbox" name="remote" value="true"> <span>Delete it on <code><%= w.remote.name %></code> too <span class="muted">· others can see it there; deleting it closes its pull request if it’s still open</span></span></label>
+    </fieldset>
+    <% } %>
+    <div class="cluster actions">
+      <button class="btn danger" type="submit">Discard <%= fix ? 'the fix' : title %></button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+<% } %>
+</div>

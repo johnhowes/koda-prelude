@@ -1,6 +1,7 @@
 {
   "/f/:project": { "view": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/work": { "view": "@app/server/views/projects/_work", "data": "projects/:project" },
+  "/f/:project/branches/:branch/discard": { "view": "@app/server/views/projects/_discard", "title": "Discard a branch", "data": "projects/:project/inProgress/:branch", "over": "/f/:project", "in": "modal" },
   "/f/:project/cleanup": { "view": "@app/server/views/projects/_cleanup", "title": "Clean up", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
   "/f/:project/designs": { "view": "@app/server/views/projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/app": { "view": "@app/server/views/projects/_app", "data": "projects/:project" },
@@ -44,6 +45,10 @@
   "POST /f/:project/branches/:branch/merge": {
     "remove": "projects/:project/inProgress/:branch",
     "answer": { "view": "@app/server/views/projects/_work", "data": "projects/:project" }
+  },
+  "POST /f/:project/branches/:branch/discard": {
+    "remove": "projects/:project/inProgress/:branch",
+    "answer": { "into": "modal?", "also": [{ "into": "main", "view": "@app/server/views/projects/page", "data": "projects/:project" }] }
   },
   "POST /f/:project/branches/:branch/start": {
     "update": "projects/:project/inProgress/:branch",

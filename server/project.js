@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { appOf, DEFAULT_STACK } from './app-config.js';
 import { backlogOf } from './backlog.js';
-import { buildable, gitState, mainBranch, remoteOf } from './branches.js';
+import { buildable, gitState, mainBranch, remoteOf, uncommittedIn } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
 import { ago, clip, needsOfProject, plain, sentences } from './home.js';
@@ -60,6 +60,10 @@ import { changedSinceApproved } from './workspace.js';
  * @property {'passing' | 'failing' | 'waiting' | 'unchecked'} check
  * @property {number} failures
  * @property {number} behind
+ * @property {number} ahead        commits not in main
+ * @property {number} uncommitted  files changed in its worktree and never committed
+ * @property {boolean} inMain      its design is in main: discarding the branch leaves it there (R-w8p)
+ * @property {boolean} working     the agent is working in it: it can't be discarded (R-w8p)
  * @property {boolean} worked
  * @property {{ name: string, pulls: string | null } | null} remote
  * @property {boolean} pushed      pushed for a pull request
@@ -262,6 +266,10 @@ export function branchesOf(app, folder, { branchOf, storiesOf, finishError = nul
         check: state.check,
         failures: state.failures,
         behind: state.behind,
+        ahead: state.ahead ?? 0,
+        uncommitted: uncommittedIn(entry.path),
+        inMain: onMain.some(listed => listed.id === entry.design),
+        working: turning,
         worked: state.worked,
         remote: remote ? { name: 'origin', pulls: entry.published?.pr ?? pullsOf(remote) } : null,
         pushed: Boolean(entry.published),

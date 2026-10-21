@@ -1,16 +1,21 @@
 <%/* A design in progress on its branch: where the branch stands, as pills
      (its check, a build, how far behind it is, a pull request); the stories
      on it; the app running from it; what it changes outside the design; and
-     its actions: bring main in, and finish (merge here, or push for a pull
-     request, which asks first in the modal). An update from main that
-     clashed holds the branch until the agent resolves it or it's abandoned.
-     A fix's branch (step 11) is shown the same way. `it` is one of the project's inProgress; `it.finish` its
-     /branches/<id> URL. Its forms answer with the project's work.
+     its actions: bring main in, finish (merge here, or push for a pull
+     request, which asks first in the modal), or discard it unfinished,
+     which also asks first in the modal. An update from main that clashed holds
+     the branch until the agent resolves it or it's abandoned. A fix's branch
+     (step 11) is shown the same way. `it` is one of the project's
+     inProgress; `it.finish` its /branches/<id> URL. Its forms answer with
+     the project's work.
 
      A pushed branch's pull request is open until what was pushed is in main,
      however it was merged (squashed too): `pullRequest.state` is merged then,
      and `pullRequest.since` counts the commits made after the push. A
-     branch merged with nothing since is tidied up and isn't here. */%>
+     branch merged with nothing since is tidied up and isn't here.
+
+     Discard isn't offered while the agent is working on the branch
+     (`working`): its turn ends first (R-m2e). */%>
 <% const w = it, stories = w.stories ?? [], fix = w.design?.kind === 'fix';
    const prMerged = w.pushed && w.pullRequest?.state === 'merged', prOpen = w.pushed && !prMerged, since = w.pullRequest?.since ?? 0;
    const storyState = { built: { label: 'Built', tone: '' }, 'to-build': { label: 'To build', tone: '' }, building: { label: w.building?.stopped ? 'Build stopped' : 'Building', tone: w.building?.stopped ? 'warn' : 'accent' } }; %>
@@ -92,8 +97,9 @@
       <button class="btn small" type="submit" title="Call off the update: the branch goes back to how it was before it.">Abandon the update</button>
     </form>
   </div>
-  <% } else if (w.behind || w.worked) { %>
+  <% } %>
   <div class="cluster actions">
+    <% if (!w.merging?.unresolved?.length) { %>
     <% if (w.behind) { %>
     <form action="<%= w.finish %>/update" method="post" ko-target="work">
       <input type="hidden" name="behind" value="0">
@@ -109,6 +115,10 @@
       <button class="btn small" type="submit" title="Merge <%= w.branch %> into <%= w.into %>: <%= fix ? 'the fix' : 'the design and anything built, together' %>. Its worktree and branch are tidied up after.">Merge into <%= w.into %></button>
     </form>
     <% } %>
+    <% } %>
+    <% if (!w.working) { %>
+    <span class="spacer"></span>
+    <a class="btn small ghost" href="<%= w.finish %>/discard" ko-target="modal?" title="Discard <%= w.branch %> and its worktree without merging it or opening a pull request.">Discard…</a>
+    <% } %>
   </div>
-  <% } %>
 </div>
