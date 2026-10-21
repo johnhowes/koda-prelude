@@ -83,7 +83,8 @@
       "references": [
         { "id": "r-1", "name": "spark-servicing-portal-legacy-stylesheets", "path": "\\\\fileserver.lendwithspark.local\\engineering\\archive\\spark-servicing-portal-legacy-stylesheets" },
         { "id": "r-2", "name": "Spark.Mortgage.Shared.Contracts", "path": "C:\\Users\\JohnHowes\\source\\repos\\lendwithspark\\Spark.Mortgage.Shared.Contracts" }
-      ]
+      ],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
     }
   ]
 }

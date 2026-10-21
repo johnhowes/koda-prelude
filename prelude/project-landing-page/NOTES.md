@@ -275,7 +275,8 @@ tidying removes a branch only when its tip is in main, so one that goes on
 after its PR merged, or was squash-merged, stays. Decided:
 
 - **Mechanical, on the project page** (the person): Clean up… is a modal
-  (`/f/:project/cleanup`), offered under In progress with a count. It lists
+  (`/f/:project/cleanup`), a ghost button with a count in In progress's
+  heading (a muted line at the card's foot went unseen, 2026-10-21). It lists
   what Prelude won't tidy itself, each with its reason; the person picks and
   removes (R-c3j). Kinds: pull request merged with commits since, a branch
   Prelude no longer lists (work in main), nothing done (a week old, R-m2e), a
