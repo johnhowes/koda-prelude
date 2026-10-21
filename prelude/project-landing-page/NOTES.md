@@ -354,6 +354,16 @@ What differs from the design, and why:
 
 The stories (a merged pull request, Clean up) agree with the design as built.
 
+## A shell's linked layouts count (fix, 2026-10-21)
+
+A shell whose layouts are all the app's files (named in its `layouts.json`,
+with no `layouts/<name>.eta` of its own, as connecting an app it already had
+leaves it) read "nothing designed yet", `designing` (the person, Prelude
+Shell). `progressOf()` now counts its layouts as `allShellLayouts()` in
+`server/host.js` lists them, its own and the linked ones, and the linked ones
+are built: "2 layouts, all built", `built`. The design already shows this
+(typical's Spark Shell); the views and states are unchanged.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two

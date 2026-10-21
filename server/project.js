@@ -17,7 +17,7 @@ import { buildable, gitState, mainBranch, remoteOf } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { folderId } from './folders.js';
 import { ago, clip, needsOfProject, plain, sentences } from './home.js';
-import { filterModel, isHosted, shellLayouts, unbuiltLayouts } from './host.js';
+import { allShellLayouts, filterModel, isHosted, unbuiltLayouts } from './host.js';
 import { readHostConfig } from './hosts.js';
 import { listSessions, readEntries } from './sessions.js';
 import { readSnapshots } from './snapshots.js';
@@ -199,8 +199,8 @@ function componentsOf(dir) {
  * once, so `approved` is all of them or none, and none once the design has
  * changed since it was approved (it's designing again). The design system has no pages,
  * so it's counted by its components, and is built once the app exists; the
- * shell's layouts count beside its own pages, built once they're ported
- * (unbuiltLayouts says which aren't).
+ * shell's layouts (its own and those linked to the app's files) count beside
+ * its own pages, built once they're ported (unbuiltLayouts says which aren't).
  */
 function progressOf(design, dir, appExists, ext) {
   const pages = isHosted(dir)
@@ -215,7 +215,7 @@ function progressOf(design, dir, appExists, ext) {
     const stage = !components ? 'designing' : appExists ? 'built' : 'approved';
     return { components, pages: pages.length, approved, built, stage };
   }
-  const shell = design.kind === 'shell' ? { layouts: shellLayouts(dir, ext).length, layoutsBuilt: 0 } : null;
+  const shell = design.kind === 'shell' ? { layouts: allShellLayouts(dir, ext).length, layoutsBuilt: 0 } : null;
   if (shell && appExists) shell.layoutsBuilt = shell.layouts - unbuiltLayouts(dir, ext).length;
   const total = pages.length + (shell?.layouts ?? 0), done = built + (shell?.layoutsBuilt ?? 0);
   const builds = design.kind === 'design' || design.kind === 'shell';

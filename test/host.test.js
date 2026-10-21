@@ -7,7 +7,7 @@ import { after, before, test } from 'node:test';
 
 import { createDesign } from '../server/designs.js';
 import { folderId } from '../server/folders.js';
-import { designHostOf, findLayout, listStates, lookup, matchRoute, readRoutes } from '../server/host.js';
+import { allShellLayouts, designHostOf, findLayout, listStates, lookup, matchRoute, readRoutes, shellLayouts, unbuiltLayouts } from '../server/host.js';
 import { createServer } from '../server/main.js';
 import { createFakeRunner } from './fake-runner.js';
 
@@ -121,6 +121,24 @@ test('layouts come from the design, then the shell, then the repo, then nothing'
   assert.ok(findLayout({ folderPath, designDir, shellDir, name: '@app/src/views/layout' }).views.endsWith(join('src', 'views')));
   assert.equal(findLayout({ folderPath, designDir, shellDir, name: '@app/../outside' }), null, 'never outside the folder');
   assert.equal(findLayout({ folderPath, designDir, shellDir, name: 'nope' }), null);
+});
+
+test('the shell’s layouts are its own and those linked to the app’s files; only the linked are built', () => {
+  // A shell like one connected to an app it already had: its layouts are the
+  // app's files, and layouts/ holds only partials and sample data.
+  const shellDir = mkdtempSync(join(tmpdir(), 'prelude-shell-'));
+  mkdirSync(join(shellDir, 'layouts'));
+  writeFileSync(join(shellDir, 'layouts', '_bar.eta'), '<nav></nav>');
+  writeFileSync(join(shellDir, 'layouts', 'app.json'), '{}');
+  writeFileSync(join(shellDir, 'layouts.json'), JSON.stringify({ app: '@app/server/views/layout', window: '@app/server/views/window-layout' }));
+  assert.deepEqual(shellLayouts(shellDir), [], 'no layout files of its own');
+  assert.deepEqual(allShellLayouts(shellDir), ['app', 'window'], 'yet two layouts');
+  assert.deepEqual(unbuiltLayouts(shellDir), [], 'both built');
+
+  // One of its own beside them, not linked yet: three, one to build.
+  writeFileSync(join(shellDir, 'layouts', 'workspace.eta'), '<html><%~ it.body %></html>');
+  assert.deepEqual(allShellLayouts(shellDir), ['app', 'window', 'workspace']);
+  assert.deepEqual(unbuiltLayouts(shellDir), ['workspace']);
 });
 
 test('one URL, two shapes: the page in its layout, or the fragment alone', async () => {

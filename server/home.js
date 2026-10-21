@@ -25,7 +25,7 @@ import { appOf } from './app-config.js';
 import { backlogOf } from './backlog.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
 import { refuseFolder } from './folders.js';
-import { isHosted, readRoutes } from './host.js';
+import { allShellLayouts, isHosted, readRoutes } from './host.js';
 import { listSessions, readEntries } from './sessions.js';
 import { SNAPSHOTS_DIR } from './snapshots.js';
 import { seenKey, sessionKey } from './turns.js';
@@ -245,8 +245,10 @@ function whereOf(work, running, needs) {
   if (of('to-build')) return `${of('to-build').pages} ${of('to-build').pages === 1 ? 'page' : 'pages'} to build`;
   if (of('finished')) return 'Turn finished';
   const pages = isHosted(work.dir) ? pagesOf(work) : 0;
-  if (!pages) return 'Being designed';
-  const count = `${pages} ${pages === 1 ? 'page' : 'pages'}`;
+  // The shell's layouts count beside its own pages, as its project lists it.
+  const layouts = work.design.kind === 'shell' ? allShellLayouts(work.dir).length : 0;
+  if (!pages && !layouts) return 'Being designed';
+  const count = [layouts && `${layouts} ${layouts === 1 ? 'layout' : 'layouts'}`, pages && `${pages} ${pages === 1 ? 'page' : 'pages'}`].filter(Boolean).join(' and ');
   return mtime(join(work.dir, SNAPSHOTS_DIR)) ? `${count}, approved` : `${count}, none approved yet`;
 }
 
