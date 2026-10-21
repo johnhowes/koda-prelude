@@ -1,4 +1,4 @@
-<%/* Remove a branch unfinished, asked first in the modal: for an idea that
+<%/* Discard a branch unfinished, asked first in the modal: for an idea that
      went nowhere. Its branch and worktree go without being merged or pushed
      for a pull request, and the page shows it gone from In progress. It
      says what's lost: a design never merged goes altogether (`inMain` is
@@ -6,8 +6,8 @@
      commits not in main, `uncommitted` the files changed and never
      committed. A pushed branch's copy on the remote stays unless the person
      ticks it too, never ticked to start with (R-9xk). One the agent is
-     working in can't be removed until its turn ends (R-m2e). `it` is one of
-     the project's inProgress. */%>
+     working in can't be discarded until its turn ends (R-m2e). `it` is one
+     of the project's inProgress. */%>
 <% const w = it, stories = w.stories ?? [], into = w.into ?? 'main', title = w.design.title;
    const fix = w.design.kind === 'fix';
    const built = stories.filter(story => story.state === 'built').length;
@@ -15,12 +15,12 @@
 <div class="stack gap-4">
 <% if (w.working) { %>
   <h2>The agent is working on <%= title %></h2>
-  <p class="secondary">It can’t be removed while a turn is running in it. Once the turn ends, Remove is on its branch again.</p>
+  <p class="secondary">It can’t be discarded while a turn is running in it. Once the turn ends, Discard is on its branch again.</p>
   <div class="cluster actions">
     <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
   </div>
 <% } else { %>
-  <h2>Remove <%= title %>?</h2>
+  <h2>Discard <%= title %>?</h2>
   <p class="secondary">This deletes <code><%= w.branch %></code> and its worktree, without merging it into <%= into %> or opening a pull request.</p>
   <% if (!w.worked) { %>
   <p class="secondary">Nothing was done on it, so nothing is lost.</p>
@@ -42,7 +42,7 @@
     </ul>
   </div>
   <% } %>
-  <form class="stack gap-4" action="<%= w.finish %>/remove" method="post">
+  <form class="stack gap-4" action="<%= w.finish %>/discard" method="post">
     <% if (w.pushed && w.remote) { %>
     <fieldset class="choices">
       <legend class="sr-only">On <%= w.remote.name %></legend>
@@ -51,7 +51,7 @@
     </fieldset>
     <% } %>
     <div class="cluster actions">
-      <button class="btn danger" type="submit">Remove <%= fix ? 'the fix' : title %></button>
+      <button class="btn danger" type="submit">Discard <%= fix ? 'the fix' : title %></button>
       <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
     </div>
   </form>

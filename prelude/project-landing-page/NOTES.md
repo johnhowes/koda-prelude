@@ -7,8 +7,8 @@ across projects and links here; this page holds the project's whole picture.
 
 Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
 `/f/:project/branches/:branch/publish` (Push a branch, modal),
-`/f/:project/cleanup` (Clean up, modal), `/f/:project/branches/:branch/remove`
-(Remove a branch, modal). Fragments:
+`/f/:project/cleanup` (Clean up, modal), `/f/:project/branches/:branch/discard`
+(Discard a branch, modal). Fragments:
 `/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
 project, app being built, update clashed (with the app on the shell's branch
 and a failed push), long names (an existing app to connect, no remote),
@@ -355,23 +355,24 @@ What differs from the design, and why:
 
 The stories (a merged pull request, Clean up) agree with the design as built.
 
-## Remove a branch unfinished (redesign, 2026-10-21)
+## Discard a branch unfinished (redesign, 2026-10-21)
 
 Several designs and builds were ideas that went nowhere, and there was no way
 to drop one without merging it or opening a pull request (the person). Decided:
 
-- **Remove… on the branch's own card** (the person's suggestion), not in Clean
-  up: Clean up stays for what Prelude left behind. A quiet ghost button at
-  the end of the card's actions, shown on every branch (clashed update
-  included) except one the agent is working in (R-w8p).
-- **It asks first in the modal** (`GET …/branches/:branch/remove`) and says
+- **Discard… on the branch's own card** (the person's suggestion), not in
+  Clean up: Clean up stays for what Prelude left behind. "Discard", not
+  "Remove" (the person): it says the work is thrown away. A quiet ghost
+  button at the end of the card's actions, shown on every branch (clashed
+  update included) except one the agent is working in (R-w8p).
+- **It asks first in the modal** (`GET …/branches/:branch/discard`) and says
   what goes: the design itself when it's never been merged (`inMain` false),
   otherwise only the branch's changes; `ahead` commits, `uncommitted` files,
   built stories' code, a build, files outside the design, the app running
   from it. Nothing done on it says nothing is lost. The confirm is `.danger`.
 - **A pushed branch's copy on origin** is a separate box, never ticked to
   start with (`remote`); deleting it closes an open pull request.
-- Removed, the modal closes and the page refreshes; no notice (the branch
+- Discarded, the modal closes and the page refreshes; no notice (the branch
   leaving In progress says it, as for Merge). A design in main is listed
   under Designs again (R-2hx); the design can't show that.
 - The branch model gains `ahead`, `uncommitted`, `inMain`, `working` (Clean
@@ -379,7 +380,7 @@ to drop one without merging it or opening a pull request (the person). Decided:
 
 **Brought back for it**: `page`, `_work` (unchanged, so their includes resolve
 here) and `_branch` (changed); page's other partials copied unchanged. New:
-`_remove`. The POST answers now render the design's `page` and `_work`.
+`_discard`. The POST answers now render the design's `page` and `_work`.
 
 ## Open questions
 

@@ -27,6 +27,6 @@
 - **R-9xk.** Branches on the remote are listed apart in Clean up, with a warning that others can see them, and are never picked to start with.
   *shown-on: /f/:project/cleanup @ typical*
 - **R-m2e.** A branch or worktree the agent is working in can't be picked in Clean up, and a branch with nothing done is listed only once it's a week old.
-- **R-w8p.** Any branch in progress can be removed unfinished, without merging it or opening a pull request, after a question that says what goes with it (a design never merged goes altogether); its copy on the remote goes only if the person ticks it, and Remove isn't offered while the agent is working on the branch.
-  *shown-on: /f/:project/branches/:branch/remove @ typical*
+- **R-w8p.** Any branch in progress can be discarded unfinished, without merging it or opening a pull request, after a question that says what goes with it (a design never merged goes altogether); its copy on the remote goes only if the person ticks it, and Discard isn't offered while the agent is working on the branch.
+  *shown-on: /f/:project/branches/:branch/discard @ typical*
   *proposed*

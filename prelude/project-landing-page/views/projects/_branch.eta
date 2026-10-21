@@ -2,8 +2,8 @@
      (its check, a build, how far behind it is, a pull request); the stories
      on it; the app running from it; what it changes outside the design; and
      its actions: bring main in, finish (merge here, or push for a pull
-     request, which asks first in the modal), or remove it unfinished, which
-     also asks first in the modal. An update from main that clashed holds
+     request, which asks first in the modal), or discard it unfinished,
+     which also asks first in the modal. An update from main that clashed holds
      the branch until the agent resolves it or it's abandoned. A fix's branch
      (step 11) is shown the same way. `it` is one of the project's
      inProgress; `it.finish` its /branches/<id> URL. Its forms answer with
@@ -14,7 +14,7 @@
      and `pullRequest.since` counts the commits made after the push. A
      branch merged with nothing since is tidied up and isn't here.
 
-     Remove isn't offered while the agent is working on the branch
+     Discard isn't offered while the agent is working on the branch
      (`working`): its turn ends first (R-m2e). */%>
 <% const w = it, stories = w.stories ?? [], fix = w.design?.kind === 'fix';
    const prMerged = w.pushed && w.pullRequest?.state === 'merged', prOpen = w.pushed && !prMerged, since = w.pullRequest?.since ?? 0;
@@ -118,7 +118,7 @@
     <% } %>
     <% if (!w.working) { %>
     <span class="spacer"></span>
-    <a class="btn small ghost" href="<%= w.finish %>/remove" ko-target="modal?" title="Remove <%= w.branch %> and its worktree without merging it or opening a pull request.">Remove…</a>
+    <a class="btn small ghost" href="<%= w.finish %>/discard" ko-target="modal?" title="Discard <%= w.branch %> and its worktree without merging it or opening a pull request.">Discard…</a>
     <% } %>
   </div>
 </div>
