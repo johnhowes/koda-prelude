@@ -6,7 +6,8 @@ A project's own page (`/f/<id>`), a redesign of `server/views/_folder.eta` (with
 across projects and links here; this page holds the project's whole picture.
 
 Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
-`/f/:project/branches/:branch/publish` (Push a branch, modal). Fragments:
+`/f/:project/branches/:branch/publish` (Push a branch, modal),
+`/f/:project/cleanup` (Clean up, modal). Fragments:
 `/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
 project, app being built, update clashed (with the app on the shell's branch
 and a failed push), long names (an existing app to connect, no remote),
@@ -265,6 +266,93 @@ Every route's view is `@app` now.
   `updated.files` inputs were stand-ins for this and aren't in the app's form.
 - The story (the design system and shell say what they hold) is untouched by
   this change, and still agrees with the design.
+
+## Clean up (redesign, 2026-10-21)
+
+Branches and worktrees pile up (the person). The cause of a merged PR still
+"open": `published` in `builds.json` is set on push and never cleared, and
+tidying removes a branch only when its tip is in main, so one that goes on
+after its PR merged, or was squash-merged, stays. Decided:
+
+- **Mechanical, on the project page** (the person): Clean up… is a modal
+  (`/f/:project/cleanup`), a ghost button with a count in In progress's
+  heading (a muted line at the card's foot went unseen, 2026-10-21). It lists
+  what Prelude won't tidy itself, each with its reason; the person picks and
+  removes (R-c3j). Kinds: pull request merged with commits since, a branch
+  Prelude no longer lists (work in main), nothing done (a week old, R-m2e), a
+  worktree it no longer lists (work not in main, uncommitted files), and a
+  folder left from an earlier tidy. Only the safe ones start picked.
+- **Origin is opt-in** (the person): its branches are a group apart, under a
+  warning, never picked to start with (R-9xk).
+- **Running agents aren't cleaned up** (the person wasn't sure they're a
+  problem): one the agent is working in can't be picked (R-m2e).
+- **Squash merges**: the app tells "in main" by a trial merge
+  (`git merge-tree --write-tree`) that changes nothing, not ancestry; with the
+  commit pushed recorded, a PR is merged once that commit's merge changes
+  nothing, and `pullRequest` is `{ state, when, since }` (R-t5w). Tidy uses
+  the same test, so squash-merged branches go by themselves. `gh`/`az` PR
+  state confirms where available.
+- The POST takes `removed.<id>` fields; in the design a removed branch stays
+  under In progress (the design can't remove from two lists at once), the app
+  takes it out.
+
+**Brought back for it**: `page`, `_work` and `_branch` (changed: Clean up
+line, the merged pull request); `page`'s other partials copied unchanged.
+New: `_cleanup`, `_cleaned` (the notice).
+
+## Built: Clean up, and a merged pull request (2026-10-21)
+
+`_work` and `_branch` are ported over the app's; `_cleanup` and `_cleaned`
+are new beside them in `server/views/projects/`. `page` was already the app's
+as designed (only its partials changed), so it's unchanged. Every route's view
+is `@app` again.
+
+- **"In main" is a trial merge** (`isIn()` in `server/branches.js`): ancestry
+  first, then `git merge-tree --write-tree`, in main when the merge's tree is
+  main's own. Kept by the two commits' ids. `status().merged` uses it, so
+  tidying takes squash-merged and rebased branches too (R-t5w).
+- **The pull request** (`pullRequest()`): a push now records the commit
+  pushed (`published.sha`); one pushed before this goes by the remote's copy
+  of the branch. `since` counts the commits after it. Home's pull-request
+  reading uses the same test. After each fetch, a pull request that changed
+  state says `projects-changed`, as a tidy does, so a merge on the Git server
+  shows within a fetch rather than at the next five-minute read.
+- **What Clean up finds** (`leftBehind()`), from git and `builds.json` only:
+  the listed branches merged with commits since, or untouched for a week
+  (R-m2e); `prelude/` branches Prelude no longer lists; folders under its
+  worktrees with no worktree in them; and `origin/prelude/` branches whose
+  work is in main. A worktree Prelude didn't make, and whatever the checkout
+  is on, are the person's own and never listed. Ids are hashes of where and
+  the name. The fetch now prunes, so a branch deleted on the server isn't
+  offered.
+- **Removing** (`clear()`) is only what was posted `true` last for an id
+  (the hidden `false` comes first), matched against what's found again, so a
+  form can't name anything else; one the agent is working in is refused even
+  if posted (R-m2e). A design host in the worktree is stopped first. A branch
+  Prelude lists leaves `builds.json`, so it leaves In progress (the design
+  can't show that). On origin it's `git push origin --delete`; one already
+  gone there just loses its copy here.
+
+What differs from the design, and why:
+
+- **"Merged 3 days ago" is when Prelude first saw it in main**, not the
+  server's merge time: git doesn't record when a squash landed. It's kept, so
+  it doesn't move.
+- **`gh`/`az` don't confirm the pull request's state** (the story suggests
+  it): they'd run synchronously on every read of the work. The trial merge
+  alone decides.
+- **A squash merge that main has changed again since** (the same lines
+  edited after it) clashes in the trial merge, so that branch reads as not in
+  main: it stays In progress, its pull request "open". Rare, but possible.
+- **`unlisted` also covers** a `prelude/` branch with no worktree whose work
+  isn't in main, and a branch in main whose worktree has uncommitted files
+  (its line then says its work is in main, and warns of the files).
+- **"Working" is known only for branches Prelude lists**: an unlisted
+  worktree has no turn Prelude could be running.
+- **A removal that fails is logged and left listed**; the notice names only
+  what went. `_cleaned` has no place to say why one couldn't go.
+
+The stories (a merged pull request, Clean up) agree with the design as built.
 
 ## Open questions
 

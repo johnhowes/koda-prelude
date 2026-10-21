@@ -169,7 +169,37 @@
       "references": [
         { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" },
         { "id": "r-2", "name": "Spark.Contracts", "path": "C:\\Projects\\Spark.Contracts" }
-      ]
+      ],
+      "cleanup": {
+        "into": "main",
+        "items": [
+          {
+            "id": "c-cd", "where": "local", "kind": "untouched", "name": "prelude/closing-day-checklist", "design": "Closing day checklist",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\b7d204\\prelude-closing-day-checklist", "when": "2 weeks ago",
+            "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          {
+            "id": "c-ar", "where": "local", "kind": "merged", "name": "prelude/fix-apr-shows-too-many-decimals", "design": null,
+            "path": null, "when": "last week", "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          {
+            "id": "c-fp", "where": "local", "kind": "leftover", "name": "prelude-forbearance-plan", "design": "Forbearance plan",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\b7d204\\prelude-forbearance-plan", "when": "2 weeks ago",
+            "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          {
+            "id": "c-ls", "where": "local", "kind": "leftover", "name": "prelude-loan-summary", "design": "Loan summary",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\b7d204\\prelude-loan-summary", "when": "2 weeks ago",
+            "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          { "id": "o-pr", "where": "origin", "kind": "merged", "name": "origin/prelude/pmi-removal", "when": "2 weeks ago" },
+          { "id": "o-ls", "where": "origin", "kind": "merged", "name": "origin/prelude/loan-summary", "when": "2 weeks ago" },
+          { "id": "o-fp", "where": "origin", "kind": "merged", "name": "origin/prelude/forbearance-plan", "when": "2 weeks ago" },
+          { "id": "o-ns", "where": "origin", "kind": "merged", "name": "origin/prelude/notification-settings", "when": "2 weeks ago" },
+          { "id": "o-er", "where": "origin", "kind": "merged", "name": "origin/prelude/exception-report", "when": "2 weeks ago" }
+        ],
+        "removed": {}
+      }
     }
   ]
 }

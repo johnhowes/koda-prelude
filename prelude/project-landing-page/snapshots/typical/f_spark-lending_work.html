@@ -26,12 +26,22 @@ The build stopped: 1 page doesn’t render in the app.
 </ul>
 </section>
 <section aria-labelledby="in-progress-title" class="card">
+<div class="cluster gap-2">
 <h2 id="in-progress-title">
 In progress
 <span class="muted">
 4
 </span>
 </h2>
+<span class="spacer">
+</span>
+<a class="btn small ghost" href="/f/spark-lending/cleanup" ko-target="modal?" title="7 branches and folders Prelude doesn’t tidy up by itself">
+Clean up…
+<span class="pill">
+7
+</span>
+</a>
+</div>
 <ul class="stack gap-6 in-progress">
 <li class="stack gap-2">
 <a class="item" href="/f/spark-lending/d/loan-offers">
@@ -258,8 +268,6 @@ Open it
 <div class="cluster actions">
 <form action="/f/spark-lending/branches/c90f13/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
-<input name="updated.from" type="hidden" value="main">
-<input name="updated.files" type="hidden" value="2">
 <button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
 Update from main
 </button>
@@ -296,14 +304,24 @@ prelude/underwriting-queue
 Check passes
 </span>
 <span class="pill">
-Pull request open
+Pull request merged
+</span>
+<span class="pill warn">
+2 commits since
 </span>
 </div>
+<p class="secondary">
+Its pull request was merged into main 3 days ago. The 2 commits made since aren’t in main: push them for another pull request, or
+<a href="/f/spark-lending/cleanup" ko-target="modal?">
+clean the branch up
+</a>
+.
+</p>
 <div class="cluster actions">
-<a class="btn small ghost" href="https://github.com/lendwithspark/spark-lending/pulls" rel="noopener" target="_blank">
-Open the pull request
-<span aria-hidden="true" class="icon icon-external">
+<a class="btn small" href="/f/spark-lending/branches/5b8a2e/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
 </span>
+Push and open a pull request…
 </a>
 </div>
 </div>

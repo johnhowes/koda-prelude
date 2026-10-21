@@ -164,10 +164,11 @@ function needsOfWork(app, project, work, { running, seen, now }) {
   const base = { projectId: project.id, project: project.name, design: design.title };
   const needs = [];
 
-  // A pull request stays until it's merged; a merged branch is tidied away.
+  // A pull request stays until what was pushed is in main, however it was
+  // merged (R-t5w); a branch with nothing since is tidied away.
   if (entry?.published) {
     let merged = false;
-    try { merged = app.branches.status(entry).merged; } catch { /* git couldn't say: still open */ }
+    try { merged = app.branches.pullRequest(entry)?.state === 'merged'; } catch { /* git couldn't say: still open */ }
     if (!merged) {
       needs.push({
         ...base, id: `pull-request:${entry.id}`, kind: 'pull-request', at: entry.published.at,

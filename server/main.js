@@ -37,7 +37,7 @@ import { createAsked } from './asked.js';
 import { APP_CHANNEL, APP_LIVE, clip, createSeen, homeOf, needsOfProject, seenAt, tell, waitingOf } from './home.js';
 import { createLive } from './live.js';
 import { createWatches, listScreens, servePreludeFile } from './preview.js';
-import { branchesOf, projectOf, referenceId } from './project.js';
+import { branchesOf, cleanupOf, leftBehindOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
 import { createTurns, designKey, seenKey, sessionKey, statusMessage } from './turns.js';
 import { render, shaped } from './views.js';
@@ -320,6 +320,8 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/app                       the app, a region
     //   GET  /f/<id>/designs/new               New design, in the modal over the page
     //   GET  /f/<id>/branches/<b>/publish      Push a branch: asked first, in the modal (R-k4n)
+    //   GET  /f/<id>/cleanup                   Clean up, in the modal over the page (R-c3j)
+    //   POST /f/<id>/cleanup                   remove what's picked: the page, and a notice
     //   POST /f/<id>/designs                   make one: its page, or the fields refused
     //   …    /f/<id>/d/fixes/<slug or new>/…   a conversation about the project, kept on this computer (handleDesign)
     //   POST /f/<id>/branches/<b>/<action>     publish; update, abandon, merge, start: the work
@@ -559,6 +561,33 @@ async function handle(req, res, app) {
     }
     if (rest === '/designs' && req.method === 'GET') return projectPart(200, 'projects/_designs', { parts: { work: false } });
     if (rest === '/app' && req.method === 'GET') return projectPart(200, 'projects/_app', { parts: { work: false, designs: false } });
+
+    // Clean up, in the modal: what Prelude leaves to the person (R-c3j).
+    // Only what's picked goes: each item posts removed.<id>, a hidden false
+    // before its checkbox, so the last value is the one that counts. One the
+    // agent is working in never goes (R-m2e). Answered, the modal closes, the
+    // page shows what's left, and the notice says what went.
+    if (rest === '/cleanup' && req.method === 'GET' && !folder.branch) {
+      return overlay(200, render('./projects/_cleanup', projectModel({ parts: { designs: false } })));
+    }
+    if (rest === '/cleanup' && req.method === 'POST' && !folder.branch) {
+      const form = await readForm(req);
+      const found = leftBehindOf(app, folder);
+      const removed = {};
+      for (const item of found) {
+        const field = `removed.${item.id}`;
+        if (!form.has(field)) continue;
+        if (form.getAll(field).at(-1) !== 'true' || item.working) { removed[item.id] = false; continue; }
+        const cleared = app.branches.clear(folder, item, { beforeRemove: worktree => app.hosts.stop(worktree) });
+        if (cleared.error) console.error(`Cleaning up ${item.name} failed: ${cleared.error}`);
+        removed[item.id] = !cleared.error;
+      }
+      if (Object.values(removed).some(Boolean)) tell(app, { needs: true, projects: true });
+      const model = projectModel();
+      const notice = render('./projects/_cleaned', { ...model, cleanup: cleanupOf(app, folder, { designs: designsHere(), removed, gone: found }) });
+      if (!fragment) return projectPage(200, { model, regions: { notice: { html: notice, location: path } } });
+      return send(res, 200, [envelope('modal?'), envelope('workspace', render('./projects/page', model)), envelope('notice?', notice)].join('\n'));
+    }
 
     // New design, in the modal; ?kind= picks the design system or the shell.
     if (rest === '/designs/new' && req.method === 'GET' && !folder.branch) {
@@ -856,7 +885,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|branches\/[0-9a-f]+\/publish))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/publish))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }
@@ -878,7 +907,7 @@ function askedFromLayout(req, layout) {
 
 /**
  * Remove the worktrees and branches of a folder's designs merged into main
- * (here, or by a pull request on the server), at most every 30 seconds per
+ * (here, or by a pull request on the server, squashed too), at most every 30 seconds per
  * folder. A branch tidied away changes what needs the person (R-w2k).
  *
  * With a remote, it fetches first without holding up the request (a fetch is
@@ -890,19 +919,24 @@ function tidyFolder(app, folder, { fetch = true } = {}) {
   if (folder.branch || Date.now() - (app.tidied.get(folder.id) ?? 0) < app.tidyEvery) return;
   if (gitState(folder.path) !== 'repository') return;
   app.tidied.set(folder.id, Date.now());
-  const tidyNow = () => {
+  // Where the pushed branches' pull requests stand: one merged with commits
+  // since isn't tidied, but its row changes (R-t5w).
+  const pulls = () => { try { return app.branches.of(folder.id).filter(entry => entry.published).map(entry => `${entry.id}:${app.branches.pullRequest(entry, folder.path)?.state}`).join(); } catch { return ''; } };
+  const tidyNow = (before = null) => {
     try {
       const notes = app.branches.tidy(folder, { fetch: false, beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
-      if (notes.length) tell(app, { needs: true, projects: true });
+      if (notes.length || (before !== null && pulls() !== before)) tell(app, { needs: true, projects: true });
     } catch { /* git couldn't say: try again next time */ }
   };
   if (!fetch || !remoteOf(folder.path)) return tidyNow();
   // One fetch at a time per project.
   if (app.fetching.has(folder.id)) return;
   app.fetching.add(folder.id);
-  fetchRemote(folder.path).then(() => {
+  const before = pulls();
+  // Pruned, so a branch deleted on the server isn't offered in Clean up.
+  fetchRemote(folder.path, '--prune').then(() => {
     app.fetching.delete(folder.id);
-    if (existsSync(folder.path)) tidyNow();
+    if (existsSync(folder.path)) tidyNow(before);
   });
 }
 

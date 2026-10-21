@@ -81,7 +81,8 @@
         { "id": "payment-methods", "title": "Payment methods", "kind": "design", "area": "Payments", "pages": 5, "approved": 1, "built": 0, "stage": "designing", "changed": "4 days ago" }
       ],
       "merged": [],
-      "references": []
+      "references": [],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
     }
   ]
 }

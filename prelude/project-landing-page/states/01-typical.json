@@ -153,6 +153,7 @@
           "worked": true,
           "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
           "pushed": true,
+          "pullRequest": { "state": "merged", "when": "3 days ago", "since": 2 },
           "building": null,
           "alsoChanges": [],
           "running": null,
@@ -175,7 +176,36 @@
       ],
       "references": [
         { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
-      ]
+      ],
+      "cleanup": {
+        "into": "main",
+        "items": [
+          {
+            "id": "c-uq", "where": "local", "kind": "pr-merged", "name": "prelude/underwriting-queue", "design": "Underwriting queue",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\4c1e9a\\prelude-underwriting-queue", "when": "3 days ago",
+            "since": { "commits": 2, "files": ["prelude/underwriting-queue/NOTES.md", "prelude/underwriting-queue/sessions/20261018-1502-k2pd/transcript.jsonl"] },
+            "ahead": 2, "uncommitted": 0, "working": false, "safe": false
+          },
+          {
+            "id": "c-pq", "where": "local", "kind": "merged", "name": "prelude/prequalification", "design": "Prequalification",
+            "path": null, "when": "last week", "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          {
+            "id": "c-sn", "where": "local", "kind": "unlisted", "name": "prelude/servicing-notes", "design": "Servicing notes",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\4c1e9a\\prelude-servicing-notes", "when": "3 weeks ago",
+            "ahead": 1, "uncommitted": 2, "working": false, "safe": false
+          },
+          {
+            "id": "c-dc", "where": "local", "kind": "leftover", "name": "prelude-document-checklist", "design": "Document checklist",
+            "path": "C:\\Users\\alex\\.prelude\\worktrees\\4c1e9a\\prelude-document-checklist", "when": "2 days ago",
+            "ahead": 0, "uncommitted": 0, "working": false, "safe": true
+          },
+          { "id": "o-uq", "where": "origin", "kind": "pr-merged", "name": "origin/prelude/underwriting-queue", "when": "3 days ago" },
+          { "id": "o-dc", "where": "origin", "kind": "merged", "name": "origin/prelude/document-checklist", "when": "2 days ago" },
+          { "id": "o-bp", "where": "origin", "kind": "merged", "name": "origin/prelude/borrower-profile", "when": "last week" }
+        ],
+        "removed": {}
+      }
     }
   ]
 }

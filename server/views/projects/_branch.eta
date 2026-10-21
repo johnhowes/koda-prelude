@@ -5,8 +5,14 @@
      request, which asks first in the modal). An update from main that
      clashed holds the branch until the agent resolves it or it's abandoned.
      A fix's branch (step 11) is shown the same way. `it` is one of the project's inProgress; `it.finish` its
-     /branches/<id> URL. Its forms answer with the project's work. */%>
+     /branches/<id> URL. Its forms answer with the project's work.
+
+     A pushed branch's pull request is open until what was pushed is in main,
+     however it was merged (squashed too): `pullRequest.state` is merged then,
+     and `pullRequest.since` counts the commits made after the push. A
+     branch merged with nothing since is tidied up and isn't here. */%>
 <% const w = it, stories = w.stories ?? [], fix = w.design?.kind === 'fix';
+   const prMerged = w.pushed && w.pullRequest?.state === 'merged', prOpen = w.pushed && !prMerged, since = w.pullRequest?.since ?? 0;
    const storyState = { built: { label: 'Built', tone: '' }, 'to-build': { label: 'To build', tone: '' }, building: { label: w.building?.stopped ? 'Build stopped' : 'Building', tone: w.building?.stopped ? 'warn' : 'accent' } }; %>
 <div class="stack gap-3">
   <div class="cluster gap-2">
@@ -18,9 +24,14 @@
     <% if (w.building && !w.building.stopped) { %><span class="pill accent"><span class="pulse" aria-hidden="true"></span>Building <%= w.building.title %></span><% } %>
     <% if (w.building?.stopped) { %><span class="pill warn">Build stopped</span><% } %>
     <% if (w.behind) { %><span class="pill warn"><%= w.behind %> <%= w.behind === 1 ? 'commit' : 'commits' %> behind <%= w.into %></span><% } %>
-    <% if (w.pushed) { %><span class="pill">Pull request open</span><% } %>
+    <% if (prOpen) { %><span class="pill">Pull request open</span><% } %>
+    <% if (prMerged) { %><span class="pill">Pull request merged</span><span class="pill warn"><%= since === 1 ? '1 commit' : `${since} commits` %> since</span><% } %>
     <% if (!w.worked) { %><span class="pill">Nothing done on it yet</span><% } %>
   </div>
+
+  <% if (prMerged) { %>
+  <p class="secondary">Its pull request was merged into <%= w.into %> <%= w.pullRequest.when %>. <%= since === 1 ? 'The commit made since isn’t' : `The ${since} commits made since aren’t` %> in <%= w.into %>: push <%= since === 1 ? 'it' : 'them' %> for another pull request, or <a href="<%= w.finish.split('/branches/')[0] %>/cleanup" ko-target="modal?">clean the branch up</a>.</p>
+  <% } %>
 
   <%/* Its stories fold away, so a dozen branches still fit on the page; the
        line says how many are left, and whether one is building. */%>
@@ -89,7 +100,7 @@
       <button class="btn small" type="submit" title="Merge <%= w.into %> into this branch, so it carries on from what’s there now.">Update from <%= w.into %></button>
     </form>
     <% } %>
-    <% if (w.pushed && w.remote) { %>
+    <% if (prOpen && w.remote) { %>
     <a class="btn small ghost" href="<%= w.remote.pulls %>" target="_blank" rel="noopener">Open the pull request<span class="icon icon-external" aria-hidden="true"></span></a>
     <% } else if (w.worked && w.remote) { %>
     <a class="btn small" href="<%= w.finish %>/publish" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>

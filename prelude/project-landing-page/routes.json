@@ -1,6 +1,7 @@
 {
   "/f/:project": { "view": "@app/server/views/projects/page", "title": "Project", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/work": { "view": "@app/server/views/projects/_work", "data": "projects/:project" },
+  "/f/:project/cleanup": { "view": "@app/server/views/projects/_cleanup", "title": "Clean up", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
   "/f/:project/designs": { "view": "@app/server/views/projects/_designs", "data": "projects/:project", "list": "designs", "search": { "q": ["title", "area"] }, "match": { "stage": "stage" } },
   "/f/:project/app": { "view": "@app/server/views/projects/_app", "data": "projects/:project" },
   "/f/:project/designs/new": { "view": "@app/server/views/projects/_new-design", "title": "New design", "data": "projects/:project", "over": "/f/:project", "in": "modal" },
@@ -19,6 +20,16 @@
       "also": [
         { "into": "main", "view": "@app/server/views/projects/page", "data": "projects/:project" },
         { "into": "notice?", "view": "@app/server/views/projects/_pushed", "data": "projects/:project/inProgress/:branch" }
+      ]
+    }
+  },
+  "POST /f/:project/cleanup": {
+    "update": "projects/:project/cleanup",
+    "answer": {
+      "into": "modal?",
+      "also": [
+        { "into": "main", "view": "@app/server/views/projects/page", "data": "projects/:project" },
+        { "into": "notice?", "view": "@app/server/views/projects/_cleaned", "data": "projects/:project" }
       ]
     }
   },

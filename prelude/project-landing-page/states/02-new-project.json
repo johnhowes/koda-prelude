@@ -25,7 +25,8 @@
       "inProgress": [],
       "designs": [],
       "merged": [],
-      "references": []
+      "references": [],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
     }
   ]
 }

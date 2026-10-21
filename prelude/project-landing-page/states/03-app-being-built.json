@@ -91,7 +91,8 @@
       "merged": [],
       "references": [
         { "id": "r-1", "name": "Spark.Web", "path": "C:\\Projects\\Spark.Web" }
-      ]
+      ],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
     }
   ]
 }

@@ -20,3 +20,10 @@
   *shown-on: /f/:project @ large-project*
 - **R-f0c.** Merged lately shows the project's last five merged branches.
   *shown-on: /f/:project @ typical*
+- **R-t5w.** A branch's pull request shows as open only until what was pushed is in main, however it was merged, squashed included; a branch whose work is all in main is tidied up by itself, and one with commits since says how many.
+  *shown-on: /f/:project @ typical*
+- **R-c3j.** Clean up lists what Prelude won't tidy by itself, each with why it's there, and removes only what the person picks; it starts with only those whose work is all in main, or with nothing done, picked.
+  *shown-on: /f/:project/cleanup @ typical*
+- **R-9xk.** Branches on the remote are listed apart in Clean up, with a warning that others can see them, and are never picked to start with.
+  *shown-on: /f/:project/cleanup @ typical*
+- **R-m2e.** A branch or worktree the agent is working in can't be picked in Clean up, and a branch with nothing done is listed only once it's a week old.

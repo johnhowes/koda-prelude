@@ -102,6 +102,9 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   surface that fills it). Added for "Build" (prelude/build): the build
   session's check ran into the panel's edges. It scrolls only up and down:
   a list's rows hang into the padding, which scrolled sideways.
+- **Rows to pick** (`label.item` with a checkbox first): a list whose rows
+  are chosen, not opened; the whole row is the label. Added for "Project
+  Landing Page" (prelude/project-landing-page): choosing what to clean up.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).

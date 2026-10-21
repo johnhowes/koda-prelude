@@ -132,12 +132,14 @@ The agent asked whether a borrower who spreads an escrow shortage over twelve mo
 </ul>
 </section>
 <section aria-labelledby="in-progress-title" class="card">
+<div class="cluster gap-2">
 <h2 id="in-progress-title">
 In progress
 <span class="muted">
 1
 </span>
 </h2>
+</div>
 <ul class="stack gap-6 in-progress">
 <li class="stack gap-2">
 <a class="item" href="/f/mortgage-origination/d/escrow-analysis-and-shortage-repayment-options">
@@ -241,8 +243,6 @@ tests/Spark.Mortgage.Servicing.Web.Tests/Escrow/ShortageSpreadCalculatorTests.cs
 <div class="cluster actions">
 <form action="/f/mortgage-origination/branches/d81a6c/update" ko-target="work" method="post">
 <input name="behind" type="hidden" value="0">
-<input name="updated.from" type="hidden" value="release/2026-q4-servicing">
-<input name="updated.files" type="hidden" value="148">
 <button class="btn small" title="Merge release/2026-q4-servicing into this branch, so it carries on from what’s there now." type="submit">
 Update from release/2026-q4-servicing
 </button>
