@@ -268,6 +268,13 @@ Every route's view is `@app` now.
 
 ## Open questions
 
+- **Cleaning up branches, worktrees and sessions** (the person, 2026-10-21):
+  a mechanical "what can go, and remove it" view, being explored. Learned:
+  "Pull request open" is `published` in `builds.json`, set on push and never
+  cleared; tidying removes a branch only when its tip is in main, so a
+  branch that goes on after its PR merged (this one, after #33) or was
+  squash-merged stays, still claiming the PR is open.
+
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
   output folder, or to stop the host first; let the build find out.
