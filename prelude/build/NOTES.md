@@ -80,6 +80,18 @@ running). Events: `story-written`, `check-done`.
   reach the build), and it checks the build against their acceptance
   criteria. The design wins where they differ, so an out-of-date story
   can't steer a build wrong; its notice says so.
+- **A built page's stories are done** (the person, 2026-10-21; R-p4w): a
+  story describes the change it was written for, so once that change is
+  built it's irrelevant to the next. A page changed again after it was
+  built shows "No story yet", not an out-of-date story; Out of date is only
+  for a story whose page hasn't been built since. Write the story then
+  starts afresh, without the rewrite's warning about edits. For the app:
+  when a page's build session finds the page built, Prelude marks its
+  `story.json` `built: { at, session }`, and `readStory` (and so
+  `storiesBrief`) treats a built story as none. The files stay on the
+  branch, merged as the record of what was built (R-u6t), until a new
+  story replaces them. The views need no change: they already show a page
+  without a story.
 
 - **A build session belongs to Build, not the Design Workspace** (the
   person, 2026-10-20): it's the step after Build starts it, and what's
