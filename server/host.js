@@ -309,6 +309,15 @@ export function shellLayouts(shellDir, ext = '.eta') {
 }
 
 /**
+ * Every layout the shell has, by name: its own, and those that are the app's
+ * files in layouts.json (once ported, or connected from an app it already
+ * had, the shell keeps no copy of the layout itself).
+ */
+export function allShellLayouts(shellDir, ext = '.eta') {
+  return [...new Set([...shellLayouts(shellDir, ext), ...Object.keys(shellLayoutLinks(shellDir))])].sort();
+}
+
+/**
  * The shell's layouts the app hasn't got yet (8c): designed in the shell and
  * not linked to an app file in layouts.json. Once the app exists, these are
  * the shell's Layouts group, built before the features whose pages use them.
