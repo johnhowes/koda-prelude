@@ -1,13 +1,15 @@
 {
-  "writtenAt": "2026-10-19T21:40:26.229Z",
-  "fingerprint": "b846ad0bf52b289a",
+  "writtenAt": "2026-10-21T13:31:11.770Z",
+  "fingerprint": "7141a336c72ebeea",
   "changes": [
-    "Project looks different"
+    "New: Clean up, in a dialog over Project",
+    "Project looks different in Typical, App being built, Update clashed, Long names and Large project",
+    "/f/:project/work looks different in Typical, App being built, Update clashed, Long names and Large project",
+    "/f/:project/designs looks different in Large project",
+    "1 new form, 6 changed",
+    "New rule R-t5w: A branch's pull request shows as open only until what was pushed is in main, however it was merged, squashed included; a branch whose work is all in main is tidied up by itself, and one with commits since says how many.",
+    "New rule R-c3j: Clean up lists what Prelude won't tidy by itself, each with why it's there, and removes only what the person picks; it starts with only those whose work is all in main, or with nothing done, picked.",
+    "New rule R-9xk: Branches on the remote are listed apart in Clean up, with a warning that others can see them, and are never picked to start with."
   ],
-  "edited": {
-    "1": {
-      "by": "John Howes",
-      "at": "2026-10-21T13:32:19.897Z"
-    }
-  }
+  "edited": {}
 }
