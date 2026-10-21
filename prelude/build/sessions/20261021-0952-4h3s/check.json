@@ -1,0 +1,315 @@
+{
+  "at": "2026-10-21T14:56:55.549Z",
+  "shots": [
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_build",
+      "key": "typical/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "typical/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "typical/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "key": "typical/f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "split-and-writing~f_borrower-portal_d_loan-offers_build",
+      "key": "split-and-writing/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "split-and-writing",
+      "state": "Split and writing",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "split-and-writing~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "split-and-writing/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "split-and-writing",
+      "state": "Split and writing",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "split-and-writing~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "split-and-writing/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "split-and-writing",
+      "state": "Split and writing",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "split-and-writing~f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "key": "split-and-writing/f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+      "stateId": "split-and-writing",
+      "state": "Split and writing",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "not-approved~f_borrower-portal_d_loan-offers_build",
+      "key": "not-approved/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "not-approved",
+      "state": "Not approved",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "not-approved~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "not-approved/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "not-approved",
+      "state": "Not approved",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "not-approved~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "not-approved/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "not-approved",
+      "state": "Not approved",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "not-approved~f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "key": "not-approved/f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+      "stateId": "not-approved",
+      "state": "Not approved",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "building~f_borrower-portal_d_loan-offers_build",
+      "key": "building/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "building",
+      "state": "Building",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "building~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "building/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "building",
+      "state": "Building",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "building~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "building/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "building",
+      "state": "Building",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "building~f_borrower-portal_d_loan-offers_sessions_20261019-0930-r7bx",
+      "key": "building/f_borrower-portal_d_loan-offers_sessions_20261019-0930-r7bx",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261019-0930-r7bx",
+      "stateId": "building",
+      "state": "Building",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "no-app~f_borrower-portal_d_loan-offers_build",
+      "key": "no-app/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "no-app",
+      "state": "No app",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "no-app~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "no-app/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "no-app",
+      "state": "No app",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "no-app~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "no-app/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "no-app",
+      "state": "No app",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "no-app~f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "key": "no-app/f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+      "stateId": "no-app",
+      "state": "No app",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "all-built~f_borrower-portal_d_loan-offers_build",
+      "key": "all-built/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "all-built",
+      "state": "All built",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "all-built~f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "key": "all-built/f_borrower-portal_d_loan-offers_sessions_20261020-0915-k4tz",
+      "path": "/f/borrower-portal/d/loan-offers/sessions/20261020-0915-k4tz",
+      "stateId": "all-built",
+      "state": "All built",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "app-build~f_borrower-portal_d_app-shell_build",
+      "key": "app-build/f_borrower-portal_d_app-shell_build",
+      "path": "/f/borrower-portal/d/app-shell/build",
+      "stateId": "app-build",
+      "state": "App build",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "app-build~f_borrower-portal_d_app-shell_sessions_20261020-1040-a2pp",
+      "key": "app-build/f_borrower-portal_d_app-shell_sessions_20261020-1040-a2pp",
+      "path": "/f/borrower-portal/d/app-shell/sessions/20261020-1040-a2pp",
+      "stateId": "app-build",
+      "state": "App build",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "app-doesnt-start~f_borrower-portal_d_app-shell_build",
+      "key": "app-doesnt-start/f_borrower-portal_d_app-shell_build",
+      "path": "/f/borrower-portal/d/app-shell/build",
+      "stateId": "app-doesnt-start",
+      "state": "App doesnt start",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "app-doesnt-start~f_borrower-portal_d_app-shell_sessions_20261020-1040-a2pp",
+      "key": "app-doesnt-start/f_borrower-portal_d_app-shell_sessions_20261020-1040-a2pp",
+      "path": "/f/borrower-portal/d/app-shell/sessions/20261020-1040-a2pp",
+      "stateId": "app-doesnt-start",
+      "state": "App doesnt start",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "layouts-built~f_borrower-portal_d_app-shell_build",
+      "key": "layouts-built/f_borrower-portal_d_app-shell_build",
+      "path": "/f/borrower-portal/d/app-shell/build",
+      "stateId": "layouts-built",
+      "state": "Layouts built",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "layouts-built~f_borrower-portal_d_app-shell_sessions_20261020-1130-l4yt",
+      "key": "layouts-built/f_borrower-portal_d_app-shell_sessions_20261020-1130-l4yt",
+      "path": "/f/borrower-portal/d/app-shell/sessions/20261020-1130-l4yt",
+      "stateId": "layouts-built",
+      "state": "Layouts built",
+      "page": "Build session",
+      "group": "Build session",
+      "status": "matches"
+    },
+    {
+      "id": "changed-since-approved~f_borrower-portal_d_loan-offers_build",
+      "key": "changed-since-approved/f_borrower-portal_d_loan-offers_build",
+      "path": "/f/borrower-portal/d/loan-offers/build",
+      "stateId": "changed-since-approved",
+      "state": "Changed since approved",
+      "page": "Build",
+      "group": "Build",
+      "status": "matches"
+    },
+    {
+      "id": "changed-since-approved~f_borrower-portal_d_loan-offers_build_stories_offers",
+      "key": "changed-since-approved/f_borrower-portal_d_loan-offers_build_stories_offers",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers",
+      "stateId": "changed-since-approved",
+      "state": "Changed since approved",
+      "page": "A page’s story",
+      "group": "A page’s story",
+      "status": "matches"
+    },
+    {
+      "id": "changed-since-approved~f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "key": "changed-since-approved/f_borrower-portal_d_loan-offers_build_stories_offers_rewrite",
+      "path": "/f/borrower-portal/d/loan-offers/build/stories/offers/rewrite",
+      "stateId": "changed-since-approved",
+      "state": "Changed since approved",
+      "page": "Rewrite the story",
+      "group": "A page’s story",
+      "status": "matches"
+    }
+  ]
+}

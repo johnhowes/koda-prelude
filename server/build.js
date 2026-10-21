@@ -14,7 +14,13 @@
 //   stories/<page>/<n>-<slug>.md  one per story, as the agent wrote it or a person edited it
 //   stories/<page>/split.md       why the agent split the page's story in two, if it did
 //   stories/<page>/story.json     Prelude's: when it was written, and the page's change
-//                                 then, so it can say it's out of date, and what changed (R-b5k)
+//                                 then, so it can say it's out of date, and what changed (R-b5k);
+//                                 and once the page is built, `built: { at, session }`
+//
+// A built page's stories are done (R-p4w): they describe the change they were
+// written for, so they're read as none, on Build and in the next build
+// session's brief. The files stay on the branch as the record of what was
+// built until a new story replaces them.
 
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -204,6 +210,10 @@ const storiesDir = (dir, id) => join(dir, 'stories', id);
 const storyFiles = at => {
   try { return readdirSync(at).filter(file => /^\d+-.*\.md$/i.test(file)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })); } catch { return []; }
 };
+/** Whether a page's stories were for a change that's built now (R-p4w). */
+const builtStories = at => Boolean(json(join(at, 'story.json'))?.built);
+/** A page's story files, unless they're done (R-p4w). */
+const liveFiles = at => (builtStories(at) ? [] : storyFiles(at));
 
 /** A story as the page shows it: its title left out (it's beside it), For developers folded away. */
 export function storyHtml(markdown) {
@@ -224,13 +234,14 @@ function sinceOf(then, now) {
 }
 
 /**
- * A page's stories, or null when none has been written (R-w3n). `url` is the
- * page's stories' address; `fingerprint` and `changes` are the page's now.
+ * A page's stories, or null when none has been written (R-w3n), or the ones
+ * written were for a change that's built (R-p4w). `url` is the page's
+ * stories' address; `fingerprint` and `changes` are the page's now.
  * @returns {Story | null}
  */
 export function readStory(dir, id, { url, fingerprint, changes }) {
   const at = storiesDir(dir, id);
-  const files = storyFiles(at);
+  const files = liveFiles(at);
   if (!files.length) return null;
   const meta = json(join(at, 'story.json')) ?? {};
   const stories = files.map(file => {
@@ -289,14 +300,16 @@ export function createStoryWriter({ runner }) {
     const writtenAt = new Date(started).toISOString();
     // A rewrite: what the agent doesn't write again goes once it's done, the
     // edits made to it included (R-z2m). Until then the page keeps showing it.
+    // A built page's old stories go the same way, but it's a story afresh (R-p4w).
     const before = [...storyFiles(at), 'split.md'];
+    const again = !builtStories(at) && before.length > 1;
     let turn;
     try {
       mkdirSync(at, { recursive: true });
       const asked = job.instruction ? ` The person asks: ${job.instruction}` : '';
       turn = runner.turn({
         cwd: job.cwd, sessionId: randomUUID(), resume: false,
-        prompt: `Write the story for ${job.title}${before.length > 1 ? ' again' : ''}.${asked}`, systemPrompt: job.systemPrompt,
+        prompt: `Write the story for ${job.title}${again ? ' again' : ''}.${asked}`, systemPrompt: job.systemPrompt,
         designPath: job.designPath, references: job.references, mode: 'design', onEvent: () => {},
       });
     } catch (error) {
@@ -339,11 +352,11 @@ export function createStoryWriter({ runner }) {
 /**
  * A person's edit of one of a page's stories, kept in its file, and marked
  * edited by whom and when in story.json, so a rewrite asks before replacing it
- * (R-z2m). False when the page has no such story.
+ * (R-z2m). False when the page has no such story, or its stories are done (R-p4w).
  */
 export function saveStory(dir, id, number, markdown, { by = '', at = new Date().toISOString() } = {}) {
   const folder = storiesDir(dir, id);
-  const file = storyFiles(folder).find(name => name.match(/^\d+/)[0] === String(number));
+  const file = liveFiles(folder).find(name => name.match(/^\d+/)[0] === String(number));
   if (!file) return false;
   writeFileSync(join(folder, file), String(markdown).replace(/\r\n/g, '\n').replace(/\n*$/, '\n'));
   const meta = json(join(folder, 'story.json')) ?? {};
@@ -367,8 +380,22 @@ export function storiesBrief(dir, id, story, designPath) {
   };
 }
 
-/** Whether a page has a story written, without reading it. */
-export const hasStory = (dir, id) => existsSync(storiesDir(dir, id)) && storyFiles(storiesDir(dir, id)).length > 0;
+/** Whether a page has a story written, without reading it; a built page's done ones aren't (R-p4w). */
+export const hasStory = (dir, id) => existsSync(storiesDir(dir, id)) && liveFiles(storiesDir(dir, id)).length > 0;
 
 /** How many stories a page has, without reading them (a build session's header). */
-export const storyCount = (dir, id) => (existsSync(storiesDir(dir, id)) ? storyFiles(storiesDir(dir, id)).length : 0);
+export const storyCount = (dir, id) => (existsSync(storiesDir(dir, id)) ? liveFiles(storiesDir(dir, id)).length : 0);
+
+/**
+ * A page's build session found it built: its stories are done (R-p4w), so
+ * story.json is marked `built: { at, session }`. Nothing when it has none, or
+ * they're marked already. Whether it marked them.
+ */
+export function markStoriesBuilt(dir, id, { session = null, at = new Date().toISOString() } = {}) {
+  const folder = storiesDir(dir, id);
+  if (!storyFiles(folder).length || builtStories(folder)) return false;
+  const meta = json(join(folder, 'story.json')) ?? {};
+  meta.built = { at, session };
+  writeFileSync(join(folder, 'story.json'), JSON.stringify(meta, null, 2) + '\n');
+  return true;
+}
