@@ -382,6 +382,35 @@ to drop one without merging it or opening a pull request (the person). Decided:
 here) and `_branch` (changed); page's other partials copied unchanged. New:
 `_discard`. The POST answers now render the design's `page` and `_work`.
 
+## Built: Discard a branch (2026-10-21)
+
+`_branch` is ported over the app's and `_discard` is new beside it in
+`server/views/projects/`; `page` and `_work` were already the app's as
+designed, so they're unchanged. Every route's view is `@app` again.
+
+- **The model** (`branchesOf()` in `server/project.js`): `ahead` is the
+  count `status()` already made; `uncommitted` is `git status --porcelain` in
+  the branch's worktree (`uncommittedIn()` in `server/branches.js`, which
+  Clean up now shares), one more git call per branch on each read of the
+  work; `inMain` is whether the design is listed on main; `working` is
+  whether a turn is running in the worktree, as Clean up reads it.
+- **Discarding** (`discard()` in `server/branches.js`) is Clean up's `clear()`
+  for the branch: whatever runs from the worktree stopped, the worktree and
+  branch deleted, and the branch out of `builds.json`, so it leaves In
+  progress; no note under Merged lately, since nothing was merged. The copy on
+  origin goes first, and only when `remote` was posted `true` last (the hidden
+  `false` comes first) for a branch Prelude pushed: one that can't be deleted
+  there leaves everything here as it was. One already gone there just loses
+  its copy here.
+- **A turn running** refuses the POST too (409), answering the question
+  again, which then says the agent is working (R-w8p); the page doesn't offer
+  Discard then either.
+- **A discard that fails** says why beside its branch (`finishError`), with
+  the page, as a failed push does. Done, the modal closes and the page comes
+  back into `workspace` (the design's `main`), no notice, as designed.
+- The stories (a merged pull request, Clean up) were written before Discard
+  and don't mention it; nothing in them disagrees with the design.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two
