@@ -1,0 +1,111 @@
+<%/* Clean up, in the modal: what Prelude found that it doesn't tidy by
+     itself, each with why it's here, and the person picks what goes. Prelude
+     tidies a branch on its own once all of it is in main (squashed or
+     rebased too); this is everything else, found by reading git and
+     Prelude's own list of worktrees, never by asking the agent.
+
+     `cleanup.items` is prepared by the app, each { id, where (local or
+     origin), kind, name, path, design, when, ahead, uncommitted, since,
+     working, safe }. Kinds: pr-merged (its pull request merged, with
+     commits since), merged (a branch Prelude no longer lists, its work in
+     main), untouched (made and never worked on), unlisted (a worktree
+     Prelude no longer lists, with work not in main), leftover (a folder
+     whose branch was tidied while it was in use); on origin, merged. The
+     app picks the safe ones (all their work in main, or nothing done) to
+     start with; on origin nothing is picked. One the agent is working in
+     can't be picked. `cleanup.removed` is what was removed, by id. */%>
+<% const p = it, cleanup = p.cleanup ?? {}, removed = cleanup.removed ?? {};
+   const gone = item => removed[item.id] === true || removed[item.id] === 'true';
+   const items = (cleanup.items ?? []).filter(item => !gone(item));
+   const local = items.filter(item => item.where !== 'origin'), origin = items.filter(item => item.where === 'origin');
+   const commits = n => n === 1 ? '1 commit' : `${n} commits`, files = n => n === 1 ? '1 file' : `${n} files`;
+   const into = cleanup.into ?? 'main';
+   const kinds = {
+     'pr-merged': 'Pull request merged',
+     merged: `In ${into}`,
+     untouched: 'Nothing done on it',
+     unlisted: 'Not in Prelude’s list',
+     leftover: 'Folder only',
+   };
+   const why = item => {
+     if (item.where === 'origin') return item.kind === 'pr-merged' ? `Its pull request was merged ${item.when}.` : `Its work is in ${into}, merged ${item.when}.`;
+     if (item.kind === 'pr-merged') return `${item.design}’s pull request was merged ${item.when}. ${item.since.commits === 1 ? 'The commit made since isn’t' : `The ${item.since.commits} commits made since aren’t`} in ${into}, and go with it.`;
+     if (item.kind === 'merged') return `A branch Prelude no longer lists${item.design ? `, from ${item.design}` : ''}. Its work is in ${into}.`;
+     if (item.kind === 'untouched') return `Made for ${item.design} ${item.when}, and never worked on.`;
+     if (item.kind === 'unlisted') return `A worktree Prelude no longer lists${item.design ? `, from ${item.design}` : ''}. ${item.ahead ? `${commits(item.ahead)} on it ${item.ahead === 1 ? 'isn’t' : 'aren’t'} in ${into}, and go with it.` : `Its work is in ${into}.`}`;
+     if (item.kind === 'leftover') return `Its branch was merged ${item.when} and tidied up, but the folder was in use then.`;
+     return '';
+   }; %>
+<div class="stack gap-4" ko-item>
+  <h2>Clean up <%= p.name %></h2>
+  <p class="secondary">Prelude removes a branch and its worktree by itself once all its work is in <%= into %>. These are what it leaves to you. Nothing goes until you say.</p>
+  <% if (!items.length) { %>
+  <p class="empty">Nothing to clean up. Every branch and worktree here is in progress.</p>
+  <div class="cluster actions">
+    <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
+  </div>
+  <% } else { %>
+  <form class="stack gap-5" action="/f/<%= p.id %>/cleanup" method="post">
+    <% if (local.length) { %>
+    <section class="stack gap-1" aria-labelledby="cleanup-local">
+      <h3 class="group-label" id="cleanup-local">On this computer</h3>
+      <ul class="list">
+        <% for (const item of local) { %>
+        <li>
+          <% if (item.working) { %>
+          <span class="item">
+            <span class="icon icon-agent" aria-hidden="true"></span>
+            <span class="item-text">
+              <span class="item-title"><code><%= item.name %></code><span class="pill accent"><span class="pulse" aria-hidden="true"></span>Working</span></span>
+              <span class="secondary">The agent is working in it. Once its turn ends, it can go.</span>
+            </span>
+          </span>
+          <% } else { %>
+          <input type="hidden" name="removed.<%= item.id %>" value="false">
+          <label class="item">
+            <input type="checkbox" name="removed.<%= item.id %>" value="true"<% if (item.safe) { %> checked<% } %>>
+            <span class="item-text">
+              <span class="item-title"><code><%= item.name %></code><span class="pill"><%= kinds[item.kind] %></span><% if (item.kind === 'pr-merged') { %><span class="pill warn"><%= commits(item.since.commits) %> since</span><% } else if (item.ahead) { %><span class="pill warn"><%= commits(item.ahead) %> not in main</span><% } %><% if (item.uncommitted) { %><span class="pill warn"><%= files(item.uncommitted) %> not committed</span><% } %></span>
+              <span class="secondary"><%= why(item) %><% if (item.uncommitted) { %> <%= files(item.uncommitted) %> changed in it and never committed <%= item.uncommitted === 1 ? 'is' : 'are' %> lost too.<% } %></span>
+              <% if (item.since?.files?.length) { %><span class="muted">Since: <%= item.since.files.join(', ') %></span><% } %>
+              <span class="muted"><%= item.path ?? 'The branch alone: it has no worktree' %></span>
+            </span>
+          </label>
+          <% } %>
+        </li>
+        <% } %>
+      </ul>
+    </section>
+    <% } %>
+
+    <%/* Deleting on the remote is outward, so it's asked apart and never
+         picked to start with (guideline 5). */%>
+    <% if (origin.length) { %>
+    <section class="stack gap-2" aria-labelledby="cleanup-origin">
+      <h3 class="group-label" id="cleanup-origin">On origin</h3>
+      <div class="notice warn"><p>These delete branches on <code>origin</code>, where others can see them. Pick one only if nobody else is using it.</p></div>
+      <ul class="list">
+        <% for (const item of origin) { %>
+        <li>
+          <input type="hidden" name="removed.<%= item.id %>" value="false">
+          <label class="item">
+            <input type="checkbox" name="removed.<%= item.id %>" value="true">
+            <span class="item-text">
+              <span class="item-title"><code><%= item.name %></code></span>
+              <span class="secondary"><%= why(item) %></span>
+            </span>
+          </label>
+        </li>
+        <% } %>
+      </ul>
+    </section>
+    <% } %>
+
+    <p class="muted">A design host running from a worktree is stopped before it goes. A branch removed here can’t be brought back from Prelude.</p>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit">Remove what’s picked</button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+  <% } %>
+</div>

@@ -1,7 +1,9 @@
 <!-- List: things to open, one per row - folders, designs, sessions. The whole row is
      the link (a.item). Its icon says what kind of thing it is; .item-title names it,
      with a .pill for its kind; a .muted line under it says where it is. A row that
-     isn't a link is a span.item; it may end with a .spacer and its own action. -->
+     isn't a link is a span.item; it may end with a .spacer and its own action.
+     A row to pick is a label.item with its checkbox first, in place of the icon;
+     a row that can't be picked keeps a span.item and says why. -->
 <ul class="list">
   <li>
     <a class="item" href="#">
@@ -32,5 +34,16 @@
         <button class="icon-btn small" type="submit" aria-label="Stop reading another-app"><span class="icon icon-close" aria-hidden="true"></span></button>
       </form>
     </span>
+  </li>
+</ul>
+<ul class="list">
+  <li>
+    <label class="item">
+      <input type="checkbox" name="remove" value="sign-up" checked>
+      <span class="item-text">
+        <span class="item-title">prelude/sign-up<span class="pill">Merged</span></span>
+        <span class="secondary">Its work is in main.</span>
+      </span>
+    </label>
   </li>
 </ul>

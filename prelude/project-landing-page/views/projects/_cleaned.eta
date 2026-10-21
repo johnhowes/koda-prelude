@@ -1,0 +1,9 @@
+<%/* Said in the notice once Clean up has removed what was picked: how many,
+     and which. `it` is the project; `cleanup.removed` what went, by id. */%>
+<% const removed = it.cleanup?.removed ?? {};
+   const gone = (it.cleanup?.items ?? []).filter(item => removed[item.id] === true || removed[item.id] === 'true'); %>
+<% if (gone.length) { %>
+<p role="status">Removed <%= gone.length === 1 ? '1 branch or folder' : `${gone.length} branches and folders` %>: <% for (const [i, item] of gone.entries()) { %><%= i ? ', ' : '' %><code><%= item.name %></code><% } %>.</p>
+<% } else { %>
+<p role="status">Nothing was picked, so nothing was removed.</p>
+<% } %>

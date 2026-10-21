@@ -6,7 +6,8 @@ A project's own page (`/f/<id>`), a redesign of `server/views/_folder.eta` (with
 across projects and links here; this page holds the project's whole picture.
 
 Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
-`/f/:project/branches/:branch/publish` (Push a branch, modal). Fragments:
+`/f/:project/branches/:branch/publish` (Push a branch, modal),
+`/f/:project/cleanup` (Clean up, modal). Fragments:
 `/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
 project, app being built, update clashed (with the app on the shell's branch
 and a failed push), long names (an existing app to connect, no remote),
@@ -266,17 +267,39 @@ Every route's view is `@app` now.
 - The story (the design system and shell say what they hold) is untouched by
   this change, and still agrees with the design.
 
-## Open questions
+## Clean up (redesign, 2026-10-21)
 
-- **Cleaning up branches, worktrees and sessions** (the person, 2026-10-21):
-  a mechanical "what can go, and remove it" view, being explored. Learned:
-  "Pull request open" is `published` in `builds.json`, set on push and never
-  cleared; tidying removes a branch only when its tip is in main, so a
-  branch that goes on after its PR merged (this one, after #33) or was
-  squash-merged stays, still claiming the PR is open. Proposed check for
-  squash and rebase merges: a trial merge (`git merge-tree --write-tree`)
-  of the branch, or of the pushed commit, into main that changes nothing
-  means its work is there. `gh`/`az` PR state confirms it when available.
+Branches and worktrees pile up (the person). The cause of a merged PR still
+"open": `published` in `builds.json` is set on push and never cleared, and
+tidying removes a branch only when its tip is in main, so one that goes on
+after its PR merged, or was squash-merged, stays. Decided:
+
+- **Mechanical, on the project page** (the person): Clean up… is a modal
+  (`/f/:project/cleanup`), offered under In progress with a count. It lists
+  what Prelude won't tidy itself, each with its reason; the person picks and
+  removes (R-c3j). Kinds: pull request merged with commits since, a branch
+  Prelude no longer lists (work in main), nothing done (a week old, R-m2e), a
+  worktree it no longer lists (work not in main, uncommitted files), and a
+  folder left from an earlier tidy. Only the safe ones start picked.
+- **Origin is opt-in** (the person): its branches are a group apart, under a
+  warning, never picked to start with (R-9xk).
+- **Running agents aren't cleaned up** (the person wasn't sure they're a
+  problem): one the agent is working in can't be picked (R-m2e).
+- **Squash merges**: the app tells "in main" by a trial merge
+  (`git merge-tree --write-tree`) that changes nothing, not ancestry; with the
+  commit pushed recorded, a PR is merged once that commit's merge changes
+  nothing, and `pullRequest` is `{ state, when, since }` (R-t5w). Tidy uses
+  the same test, so squash-merged branches go by themselves. `gh`/`az` PR
+  state confirms where available.
+- The POST takes `removed.<id>` fields; in the design a removed branch stays
+  under In progress (the design can't remove from two lists at once), the app
+  takes it out.
+
+**Brought back for it**: `page`, `_work` and `_branch` (changed: Clean up
+line, the merged pull request); `page`'s other partials copied unchanged.
+New: `_cleanup`, `_cleaned` (the notice).
+
+## Open questions
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own

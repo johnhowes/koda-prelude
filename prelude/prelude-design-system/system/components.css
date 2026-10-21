@@ -252,7 +252,9 @@
     padding: var(--space-3) var(--space-2); margin: 0 calc(-1 * var(--space-2));
     border-radius: var(--radius-md); color: var(--fg); text-decoration: none;
   }
-  a.item:hover { background: var(--surface-sunken); color: var(--fg); }
+  a.item:hover, label.item:hover { background: var(--surface-sunken); color: var(--fg); }
+  label.item { align-items: baseline; cursor: pointer; }
+  label.item > input { flex: none; transform: translateY(0.15em); }
   .item > .icon { color: var(--fg-subtle); }
   .item > form { margin: 0; }
   .item-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
