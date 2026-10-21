@@ -1,0 +1,3 @@
+# Fix: My "Prelude Shell" design was showing up as not designed,…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
