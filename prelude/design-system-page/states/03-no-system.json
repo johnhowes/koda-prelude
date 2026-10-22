@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "system": {
+        "project": { "id": "prelude", "name": "Prelude" },
+        "design": null,
+        "screens": [],
+        "frame": null
+      }
+    }
+  ]
+}

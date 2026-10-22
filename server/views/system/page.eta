@@ -1,0 +1,46 @@
+<%/* A project's design system, to read (prelude/design-system-page): its
+     gallery, the screens its design session shows, framed in the app, with a
+     segmented control to pick one when there's more than one. Changing it is
+     its design's: "Change it with the agent". With no design system, or
+     nothing in its gallery yet, the way to make it. `frame` is the screen on
+     show, on the preview origin; prepared by the app (system.js). */%>
+<% const s = it, screens = s.screens ?? [];
+   const makeUrl = s.design ? s.design.url : `/f/${s.project.id}/designs/new?kind=system`; %>
+<div class="center wide system-page" ko-item>
+  <div class="stack gap-6">
+    <div class="cluster gap-4">
+      <div class="stack gap-1">
+        <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= s.project.id %>"><%= s.project.name %></a></nav>
+        <h1><%= s.design ? s.design.title : 'Design system' %></h1>
+      </div>
+      <span class="spacer"></span>
+      <% if (s.frame) { %>
+      <a class="btn" href="<%= s.design.url %>"><span class="icon icon-agent" aria-hidden="true"></span>Change it with the agent</a>
+      <% } %>
+    </div>
+
+    <% if (!s.frame) { %>
+    <div class="empty page">
+      <span class="icon icon-design-system" aria-hidden="true"></span>
+      <div class="stack gap-2">
+        <h2><%= s.design ? 'Nothing in the design system yet' : `${s.project.name} has no design system yet` %></h2>
+        <p class="secondary">Its tokens, components and guidelines, which every design here uses. Shown here for the people who design and build with it.</p>
+      </div>
+      <div class="cluster actions">
+        <a class="btn primary large" href="<%= makeUrl %>"<% if (!s.design) { %> ko-target="modal?"<% } %>><span class="icon icon-agent" aria-hidden="true"></span>Design it with the agent…</a>
+      </div>
+    </div>
+    <% } else { %>
+    <% if (screens.length > 1) { %>
+    <nav class="segmented" aria-label="The design system’s pages">
+      <% for (const screen of screens) { %>
+      <a class="btn small" href="<%= screen.url %>"<% if (screen.current) { %> aria-current="true"<% } %>><%= screen.title %></a>
+      <% } %>
+    </nav>
+    <% } %>
+    <div class="card system-frame">
+      <iframe title="<%= s.frame.title %>" src="<%= s.frame.src %>"></iframe>
+    </div>
+    <% } %>
+  </div>
+</div>

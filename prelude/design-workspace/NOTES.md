@@ -461,6 +461,15 @@ Where the app differs from the screens, on purpose:
   approved it". The same check now keeps a design changed since it was
   approved from being ready to build (prelude/build, R-q3d). Views and states
   unchanged.
+- (fix, 2026-10-22, prelude/fixes/i-added-support-for-a-project-s-architecture-view-a)
+  An architecture design's surface is the Architecture page, as a design
+  system's is its gallery (the person: it should behave like designing the
+  system). It has no screens of its own, so the frame shows Prelude's own
+  `/f/:folder/architecture` for the session's folder, without the bar
+  (`bare`), once its overview is written; before then the surface says
+  "Nothing written yet…". The page menu lists the one page; Capture opens it
+  with `?framed=1`; there's nothing to approve. `_surface.eta` changed; this
+  design's views and states don't show an architecture design.
 
 ## Open questions
 
