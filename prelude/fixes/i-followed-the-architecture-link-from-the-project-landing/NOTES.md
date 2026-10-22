@@ -30,6 +30,23 @@ it.
   draft starter and not a feature's.
 - NOTES.md of Architecture and Design Workspace say so.
 
+## The render check after the change
+
+After the first turn, two Design Workspace drawers in "Pages differ" were
+stopped after 5s: About (`/f/borrower-portal/d/loan-offers/about`) and
+Rules (`…/rules`). Nothing was changed for this. The change probably isn't
+the cause:
+- The page they open over, in the same state, rendered, and so did every
+  other page and state. A mistake in `_starters.eta` would break all of
+  them.
+- `_starters.eta` gained only an `if` and a longer intro line, with no new
+  loops or reads.
+- `_about.eta` and `_rules.eta` weren't touched.
+
+More likely, the renders were slow because many pages were rendering at
+once. This hasn't been confirmed: those two pages haven't been rendered again
+since.
+
 ## What to check
 
 - Run `node --test test/system-page.test.js` (or `npm test`).
@@ -37,5 +54,8 @@ it.
   code…" → Create design. The session should offer only "Draft it from the
   code". Click "Start with this", then Send. The Architecture page should
   appear beside the chat once the agent writes overview.md.
+- Render Design Workspace's About and Rules drawers in "Pages differ" again.
+  They should render well within 5s. If they time out again, that points
+  to the drawers themselves, and is worth a fix of its own.
 - Feature designs should still show "Describe the feature" and "Start from
   a sketch or a screenshot".
