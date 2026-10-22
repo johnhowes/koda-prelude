@@ -35,7 +35,6 @@
       <% } %>
       <% if (!p.architecture) { %>
       <label class="choice"><input type="radio" name="kind" value="architecture"> <span>The project’s architecture <span class="muted">· drafted from the code; every agent reads it before it changes anything</span></span></label>
-      <label class="choice"><input type="radio" name="kind" value="architecture"> <span>The project’s architecture <span class="muted">· how it’s built, drafted from the code; every agent reads it</span></span></label>
       <% } %>
     </fieldset>
     <% } else { %>
