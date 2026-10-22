@@ -1,0 +1,12 @@
+{
+  "title": "Build: A flow",
+  "claudeSessionId": "039214a1-4684-4be4-9c8a-523bd3586bfd",
+  "started": true,
+  "startedAt": "2026-10-22T19:53:36.739Z",
+  "updatedAt": "2026-10-22T19:57:05.827Z",
+  "build": {
+    "group": "/f/:folder/architecture/flows/:flow",
+    "title": "A flow"
+  },
+  "from": "ac1eeef1bb0e9bd923f11a1753e941dfc9c51fdb"
+}
