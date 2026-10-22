@@ -1,0 +1,12 @@
+{
+  "title": "Build: Architecture",
+  "claudeSessionId": "0e916f53-36a4-4801-9020-3c78d09ff2ab",
+  "started": true,
+  "startedAt": "2026-10-22T13:57:36.627Z",
+  "updatedAt": "2026-10-22T14:12:09.234Z",
+  "build": {
+    "group": "/f/:folder/architecture",
+    "title": "Architecture"
+  },
+  "from": "a71d5fc114b8410209d24f091417e229e1d280bc"
+}

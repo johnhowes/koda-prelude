@@ -68,10 +68,12 @@ let liveCount = 0;
 export function withFindings(failures, message) {
   if (!failures?.length) return message;
   const line = f => `- ${f.path}${f.state ? ` (state "${f.state}")` : ''}: ${f.error}`;
-  const fix = failures.filter(f => !f.info);
+  const fix = failures.filter(f => !f.info && !f.architecture);
   const info = failures.filter(f => f.info);
+  const drifted = failures.filter(f => f.architecture);
   const parts = [];
   if (fix.length) parts.push(`(From Prelude, not the person: after your last turn, these didn't render, or point at nothing. Fix them along with what's asked below.)\n${fix.map(line).join('\n')}`);
+  if (drifted.length) parts.push(`(From Prelude, not the person: after your last turn, these in the files you changed don't match the project's architecture. Change the code, or propose a decision that changes the architecture, along with what's asked below.)\n${drifted.map(line).join('\n')}`);
   if (info.length) parts.push(`(From Prelude, for your information: how pages now differ from the screens the person approved. Expected porting differences are theirs to approve; anything else means the port isn't faithful.)\n${info.map(line).join('\n')}`);
   return `${parts.join('\n\n')}\n\n${message}`;
 }
@@ -167,9 +169,14 @@ export function createTurns({ runner, live, onChange = () => {} }) {
      * `recap` is told instead of `preface` if the conversation can't be
      * resumed (one carried onto a fix's branch, prelude/fix-something): the
      * agent starts afresh, once, with what was said so far.
+     * `architecture` is the project's ({ path }, architectureBrief), which a
+     * design's agent reads and may propose a decision in; `drift()`, after a
+     * turn of a build or a fix, checks the code it changed against it and
+     * returns what doesn't match ([{ file, text, next }]), told to the agent
+     * with the next message (R-4vx).
      */
     start(options) {
-      const { folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], preface = null, recap = null, view = plainView, onIdle = null } = options;
+      const { folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], architecture = null, drift = null, preface = null, recap = null, view = plainView, onIdle = null } = options;
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -207,12 +214,13 @@ export function createTurns({ runner, live, onChange = () => {} }) {
 
 ${withFindings(told, message)}` : withFindings(told, message),
         // A build session (step 7) brings its own instructions and permissions.
-        systemPrompt: `${systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack, shared })}
+        systemPrompt: `${systemPrompt ?? designPrompt({ title: design.title, designPath, references, kind: design.kind, format, system, shell, kodaPath, stack, shared, architecture })}
 
 ${DELETING}`,
         designPath,
         mode,
-        shared,
+        // A design's agent may propose a decision in the architecture (R-h9w).
+        shared: architecture && mode === 'design' ? [...shared, architecture.path] : shared,
         references: references.map(reference => reference.path),
         onEvent: event => {
           if (event.type === 'init') {
@@ -270,6 +278,18 @@ ${DELETING}`,
           if (!inside || inside.startsWith('..') || isAbsolute(inside)) continue;
           try { if (existsSync(file) && statSync(file).isFile() && statSync(file).size === 0) rmSync(file); } catch { /* left for the person */ }
         }
+        // The code it changed, checked against the architecture (R-4vx): what
+        // doesn't match is said to the person now, and to the agent with the
+        // next message, beside what the check below finds.
+        let drifted = [];
+        if (drift) {
+          try { drifted = (await drift()) ?? []; } catch (error) { console.error(error); }
+          if (drifted.length) {
+            record(ctx, { type: 'note', failed: true, text: `${drifted.length === 1 ? '1 thing in the code this turn changed doesn’t' : `${drifted.length} things in the code this turn changed don’t`} match the architecture: ${drifted.map(finding => finding.text).join(' ')} The agent is told with your next message.` });
+          }
+        }
+        const driftTold = drifted.map(finding => ({ architecture: true, state: null, path: finding.file, error: `${finding.text} ${finding.next}` }));
+        if (driftTold.length) findings.set(dKey, driftTold);
         // Render what the agent made, and say what doesn't: to the person now,
         // and to the agent with the next message. A build checks every screen
         // each time its turn ends, stopped or not (R-9xe): what it changed
@@ -294,6 +314,7 @@ ${DELETING}`,
                 ...(mode === 'build' ? ahead.map(member => ({ state: null, path: 'models', error: `the states have ${member}, which the app's model doesn't have yet` })) : []),
                 // ...and how its port differs from the approved screens.
                 ...(mode === 'build' ? differ.slice(0, 8).map(d => ({ info: true, state: null, path: d.name, error: `\n${d.diff.split('\n').slice(0, 14).join('\n')}` })) : []),
+                ...driftTold,
               ];
               if (told.length) findings.set(dKey, told);
               // Kept with the check, so a restarted Prelude still tells the agent.

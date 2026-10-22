@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Decisions
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/prelude/architecture/decisions" ko-scope="/">
+<div class="center architecture" ko-item>
+<div class="stack gap-6">
+<div class="stack gap-2">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude">
+Prelude
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude/architecture">
+Architecture
+</a>
+</nav>
+<h1>
+Decisions
+</h1>
+<p class="secondary">
+Why Prelude is built the way it is. An agent proposes one when a change would go against the architecture; it’s accepted when its branch is merged into main.
+</p>
+</div>
+<section aria-label="Decisions" class="card">
+<form action="/f/prelude/architecture/decisions" aria-label="Decisions" class="cluster gap-3" method="get" role="search">
+<input aria-label="Search decisions" autocomplete="off" class="decisions-search" id="q" name="q" placeholder="Search by id or title" type="search" value="">
+<span aria-label="Show" class="segmented" role="radiogroup">
+<label class="btn small">
+<input checked class="sr-only" id="statusAll" name="status" type="radio" value="">
+All
+</label>
+<label class="btn small">
+<input class="sr-only" id="statusProposed" name="status" type="radio" value="proposed">
+Proposed
+</label>
+<label class="btn small">
+<input class="sr-only" id="statusAccepted" name="status" type="radio" value="accepted">
+Accepted
+</label>
+<label class="btn small">
+<input class="sr-only" id="statusSuperseded" name="status" type="radio" value="superseded">
+Superseded
+</label>
+</span>
+<noscript>
+<button class="btn small" type="submit">
+Show
+</button>
+</noscript>
+</form>
+<div aria-live="polite" calc-ko-source="'/f/prelude/architecture/decision-list?q=' + encode(q.value) + '&status=' + (statusProposed.selected ? 'proposed' : statusAccepted.selected ? 'accepted' : statusSuperseded.selected ? 'superseded' : '')" class="stack gap-3" ko-as="decisionList" ko-debounce="250" ko-invoke="input:q change:statusAll change:statusProposed change:statusAccepted change:statusSuperseded">
+<ul class="list">
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-r0k" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+The code is checked against each part’s declared uses
+<span class="pill warn">
+Proposed
+</span>
+</span>
+<span class="muted">
+D-r0k · 22 Oct 2026 · Turns, Project files
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-e8y" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Prelude reads a project’s architecture from its files
+<span class="pill warn">
+Proposed
+</span>
+</span>
+<span class="muted">
+D-e8y · 22 Oct 2026 · Routes, Project files
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-q4u" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+A fix is its own kind of work, on its own branch
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-q4u · 19 Oct 2026 · Fixes, Branches
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-x5b" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+One layout for all the app’s pages
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-x5b · 18 Oct 2026 · Pages
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-a7e" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+A workspace layout for a design’s page
+<span class="pill">
+Superseded
+</span>
+</span>
+<span class="muted">
+D-a7e · 16 Oct 2026 · Pages
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-v6t" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Every design works on its own branch, in a worktree
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-v6t · 16 Oct 2026 · Branches, Turns
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-h3n" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Other stacks render through a host spoken to over HTTP
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-h3n · 15 Oct 2026 · Host contract, Design host
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-p8z" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Posts change a working copy, never the state’s file
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-p8z · 15 Oct 2026 · Design host, Design state
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-m4c" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Each design is served on an origin of its own
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-m4c · 15 Oct 2026 · Design host, Routes
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-9wd" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+A design is the app’s views, a route table and design-wide states
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-9wd · 15 Oct 2026 · Design host
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-2kx" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Views render in a sandboxed process
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-2kx · 15 Oct 2026 · Sandboxed renderer, Design host
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-w3n" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+The desktop app starts the server when none answers
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-w3n · 15 Oct 2026 · Desktop app
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-j2s" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+The agent uses ordinary file tools, not domain tools
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-j2s · 14 Oct 2026 · Agent runner, Claude CLI
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="decisionList">
+<p>
+Prelude couldn’t read the decisions. Try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="decisionList" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

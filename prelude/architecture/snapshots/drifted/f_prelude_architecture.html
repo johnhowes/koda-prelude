@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Architecture
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/prelude/architecture" ko-scope="/">
+<div class="center wide architecture" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude">
+Prelude
+</a>
+</nav>
+<h1>
+Architecture
+</h1>
+</div>
+<span class="spacer">
+</span>
+<a class="btn" href="/f/prelude/d/architecture">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Change it with the agent
+</a>
+</div>
+<div class="split" style="--side: 20rem">
+<div class="stack gap-6">
+<p class="secondary">
+A Node server that serves Prelude’s pages, runs the agent one turn per design, and serves each design on an origin of its own, as that app’s server would. The desktop app is a window on it. Everything it produces is a file in the project’s folder.
+</p>
+<section aria-labelledby="parts-title" class="card">
+<h2 id="parts-title">
+Parts
+</h2>
+<figure class="stack gap-2">
+<div aria-label="Prelude’s parts" class="map">
+<section aria-label="Windows" class="map-layer">
+<h3 class="map-label">
+Windows
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/desktop">
+<span class="map-node-title">
+Desktop app
+</span>
+<span class="muted">
+A window on the server
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/pages">
+<span class="map-node-title">
+Pages
+</span>
+<span class="muted">
+Views and stylesheets, in two shapes
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Server" class="map-layer">
+<h3 class="map-label">
+Server
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/routes">
+<span class="map-node-title">
+Routes
+</span>
+<span class="muted">
+Every URL Prelude answers
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/workspace">
+<span class="map-node-title">
+Design page
+</span>
+<span class="muted">
+The chat beside the design surface
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/build">
+<span class="map-node-title">
+Build
+</span>
+<span class="muted">
+What’s left to build, and its stories
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/fixes">
+<span class="map-node-title">
+Fixes
+</span>
+<span class="muted">
+One problem outside any design
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Work" class="map-layer">
+<h3 class="map-label">
+Work
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/turns">
+<span class="map-node-title">
+Turns
+</span>
+<span class="muted">
+One turn per design at a time
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/agent">
+<span class="map-node-title">
+Agent runner
+</span>
+<span class="muted">
+Runs the agent with each kind’s prompt
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/branches">
+<span class="map-node-title">
+Branches
+</span>
+<span class="muted">
+A branch and worktree per design
+</span>
+</a>
+</li>
+<li>
+<a class="map-node warn" href="/f/prelude/architecture/parts/host">
+<span class="map-node-title">
+Design host
+<span class="pill warn">
+1 to look at
+</span>
+</span>
+<span class="muted">
+Serves each design on its own origin
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/state">
+<span class="map-node-title">
+Design state
+</span>
+<span class="muted">
+Page, state and working copy, in memory
+</span>
+</a>
+</li>
+<li>
+<a class="map-node warn" href="/f/prelude/architecture/parts/live">
+<span class="map-node-title">
+Live channels
+<span class="pill warn">
+1 to look at
+</span>
+</span>
+<span class="muted">
+Server-sent events to every window
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Rendering" class="map-layer">
+<h3 class="map-label">
+Rendering
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node warn" href="/f/prelude/architecture/parts/renderer">
+<span class="map-node-title">
+Sandboxed renderer
+<span class="pill warn">
+1 to look at
+</span>
+</span>
+<span class="muted">
+Renders views in a fenced process
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/hosts">
+<span class="map-node-title">
+Host contract
+</span>
+<span class="muted">
+Other stacks, over HTTP
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Storage" class="map-layer">
+<h3 class="map-label">
+Storage
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/files">
+<span class="map-node-title">
+Project files
+</span>
+<span class="muted">
+Everything under prelude/
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/machine">
+<span class="map-node-title">
+Machine-local
+</span>
+<span class="muted">
+~/.prelude: this machine only
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside Prelude" class="map-layer">
+<h3 class="map-label">
+Outside Prelude
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/claude">
+<span class="map-node-title">
+Claude CLI
+</span>
+<span class="muted">
+The agent
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/git">
+<span class="map-node-title">
+Git
+</span>
+<span class="muted">
+Branches, worktrees, merges
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/apphost">
+<span class="map-node-title">
+An app’s host
+</span>
+<span class="muted">
+Renders views in another stack
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Each part uses parts in its own layer or below it. Open one for what it’s responsible for, what it uses and its files.
+</figcaption>
+</figure>
+</section>
+<section aria-labelledby="principles-title" class="card">
+<h2 id="principles-title">
+Principles
+</h2>
+<ul class="list">
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+The folder is the database.
+</span>
+<span class="secondary">
+Everything Prelude produces is a file under prelude/, committed with the code. ~/.prelude holds only this machine’s conveniences, so nothing is lost if it goes.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+The server is the one source of live state.
+</span>
+<span class="secondary">
+Every window, the pop-out and a browser tab render from the server and follow it over its live channel, so none holds what another needs.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Code the agent wrote runs only in the sandbox.
+</span>
+<span class="secondary">
+A design’s views are JavaScript written by the agent; rendering them in the server would undo the fences on what the agent may read and write.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Prelude knows no stack.
+</span>
+<span class="secondary">
+A host renders the views; Prelude does everything else (routes, states, forms, the check), so every stack gets all of it.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Committed files merge cleanly.
+</span>
+<span class="secondary">
+Several people work on one project on different branches: names never collide, transcripts only grow, and no index is rewritten by every session.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+A design’s memory is its files.
+</span>
+<span class="secondary">
+A design spans many sessions; each starts from the design’s files and notes, never from an earlier conversation.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Every native feature has a web fallback.
+</span>
+<span class="secondary">
+The desktop app makes things nicer. It never makes them possible.
+</span>
+</span>
+</li>
+</ul>
+</section>
+</div>
+<aside aria-label="About the architecture" class="side stack gap-6">
+<section aria-labelledby="check-title" class="card" ko-as="check" ko-invoke="event:architecture-checked" ko-source="/f/prelude/architecture/check">
+<h2 id="check-title">
+Checked against the code
+</h2>
+<p class="secondary">
+5 things in the code don’t match the architecture. Change the code, or propose a decision that changes the architecture.
+</p>
+<ul class="list">
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Sandboxed renderer uses Design host, a layer above it.
+</span>
+<span class="muted">
+<code>
+server/renderer.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/renderer">
+Sandboxed renderer
+</a>
+</span>
+<span class="secondary">
+Pass what it needs in the render job instead, so the fenced process stays small.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Design host uses Branches, which it doesn’t say it may.
+</span>
+<span class="muted">
+<code>
+server/host.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/host">
+Design host
+</a>
+</span>
+<span class="secondary">
+Add Branches to what it may use, or move the use into Turns.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Live channels names server/sse.js, which isn’t there.
+</span>
+<span class="muted">
+<code>
+server/sse.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/live">
+Live channels
+</a>
+</span>
+<span class="secondary">
+Take it out of the part’s files, or name the file that took its place.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+server/capture.js belongs to no part.
+</span>
+<span class="muted">
+<code>
+server/capture.js
+</code>
+</span>
+<span class="secondary">
+Name it in a part’s files.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+server/speech-models.js belongs to no part.
+</span>
+<span class="muted">
+<code>
+server/speech-models.js
+</code>
+</span>
+<span class="secondary">
+Name it in a part’s files.
+</span>
+</span>
+</li>
+</ul>
+<p class="muted">
+Checked 4 minutes ago, 66 files read.
+</p>
+</section>
+<section aria-labelledby="decisions-title" class="card">
+<h2 id="decisions-title">
+Decisions
+</h2>
+<p class="secondary">
+2 are proposed, waiting for its branch to be merged.
+</p>
+<ul class="list">
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-r0k" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+The code is checked against each part’s declared uses
+<span class="pill warn">
+Proposed
+</span>
+</span>
+<span class="muted">
+D-r0k · 22 Oct 2026 · Turns, Project files
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-e8y" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Prelude reads a project’s architecture from its files
+<span class="pill warn">
+Proposed
+</span>
+</span>
+<span class="muted">
+D-e8y · 22 Oct 2026 · Routes, Project files
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-q4u" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+A fix is its own kind of work, on its own branch
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-q4u · 19 Oct 2026 · Fixes, Branches
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-x5b" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+One layout for all the app’s pages
+<span class="pill">
+Accepted
+</span>
+</span>
+<span class="muted">
+D-x5b · 18 Oct 2026 · Pages
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-a7e" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+A workspace layout for a design’s page
+<span class="pill">
+Superseded
+</span>
+</span>
+<span class="muted">
+D-a7e · 16 Oct 2026 · Pages
+</span>
+</span>
+</a>
+</li>
+</ul>
+<a href="/f/prelude/architecture/decisions">
+All 13 decisions
+</a>
+</section>
+<section aria-labelledby="flows-title" class="card">
+<h2 id="flows-title">
+Flows
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/prelude/architecture/flows/turn">
+<span class="item-text">
+<span class="item-title">
+A turn
+</span>
+<span class="muted">
+8 steps
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/flows/overlay">
+<span class="item-text">
+<span class="item-title">
+A deep link to a drawer
+</span>
+<span class="muted">
+5 steps
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/flows/post">
+<span class="item-text">
+<span class="item-title">
+A form posted in a design
+</span>
+<span class="muted">
+5 steps
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="agents-title" class="card">
+<h2 id="agents-title">
+Read by every agent
+</h2>
+<p class="secondary">
+Design, build and fix sessions read the principles and the parts their change reaches. A change that would go against them is proposed as a decision, on its branch, for you to review.
+</p>
+<p class="muted">
+From
+<code>
+prelude/architecture/architecture/
+</code>
+</p>
+</section>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

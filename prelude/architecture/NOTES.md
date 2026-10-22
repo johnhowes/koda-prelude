@@ -79,6 +79,33 @@ check card.
 Design system: added the **map** component (`.map`, layers of part boxes)
 and the words architecture, part, decision, flow.
 
+## Built (2026-10-22)
+
+- **The overview, its check and the decision list** are the app's views
+  (`server/views/architecture/`), answered in `server/main.js` from
+  `server/architecture.js`, which reads the files and runs the check. The
+  part, decision, flow and Decisions pages are still to build.
+- **The files' format** is what `architecture.js` reads and the architecture
+  design's agent is told (`architectureSection` in agent.js): a `# title`,
+  then `key: value` header lines (a part's `layer`, `kind`, `short` for the
+  map, `files`, `uses`; a decision's `status`, `date` as YYYY-MM-DD, `parts`,
+  `supersedes`; a flow's `decisions`), then `## ` sections. Flow steps are
+  `1. <part id>: <text>`; principles `- **Title.** Why.`
+- **What the check expects to belong to a part**: code files under a folder a
+  part's glob names (`server/views/**` covers `server/views/`, recursively),
+  and files beside a file a part names (`server/main.js` covers `server/`'s own
+  files, not its subfolders), so tests and tools aren't reported unless a part
+  names something there. JavaScript and TypeScript imports only, so far.
+- **The check after a turn** runs for build and fix sessions on a branch, over
+  the files the turn changed outside `prelude/`; what doesn't match is a note
+  in the chat and is told with the next message (`withFindings`). The project's
+  last check is kept in memory, per folder, and read again when the folder's
+  commit has moved. `architecture-checked` goes down the app's channel (`/live`).
+- **New design** takes `?kind=architecture` (the empty page's "Draft it from
+  the code…"): no other kind to pick, and no stack asked, since it's markdown.
+- **Design sessions** may write in the architecture's folder, to propose a
+  decision (R-h9w); build and fix sessions could already.
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in
@@ -88,3 +115,5 @@ and the words architecture, part, decision, flow.
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
 - The readers for other stacks (above): agreed, or the host after all?
+- The architecture design's own page has no design surface to show (no
+  screens or views): should it show the Architecture page beside the chat?

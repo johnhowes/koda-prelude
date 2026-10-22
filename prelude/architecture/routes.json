@@ -1,6 +1,6 @@
 {
-  "/f/:folder/architecture": { "view": "architecture/overview", "title": "Architecture", "data": "folders/:folder/architecture" },
-  "/f/:folder/architecture/check": { "view": "architecture/_check", "data": "folders/:folder/architecture" },
+  "/f/:folder/architecture": { "view": "@app/server/views/architecture/overview", "title": "Architecture", "data": "folders/:folder/architecture" },
+  "/f/:folder/architecture/check": { "view": "@app/server/views/architecture/_check", "data": "folders/:folder/architecture" },
 
   "/f/:folder/architecture/parts/:part": { "view": "architecture/part", "title": "A part", "data": "folders/:folder/architecture/parts/:part" },
 
@@ -9,7 +9,7 @@
     "list": "decisions", "search": { "q": ["id", "title"] }, "match": { "status": "status" }
   },
   "/f/:folder/architecture/decision-list": {
-    "view": "architecture/_decisions", "data": "folders/:folder/architecture",
+    "view": "@app/server/views/architecture/_decisions", "data": "folders/:folder/architecture",
     "list": "decisions", "search": { "q": ["id", "title"] }, "match": { "status": "status" }
   },
   "/f/:folder/architecture/decisions/:decision": {

@@ -13,12 +13,13 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
-import { PRELUDE_DIR, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
+import { appBuildPrompt, architectureBrief, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
+import { PRELUDE_DIR, SPECIAL_KINDS, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
 import { fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
+import { architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
@@ -127,6 +128,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     carry: args => runner.carry?.(args) ?? false,
     dictation: createDictation({ home, live }),   // the speech model, on this machine
     stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
+    architectureChecks: createArchitectureChecks(),   // each project's last check against its architecture (architecture.js)
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -588,6 +590,22 @@ async function handle(req, res, app) {
     if (rest === '/designs' && req.method === 'GET') return projectPart(200, 'projects/_designs', { parts: { work: false } });
     if (rest === '/app' && req.method === 'GET') return projectPart(200, 'projects/_app', { parts: { work: false, designs: false } });
 
+    // The project's architecture (prelude/architecture), read from its
+    // architecture design's files (architecture.js), on the design system:
+    //   GET  /f/<id>/architecture                 the overview
+    //   GET  /f/<id>/architecture/check           how the code compares with it, a region
+    //   GET  /f/<id>/architecture/decision-list   the decisions, as ?q= and ?status= leave them, a region
+    // The check region reloads on architecture-checked, sent down the app's
+    // channel when a turn's check has read the code again (R-4vx).
+    const architectureViews = { '/architecture': 'architecture/overview', '/architecture/check': 'architecture/_check', '/architecture/decision-list': 'architecture/_decisions' };
+    if (Object.hasOwn(architectureViews, rest) && req.method === 'GET') {
+      let model;
+      try { model = architectureOf(app, folder, { query, filter: rest === '/architecture/decision-list' }); } catch (error) { return unreadable(error); }
+      // The page alone for a region asking from a page in the app layout (askedFromLayout); its parts alone for any region.
+      const alone = fragment && (rest !== '/architecture' || askedFromLayout(req, 'app'));
+      return send(res, 200, shaped(architectureViews[rest], model, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
+    }
+
     // Clean up, in the modal: what Prelude leaves to the person (R-c3j).
     // Only what's picked goes: each item posts removed.<id>, a hidden false
     // before its checkbox, so the last value is the one that counts. One the
@@ -687,7 +705,7 @@ async function handle(req, res, app) {
 
     if (rest === '/designs' && req.method === 'POST' && !folder.branch) {
       const form = await readForm(req);
-      const input = { title: String(form.get('title') ?? ''), area: String(form.get('area') ?? ''), kind: ['system', 'shell'].includes(form.get('kind')) ? form.get('kind') : 'design' };
+      const input = { title: String(form.get('title') ?? ''), area: String(form.get('area') ?? ''), kind: Object.hasOwn(SPECIAL_KINDS, form.get('kind')) ? form.get('kind') : 'design' };
       // Refused, the fields come back alone, with what was typed and why; on
       // a cold load, in New design over the page. The fields hold only the
       // title and the area, so a refusal of the kind (the app comes first, or
@@ -704,8 +722,8 @@ async function handle(req, res, app) {
       // Designs of views are written in the app's language (step 8). The first
       // one settles the stack: the default, or one described. A described
       // stack's app, with its design host, is built before any design of views.
-      // The design system is plain HTML, so it needs no stack.
-      if (input.kind !== 'system') {
+      // The design system is plain HTML, and the architecture markdown, so neither needs a stack.
+      if (input.kind !== 'system' && input.kind !== 'architecture') {
         let state = appOf(folder.path);
         if (form.get('existing') === 'yes' && !state.stack && !state.built) state = markExisting(folder.path);
         if (!state.stack && !state.existing) state = chooseStack(folder.path, String(form.get('stack') ?? '').trim() || DEFAULT_STACK);
@@ -722,7 +740,7 @@ async function handle(req, res, app) {
         const existing = designsHere();
         if (input.kind !== 'design') {
           const same = existing.find(design => design.kind === input.kind);
-          if (same) return refused(422, { kind: `This project already has ${input.kind === 'system' ? 'a design system' : 'an app shell'}: "${same.title}".` });
+          if (same) return refused(422, { kind: `This project already has ${SPECIAL_KINDS[input.kind]}: "${same.title}".` });
         }
         if (!id.split('/').at(-1)) return refused(422, { title: 'The title needs at least one letter or digit.' });
         if (existing.some(design => design.id === id)) return refused(422, { title: `prelude/${id} already exists.` });
@@ -911,7 +929,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }
@@ -1785,6 +1803,12 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       system,
       shell,
       shared,
+      // The project's architecture, read before anything changes (R-c2m); a
+      // build's or a fix's code checked against it after each turn (R-4vx).
+      architecture: architectureFor(),
+      drift: entry && (session?.build || design.kind === 'fix')
+        ? () => checkAfterTurn(app, folder, changedSince(folder.path, 'HEAD'), { announce: () => tell(app, { architecture: true }) })
+        : null,
       format: format(),
       kodaPath: views ? kodaPackage : null,
       stack: (() => { const config = readHostConfig(folder.path); return config && { ext: config.views, guide: config.guide }; })(),
@@ -1841,6 +1865,16 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       ...fixContext(references),
       ...askContext(references),
     };
+  };
+
+  // The project's architecture as this folder has it (prelude/architecture):
+  // { path } of its architecture/ folder, or null - none written yet, one only
+  // on another branch (agents there don't see it), or this is the architecture.
+  const architectureFor = () => {
+    if (design.kind === 'architecture') return null;
+    const found = findArchitecture(app, folder);
+    if (!isWritten(found) || !found.dir.startsWith(join(folder.path, PRELUDE_DIR))) return null;
+    return { path: `${found.path}/architecture` };
   };
 
   // A session that began as a conversation with no branch, and moved onto
@@ -1904,7 +1938,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     return {
       mode: 'fix',
       shared: [],
-      systemPrompt: fixPrompt({ title: design.title, fixPath: `${PRELUDE_DIR}/${design.id}`, designs, app: project, branch: entry.branch, references, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaPackage }),
+      systemPrompt: fixPrompt({ title: design.title, fixPath: `${PRELUDE_DIR}/${design.id}`, designs, app: project, branch: entry.branch, references, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaPackage, architecture: architectureFor() }),
       check: async () => {
         const changed = changedSince(entry.path, entry.base);
         const designFile = path => !/\/(sessions|snapshots)\//.test(path);
@@ -2034,16 +2068,20 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const stories = group.slug && group.fingerprint
       ? storiesBrief(dir, group.slug, readStory(dir, group.slug, { url: '', fingerprint: group.fingerprint, changes: group.changes }), designPath)
       : null;
+    // Every build reads the architecture first (R-c2m): a page's brief says so
+    // itself; the app's and the layouts' are told after theirs.
+    const architecture = architectureFor();
+    const told = prompt => (architecture ? `${prompt}\n\n${architectureBrief(architecture)}` : prompt);
     return {
       mode: 'build',
       systemPrompt: build.group === LAYOUTS_GROUP.key
-        ? layoutsBuildPrompt({ shell: design, layouts: layouts?.unbuilt ?? [], app: appOf(folder.path), branch: entry.branch, references, stack, kodaPath: kodaPackage })
+        ? told(layoutsBuildPrompt({ shell: design, layouts: layouts?.unbuilt ?? [], app: appOf(folder.path), branch: entry.branch, references, stack, kodaPath: kodaPackage }))
         : isApp && appOf(folder.path).existing
-        ? connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage })
+        ? told(connectAppPrompt({ shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage }))
         : isApp
-        ? appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion })
+        ? told(appBuildPrompt({ folderPath: folder.path, stack: appOf(folder.path).stack ?? DEFAULT_STACK, shell: design, designs: listDesigns(folder.path), system: systemFor(), branch: entry.branch, references, kodaPath: kodaPackage, kodaVersion }))
         // Across the design is the design-wide rules and events themselves.
-        : buildPrompt({ title: design.title, designPath, group, change: group.incremental ? group.change : null, designWide: group.key === ACROSS.key ? [] : backlog.designWide, designEvents: group.key === ACROSS.key ? [] : backlog.events ?? [], layouts: pageLayouts, stories, branch: entry.branch, references, stack, kodaPath: kodaPackage }),
+        : buildPrompt({ title: design.title, designPath, group, change: group.incremental ? group.change : null, designWide: group.key === ACROSS.key ? [] : backlog.designWide, designEvents: group.key === ACROSS.key ? [] : backlog.events ?? [], layouts: pageLayouts, stories, branch: entry.branch, references, stack, kodaPath: kodaPackage, architecture }),
     };
   };
 

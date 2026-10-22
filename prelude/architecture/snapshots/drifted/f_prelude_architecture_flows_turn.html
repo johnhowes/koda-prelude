@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+A flow
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<details class="menu" ko-as="projects">
+<summary class="btn small ghost">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</summary>
+<ul class="menu-list">
+<li>
+<a href="/f/spark-lending" ko-set="projects.open = false">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal" ko-set="projects.open = false">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude" ko-set="projects.open = false">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/" ko-set="projects.open = false">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</details>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/prelude/architecture/flows/turn" ko-scope="/">
+<div class="center wide architecture" ko-item>
+<div class="stack gap-8">
+<div class="stack gap-2">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude">
+Prelude
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude/architecture">
+Architecture
+</a>
+<span aria-hidden="true">
+›
+</span>
+<span>
+Flows
+</span>
+</nav>
+<h1>
+A turn
+</h1>
+<p class="secondary">
+From the person’s message to the check that follows the agent’s answer.
+</p>
+</div>
+<div class="split" style="--side: 18rem">
+<section aria-labelledby="steps-title" class="card">
+<h2 id="steps-title">
+Steps
+</h2>
+<table class="table">
+<thead>
+<tr>
+<th class="num" scope="col">
+Step
+</th>
+<th scope="col">
+Part
+</th>
+<th scope="col">
+What happens
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="num">
+1
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/routes">
+Routes
+</a>
+</td>
+<td>
+The message is posted from the composer, from Prelude’s own origin.
+</td>
+</tr>
+<tr>
+<td class="num">
+2
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/turns">
+Turns
+</a>
+</td>
+<td>
+If the design has a turn running, the message waits; otherwise this turn starts.
+</td>
+</tr>
+<tr>
+<td class="num">
+3
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/agent">
+Agent runner
+</a>
+</td>
+<td>
+Runs the Claude CLI in the design’s worktree, with the kind’s prompt, the findings from the last check, and its permissions.
+</td>
+</tr>
+<tr>
+<td class="num">
+4
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/live">
+Live channels
+</a>
+</td>
+<td>
+Each streamed event goes to the session’s windows as it’s written.
+</td>
+</tr>
+<tr>
+<td class="num">
+5
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/files">
+Project files
+</a>
+</td>
+<td>
+Finished messages are appended to the transcript.
+</td>
+</tr>
+<tr>
+<td class="num">
+6
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/branches">
+Branches
+</a>
+</td>
+<td>
+When the turn ends, the files it emptied are deleted and the turn is committed.
+</td>
+</tr>
+<tr>
+<td class="num">
+7
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/host">
+Design host
+</a>
+</td>
+<td>
+Renders every route in every state, and compares the pages with the approved screens.
+</td>
+</tr>
+<tr>
+<td class="num">
+8
+</td>
+<td>
+<a href="/f/prelude/architecture/parts/turns">
+Turns
+</a>
+</td>
+<td>
+Pages that don’t render are kept for the agent’s next message; the next waiting message starts.
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<aside aria-label="Behind it" class="side stack gap-6">
+<section aria-labelledby="flow-decisions-title" class="card gap-2">
+<h2 id="flow-decisions-title">
+Decisions behind it
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-v6t" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+Every design works on its own branch, in a worktree
+</span>
+<span class="muted">
+D-v6t
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/prelude/architecture/decisions/D-j2s" ko-target="drawer?">
+<span class="item-text">
+<span class="item-title">
+The agent uses ordinary file tools, not domain tools
+</span>
+<span class="muted">
+D-j2s
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<p class="muted">
+From
+<code>
+prelude/architecture/architecture/flows/turn.md
+</code>
+</p>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

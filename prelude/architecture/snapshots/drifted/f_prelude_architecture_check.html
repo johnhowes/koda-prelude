@@ -1,0 +1,98 @@
+<h2 id="check-title">
+Checked against the code
+</h2>
+<p class="secondary">
+5 things in the code don’t match the architecture. Change the code, or propose a decision that changes the architecture.
+</p>
+<ul class="list">
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Sandboxed renderer uses Design host, a layer above it.
+</span>
+<span class="muted">
+<code>
+server/renderer.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/renderer">
+Sandboxed renderer
+</a>
+</span>
+<span class="secondary">
+Pass what it needs in the render job instead, so the fenced process stays small.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Design host uses Branches, which it doesn’t say it may.
+</span>
+<span class="muted">
+<code>
+server/host.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/host">
+Design host
+</a>
+</span>
+<span class="secondary">
+Add Branches to what it may use, or move the use into Turns.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Live channels names server/sse.js, which isn’t there.
+</span>
+<span class="muted">
+<code>
+server/sse.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/live">
+Live channels
+</a>
+</span>
+<span class="secondary">
+Take it out of the part’s files, or name the file that took its place.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+server/capture.js belongs to no part.
+</span>
+<span class="muted">
+<code>
+server/capture.js
+</code>
+</span>
+<span class="secondary">
+Name it in a part’s files.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+server/speech-models.js belongs to no part.
+</span>
+<span class="muted">
+<code>
+server/speech-models.js
+</code>
+</span>
+<span class="secondary">
+Name it in a part’s files.
+</span>
+</span>
+</li>
+</ul>
+<p class="muted">
+Checked 4 minutes ago, 66 files read.
+</p>

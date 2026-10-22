@@ -6,11 +6,13 @@
 // design.json on each path. A design's id is its path relative to prelude/,
 // with forward slashes (plan: "Designs, features and areas").
 //
-// Two kinds of design are special, one of each per folder, and designs in
+// Three kinds of design are special, one of each per folder, and designs in
 // every other way (plan: steps 5 and 6):
-//   "kind": "system" - the folder's design system: a system/ folder of
-//                      tokens, components and guidelines the others link;
-//   "kind": "shell"  - the app's shell: the layouts the others render in.
+//   "kind": "system"       - the folder's design system: a system/ folder of
+//                            tokens, components and guidelines the others link;
+//   "kind": "shell"        - the app's shell: the layouts the others render in;
+//   "kind": "architecture" - how the project is built: an architecture/
+//                            folder of markdown every agent reads (architecture.js).
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -38,7 +40,7 @@ export function areaSegments(area) {
 /** The id a new design would get: its area's segments and its title's slug. */
 export const designIdOf = ({ title, area }) => [...areaSegments(area), slugify(String(title ?? '').trim())].join('/');
 
-export const SPECIAL_KINDS = { system: 'a design system', shell: 'an app shell' };
+export const SPECIAL_KINDS = { system: 'a design system', shell: 'an app shell', architecture: 'an architecture' };
 const kindOf = meta => (Object.hasOwn(SPECIAL_KINDS, meta.kind) ? meta.kind : 'design');
 
 /** The folder's design of a special kind, if it has one (the first, should there be two). */
