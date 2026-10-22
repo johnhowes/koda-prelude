@@ -1,0 +1,125 @@
+{
+  "at": "2026-10-22T20:31:34.710Z",
+  "shots": [
+    {
+      "id": "typical~f_prelude_architecture",
+      "key": "typical/f_prelude_architecture",
+      "path": "/f/prelude/architecture",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Architecture",
+      "group": "Architecture",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_architecture_parts_desktop",
+      "key": "typical/f_prelude_architecture_parts_desktop",
+      "path": "/f/prelude/architecture/parts/desktop",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "A part",
+      "group": "A part",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_architecture_decisions",
+      "key": "typical/f_prelude_architecture_decisions",
+      "path": "/f/prelude/architecture/decisions",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Decisions",
+      "group": "Decisions",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_architecture_decisions_D-r0k",
+      "key": "typical/f_prelude_architecture_decisions_D-r0k",
+      "path": "/f/prelude/architecture/decisions/D-r0k",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "A decision",
+      "group": "Decisions",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_architecture_flows_turn",
+      "key": "typical/f_prelude_architecture_flows_turn",
+      "path": "/f/prelude/architecture/flows/turn",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "A flow",
+      "group": "A flow",
+      "status": "matches"
+    },
+    {
+      "id": "not-written~f_prelude_architecture",
+      "key": "not-written/f_prelude_architecture",
+      "path": "/f/prelude/architecture",
+      "stateId": "not-written",
+      "state": "Not written",
+      "page": "Architecture",
+      "group": "Architecture",
+      "status": "matches"
+    },
+    {
+      "id": "not-written~f_prelude_architecture_decisions",
+      "key": "not-written/f_prelude_architecture_decisions",
+      "path": "/f/prelude/architecture/decisions",
+      "stateId": "not-written",
+      "state": "Not written",
+      "page": "Decisions",
+      "group": "Decisions",
+      "status": "matches"
+    },
+    {
+      "id": "drifted~f_prelude_architecture",
+      "key": "drifted/f_prelude_architecture",
+      "path": "/f/prelude/architecture",
+      "stateId": "drifted",
+      "state": "Drifted",
+      "page": "Architecture",
+      "group": "Architecture",
+      "status": "matches"
+    },
+    {
+      "id": "drifted~f_prelude_architecture_parts_desktop",
+      "key": "drifted/f_prelude_architecture_parts_desktop",
+      "path": "/f/prelude/architecture/parts/desktop",
+      "stateId": "drifted",
+      "state": "Drifted",
+      "page": "A part",
+      "group": "A part",
+      "status": "matches"
+    },
+    {
+      "id": "drifted~f_prelude_architecture_decisions",
+      "key": "drifted/f_prelude_architecture_decisions",
+      "path": "/f/prelude/architecture/decisions",
+      "stateId": "drifted",
+      "state": "Drifted",
+      "page": "Decisions",
+      "group": "Decisions",
+      "status": "matches"
+    },
+    {
+      "id": "drifted~f_prelude_architecture_decisions_D-r0k",
+      "key": "drifted/f_prelude_architecture_decisions_D-r0k",
+      "path": "/f/prelude/architecture/decisions/D-r0k",
+      "stateId": "drifted",
+      "state": "Drifted",
+      "page": "A decision",
+      "group": "Decisions",
+      "status": "matches"
+    },
+    {
+      "id": "drifted~f_prelude_architecture_flows_turn",
+      "key": "drifted/f_prelude_architecture_flows_turn",
+      "path": "/f/prelude/architecture/flows/turn",
+      "stateId": "drifted",
+      "state": "Drifted",
+      "page": "A flow",
+      "group": "A flow",
+      "status": "matches"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ import { fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
+import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, findingsOf, isWritten } from './architecture.js';
 import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
@@ -954,8 +954,10 @@ const mainOf = folder => mainBranch(folder.path);
 
 /**
  * What Prelude knows is wrong in a project, for a conversation about it to
- * start from (prelude/fix-something): a build that stopped, and a branch whose
- * pages don't render. [{ icon, title, says }].
+ * start from (prelude/fix-something): a build that stopped, a branch whose
+ * pages don't render, and each thing in the code that doesn't match the
+ * architecture (R-f3n), told with its file, its part and what doesn't match.
+ * [{ icon, title, says, start?, message? }].
  */
 function troublesOf(app, project) {
   if (!project || project.branch) return [];
@@ -967,7 +969,16 @@ function troublesOf(app, project) {
     if (state.check !== 'failing') return [];
     return [{ icon: 'close', title: `${state.title}’s pages don’t render`, says: `${state.failures === 1 ? '1 page doesn’t' : `${state.failures} pages don’t`} render on ${entry.branch}.` }];
   });
-  return [...stopped, ...failing];
+  let findings = [];
+  try { findings = findingsOf(app, project); } catch { /* an unreadable architecture offers nothing to start from */ }
+  const drifted = findings.map(finding => {
+    const where = `${finding.file}, ${finding.part ? `in ${finding.part.title}` : 'in no part'}`;
+    return {
+      icon: 'code', title: finding.text, says: where, start: `Fix: ${finding.text}`,
+      message: `${where}, doesn’t match the architecture: ${finding.text} Change the code to match it, or tell me why a decision should change the architecture instead. `,
+    };
+  });
+  return [...stopped, ...failing, ...drifted];
 }
 
 /**

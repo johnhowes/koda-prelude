@@ -66,7 +66,7 @@ import { presentEntry as presentWords } from './views.js';
  *
  * @typedef {{ id: string, title: string, started: string, lastLine?: string }} SessionItem
  *
- * @typedef {{ icon: string, title: string, says: string }} Trouble
+ * @typedef {{ icon: string, title: string, says: string, start?: string, message?: string }} Trouble  `start` and `message` when it isn't "Find out why"
  *
  * @typedef {object} TurnState
  * @property {'idle'|'working'|'checking'|'stopping'|'busy'} kind

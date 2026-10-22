@@ -424,6 +424,18 @@ export function runCheck(app, folder, found, written = readArchitecture(found, {
 }
 
 /**
+ * What doesn't match in a folder's code now, from its last check (read again
+ * when its commit has moved): [] with no architecture written.
+ * @returns {Finding[]}
+ */
+export function findingsOf(app, folder) {
+  const found = findArchitecture(app, folder);
+  if (!isWritten(found)) return [];
+  const last = app.architectureChecks.get(folder.id);
+  return (last?.head && last.head === headOf(folder.path) ? last : runCheck(app, folder, found)).findings;
+}
+
+/**
  * After a turn that changed code (R-4vx): the files it changed are checked
  * against the architecture, the project's check is updated, and the pages
  * showing it are told (architecture-checked). Returns the findings in the

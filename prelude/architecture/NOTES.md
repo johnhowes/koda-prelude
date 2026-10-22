@@ -165,6 +165,19 @@ the overview is written (`server/views/_starters.eta`).
   back in the design, with `_decision-item` copied unchanged for the
   overview's include.
 
+## Built: fixing what the check found (2026-10-22)
+
+- **The check card's two links** are in the app's `_check`; the overview was
+  unchanged, so it's as it was.
+- **Ask or fix offers each finding** (R-f3n): `troublesOf` in `server/main.js`
+  adds the project's findings (`findingsOf` in `architecture.js`, its last
+  check, read again when the commit has moved) as troubles with their own
+  starter, "Fix: <finding>", detailed with the file and its part. Starting
+  from one puts "<file>, in <part>, doesn’t match the architecture: <finding>
+  Change the code to match it, or tell me why a decision should change the
+  architecture instead." in the box. Only in the project, as the other
+  troubles are, not in a branch's worktree.
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in
