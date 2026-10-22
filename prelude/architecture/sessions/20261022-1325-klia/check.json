@@ -59,7 +59,7 @@
       "state": "Not written",
       "page": "Architecture",
       "group": "Architecture",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "not-written~f_prelude_architecture_decisions",

@@ -186,6 +186,14 @@ Try again
 <div id="modal" ko-focus="region" ko-region tabindex="-1">
 </div>
 </dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
 <div hidden ko-connect="/_prelude/live">
 </div>
 <script type="module">
