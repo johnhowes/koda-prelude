@@ -151,6 +151,14 @@ binding, not an action.
 `ko-scope` is the idiomatic default for master-detail and is what makes a
 server-rendered `<a href>` need no client attributes at all. Prefer it.
 
+**Declare the scope; do not lean on the one a region infers.** A region with
+no `ko-scope` owns what it last loaded and what is beneath it - so a detail
+panel showing `/orders/42` does not own `/orders/43`, and its "next" link goes
+to the shell. What it owns follows the content, redirects included, and a panel
+that owns something different after every load is how content ends up in the
+shell. If links
+should land in a region whatever it is showing, write `ko-scope`.
+
 **When a region answers with itself, say `ko-attach="replace"`.** The default is
 to replace a region's *children*, which is right for a panel and wrong for a row
 that saves itself and gets a row back:

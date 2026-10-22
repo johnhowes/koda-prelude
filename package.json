@@ -17,7 +17,7 @@
     "check": "node tools/check.js"
   },
   "dependencies": {
-    "@kodalang/core": "0.1.2",
+    "@kodalang/core": "0.1.4",
     "eta": "4.6.0"
   },
   "devDependencies": {
