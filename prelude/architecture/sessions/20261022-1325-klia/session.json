@@ -1,0 +1,12 @@
+{
+  "title": "Build: A part",
+  "claudeSessionId": "017bbf91-2e9e-4220-aa79-64b22f13981d",
+  "started": true,
+  "startedAt": "2026-10-22T18:25:24.120Z",
+  "updatedAt": "2026-10-22T18:29:13.613Z",
+  "build": {
+    "group": "/f/:folder/architecture/parts/:part",
+    "title": "A part"
+  },
+  "from": "5232c65f063a9ebae4eb8db07d25b0827be06e4b"
+}

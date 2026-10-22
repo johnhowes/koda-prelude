@@ -612,6 +612,16 @@ async function handle(req, res, app) {
       const alone = fragment && (rest !== '/architecture' || askedFromLayout(req, 'app'));
       return send(res, 200, shaped(architectureViews[rest], { ...model, framed }, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true, bare: framed }));
     }
+    //   GET  /f/<id>/architecture/parts/<part>    a part: its job, decisions, findings, uses and files
+    const partId = rest.match(/^\/architecture\/parts\/([\w-]+)$/)?.[1];
+    if (partId && req.method === 'GET') {
+      let model;
+      try { model = architectureOf(app, folder); } catch (error) { return unreadable(error); }
+      const part = model.parts.find(candidate => candidate.id === partId);
+      if (!part) return page(404, 'not-found', { what: 'The architecture has no such part.' }, 'Not found');
+      const alone = fragment && askedFromLayout(req, 'app');
+      return send(res, 200, shaped('architecture/part', part, { fragment: alone, path, title: `${part.title} · Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
+    }
 
     // The design system to read (the Reference card, R-x4b), on the design
     // system (prelude/design-system-page): its gallery, framed from the

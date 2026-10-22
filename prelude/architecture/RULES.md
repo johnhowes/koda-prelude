@@ -11,7 +11,6 @@
   *shown-on: /f/:folder/architecture @ drifted*
 - **R-k5e.** A part may use the parts its file says it may, in its own layer or below it; any other use is reported, and so is a file no part names or a named file that isn't there.
   *shown-on: /f/:folder/architecture/parts/:part @ drifted*
-  *proposed*
 - **R-w8d.** Decisions are listed newest first.
   *shown-on: /f/:folder/architecture/decisions*
   *proposed*

@@ -83,8 +83,10 @@ and the words architecture, part, decision, flow.
 
 - **The overview, its check and the decision list** are the app's views
   (`server/views/architecture/`), answered in `server/main.js` from
-  `server/architecture.js`, which reads the files and runs the check. The
-  part, decision, flow and Decisions pages are still to build.
+  `server/architecture.js`, which reads the files and runs the check. **A
+  part** is too (`architecture/part`, the overview's model's part by id; a
+  404 for an id no part has). The decision, flow and Decisions pages are
+  still to build.
 - **The files' format** is what `architecture.js` reads and the architecture
   design's agent is told (`architectureSection` in agent.js): a `# title`,
   then `key: value` header lines (a part's `layer`, `kind`, `short` for the
@@ -143,5 +145,5 @@ the overview is written (`server/views/_starters.eta`).
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
 - The readers for other stacks (above): agreed, or the host after all?
-- The part, decision, flow and Decisions pages aren't built, so their links
+- The decision, flow and Decisions pages aren't built, so their links
   in the framed overview lead nowhere yet, as on the page itself.
