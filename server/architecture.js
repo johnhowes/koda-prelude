@@ -35,7 +35,7 @@ import { renderMarkdown } from '@kodalang/core';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { headOf } from './branches.js';
-import { ago } from './home.js';
+import { ago } from './words.js';
 import { filterModel } from './host.js';
 
 /**
