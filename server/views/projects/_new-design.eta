@@ -34,6 +34,7 @@
       <label class="choice"><input type="radio" name="kind" value="shell"<% if (kind === 'shell') { %> checked<% } %>> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
       <% } %>
       <% if (!p.architecture) { %>
+      <label class="choice"><input type="radio" name="kind" value="architecture"> <span>The project’s architecture <span class="muted">· drafted from the code; every agent reads it before it changes anything</span></span></label>
       <label class="choice"><input type="radio" name="kind" value="architecture"> <span>The project’s architecture <span class="muted">· how it’s built, drafted from the code; every agent reads it</span></span></label>
       <% } %>
     </fieldset>
@@ -50,7 +51,7 @@
         <label class="field">
           <span class="label">The app’s stack</span>
           <input name="stack" placeholder="ASP.NET Core MVC with Razor" autocomplete="off">
-          <span class="hint">Its app is built first, with a design host, and designs are then written in its language. The design system can be designed straight away.</span>
+          <span class="hint">Its app is built first, with a design host, and designs are then written in its language. The design system and the architecture can be started straight away.</span>
         </label>
       </details>
       <label class="choice"><input type="checkbox" name="existing" value="yes"> <span class="muted">This project already has an app: connect it instead of building one</span></label>

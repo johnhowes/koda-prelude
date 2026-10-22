@@ -42,6 +42,11 @@ test('before there is a system, a design is told it has none', async () => {
   const modal = await (await get(`/f/${fid}/designs/new`)).text();
   assert.match(modal, /value="system"/);
   assert.match(modal, /value="shell"/);
+  assert.match(modal, /value="architecture"/);
+  // The Reference card always shows both, each a way to start it while there's none (R-x4b).
+  const page = await (await get(`/f/${fid}`)).text();
+  assert.match(page, new RegExp(`<a class="item" href="/f/${fid}/designs/new\\?kind=system" ko-target="modal\\?">[\\s\\S]*?<span class="item-title">Design system</span>[\\s\\S]*?Not made yet`));
+  assert.match(page, new RegExp(`<a class="item" href="/f/${fid}/architecture">[\\s\\S]*?<span class="item-title">Architecture</span>[\\s\\S]*?Nothing written yet`));
   runner.turns.length = 0;
   await post(`/f/${fid}/d/onboarding/sign-up/sessions`, { message: 'Hello' });
   assert.match(runner.turns[0].systemPrompt, /no design system yet/);
@@ -55,9 +60,12 @@ test('the folder’s design system is made from New design, and only one', async
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, /Acme<span class="pill">Design system<\/span>/);
   assert.match(page, /Designs here use <a href="\/f\/[0-9a-f]+\/d\/acme">Acme<\/a>\./);
+  // With no components yet, Reference opens its design (R-x4b).
+  assert.match(page, new RegExp(`<a class="item" href="/f/${fid}/d/acme">[\\s\\S]*?<span class="item-title">Acme</span>[\\s\\S]*?Nothing designed yet`));
   const modal = await (await get(`/f/${fid}/designs/new`)).text();
   assert.doesNotMatch(modal, /value="system"/, 'no second system offered');
   assert.match(modal, /value="shell"/, 'the shell is still offered');
+  assert.match(modal, /value="architecture"/, 'so is the architecture');
 
   const second = await post(`/f/${fid}/designs`, { title: 'Other', area: '', kind: 'system' });
   assert.equal(second.status, 422);
