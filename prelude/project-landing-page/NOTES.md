@@ -434,8 +434,9 @@ session (the person). Decided:
   design pages, which is where you change them.
 - **No app shell** (the person: leave it out for now).
 - **The design system gets a page of its own in the app**, as Architecture
-  has (the person: treat them the same). It isn't this design's: its gallery
-  today is plain HTML on the preview origin. See Open questions.
+  has (the person: treat them the same). The Prelude Design System design
+  makes it, as the Architecture design made Architecture's; its gallery today
+  is plain HTML on the preview origin. See Open questions.
 - Designs lists the architecture design too: "Architecture" pill, document
   icon, "14 parts and 9 decisions".
 - The model gains `system.components` and `architecture` (`id`, `title`,
@@ -446,11 +447,11 @@ partials are copied unchanged. New: `_reference`.
 
 ## Open questions
 
-- **Who designs `/f/:project/system`?** It's the design system read outside a
-  session (tokens, components, guidelines), on the app's design system like
-  Architecture's pages. It probably needs its own design, as Architecture had,
-  rather than the Design Session design, which is about changing a design.
-  Until it's built, the build could point the link at the gallery.
+- **`/f/:project/system` is the Prelude Design System design's to make** (the
+  person, 2026-10-22), as Architecture's pages were the Architecture
+  design's: the design system read outside a session (tokens, components,
+  guidelines). Until it's built, the build could point the link at the
+  gallery.
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own
