@@ -69,7 +69,7 @@
       "state": "Not written",
       "page": "Decisions",
       "group": "Decisions",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "drifted~f_prelude_architecture",
