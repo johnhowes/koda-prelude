@@ -1,0 +1,3 @@
+# Fix: Koda 0.1.4 provides guidance for avoiding the kind of scope…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
