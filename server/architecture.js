@@ -28,7 +28,7 @@
 // (server/views/** covers server/views/, recursively), or beside a file a
 // part names (server/main.js covers server/'s own files).
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, posix } from 'node:path';
 
 import { renderMarkdown } from '@kodalang/core';
@@ -441,6 +441,25 @@ export function checkAfterTurn(app, folder, changed, { announce = () => {} } = {
   return check.findings.filter(finding => touched.has(finding.file));
 }
 
+/**
+ * Merging a branch accepts the decisions it proposed (R-7tq): in the
+ * branch's own files, before the merge, so main has them accepted. Returns
+ * how many it accepted.
+ */
+export function acceptProposed(path) {
+  const design = findKind(path, 'architecture');
+  if (!design) return 0;
+  const dir = join(path, PRELUDE_DIR, ...design.id.split('/'), ARCHITECTURE_DIR, 'decisions');
+  let accepted = 0;
+  for (const { file, doc } of readDocs(dir)) {
+    if (doc.header.status !== 'proposed') continue;
+    const at = join(dir, file);
+    writeFileSync(at, read(at).replace(/^(status:[ \t]*)proposed[ \t]*$/im, '$1accepted'));
+    accepted++;
+  }
+  return accepted;
+}
+
 // --- The model -----------------------------------------------------------
 
 /**
@@ -466,18 +485,30 @@ export function architectureOf(app, folder, { query = {}, filter = false, now = 
   const decisionsById = new Map(written.decisions.map(decision => [decision.id, decision]));
   const findingsOf = id => last.findings.filter(finding => finding.part?.id === id);
 
-  // Newest first; on one day, by id.
+  // A proposed decision is accepted once it's in main (R-7tq): one merged by
+  // a pull request may still say "proposed". It's still proposed only on the
+  // branch that proposed it, said with the design that branch is for.
+  const mainPath = found.branch && (app.folders.get(found.branch.parentId)?.path ?? null);
+  const proposing = found.branch && {
+    title: listDesigns(found.branch.path).find(candidate => candidate.id === found.branch.design)?.title ?? found.design.title,
+    branch: found.branch.branch,
+  };
+  const stillProposed = decision => decision.status === 'proposed' && Boolean(proposing)
+    && !(mainPath && existsSync(join(mainPath, ...decision.source.split('/'))));
+
+  // Newest first (R-w8d); on one day, by id.
   const decisions = [...written.decisions].sort((a, b) => b.sortDate.localeCompare(a.sortDate) || a.id.localeCompare(b.id)).map(decision => {
     const supersedes = decision.supersedes && decisionsById.get(decision.supersedes);
     const supersededBy = written.decisions.find(other => other.supersedes === decision.id);
+    const proposed = stillProposed(decision);
     return {
       id: decision.id,
       title: decision.title,
-      status: decision.status,
+      status: decision.status === 'proposed' && !proposed ? 'accepted' : decision.status,
       date: decision.date,
       project,
       source: decision.source,
-      ...(decision.status === 'proposed' && found.branch ? { proposedIn: { title: found.design.title, branch: found.branch.branch } } : {}),
+      ...(proposed ? { proposedIn: proposing } : {}),
       ...(decision.supersedes ? { supersedes: { id: decision.supersedes, title: supersedes?.title ?? decision.supersedes } } : {}),
       ...(supersededBy ? { supersededBy: { id: supersededBy.id, title: supersededBy.title } } : {}),
       parts: decision.parts.map(partRef),

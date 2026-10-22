@@ -2,10 +2,10 @@
   "/f/:folder/architecture": { "view": "@app/server/views/architecture/overview", "title": "Architecture", "data": "folders/:folder/architecture" },
   "/f/:folder/architecture/check": { "view": "@app/server/views/architecture/_check", "data": "folders/:folder/architecture" },
 
-  "/f/:folder/architecture/parts/:part": { "view": "architecture/part", "title": "A part", "data": "folders/:folder/architecture/parts/:part" },
+  "/f/:folder/architecture/parts/:part": { "view": "@app/server/views/architecture/part", "title": "A part", "data": "folders/:folder/architecture/parts/:part" },
 
   "/f/:folder/architecture/decisions": {
-    "view": "architecture/decisions", "title": "Decisions", "data": "folders/:folder/architecture",
+    "view": "@app/server/views/architecture/decisions", "title": "Decisions", "data": "folders/:folder/architecture",
     "list": "decisions", "search": { "q": ["id", "title"] }, "match": { "status": "status" }
   },
   "/f/:folder/architecture/decision-list": {
@@ -13,7 +13,7 @@
     "list": "decisions", "search": { "q": ["id", "title"] }, "match": { "status": "status" }
   },
   "/f/:folder/architecture/decisions/:decision": {
-    "view": "architecture/_decision", "title": "A decision", "data": "folders/:folder/architecture/decisions/:decision",
+    "view": "@app/server/views/architecture/_decision", "title": "A decision", "data": "folders/:folder/architecture/decisions/:decision",
     "over": "/f/:folder/architecture/decisions", "in": "drawer"
   },
 

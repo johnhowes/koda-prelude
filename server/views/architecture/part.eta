@@ -1,0 +1,90 @@
+<%/* One part of the architecture, from parts/<id>.md: what it is
+     responsible for and what isn't its job (what an agent reads before
+     changing it), the decisions that bind it, what the check found in its
+     files; beside them, what it may use, what uses it, what it owns and its
+     files. A part outside the project says only what the project uses it
+     for. `usedBy` is prepared by the app from the other parts' uses
+     (architectureOf's Part). */%>
+<% const p = it, base = `/f/${p.project.id}/architecture`;
+   const kind = { process: 'Its own process', module: 'Module', outside: 'Outside ' + p.project.name }[p.kind] ?? p.kind; %>
+<div class="center wide architecture" ko-item>
+  <div class="stack gap-8">
+    <div class="stack gap-2">
+      <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= p.project.id %>"><%= p.project.name %></a><span aria-hidden="true">›</span><a href="<%= base %>">Architecture</a><span aria-hidden="true">›</span><span><%= p.layer %></span></nav>
+      <div class="cluster baseline gap-3"><h1><%= p.title %></h1><span class="pill"><%= kind %></span></div>
+      <p class="secondary"><%= p.summary %></p>
+    </div>
+
+    <% if ((p.findings ?? []).length) { %>
+    <div class="notice warn" role="status">
+      <p><strong><%= p.findings.length === 1 ? 'The code doesn’t match this part in 1 place.' : `The code doesn’t match this part in ${p.findings.length} places.` %></strong> Change the code, or propose a decision that changes the part.</p>
+      <ul class="list">
+        <% for (const finding of p.findings) { %>
+        <li class="item"><span class="item-text"><span class="item-title"><%= finding.text %></span><span class="muted"><code><%= finding.file %></code></span><span class="secondary"><%= finding.next %></span></span></li>
+        <% } %>
+      </ul>
+    </div>
+    <% } %>
+
+    <div class="split" style="--side: 18rem">
+      <div class="stack gap-6">
+        <% if ((p.responsible ?? []).length || (p.not ?? []).length) { %>
+        <section class="card" aria-labelledby="job-title">
+          <h2 id="job-title">Its job</h2>
+          <div class="grid" style="--min: 16rem">
+            <div class="stack gap-2">
+              <h3 class="group-label">Responsible for</h3>
+              <div class="prose"><ul><% for (const line of p.responsible ?? []) { %><li><%= line %></li><% } %></ul></div>
+            </div>
+            <% if ((p.not ?? []).length) { %>
+            <div class="stack gap-2">
+              <h3 class="group-label">Not its job</h3>
+              <div class="prose"><ul><% for (const line of p.not) { %><li><%= line %></li><% } %></ul></div>
+            </div>
+            <% } %>
+          </div>
+        </section>
+        <% } else if (p.kind === 'outside') { %>
+        <p class="muted">What it does is its own. This part says only what <%= p.project.name %> uses it for, and which parts may.</p>
+        <% } %>
+
+        <section class="card" aria-labelledby="part-decisions-title">
+          <h2 id="part-decisions-title">Decisions</h2>
+          <% if (!(p.decisions ?? []).length) { %>
+          <p class="muted">No decision names this part yet.</p>
+          <% } else { %>
+          <ul class="list">
+            <% for (const decision of p.decisions) { %>
+            <li><%~ include('./_decision-item', { decision, base }) %></li>
+            <% } %>
+          </ul>
+          <% } %>
+        </section>
+      </div>
+
+      <aside class="side stack gap-6" aria-label="What it uses, and what it holds">
+        <section class="card gap-2" aria-labelledby="uses-title">
+          <h2 id="uses-title">May use</h2>
+          <%~ include('./_part-links', { parts: p.uses, base }) %>
+        </section>
+        <section class="card gap-2" aria-labelledby="used-title">
+          <h2 id="used-title">Used by</h2>
+          <%~ include('./_part-links', { parts: p.usedBy, base }) %>
+        </section>
+        <% if ((p.owns ?? []).length) { %>
+        <section class="card gap-2" aria-labelledby="owns-title">
+          <h2 id="owns-title">Owns</h2>
+          <div class="prose"><ul><% for (const line of p.owns) { %><li><%= line %></li><% } %></ul></div>
+        </section>
+        <% } %>
+        <% if ((p.files ?? []).length) { %>
+        <section class="card gap-2" aria-labelledby="files-title">
+          <h2 id="files-title">Files</h2>
+          <ul class="list"><% for (const file of p.files) { %><li class="item"><code><%= file %></code></li><% } %></ul>
+        </section>
+        <% } %>
+        <p class="muted">From <code><%= p.source %></code></p>
+      </aside>
+    </div>
+  </div>
+</div>

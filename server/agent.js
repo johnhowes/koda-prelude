@@ -250,7 +250,8 @@ export function architectureBrief(architecture) {
 
 - Before you change anything, read ${at}/overview.md, and the parts/ file of every part your change reaches: the parts whose files you'll change (each part's header lists its files), and those they use. Keep to the principles.
 - A part may use only the parts its file says it may, in its own layer or below it. Every file belongs to a part.
-- If your change would go against the architecture (a use a part doesn't say it may make, a new part, a principle bent), don't make it without saying so. Propose a decision on this branch: write ${at}/decisions/D-<three random lower-case letters or digits>.md, as the others are written, with "status: proposed", today's date, the parts it binds, and its Context, Decision and Consequences; change the parts' files to match (a new use, a new part, its files). It's reviewed with this branch, and accepted when the branch is merged. Say in the chat that you proposed it, and why.`;
+- If your change would go against the architecture (a use a part doesn't say it may make, a new part, a principle bent), don't make it without saying so. Propose a decision on this branch: write ${at}/decisions/D-<three random lower-case letters or digits>.md, as the others are written, with "status: proposed", today's date, the parts it binds, and its Context, Decision and Consequences; change the parts' files to match (a new use, a new part, its files). It's reviewed with this branch, and accepted when the branch is merged. Say in the chat that you proposed it, and why.
+- A decision that came from main is accepted, even if it still says "status: proposed" (a pull request merged it): only those this branch proposed are still proposed.`;
 }
 
 /** How the architecture design's agent writes it: the files architecture.js reads. */
