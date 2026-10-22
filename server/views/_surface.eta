@@ -92,10 +92,23 @@
     // design's origin adds a script to the pages it serves into a frame,
     // which posts the address on each arrival (koda:attached) and on Back.
     // Only that frame's word is taken.
+    // Koda's warnings in the page (0.1.4) arrive the same way, and join
+    // Prelude's own in the shell's list (_regions.eta), said to be the
+    // design's.
     const { device, frameAt, onRemove } = koda.scope();
     const heard = event => {
       if (event.source !== device.element.querySelector('iframe')?.contentWindow) return;
       if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at;
+      if (event.data?.type === 'prelude:warning' && typeof event.data.message === 'string') {
+        const list = document.querySelector('[ko-warnings]');
+        if (!list) return console.warn(event.data.message);
+        const item = document.createElement('li');
+        item.setAttribute('ko-warning', event.data.code);
+        item.textContent = `In the design’s page: ${event.data.message}`;
+        list.append(item);
+        const kept = list.querySelectorAll(':scope > [ko-warning]');
+        for (let index = 0; index < kept.length - 100; index += 1) kept[index].remove();
+      }
     };
     window.addEventListener('message', heard);
     onRemove(() => window.removeEventListener('message', heard));

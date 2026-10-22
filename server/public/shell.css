@@ -57,6 +57,23 @@
   .shell-notice > [ko-region] { flex: 1; min-inline-size: 0; }
   .shell-notice:has(> [ko-region]:empty) { display: none; }
 
+  /* Koda's warnings: at the other corner from the notice, over the page,
+     newest last, scrolling when there are many. Gone when empty, or cleared. */
+  .shell-warnings {
+    position: fixed; inset: auto auto var(--space-5) var(--space-5); z-index: 30;
+    inline-size: min(var(--measure-narrow), 100% - 2 * var(--space-5));
+    max-block-size: 40dvh;
+    display: flex; align-items: flex-start; gap: var(--space-1);
+    padding: var(--space-1); border-radius: var(--radius-md);
+    background: var(--danger-soft); box-shadow: var(--shadow-lg);
+  }
+  .shell-warnings > ol {
+    flex: 1; min-inline-size: 0; max-block-size: 100%; overflow: auto;
+    margin: 0; padding: var(--space-1) var(--space-2); list-style: none;
+    display: grid; gap: var(--space-2); font-size: var(--text-sm);
+  }
+  .shell-warnings:has(> ol:empty) { display: none; }
+
   /* Drawer: a fragment beside the page, over its end edge. Its Close sits
      beside the content's heading, as the modal's does, and its headings are
      a dialog's size (the design system sizes dialog h2 the same way). */

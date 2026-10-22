@@ -504,9 +504,24 @@ const WHERE_SCRIPT = '<script>(()=>{if(window.parent===window)return;'
   + 'document.addEventListener("koda:attached",soon);addEventListener("popstate",soon);document.addEventListener("close",soon,true);'
   + 'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",tell);else tell()})()</script>';
 
+/**
+ * Koda's warnings (0.1.4), told to the design surface around a framed page,
+ * which lists them in Prelude's own (_regions.eta): an answer that landed
+ * somewhere other than where its request was routed, and Koda's other
+ * warnings. A hidden [ko-warnings] is what asks Koda to work the routing
+ * advice out, added when the page has none: a design's layouts needn't carry
+ * one, since they become the app's, and a production page has none. Each koda:warning is taken here (preventDefault), so a list the page
+ * does have stays empty in the frame.
+ */
+const WARNINGS_SCRIPT = '<script>(()=>{if(window.parent===window)return;'
+  + 'const ask=()=>{if(!document.querySelector("[ko-warnings]")){const l=document.createElement("ol");l.hidden=true;l.setAttribute("ko-warnings","");document.body.append(l)}};'
+  + 'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ask);else ask();'
+  + 'document.addEventListener("koda:warning",e=>{e.preventDefault();const{code,message,url}=e.detail??{};'
+  + 'window.parent.postMessage({type:"prelude:warning",code:String(code??""),message:String(message??""),url:url==null?null:String(url)},"*")})})()</script>';
+
 function withClient(html) {
   const head = /<head(\s[^>]*)?>/i.exec(html);
-  return head ? html.slice(0, head.index + head[0].length) + CLIENT_SCRIPT + WHERE_SCRIPT + html.slice(head.index + head[0].length) : html;
+  return head ? html.slice(0, head.index + head[0].length) + CLIENT_SCRIPT + WHERE_SCRIPT + WARNINGS_SCRIPT + html.slice(head.index + head[0].length) : html;
 }
 
 /**
