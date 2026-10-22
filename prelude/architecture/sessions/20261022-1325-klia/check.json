@@ -89,7 +89,7 @@
       "state": "Drifted",
       "page": "A part",
       "group": "A part",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "drifted~f_prelude_architecture_decisions",
