@@ -123,6 +123,17 @@ person: it should behave like designing the design system.
 - **New design offers the architecture as a kind** while there's none, so
   it can be made without knowing the empty page's address.
 
+## Fixed: its first session says how to begin (2026-10-22)
+
+From the fix "I followed the architecture link from the project landing…"
+(prelude/fixes/i-followed-the-architecture-link-from-the-project-landing).
+"Draft it from the code…" opened a session offering a feature's starters
+("Describe the feature", "Start from a sketch"), which left the person
+unsure what to do. While nothing is written, the architecture's session
+now offers one starter, **Draft it from the code** ("Draft the architecture
+from the code."), and its intro says the page shows beside the chat once
+the overview is written (`server/views/_starters.eta`).
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in

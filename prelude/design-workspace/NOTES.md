@@ -221,7 +221,9 @@ the record picker, was dropped).
   "Start with this" starts the message in the box (`POST …/start`), to add
   to or send; a page that differs only has Show (the person: only they can
   judge it). A design with no pages gets "Describe the feature" and "Start
-  from a sketch or a screenshot". All from what Prelude already has (the
+  from a sketch or a screenshot"; the project's architecture with nothing
+  written gets "Draft it from the code" instead (2026-10-22, from a fix: a
+  feature's starters left the person unsure what to do). All from what Prelude already has (the
   check, NOTES.md, RULES.md, the last session's last line), none written by
   the agent. State `08-new-session` shows it; `05-new-design` the first.
 - **The chat's toolbar is quieter** (the person, 2026-10-19). Agent's

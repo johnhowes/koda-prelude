@@ -13,6 +13,9 @@
      A design with no pages yet has nothing to point at, so it gets the
      two ways to begin: describe the feature, or start from a picture.
 
+     The project's architecture with nothing written yet has one way to
+     begin: drafting it from the code, as the Architecture page offered.
+
      A conversation about the project (a fix) starts from what Prelude knows
      is wrong anywhere in it (`it.troubles`: a branch whose pages don't
      render, a build that stopped, a turn that ended with an error), then
@@ -20,7 +23,7 @@
 
      `it` is the design. */%>
 <% const base = `/f/${it.folder.id}/d/${it.id}`; const s = it.surface ?? {}; const review = s.review ?? { failures: [], differ: [] };
-   const fix = it.kind === 'fix';
+   const fix = it.kind === 'fix', architecture = it.kind === 'architecture';
    const starters = [];
    for (const t of it.troubles ?? []) starters.push({ icon: t.icon, title: `Find out why: ${t.title}`, detail: t.says, message: `${t.title}: ${t.says} Find out why, and tell me what would fix it. ` });
    for (const f of review.failures) starters.push({ icon: 'close', title: `Fix ${f.title} in ${f.stateTitle}`, detail: f.error, message: `${f.title} (${f.path}) doesn’t render in ${f.stateTitle}: ${f.error}. Fix it.` });
@@ -34,12 +37,16 @@
      starters.push({ icon: 'image', title: 'Say what’s wrong, with a screenshot', detail: 'What you saw, where, and what you expected. Then attach the screenshot, paste it or drop it on the box', message: 'Something’s wrong: ' });
    }
    const fresh = !fix && !(s.screens ?? []).length;
-   if (fresh) {
+   if (fresh && architecture) {
+     starters.push({ icon: 'agent', title: 'Draft it from the code', detail: 'The agent reads the code and its guidance, writes the overview first, and asks about what it can’t tell', message: 'Draft the architecture from the code. ' });
+   } else if (fresh) {
      starters.push({ icon: 'document', title: 'Describe the feature', detail: 'Who uses it, and what they need to get done', message: 'This design is for ' });
      starters.push({ icon: 'image', title: 'Start from a sketch or a screenshot', detail: 'Then attach it, paste it or drop it on the box', message: 'Here’s what I have in mind; start the first page from it. ' });
    }
    const intro = fix
      ? (last ? 'A new session. The agent starts from what the earlier sessions found.' : 'The agent reads the project’s designs, its app and its design system to answer you.')
+     : fresh && architecture
+     ? 'Nothing is written yet. The agent drafts the architecture from the code, and the Architecture page shows beside this chat once its overview is written.'
      : `${it.sessions?.length ? 'A new session.' : 'This design has no sessions yet.'} The agent starts from the design’s files and its NOTES.md.`; %>
 <li class="entry starters">
   <div class="stack gap-3">

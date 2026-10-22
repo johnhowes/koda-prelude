@@ -108,6 +108,12 @@ test('New design offers the architecture until the project has one', async () =>
   assert.equal(made.status, 303);
   assert.equal(made.headers.get('location'), `/f/${fid}/d/architecture`);
   assert.doesNotMatch(await (await get(`/f/${fid}/designs/new`)).text(), /value="architecture"/);
+
+  // It opens on one way to begin, drafting it from the code, not a feature's two.
+  const opened = await (await get(`/f/${fid}/d/architecture`)).text();
+  assert.match(opened, /aria-label="Start with: Draft it from the code"/);
+  assert.match(opened, /name="message" value="Draft the architecture from the code\. "/);
+  assert.doesNotMatch(opened, /Describe the feature|Start from a sketch or a screenshot/);
 });
 
 test('the architecture design shows the Architecture page beside its chat, as the system shows its gallery', async () => {
