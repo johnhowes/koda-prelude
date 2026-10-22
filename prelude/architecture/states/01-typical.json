@@ -1,0 +1,514 @@
+{
+  "folders": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "architecture": {
+        "project": { "id": "prelude", "name": "Prelude" },
+        "design": { "title": "Architecture", "url": "/f/prelude/d/architecture", "path": "prelude/architecture/architecture" },
+        "summary": "A Node server that serves Prelude’s pages, runs the agent one turn per design, and serves each design on an origin of its own, as that app’s server would. The desktop app is a window on it. Everything it produces is a file in the project’s folder.",
+        "principles": [
+          { "title": "The folder is the database.", "why": "Everything Prelude produces is a file under prelude/, committed with the code. ~/.prelude holds only this machine’s conveniences, so nothing is lost if it goes." },
+          { "title": "The server is the one source of live state.", "why": "Every window, the pop-out and a browser tab render from the server and follow it over its live channel, so none holds what another needs." },
+          { "title": "Code the agent wrote runs only in the sandbox.", "why": "A design’s views are JavaScript written by the agent; rendering them in the server would undo the fences on what the agent may read and write." },
+          { "title": "Prelude knows no stack.", "why": "A host renders the views; Prelude does everything else (routes, states, forms, the check), so every stack gets all of it." },
+          { "title": "Committed files merge cleanly.", "why": "Several people work on one project on different branches: names never collide, transcripts only grow, and no index is rewritten by every session." },
+          { "title": "A design’s memory is its files.", "why": "A design spans many sessions; each starts from the design’s files and notes, never from an earlier conversation." },
+          { "title": "Every native feature has a web fallback.", "why": "The desktop app makes things nicer. It never makes them possible." }
+        ],
+        "layers": [
+          { "title": "Windows", "parts": [
+            { "id": "desktop", "title": "Desktop app", "summary": "A window on the server", "findings": 0 },
+            { "id": "pages", "title": "Pages", "summary": "Views and stylesheets, in two shapes", "findings": 0 }
+          ] },
+          { "title": "Server", "parts": [
+            { "id": "routes", "title": "Routes", "summary": "Every URL Prelude answers", "findings": 0 },
+            { "id": "workspace", "title": "Design page", "summary": "The chat beside the design surface", "findings": 0 },
+            { "id": "build", "title": "Build", "summary": "What’s left to build, and its stories", "findings": 0 },
+            { "id": "fixes", "title": "Fixes", "summary": "One problem outside any design", "findings": 0 }
+          ] },
+          { "title": "Work", "parts": [
+            { "id": "turns", "title": "Turns", "summary": "One turn per design at a time", "findings": 0 },
+            { "id": "agent", "title": "Agent runner", "summary": "Runs the agent with each kind’s prompt", "findings": 0 },
+            { "id": "branches", "title": "Branches", "summary": "A branch and worktree per design", "findings": 0 },
+            { "id": "host", "title": "Design host", "summary": "Serves each design on its own origin", "findings": 1 },
+            { "id": "state", "title": "Design state", "summary": "Page, state and working copy, in memory", "findings": 0 },
+            { "id": "live", "title": "Live channels", "summary": "Server-sent events to every window", "findings": 0 }
+          ] },
+          { "title": "Rendering", "parts": [
+            { "id": "renderer", "title": "Sandboxed renderer", "summary": "Renders views in a fenced process", "findings": 0 },
+            { "id": "hosts", "title": "Host contract", "summary": "Other stacks, over HTTP", "findings": 0 }
+          ] },
+          { "title": "Storage", "parts": [
+            { "id": "files", "title": "Project files", "summary": "Everything under prelude/", "findings": 0 },
+            { "id": "machine", "title": "Machine-local", "summary": "~/.prelude: this machine only", "findings": 0 }
+          ] },
+          { "title": "Outside Prelude", "parts": [
+            { "id": "claude", "title": "Claude CLI", "summary": "The agent", "outside": true, "findings": 0 },
+            { "id": "git", "title": "Git", "summary": "Branches, worktrees, merges", "outside": true, "findings": 0 },
+            { "id": "apphost", "title": "An app’s host", "summary": "Renders views in another stack", "outside": true, "findings": 0 }
+          ] }
+        ],
+        "parts": [
+          {
+            "id": "desktop", "title": "Desktop app", "kind": "process", "layer": "Windows",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/desktop.md",
+            "summary": "A window on the server, built with Tauri. It adds a native folder picker and real pop-out windows, and starts the server when none answers.",
+            "responsible": ["Finding or starting the server, and stopping the one it started on quit", "The folder picker, pop-out windows and Open in browser, for the server’s own pages only", "Remembering each window’s size and position"],
+            "not": ["Anything a page can’t also do in a browser", "Holding state: it shows the server’s pages"],
+            "owns": ["Window sizes and positions (Tauri’s window state)"],
+            "files": ["tauri/src-tauri/**", "tauri/dist/index.html", "server/public/desktop.js"],
+            "uses": [{ "id": "routes", "title": "Routes" }],
+            "usedBy": [],
+            "decisions": [{ "id": "D-w3n", "title": "The desktop app starts the server when none answers", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "pages", "title": "Pages", "kind": "module", "layer": "Windows",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/pages.md",
+            "summary": "Prelude’s own views and stylesheets. Each URL answers as a whole page, or as a fragment for the Koda region that asked.",
+            "responsible": ["Markup for every page and fragment, in Eta", "The layouts: app and window", "Prelude’s stylesheets and the design system they’re drawn with"],
+            "not": ["Preparing data: views get it ready-made", "Filtering lists: the route does"],
+            "owns": [],
+            "files": ["server/views/**", "server/public/**"],
+            "uses": [],
+            "usedBy": [{ "id": "routes", "title": "Routes" }],
+            "decisions": [
+              { "id": "D-x5b", "title": "One layout for all the app’s pages", "status": "accepted" },
+              { "id": "D-a7e", "title": "A workspace layout for a design’s page", "status": "superseded" }
+            ],
+            "findings": []
+          },
+          {
+            "id": "routes", "title": "Routes", "kind": "module", "layer": "Server",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/routes.md",
+            "summary": "Every URL Prelude answers, in two shapes. Posts are accepted only from Prelude’s own origin.",
+            "responsible": ["Matching URLs and answering a page or a fragment", "Refusing posts from screens and other sites", "Handing a design’s origin to the design host"],
+            "not": ["Holding state of its own", "Running the agent: it asks Turns"],
+            "owns": [],
+            "files": ["server/main.js", "start.js"],
+            "uses": [
+              { "id": "pages", "title": "Pages" }, { "id": "workspace", "title": "Design page" }, { "id": "build", "title": "Build" },
+              { "id": "fixes", "title": "Fixes" }, { "id": "turns", "title": "Turns" }, { "id": "branches", "title": "Branches" },
+              { "id": "host", "title": "Design host" }, { "id": "state", "title": "Design state" }, { "id": "live", "title": "Live channels" },
+              { "id": "files", "title": "Project files" }
+            ],
+            "usedBy": [{ "id": "desktop", "title": "Desktop app" }],
+            "decisions": [
+              { "id": "D-e8y", "title": "Prelude reads a project’s architecture from its files", "status": "proposed" },
+              { "id": "D-m4c", "title": "Each design is served on an origin of its own", "status": "accepted" }
+            ],
+            "findings": []
+          },
+          {
+            "id": "workspace", "title": "Design page", "kind": "module", "layer": "Server",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/workspace.md",
+            "summary": "The model of a design’s page: the session’s chat beside the design surface, with drafts, dictation and capture.",
+            "responsible": ["The design page’s model, shaped like the design’s states", "Each session’s unsent message and images", "Dictation, with a downloaded speech model"],
+            "not": ["Running turns", "Rendering the design: the surface frames its origin"],
+            "owns": ["Unsent messages (~/.prelude/drafts)"],
+            "files": ["server/workspace.js", "server/drafts.js", "server/dictation.js"],
+            "uses": [{ "id": "state", "title": "Design state" }, { "id": "files", "title": "Project files" }, { "id": "machine", "title": "Machine-local" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }],
+            "decisions": [],
+            "findings": []
+          },
+          {
+            "id": "build", "title": "Build", "kind": "module", "layer": "Server",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/build.md",
+            "summary": "What’s left to build, by page, from a design’s rules and its change since main; and the stories written from it.",
+            "responsible": ["Reading RULES.md", "The backlog and each group’s change since main", "Starting build sessions"],
+            "not": ["Writing the app: a build session’s agent does"],
+            "owns": ["Stories (prelude/<design>/stories/)"],
+            "files": ["server/build.js", "server/backlog.js", "server/rules.js", "server/increment.js", "server/app-config.js"],
+            "uses": [{ "id": "turns", "title": "Turns" }, { "id": "branches", "title": "Branches" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }],
+            "decisions": [],
+            "findings": []
+          },
+          {
+            "id": "fixes", "title": "Fixes", "kind": "module", "layer": "Server",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/fixes.md",
+            "summary": "One problem outside any one design, worked on in sessions on a branch of its own.",
+            "responsible": ["Making a fix’s branch, folder and first session", "Finding the designs a fix has touched, for the check"],
+            "not": ["Screens, states or a Build page"],
+            "owns": ["Fixes (prelude/fixes/<slug>/)"],
+            "files": ["server/fixes.js"],
+            "uses": [{ "id": "turns", "title": "Turns" }, { "id": "branches", "title": "Branches" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }],
+            "decisions": [{ "id": "D-q4u", "title": "A fix is its own kind of work, on its own branch", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "turns", "title": "Turns", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/turns.md",
+            "summary": "Runs one turn per design at a time. Messages sent meanwhile wait. After each turn it deletes the files the agent emptied, commits, and checks the design.",
+            "responsible": ["The queue of turns, per design", "Stop", "The end of a turn: emptied files, the commit, the check, findings for the next message"],
+            "not": ["How the agent is run: the agent runner"],
+            "owns": ["Waiting messages (memory)"],
+            "files": ["server/turns.js"],
+            "uses": [{ "id": "agent", "title": "Agent runner" }, { "id": "branches", "title": "Branches" }, { "id": "host", "title": "Design host" }, { "id": "live", "title": "Live channels" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }, { "id": "build", "title": "Build" }, { "id": "fixes", "title": "Fixes" }],
+            "decisions": [
+              { "id": "D-r0k", "title": "The code is checked against each part’s declared uses", "status": "proposed" },
+              { "id": "D-v6t", "title": "Every design works on its own branch, in a worktree", "status": "accepted" }
+            ],
+            "findings": []
+          },
+          {
+            "id": "agent", "title": "Agent runner", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/agent.md",
+            "summary": "Runs the Claude CLI with each kind’s prompt and permissions, and turns its stream into the transcript’s events.",
+            "responsible": ["The prompt for each kind of design, and for build and fix sessions", "What the agent may read and write, as permission flags", "Resuming a session on the machine that started it"],
+            "not": ["Domain tools: the agent uses ordinary file tools"],
+            "owns": ["Transcripts (sessions/<id>/transcript.jsonl), with Project files"],
+            "files": ["server/agent.js", "server/sessions.js"],
+            "uses": [{ "id": "claude", "title": "Claude CLI" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "turns", "title": "Turns" }],
+            "decisions": [{ "id": "D-j2s", "title": "The agent uses ordinary file tools, not domain tools", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "branches", "title": "Branches", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/branches.md",
+            "summary": "Gives every design and fix a branch and a worktree, commits every turn, and finishes branches: merge, push, update from main.",
+            "responsible": ["Worktrees, and finding them again", "Merging into main without touching the person’s checkout", "Tidying up merged branches"],
+            "not": ["Asking before pushing: the page asks"],
+            "owns": ["Worktrees and their branches (~/.prelude/builds.json)"],
+            "files": ["server/branches.js"],
+            "uses": [{ "id": "git", "title": "Git" }, { "id": "machine", "title": "Machine-local" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }, { "id": "build", "title": "Build" }, { "id": "fixes", "title": "Fixes" }, { "id": "turns", "title": "Turns" }],
+            "decisions": [
+              { "id": "D-q4u", "title": "A fix is its own kind of work, on its own branch", "status": "accepted" },
+              { "id": "D-v6t", "title": "Every design works on its own branch, in a worktree", "status": "accepted" }
+            ],
+            "findings": []
+          },
+          {
+            "id": "host", "title": "Design host", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/host.md",
+            "summary": "Serves each design on its own origin as the app’s server would: routes, data from the state, overlays over their page, forms, search, and the check after every turn.",
+            "responsible": ["Finding a route’s data in the current state", "Composing a page in its layout, and an overlay over its page", "POST verbs, refusals and answers", "Rendering every route in every state, and comparing with approved screens"],
+            "not": ["Rendering views itself: the sandboxed renderer or a host does", "Writing states: posts change a working copy"],
+            "owns": ["Approved screens (prelude/<design>/snapshots/)"],
+            "files": ["server/host.js", "server/preview.js", "server/snapshots.js", "server/check.js"],
+            "uses": [{ "id": "renderer", "title": "Sandboxed renderer" }, { "id": "hosts", "title": "Host contract" }, { "id": "state", "title": "Design state" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }, { "id": "turns", "title": "Turns" }],
+            "decisions": [
+              { "id": "D-p8z", "title": "Posts change a working copy, never the state’s file", "status": "accepted" },
+              { "id": "D-m4c", "title": "Each design is served on an origin of its own", "status": "accepted" },
+              { "id": "D-9wd", "title": "A design is the app’s views, a route table and design-wide states", "status": "accepted" },
+              { "id": "D-2kx", "title": "Views render in a sandboxed process", "status": "accepted" }
+            ],
+            "findings": [
+              { "text": "Design host uses Branches, which it doesn’t say it may.", "file": "server/host.js", "next": "Add Branches to what it may use, or move the use into Turns." }
+            ]
+          },
+          {
+            "id": "state", "title": "Design state", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/state.md",
+            "summary": "Each design’s live state, in memory: the page and state on show, the working copy of its data, and how many windows are open. Every change is announced.",
+            "responsible": ["The working copy, and Reset data", "Announcing design-changed to every window", "Server events from events.json"],
+            "not": ["Anything that must survive a restart"],
+            "owns": ["Working copies of states (memory)"],
+            "files": ["server/design-state.js", "server/events.js"],
+            "uses": [{ "id": "live", "title": "Live channels" }, { "id": "files", "title": "Project files" }],
+            "usedBy": [{ "id": "routes", "title": "Routes" }, { "id": "workspace", "title": "Design page" }, { "id": "host", "title": "Design host" }],
+            "decisions": [{ "id": "D-p8z", "title": "Posts change a working copy, never the state’s file", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "live", "title": "Live channels", "kind": "module", "layer": "Work",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/live.md",
+            "summary": "Server-sent events to every open window: named events regions reload on, and markup pushed into regions.",
+            "responsible": ["Opening and closing channels", "Sending to every window on a design, a session or the app"],
+            "not": ["Deciding what changed: its callers do"],
+            "owns": ["Open channels (memory)"],
+            "files": ["server/live.js"],
+            "uses": [],
+            "usedBy": [{ "id": "routes", "title": "Routes" }, { "id": "turns", "title": "Turns" }, { "id": "state", "title": "Design state" }],
+            "decisions": [],
+            "findings": []
+          },
+          {
+            "id": "renderer", "title": "Sandboxed renderer", "kind": "process", "layer": "Rendering",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/renderer.md",
+            "summary": "Renders a design’s views in a separate Node process that may read the project and Prelude, and nothing else. A render over 5 seconds is stopped.",
+            "responsible": ["Rendering a view with its data, its layout and its regions, in one job", "Staying fenced: no writes, no processes, no native code"],
+            "not": ["Finding data or routes: it’s given them"],
+            "owns": [],
+            "files": ["server/renderer.js", "server/renderers.js"],
+            "uses": [],
+            "usedBy": [{ "id": "host", "title": "Design host" }],
+            "decisions": [{ "id": "D-2kx", "title": "Views render in a sandboxed process", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "hosts", "title": "Host contract", "kind": "module", "layer": "Rendering",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/hosts.md",
+            "summary": "Renders through another stack’s host, over HTTP, when the project names one. Starts it only once the person approves it.",
+            "responsible": ["Starting, watching and stopping an approved host", "The render request and its answer", "Proxying the app’s own assets"],
+            "not": ["Running a host the person hasn’t approved"],
+            "owns": ["Approvals (~/.prelude/approvals.json)"],
+            "files": ["server/hosts.js", "tools/reference-host.js"],
+            "uses": [{ "id": "apphost", "title": "An app’s host" }, { "id": "machine", "title": "Machine-local" }],
+            "usedBy": [{ "id": "host", "title": "Design host" }],
+            "decisions": [{ "id": "D-h3n", "title": "Other stacks render through a host spoken to over HTTP", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "files", "title": "Project files", "kind": "module", "layer": "Storage",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/files.md",
+            "summary": "Everything Prelude produces, as files under the project’s prelude/ folder: designs, sessions, states, rules, approved screens.",
+            "responsible": ["Finding designs, and the project’s design system, shell and architecture", "Reading and writing sessions"],
+            "not": ["Anything machine-local"],
+            "owns": ["prelude/ in every project"],
+            "files": ["server/designs.js", "server/project.js", "server/home.js"],
+            "uses": [],
+            "usedBy": [
+              { "id": "routes", "title": "Routes" }, { "id": "workspace", "title": "Design page" }, { "id": "build", "title": "Build" },
+              { "id": "fixes", "title": "Fixes" }, { "id": "turns", "title": "Turns" }, { "id": "agent", "title": "Agent runner" },
+              { "id": "state", "title": "Design state" }, { "id": "host", "title": "Design host" }
+            ],
+            "decisions": [{ "id": "D-e8y", "title": "Prelude reads a project’s architecture from its files", "status": "proposed" }],
+            "findings": []
+          },
+          {
+            "id": "machine", "title": "Machine-local", "kind": "module", "layer": "Storage",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/machine.md",
+            "summary": "~/.prelude: recent projects, what the agent can read, approvals, drafts and worktrees. Paths on this machine, so never committed.",
+            "responsible": ["Recent projects and their reference folders"],
+            "not": ["Anything another machine needs"],
+            "owns": ["~/.prelude"],
+            "files": ["server/folders.js"],
+            "uses": [],
+            "usedBy": [{ "id": "workspace", "title": "Design page" }, { "id": "branches", "title": "Branches" }, { "id": "hosts", "title": "Host contract" }],
+            "decisions": [],
+            "findings": []
+          },
+          {
+            "id": "claude", "title": "Claude CLI", "kind": "outside", "layer": "Outside Prelude",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/claude.md",
+            "summary": "The agent: Claude Code, run in the project’s folder with file tools only.",
+            "responsible": [], "not": [], "owns": [], "files": [],
+            "uses": [], "usedBy": [{ "id": "agent", "title": "Agent runner" }],
+            "decisions": [{ "id": "D-j2s", "title": "The agent uses ordinary file tools, not domain tools", "status": "accepted" }],
+            "findings": []
+          },
+          {
+            "id": "git", "title": "Git", "kind": "outside", "layer": "Outside Prelude",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/git.md",
+            "summary": "Branches, worktrees and merges, run as the git command; pull requests through gh or az.",
+            "responsible": [], "not": [], "owns": [], "files": [],
+            "uses": [], "usedBy": [{ "id": "branches", "title": "Branches" }],
+            "decisions": [],
+            "findings": []
+          },
+          {
+            "id": "apphost", "title": "An app’s host", "kind": "outside", "layer": "Outside Prelude",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/parts/apphost.md",
+            "summary": "A project’s own design host, or its running app, rendering views in its own stack. Prelude has none of its own: it renders Eta itself.",
+            "responsible": [], "not": [], "owns": [], "files": [],
+            "uses": [], "usedBy": [{ "id": "hosts", "title": "Host contract" }],
+            "decisions": [],
+            "findings": []
+          }
+        ],
+        "decisions": [
+          {
+            "id": "D-r0k", "title": "The code is checked against each part’s declared uses", "status": "proposed", "date": "22 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-r0k.md",
+            "proposedIn": { "title": "Architecture", "branch": "prelude/architecture" },
+            "parts": [{ "id": "turns", "title": "Turns" }, { "id": "files", "title": "Project files" }],
+            "context": "<p>An architecture that isn’t checked drifts from the code within weeks, and an agent reading it is then misled.</p>",
+            "decision": "<p>After every turn that changes code, Prelude reads the imports of the files that changed, finds each file’s part, and lists any use a part doesn’t declare, any file no part names, and any named file that isn’t there.</p>",
+            "consequences": "<p>Build and fix agents are told the findings with their next message, as render failures are. Each finding is fixed in the code, or the architecture is changed by a proposed decision. JavaScript imports first; other stacks later.</p>"
+          },
+          {
+            "id": "D-e8y", "title": "Prelude reads a project’s architecture from its files", "status": "proposed", "date": "22 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-e8y.md",
+            "proposedIn": { "title": "Architecture", "branch": "prelude/architecture" },
+            "parts": [{ "id": "routes", "title": "Routes" }, { "id": "files", "title": "Project files" }],
+            "context": "<p>The architecture is written for agents as markdown files. A gallery of views over states would say everything twice.</p>",
+            "decision": "<p>Prelude reads <code>architecture/</code> (overview, parts, decisions, flows) as it reads RULES.md, and shows it on the project’s Architecture pages.</p>",
+            "consequences": "<p>The files are the one source; the pages can’t drift from them. The architecture design has no states of its own.</p>"
+          },
+          {
+            "id": "D-q4u", "title": "A fix is its own kind of work, on its own branch", "status": "accepted", "date": "19 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-q4u.md",
+            "parts": [{ "id": "fixes", "title": "Fixes" }, { "id": "branches", "title": "Branches" }],
+            "context": "<p>Some problems belong to no one design: a page that breaks only when clicked into, a layout the app never got.</p>",
+            "decision": "<p>A fix is one problem, in <code>prelude/fixes/&lt;slug&gt;/</code>, worked on in sessions on the branch <code>prelude/fix-&lt;slug&gt;</code>. Its agent may change the app and every design.</p>",
+            "consequences": "<p>A fifth noun in the model. A fix that changes a built page changes its design too, so the designs stay the specification.</p>"
+          },
+          {
+            "id": "D-x5b", "title": "One layout for all the app’s pages", "status": "accepted", "date": "18 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-x5b.md",
+            "supersedes": { "id": "D-a7e", "title": "A workspace layout for a design’s page" },
+            "parts": [{ "id": "pages", "title": "Pages" }],
+            "context": "<p>A design’s page clicked into from Home arrived without the workspace layout’s stylesheet, so nothing filled the window.</p>",
+            "decision": "<p>A design’s page is in the app layout, links its own stylesheet and marks its root <code>.fills</code>. Only a genuinely different document (the pop-out) has a layout of its own.</p>",
+            "consequences": "<p>Moving between pages never reloads the document. A page that fills the window says so in its own markup.</p>"
+          },
+          {
+            "id": "D-a7e", "title": "A workspace layout for a design’s page", "status": "superseded", "date": "16 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-a7e.md",
+            "supersededBy": { "id": "D-x5b", "title": "One layout for all the app’s pages" },
+            "parts": [{ "id": "pages", "title": "Pages" }],
+            "context": "<p>The design page fills the window while other pages scroll.</p>",
+            "decision": "<p>The design page renders in its own workspace layout.</p>",
+            "consequences": "<p>Moving between layouts needs a whole page; Koda swaps only the main region.</p>"
+          },
+          {
+            "id": "D-v6t", "title": "Every design works on its own branch, in a worktree", "status": "accepted", "date": "16 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-v6t.md",
+            "parts": [{ "id": "branches", "title": "Branches" }, { "id": "turns", "title": "Turns" }],
+            "context": "<p>A design and its build change the same files as other designs, and the person’s checkout is theirs.</p>",
+            "decision": "<p>Each design works on <code>prelude/&lt;design&gt;</code> in a worktree of its own. Every turn is committed there; Prelude never writes to the checkout.</p>",
+            "consequences": "<p>A worktree is a project of its own to the server, with its own sessions, host and check. Finishing merges or pushes for a pull request.</p>"
+          },
+          {
+            "id": "D-h3n", "title": "Other stacks render through a host spoken to over HTTP", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-h3n.md",
+            "parts": [{ "id": "hosts", "title": "Host contract" }, { "id": "host", "title": "Design host" }],
+            "context": "<p>Only one piece of serving a design knows Eta: rendering a view with its data.</p>",
+            "decision": "<p>A project whose app isn’t Eta names a host in <code>prelude/prelude.json</code>. It renders over HTTP; Prelude does everything else.</p>",
+            "consequences": "<p>Every stack gets routes, states, overlays, forms and the check. A host runs unsandboxed, so it starts only once approved.</p>"
+          },
+          {
+            "id": "D-p8z", "title": "Posts change a working copy, never the state’s file", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-p8z.md",
+            "parts": [{ "id": "host", "title": "Design host" }, { "id": "state", "title": "Design state" }],
+            "context": "<p>A design that can’t save isn’t a prototype, but its states are the agent’s, and its fixtures.</p>",
+            "decision": "<p>A post changes an in-memory copy of the current state, which every route reads. Picking a state, or Reset data, throws it away.</p>",
+            "consequences": "<p>Restarting Prelude resets every copy. The state files stay the design’s truth.</p>"
+          },
+          {
+            "id": "D-m4c", "title": "Each design is served on an origin of its own", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-m4c.md",
+            "parts": [{ "id": "host", "title": "Design host" }, { "id": "routes", "title": "Routes" }],
+            "context": "<p>A design’s routes should be the app’s real URLs, root-relative, with <code>ko-scope=\"/\"</code> owning the page.</p>",
+            "decision": "<p>Each design is served at <code>&lt;design&gt;.&lt;project&gt;.preview.localhost</code>, with Koda, the system and the shell under <code>/_prelude/</code>.</p>",
+            "consequences": "<p>Views port to the app unchanged. Posts to Prelude itself are refused from those origins.</p>"
+          },
+          {
+            "id": "D-9wd", "title": "A design is the app’s views, a route table and design-wide states", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-9wd.md",
+            "parts": [{ "id": "host", "title": "Design host" }],
+            "context": "<p>A screen flattened into one file drifts from the app at the first port.</p>",
+            "decision": "<p>A design is the app’s views decomposed as the app decomposes them, a <code>routes.json</code>, and states that are one dataset each, read by every route.</p>",
+            "consequences": "<p>The list, the detail and every fragment agree. After porting, the states are the view’s fixtures.</p>"
+          },
+          {
+            "id": "D-2kx", "title": "Views render in a sandboxed process", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-2kx.md",
+            "parts": [{ "id": "renderer", "title": "Sandboxed renderer" }, { "id": "host", "title": "Design host" }],
+            "context": "<p>Eta templates are JavaScript, and a design’s views are written by the agent.</p>",
+            "decision": "<p>Views render in a separate Node process under the permission model: it may read the project and Prelude, and nothing else.</p>",
+            "consequences": "<p>Rendering costs a process hop. Node’s permission model doesn’t cover the network yet.</p>"
+          },
+          {
+            "id": "D-w3n", "title": "The desktop app starts the server when none answers", "status": "accepted", "date": "15 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-w3n.md",
+            "parts": [{ "id": "desktop", "title": "Desktop app" }],
+            "context": "<p>Starting the server by hand before opening the app was a step nobody wanted.</p>",
+            "decision": "<p>The app uses a server already answering on localhost:4200, or starts <code>node start.js</code> itself and stops it on quit.</p>",
+            "consequences": "<p>The server stops by itself if the app dies. A server the app didn’t start is left running.</p>"
+          },
+          {
+            "id": "D-j2s", "title": "The agent uses ordinary file tools, not domain tools", "status": "accepted", "date": "14 Oct 2026",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/decisions/D-j2s.md",
+            "parts": [{ "id": "agent", "title": "Agent runner" }, { "id": "claude", "title": "Claude CLI" }],
+            "context": "<p>Everything a design is, is a file the agent can read.</p>",
+            "decision": "<p>The agent reads and writes with Read, Write, Edit, Glob and Grep, fenced by path. There are no tools of Prelude’s own.</p>",
+            "consequences": "<p>With no shell, it deletes a file by emptying it, and Prelude removes it when the turn ends.</p>"
+          }
+        ],
+        "flows": [
+          {
+            "id": "turn", "title": "A turn", "summary": "From the person’s message to the check that follows the agent’s answer.",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/flows/turn.md",
+            "steps": [
+              { "part": { "id": "routes", "title": "Routes" }, "text": "The message is posted from the composer, from Prelude’s own origin." },
+              { "part": { "id": "turns", "title": "Turns" }, "text": "If the design has a turn running, the message waits; otherwise this turn starts." },
+              { "part": { "id": "agent", "title": "Agent runner" }, "text": "Runs the Claude CLI in the design’s worktree, with the kind’s prompt, the findings from the last check, and its permissions." },
+              { "part": { "id": "live", "title": "Live channels" }, "text": "Each streamed event goes to the session’s windows as it’s written." },
+              { "part": { "id": "files", "title": "Project files" }, "text": "Finished messages are appended to the transcript." },
+              { "part": { "id": "branches", "title": "Branches" }, "text": "When the turn ends, the files it emptied are deleted and the turn is committed." },
+              { "part": { "id": "host", "title": "Design host" }, "text": "Renders every route in every state, and compares the pages with the approved screens." },
+              { "part": { "id": "turns", "title": "Turns" }, "text": "Pages that don’t render are kept for the agent’s next message; the next waiting message starts." }
+            ],
+            "decisions": [{ "id": "D-v6t", "title": "Every design works on its own branch, in a worktree" }, { "id": "D-j2s", "title": "The agent uses ordinary file tools, not domain tools" }]
+          },
+          {
+            "id": "overlay", "title": "A deep link to a drawer", "summary": "A cold load of an overlay’s URL on a design’s origin: the page beneath, with the drawer open.",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/flows/overlay.md",
+            "steps": [
+              { "part": { "id": "routes", "title": "Routes" }, "text": "A request to a design’s origin is handed to the design host." },
+              { "part": { "id": "host", "title": "Design host" }, "text": "Matches the overlay’s route, and its over page, filling the same :params." },
+              { "part": { "id": "state", "title": "Design state" }, "text": "Both routes’ data are found in the working copy, or the current state’s file." },
+              { "part": { "id": "renderer", "title": "Sandboxed renderer" }, "text": "Renders the page, the overlay and the layout in one job; the layout prints the drawer from its regions." },
+              { "part": { "id": "host", "title": "Design host" }, "text": "Answers the whole page, marked as Koda’s, with each region’s location set." }
+            ],
+            "decisions": [{ "id": "D-m4c", "title": "Each design is served on an origin of its own" }, { "id": "D-2kx", "title": "Views render in a sandboxed process" }]
+          },
+          {
+            "id": "post", "title": "A form posted in a design", "summary": "A save in a design’s drawer: refused, or changing the working copy and answering the regions.",
+            "project": { "id": "prelude", "name": "Prelude" },
+            "source": "prelude/architecture/architecture/flows/post.md",
+            "steps": [
+              { "part": { "id": "host", "title": "Design host" }, "text": "Matches the POST route, and checks its required fields." },
+              { "part": { "id": "renderer", "title": "Sandboxed renderer" }, "text": "If one is empty, re-renders the form with what was typed and the messages, answered with a 422." },
+              { "part": { "id": "state", "title": "Design state" }, "text": "Otherwise updates, adds or removes at the data path, on a copy that becomes the working copy." },
+              { "part": { "id": "renderer", "title": "Sandboxed renderer" }, "text": "Renders the answer from the changed data, and each region it refreshes or closes." },
+              { "part": { "id": "host", "title": "Design host" }, "text": "Answers the fragment and its envelopes; nothing is announced, so the page keeps its place." }
+            ],
+            "decisions": [{ "id": "D-p8z", "title": "Posts change a working copy, never the state’s file" }]
+          }
+        ],
+        "check": {
+          "checked": "2 minutes ago",
+          "files": 64,
+          "findings": [
+            { "part": { "id": "host", "title": "Design host" }, "text": "Design host uses Branches, which it doesn’t say it may.", "file": "server/host.js", "next": "Add Branches to what it may use, or move the use into Turns." },
+            { "text": "server/capture.js belongs to no part.", "file": "server/capture.js", "next": "Name it in a part’s files." }
+          ]
+        }
+      }
+    }
+  ]
+}

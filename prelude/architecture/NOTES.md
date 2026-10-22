@@ -1,35 +1,73 @@
 # Architecture - notes
 
-Exploring a fourth kind of design, besides features, the design system and the
-shell: **the project's architecture**, kept as files that agents read, and
-shown to the team as a gallery, the way the design system is. Prelude's own
-architecture (today in `CLAUDE.md` and `docs/plan.md`) is the sample data.
+A fourth kind of design, besides features, the design system and the shell:
+**the project's architecture**, kept as markdown files that agents read and
+shown to the team on the project's Architecture pages, the way the design
+system's gallery shows the system. Prelude's own architecture (from
+`CLAUDE.md` and `docs/plan.md`) is the sample data.
 
-## Proposal (not yet agreed)
+This design is those pages: views at Prelude's own URLs
+(`/f/:folder/architecture/…`), with states shaped as Prelude's model of the
+files would be.
 
-- **A design of `"kind": "architecture"`, one per project**, like the system
-  and the shell. Its sessions shape it ("harvest it from the code").
-- **`architecture/` holds the files agents read** (the system's `system/`):
-  - `overview.md`: what the app is, its runtime pieces, its principles (rule,
-    reason), the way guidelines.md does for the system;
-  - `parts/<name>.md`: one per part (module or process), saying what it is
-    responsible for, what it owns, what it may use, and its files;
-  - `decisions/<id>.md`: one decision record per file (context, decision,
-    consequences; proposed / accepted / superseded), ids random so branches
-    merge cleanly;
-  - `flows/<name>.md`: a request or job through the parts, step by step.
-- **The gallery is for architects and developers**: an overview with a map
-  of the parts, a page per part, the decision log, and the flows.
-- **Agents use it**: design and build sessions read the principles and the
-  parts they touch; a change that departs from them proposes a decision
-  (as a rule is *proposed*) instead of drifting silently.
+## Decided (2026-10-22, with the person)
+
+- **A design of `"kind": "architecture"`, one per project** (R-p0j), like the
+  system and the shell. Its sessions shape it ("draft it from the code").
+- **Prelude reads the files itself**, as it reads RULES.md, so nothing is
+  written twice (D-e8y in the sample). The real architecture design will
+  have no states; this design's states stand in for what Prelude reads.
+- **Markdown, a file per thing**, in the design's `architecture/` folder (as
+  the system's is `system/`):
+  - `overview.md`: a summary, the layers in order, the principles (title, why);
+  - `parts/<id>.md`: a header (title, layer, kind: module / process / outside,
+    `files` globs, `uses` part ids), then sections: Responsible for, Not its
+    job, Owns;
+  - `decisions/<id>.md`: a header (title, status, date, parts, supersedes),
+    then Context, Decision, Consequences. Ids are `D-` + three random
+    characters, so branches never clash;
+  - `flows/<id>.md`: a title, a summary, numbered steps each starting with
+    the part's id.
+  Prelude prepares what's derived: each part's "used by", decisions and
+  findings, and the map's layers.
+- **Proposed decisions are accepted by merging** (R-7tq): an agent's
+  proposal is reviewed with its branch, and Prelude marks it accepted at
+  merge (as it clears a route's `from`).
+- **Agents use it** (R-c2m, R-h9w): every design, build and fix prompt says
+  to read the principles and the parts the change reaches, and to propose a
+  decision rather than drift.
+- **Drift check** (R-4vx, R-k5e; D-r0k in the sample): after every turn that
+  changes code, read the changed files' imports (JavaScript first), map
+  each file to its part by `files`, and report: a use the part doesn't say
+  it may make (and a use of a layer above), a file no part names, and a
+  named file that isn't there. Told to build and fix agents with their next
+  message, as render failures are; shown on the overview and the part.
+  `npm run check` runs it too. Other stacks: through the host contract, later.
+
+## Pages
+
+- **Overview** (`/f/:folder/architecture`): summary, the map of parts by
+  layer, principles; beside them the check, latest decisions, flows, and
+  what agents do with it. Empty: "Draft it from the code…".
+- **A part**: its job and what isn't, decisions, findings; may use, used
+  by, owns, files.
+- **Decisions**: search by id or title, filter by status; each opens in the
+  drawer (context, decision, consequences, what it replaced, its parts).
+- **A flow**: a table of steps, each in a part; the decisions behind it.
+
+States: `01-typical`, `02-not-written` (no architecture design yet),
+`03-drifted` (five findings). Event: `architecture-checked` refreshes the
+check card.
+
+Design system: added the **map** component (`.map`, layers of part boxes)
+and the words architecture, part, decision, flow.
 
 ## Open questions
 
-- Who renders the gallery: views over states that mirror the files (as built
-  today), or Prelude reading `architecture/` directly (as `rules.js` reads
-  RULES.md), so nothing is written twice?
-- Markdown with a small header per file, or one JSON per part?
-- Can drift be checked: a part's declared "may use" against the code's
-  imports, as the screens are checked against snapshots?
-- A map needs a diagram component the design system lacks.
+- Where the project page links to Architecture (a card beside the design
+  system and shell?). That page belongs to "Project Landing Page".
+- Should a design page show the parts its routes reach (via `@app/` files)?
+- Can a principle carry a check of its own (e.g. "nothing outside the
+  renderer imports eta")?
+- Non-JavaScript stacks: who reads their imports - the host, or a small
+  reader per language?

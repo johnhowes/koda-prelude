@@ -1,0 +1,27 @@
+<!-- Map: the parts of something, in layers, read from top to bottom (an app's
+     modules, a flow's stages). Each .map-layer is a band: its .map-label, then
+     its parts in .map-nodes, as many to a row as fit (--node-min, default
+     11rem). The label sits beside the parts, and above them when the map is
+     narrow (under 36rem). A part is a link to its page (an <a class="map-node">),
+     or a <span> when there's nowhere to go. Mark a part that isn't the thing's
+     own .outside (dashed), one with something to look at .warn (with a pill
+     saying what: never the colour alone), and the one on show aria-current.
+     Say how to read it in a figcaption. -->
+<figure class="stack gap-2">
+  <div class="map" aria-label="Prelude’s parts">
+    <section class="map-layer" aria-label="Server">
+      <h3 class="map-label">Server</h3>
+      <ul class="map-nodes">
+        <li><a class="map-node" href="#"><span class="map-node-title">Routes</span><span class="muted">Every URL Prelude answers</span></a></li>
+        <li><a class="map-node warn" href="#"><span class="map-node-title">Design host<span class="pill warn">1 to look at</span></span><span class="muted">Serves each design on its own origin</span></a></li>
+      </ul>
+    </section>
+    <section class="map-layer" aria-label="Outside Prelude">
+      <h3 class="map-label">Outside Prelude</h3>
+      <ul class="map-nodes">
+        <li><a class="map-node outside" href="#"><span class="map-node-title">Git</span><span class="muted">Branches, worktrees, merges</span></a></li>
+      </ul>
+    </section>
+  </div>
+  <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
+</figure>

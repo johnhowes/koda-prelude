@@ -110,6 +110,10 @@ apostrophes (’); "…" for something in progress or that asks for more.
 | design system | theme, style guide, UI kit | The app's vocabulary, which every design uses. |
 | app shell, layout | template, chrome, frame | The shell holds the layouts every design renders in. |
 | the agent | AI, assistant, bot, Claude | It's a role in Prelude, not a brand. |
+| architecture | system design, tech spec | The project's parts, principles, decisions and flows, which agents read. |
+| part | module, component, service, box | One piece of the architecture, whatever it runs as; "component" is the design system's. |
+| decision, proposed, accepted, superseded | ADR, record, RFC | Says what it is to someone who has never written an ADR. |
+| flow | sequence, trace | A request or a job, step by step through the parts. |
 | build, the app build | generate, compile, deploy | Turning a design into the app's code. |
 | story | ticket, task, issue | What's left to build, as text to copy. |
 | check, render | test, validate | Prelude renders every page in every state. |

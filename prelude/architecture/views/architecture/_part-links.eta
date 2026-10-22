@@ -1,0 +1,11 @@
+<%/* Parts to open, one per row; "No other part" when there are none. */%>
+<% const { parts, base } = it; %>
+<% if (!(parts ?? []).length) { %>
+<p class="muted">No other part.</p>
+<% } else { %>
+<ul class="list">
+  <% for (const part of parts) { %>
+  <li><a class="item" href="<%= base %>/parts/<%= part.id %>"><span class="item-text"><span class="item-title"><%= part.title %></span></span></a></li>
+  <% } %>
+</ul>
+<% } %>

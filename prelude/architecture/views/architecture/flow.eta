@@ -1,0 +1,43 @@
+<%/* A flow, from flows/<id>.md: a request or a job through the parts,
+     step by step, each step naming the part it happens in; and the
+     decisions behind it. */%>
+<% const f = it, base = `/f/${f.project.id}/architecture`; %>
+<div class="center wide architecture" ko-item>
+  <div class="stack gap-8">
+    <div class="stack gap-2">
+      <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= f.project.id %>"><%= f.project.name %></a><span aria-hidden="true">›</span><a href="<%= base %>">Architecture</a><span aria-hidden="true">›</span><span>Flows</span></nav>
+      <h1><%= f.title %></h1>
+      <p class="secondary"><%= f.summary %></p>
+    </div>
+
+    <div class="split" style="--side: 18rem">
+      <section class="card" aria-labelledby="steps-title">
+        <h2 id="steps-title">Steps</h2>
+        <table class="table">
+          <thead><tr><th scope="col" class="num">Step</th><th scope="col">Part</th><th scope="col">What happens</th></tr></thead>
+          <tbody>
+            <% f.steps.forEach((step, n) => { %>
+            <tr><td class="num"><%= n + 1 %></td><td><a href="<%= base %>/parts/<%= step.part.id %>"><%= step.part.title %></a></td><td><%= step.text %></td></tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </section>
+
+      <aside class="side stack gap-6" aria-label="Behind it">
+        <section class="card gap-2" aria-labelledby="flow-decisions-title">
+          <h2 id="flow-decisions-title">Decisions behind it</h2>
+          <% if (!(f.decisions ?? []).length) { %>
+          <p class="muted">None named.</p>
+          <% } else { %>
+          <ul class="list">
+            <% for (const decision of f.decisions) { %>
+            <li><a class="item" href="<%= base %>/decisions/<%= decision.id %>" ko-target="drawer?"><span class="item-text"><span class="item-title"><%= decision.title %></span><span class="muted"><%= decision.id %></span></span></a></li>
+            <% } %>
+          </ul>
+          <% } %>
+        </section>
+        <p class="muted">From <code><%= f.source %></code></p>
+      </aside>
+    </div>
+  </div>
+</div>

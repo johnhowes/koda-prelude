@@ -276,6 +276,33 @@
     </section>
 
     <section class="stack gap-3 specimen">
+      <h3>Map</h3>
+      <p class="secondary">The parts of something, in layers read from top to bottom; each part opens its page.</p>
+      <div class="stage">
+        <figure class="stack gap-2">
+          <div class="map" aria-label="Prelude’s parts">
+            <section class="map-layer" aria-label="Server">
+              <h3 class="map-label">Server</h3>
+              <ul class="map-nodes">
+                <li><a class="map-node" href="#"><span class="map-node-title">Routes</span><span class="muted">Every URL Prelude answers</span></a></li>
+                <li><a class="map-node" href="#" aria-current="true"><span class="map-node-title">Turns</span><span class="muted">One turn per design at a time</span></a></li>
+                <li><a class="map-node warn" href="#"><span class="map-node-title">Design host<span class="pill warn">1 to look at</span></span><span class="muted">Serves each design on its own origin</span></a></li>
+              </ul>
+            </section>
+            <section class="map-layer" aria-label="Outside Prelude">
+              <h3 class="map-label">Outside Prelude</h3>
+              <ul class="map-nodes">
+                <li><a class="map-node outside" href="#"><span class="map-node-title">Git</span><span class="muted">Branches, worktrees, merges</span></a></li>
+                <li><a class="map-node outside" href="#"><span class="map-node-title">Claude CLI</span><span class="muted">The agent</span></a></li>
+              </ul>
+            </section>
+          </div>
+          <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
       <h3>Panel, toolbar and empty</h3>
       <p class="secondary">A panel fills its share of a layout; its toolbar runs across the top. A <code>.panel-head</code> holds the toolbar and its notices as one part, when they refresh apart from the body.</p>
       <div class="stage tall">

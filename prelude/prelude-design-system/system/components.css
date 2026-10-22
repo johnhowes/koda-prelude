@@ -439,6 +439,40 @@
   .table a { color: var(--fg); font-weight: var(--weight-strong); text-decoration: none; }
   .table a:hover { color: var(--accent); }
 
+  /* Map: the parts of something, in layers, read from top to bottom - each
+     layer a band with its label beside (above, when narrow) and its parts
+     as boxes, as many to a row as fit. A part is a link to its page.
+     .outside for a part that isn't the thing's own (dashed); .warn for one
+     with something to look at (its words say what); aria-current for the
+     one on show. */
+  .map { --gap: var(--space-2); --label: 9rem; --node-min: 11rem; display: flex; flex-direction: column; gap: var(--gap); container-type: inline-size; }
+  .map-layer {
+    display: grid; grid-template-columns: var(--label) 1fr; gap: var(--space-3); align-items: start;
+    padding: var(--space-3); background: var(--surface-sunken); border-radius: var(--radius-lg);
+  }
+  @container (width < 36rem) { .map-layer { grid-template-columns: 1fr; gap: var(--space-2); } }
+  .map-label {
+    padding-block: var(--space-2);
+    font-size: var(--text-xs); font-weight: var(--weight-strong); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--fg-subtle);
+  }
+  .map-nodes {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--space-2);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--node-min)), 1fr));
+  }
+  .map-node {
+    display: flex; flex-direction: column; gap: var(--space-half); block-size: 100%;
+    padding: var(--space-2) var(--space-3);
+    background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
+    color: var(--fg); font-size: var(--text-sm); text-decoration: none;
+  }
+  a.map-node:hover { border-color: var(--accent); color: var(--fg); }
+  .map-node.outside { background: transparent; border-style: dashed; border-color: var(--border-strong); }
+  .map-node.warn { border-color: color-mix(in oklch, var(--warn) 55%, var(--border)); }
+  .map-node[aria-current]:not([aria-current="false"]) { background: var(--accent-soft); border-color: var(--accent); }
+  .map-node-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); font-weight: var(--weight-strong); }
+
   /* The gap, from the space scale, for any primitive (and .card). Last in
      the layer, so a modifier beats the default its element sets. */
   .gap-0 { --gap: 0; }

@@ -1,0 +1,14 @@
+{
+  "architecture-checked": {
+    "title": "A turn’s check read the code again",
+    "update": "folders/prelude/architecture/check",
+    "with": {
+      "checked": "just now",
+      "files": 65,
+      "findings": [
+        { "part": { "id": "host", "title": "Design host" }, "text": "Design host uses Branches, which it doesn’t say it may.", "file": "server/host.js", "next": "Add Branches to what it may use, or move the use into Turns." }
+      ]
+    },
+    "send": "architecture-checked"
+  }
+}
