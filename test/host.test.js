@@ -220,6 +220,18 @@ test('the preview offers the design’s pages and states, framed on its own orig
   assert.ok((await (await get(`/f/${fid}/d/orders/preview`)).text()).includes('/orders/2?v='));
 });
 
+test('a framed page asks Koda for its warnings and sends them to the surface', async () => {
+  const page = await hostGet('orders', '/orders', { 'sec-fetch-dest': 'iframe' });
+  assert.match(page.body, /<head[^>]*><script>.*setAttribute\("ko-warnings",""\)/s, 'a hidden [ko-warnings] is added, so Koda works the advice out');
+  assert.match(page.body, /addEventListener\("koda:warning".*type:"prelude:warning"/s);
+  // A fragment is spliced into a page that already has it.
+  const fragment = await hostGet('orders', '/orders/1/row', { 'sec-fetch-dest': 'empty', 'x-koda-fragment': '1' });
+  assert.doesNotMatch(fragment.body, /prelude:warning/);
+
+  const surface = await (await get(`/f/${fid}/d/orders/preview`)).text();
+  assert.match(surface, /event\.data\?\.type === 'prelude:warning'/);
+});
+
 test('views render sandboxed: no reading outside the folder, no writing at all', async () => {
   const sneaky = await hostGet('orders', '/sneaky');
   assert.equal(sneaky.status, 500);

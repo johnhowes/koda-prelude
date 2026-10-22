@@ -16,6 +16,15 @@
   <button class="icon-btn small" type="button" command="--koda-empty" commandfor="modal" aria-label="Close"><span class="icon icon-close" aria-hidden="true"></span></button>
   <div id="modal" ko-region ko-focus="region" tabindex="-1"<% if (modal) { %> ko-location="<%= modal.location %>"<% } %>><%~ modal?.html ?? '' %></div>
 </dialog>
+<%/* Koda's warnings (0.1.4): a sentence for each answer that landed somewhere
+     other than where its request was routed, and Koda's other warnings. Its
+     being on the page is what asks Koda to work the advice out. Prelude is a
+     development tool, so it shows them; an app's production shell wouldn't.
+     Hidden while empty; Clear empties it. No whitespace inside the list. */%>
+<section class="shell-warnings" aria-label="Koda's warnings">
+  <ol id="warnings" ko-warnings></ol>
+  <button class="icon-btn small" type="button" command="--koda-empty" commandfor="warnings" aria-label="Clear the warnings"><span class="icon icon-close" aria-hidden="true"></span></button>
+</section>
 <%/* The page's one live channel (server-sent events), when the app gives it
      one: small named events ("needs-changed") that a page's regions reload
      on, and markup for the bar's regions (ko-into="waiting"). A design's

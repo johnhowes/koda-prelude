@@ -402,6 +402,14 @@ Where the app differs from the screens, on purpose:
   opens it instead of `page` when the design's routes answer its path (an
   overlay renders over its page, as a deep link does), and names the
   picture after that route's title. App mode still opens the page picked.
+- **Koda's warnings from the frame** (2026-10-22, a fix: Koda 0.1.4): beside
+  `WHERE_SCRIPT`, `WARNINGS_SCRIPT` adds a hidden `<ol ko-warnings>` to a
+  framed page that has none (which asks Koda for its routing advice), takes
+  each `koda:warning`, and posts `{ type: 'prelude:warning', code, message,
+  url }`. `_surface.eta` adds each to the shell's warnings list
+  (prelude/prelude-shell), as "In the design's page: …". So a fragment that
+  lands where it doesn't belong in a design is reported, without the design's
+  own layouts, which become the app's, carrying a list.
 - **What's on screen, in the desktop app** (R-3qz): `desktop.js` takes the
   click on `[data-capture-shown]` when the shell has `capture`, closes the
   menu, waits two frames, asks `preludeDesktop.capture(rect, 1 / --scale)`

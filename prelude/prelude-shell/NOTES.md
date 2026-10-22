@@ -90,6 +90,15 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
   it). Added for "Design Workspace" (prelude/design-workspace): Capture's
   hints.
 
+- **Koda's warnings** (2026-10-22, a fix: Koda 0.1.4): `<ol id="warnings"
+  ko-warnings>` in `_regions`, at the window's bottom-start corner (the notice
+  has the other), on `--danger-soft`, hidden while empty, with a Clear
+  (`--koda-empty`). Its being on the page asks Koda to say when an answer lands
+  somewhere other than where its request was routed (a fragment in the main
+  window). Prelude is a development tool, so it shows them; a production
+  shell shouldn't carry one, so the agent's shell template doesn't. The design
+  surface adds a framed design page's warnings to it too.
+
 ## Connected to the app (2026-10-16)
 
 The app is Prelude's own server (`server/`: Node, node:http, Eta and Koda).
