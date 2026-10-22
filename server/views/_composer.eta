@@ -39,9 +39,10 @@
   <%/* The draft: what's typed is kept with the session as it's written (a
        moment after the person stops typing), so it's still here after a
        reload, or after looking at another session and coming back. Its own
-       action, so the message isn't sent. Sending empties it. */%>
+       action, so the message isn't sent. Sending empties it. Its copy has
+       a name of its own (ko-as), so "message" still means only the box. */%>
   <div hidden ko-form="<%= draft.base %>/draft" ko-method="post" ko-invoke="input:message" ko-debounce="800" ko-target="draftKept">
-    <input type="hidden" name="message" calc-value="message.value">
+    <input type="hidden" name="message" ko-as="draftMessage" calc-value="message.value">
   </div>
   <% if (waits) { %><p class="hint" id="message-waits">The agent is working. What you send now waits, and goes when it finishes.</p><% } %>
   <div class="composer-foot">

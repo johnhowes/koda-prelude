@@ -294,6 +294,12 @@ test('each session keeps its own draft; images only, kept until sent', async () 
   assert.match(await (await get(sessionUrl)).text(), /<textarea[^>]*><\/textarea>/, 'sending empties the draft');
 });
 
+test('the draft\'s copy of the message has a name of its own, so "message" means only the box', async () => {
+  const page = await (await get(`${designUrl}/sessions/new`)).text();
+  assert.match(page, /<textarea id="message" name="message" ko-as="message"/);
+  assert.match(page, /<input type="hidden" name="message" ko-as="draftMessage" calc-value="message\.value">/);
+});
+
 test('a capture the desktop app pictured is kept as it is (R-3qz)', async () => {
   const id = readdirSync(join(designDir, 'sessions'))[0];
   await get(`${designUrl}/sessions/${id}`);
