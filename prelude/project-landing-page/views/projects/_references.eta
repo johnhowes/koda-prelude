@@ -1,0 +1,18 @@
+<%/* The folders the person added for the agent to read, each with a way to
+     stop. `it` is the project. */%>
+<% const p = it, references = p.references ?? []; %>
+<% if (references.length) { %>
+<ul class="list">
+  <% for (const reference of references) { const name = reference.name ?? reference.path.split(/[\\/]/).filter(Boolean).pop(); %>
+  <li>
+    <span class="item">
+      <span class="icon icon-folder" aria-hidden="true"></span>
+      <span class="item-text"><span class="item-title"><%= name %></span><span class="muted project-path"><%= reference.path %></span></span>
+      <form action="/f/<%= p.id %>/references/<%= reference.id %>/remove" method="post" ko-target="references">
+        <button class="icon-btn small" type="submit" aria-label="Stop reading <%= name %>"><span class="icon icon-close" aria-hidden="true"></span></button>
+      </form>
+    </span>
+  </li>
+  <% } %>
+</ul>
+<% } %>

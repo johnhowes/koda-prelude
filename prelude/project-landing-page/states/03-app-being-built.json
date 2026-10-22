@@ -27,7 +27,7 @@
         "run": { "command": null, "url": null, "state": "stopped", "log": null }
       },
       "defaultStack": "Node with Eta",
-      "system": { "id": "borrower-design-system", "title": "Borrower Design System" },
+      "system": { "id": "borrower-design-system", "title": "Borrower Design System", "components": 18 },
       "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
       "needs": [
         {

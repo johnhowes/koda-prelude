@@ -420,7 +420,37 @@ Shell). `progressOf()` now counts its layouts as `allShellLayouts()` in
 are built: "2 layouts, all built", `built`. The design already shows this
 (typical's Spark Shell); the views and states are unchanged.
 
+## Reference: read the design system and architecture (redesign, 2026-10-22)
+
+Reading them is by far their most common use, and it needed a design
+session (the person). Decided:
+
+- **A Reference card at the top of the side column** (the person chose it
+  over making the Designs rows open the read-only view): it's always in
+  sight, and searching or filtering Designs doesn't hide it. The rows link to
+  `/f/:project/system` and `/f/:project/architecture`, the counts beneath
+  them. A row shows once there's something in it (components, parts), and
+  the card shows once a row does (R-x4b). The Designs rows still open the
+  design pages, which is where you change them.
+- **No app shell** (the person: leave it out for now).
+- **The design system gets a page of its own in the app**, as Architecture
+  has (the person: treat them the same). It isn't this design's: its gallery
+  today is plain HTML on the preview origin. See Open questions.
+- Designs lists the architecture design too: "Architecture" pill, document
+  icon, "14 parts and 9 decisions".
+- The model gains `system.components` and `architecture` (`id`, `title`,
+  `parts`, `decisions`, or null if there isn't one).
+
+**Brought back for it**: `page` (changed), `_designs` (changed); page's other
+partials are copied unchanged. New: `_reference`.
+
 ## Open questions
+
+- **Who designs `/f/:project/system`?** It's the design system read outside a
+  session (tokens, components, guidelines), on the app's design system like
+  Architecture's pages. It probably needs its own design, as Architecture had,
+  rather than the Design Session design, which is about changing a design.
+  Until it's built, the build could point the link at the gallery.
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own

@@ -21,8 +21,9 @@
       "app": { "status": "built", "stack": "Node with Eta", "path": "app", "existing": false, "branch": null, "url": null,
         "run": { "command": "npm start --prefix app", "url": "http://localhost:3100", "state": "stopped", "log": null } },
       "defaultStack": "Node with Eta",
-      "system": { "id": "spark-design-system", "title": "Spark Design System" },
+      "system": { "id": "spark-design-system", "title": "Spark Design System", "components": 24 },
       "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "architecture": { "id": "architecture", "title": "Architecture", "parts": 14, "decisions": 9 },
       "needs": [
         {
           "id": "n-q81",
@@ -181,6 +182,7 @@
       "designs": [
         { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 24, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
         { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 2, "layoutsBuilt": 2, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "architecture", "title": "Architecture", "kind": "architecture", "area": null, "parts": 14, "decisions": 9, "pages": 0, "approved": 0, "built": 0, "stage": "approved", "changed": "4 days ago" },
         { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
         { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
         { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 days ago" },
