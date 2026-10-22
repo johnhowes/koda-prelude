@@ -42,7 +42,24 @@ files would be.
   it may make (and a use of a layer above), a file no part names, and a
   named file that isn't there. Told to build and fix agents with their next
   message, as render failures are; shown on the overview and the part.
-  `npm run check` runs it too. Other stacks: through the host contract, later.
+  `npm run check` runs it too.
+- **Other stacks: small readers in Prelude, one per language, not the host**
+  (recommended 2026-10-22, not yet agreed). The check has to run where no
+  host is running (CI, `npm run check`), and a host runs only once approved.
+  Each reader only lists what a file imports, line by line, with no
+  compiler:
+  - **where an import names a file** (JavaScript and TypeScript, Python, Go,
+    Ruby, PHP): resolve it to the file, and the file to its part by `files`;
+  - **where it names a namespace** (C#, Java, Kotlin): a part's header also
+    says which namespaces it holds (`names: Spark.Servicing.*`), and a
+    `using` or `import` is matched to the part holding that namespace;
+    .NET's `ProjectReference`s in each `.csproj` are checked the same way,
+    as a coarser use;
+  - **a language with no reader**: its files are still checked for
+    belonging to a part and for being there; uses aren't, and the check
+    says so once.
+  Exact answers through the host contract (an imports endpoint) only if a
+  reader turns out to be too rough.
 
 ## Pages
 
@@ -64,10 +81,10 @@ and the words architecture, part, decision, flow.
 
 ## Open questions
 
-- Where the project page links to Architecture (a card beside the design
-  system and shell?). That page belongs to "Project Landing Page".
+- The project page's link to Architecture: the person will design it in
+  "Project Landing Page".
 - Should a design page show the parts its routes reach (via `@app/` files)?
+  The person isn't sure yet.
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
-- Non-JavaScript stacks: who reads their imports - the host, or a small
-  reader per language?
+- The readers for other stacks (above): agreed, or the host after all?
