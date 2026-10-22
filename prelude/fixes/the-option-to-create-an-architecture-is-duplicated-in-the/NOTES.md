@@ -1,0 +1,3 @@
+# Fix: The option to create an architecture is duplicated in the…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
