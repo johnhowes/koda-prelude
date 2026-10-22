@@ -109,7 +109,7 @@
       "state": "Drifted",
       "page": "A decision",
       "group": "Decisions",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "drifted~f_prelude_architecture_flows_turn",
