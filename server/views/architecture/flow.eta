@@ -1,6 +1,6 @@
 <%/* A flow, from flows/<id>.md: a request or a job through the parts,
      step by step, each step naming the part it happens in; and the
-     decisions behind it. */%>
+     decisions behind it (architectureOf's Flow). */%>
 <% const f = it, base = `/f/${f.project.id}/architecture`; %>
 <div class="center wide architecture" ko-item>
   <div class="stack gap-8">

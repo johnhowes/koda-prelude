@@ -638,6 +638,16 @@ async function handle(req, res, app) {
       const alone = fragment && askedFromLayout(req, 'app');
       return send(res, 200, shaped('architecture/part', part, { fragment: alone, path, title: `${part.title} · Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
     }
+    //   GET  /f/<id>/architecture/flows/<flow>    a flow: its steps, each in a part, and the decisions behind it
+    const flowId = rest.match(/^\/architecture\/flows\/([\w-]+)$/)?.[1];
+    if (flowId && req.method === 'GET') {
+      let model;
+      try { model = architectureOf(app, folder); } catch (error) { return unreadable(error); }
+      const flow = model.flows.find(candidate => candidate.id === flowId);
+      if (!flow) return page(404, 'not-found', { what: 'The architecture has no such flow.' }, 'Not found');
+      const alone = fragment && askedFromLayout(req, 'app');
+      return send(res, 200, shaped('architecture/flow', flow, { fragment: alone, path, title: `${flow.title} · Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
+    }
 
     // The design system to read (the Reference card, R-x4b), on the design
     // system (prelude/design-system-page): its gallery, framed from the

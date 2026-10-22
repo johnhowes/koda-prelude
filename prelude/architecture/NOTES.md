@@ -88,8 +88,9 @@ and the words architecture, part, decision, flow.
   404 for an id no part has). So are **Decisions** (`architecture/decisions`,
   newest first, filtered by ?q= and ?status= as the list region is) and **a
   decision** (`architecture/_decision`, in the drawer; a cold load has
-  Decisions beneath it; a 404 for an id none has). The flow page is still to
-  build.
+  Decisions beneath it; a 404 for an id none has). So is **a flow**
+  (`architecture/flow`, the overview's model's flow by id; a 404 for an id no
+  flow has).
 - **Proposed decisions, accepted by merging** (R-7tq): merging a branch here
   rewrites its proposed decisions' `status:` to `accepted` and commits that
   before the merge (`acceptProposed`). A branch merged by a pull request
@@ -156,5 +157,3 @@ the overview is written (`server/views/_starters.eta`).
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
 - The readers for other stacks (above): agreed, or the host after all?
-- The flow page isn't built, so its links in the framed overview lead
-  nowhere yet, as on the page itself.

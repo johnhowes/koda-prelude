@@ -17,5 +17,5 @@
     "over": "/f/:folder/architecture/decisions", "in": "drawer"
   },
 
-  "/f/:folder/architecture/flows/:flow": { "view": "architecture/flow", "title": "A flow", "data": "folders/:folder/architecture/flows/:flow" }
+  "/f/:folder/architecture/flows/:flow": { "view": "@app/server/views/architecture/flow", "title": "A flow", "data": "folders/:folder/architecture/flows/:flow" }
 }
