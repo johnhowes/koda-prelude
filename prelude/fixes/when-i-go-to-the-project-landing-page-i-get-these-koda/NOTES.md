@@ -1,0 +1,3 @@
+# Fix: When I go to the project landing page, I get these Koda…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
