@@ -118,6 +118,13 @@ sign-in prompt: the host provides a region with the name, and applications ask
 with `ko-target="drawer?"` or `ko-into="notice?"`. A host that has no drawer
 is still a valid host.
 
+**A development host shows advice.** A host where applications are designed or
+tested - a design tool, a staging hub - puts `<ol ko-warnings></ol>` somewhere
+visible. Koda then lists, as they happen, the answers that landed somewhere
+other than where their request was routed - a redirect out of a panel, a panel
+replaced while its request was out - each saying why. A production host leaves it out. The application ships nothing for
+this. See *Advice* in the reference.
+
 **It owns the address bar.** Put `ko-history="none"` on a panel's container
 where the host's own URL is the place, or `ko-history="local"` for a panel with
 its own back and forward (a dashboard tile, a native shell). The application
