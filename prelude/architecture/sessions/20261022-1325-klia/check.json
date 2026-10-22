@@ -119,7 +119,7 @@
       "state": "Drifted",
       "page": "A flow",
       "group": "A flow",
-      "status": "differs"
+      "status": "matches"
     }
   ]
 }
