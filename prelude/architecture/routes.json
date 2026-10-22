@@ -1,6 +1,6 @@
 {
-  "/f/:folder/architecture": { "view": "@app/server/views/architecture/overview", "title": "Architecture", "data": "folders/:folder/architecture" },
-  "/f/:folder/architecture/check": { "view": "@app/server/views/architecture/_check", "data": "folders/:folder/architecture" },
+  "/f/:folder/architecture": { "view": "architecture/overview", "from": "@app/server/views/architecture/overview", "title": "Architecture", "data": "folders/:folder/architecture" },
+  "/f/:folder/architecture/check": { "view": "architecture/_check", "from": "@app/server/views/architecture/_check", "data": "folders/:folder/architecture" },
 
   "/f/:folder/architecture/parts/:part": { "view": "@app/server/views/architecture/part", "title": "A part", "data": "folders/:folder/architecture/parts/:part" },
 

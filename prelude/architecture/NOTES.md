@@ -148,6 +148,23 @@ now offers one starter, **Draft it from the code** ("Draft the architecture
 from the code."), and its intro says the page shows beside the chat once
 the overview is written (`server/views/_starters.eta`).
 
+## Designing: fixing what the check found (2026-10-22, with the person)
+
+- **The check card offers both ways to settle its findings**: **Fix the
+  code…** (Ask or fix, `/f/:project/d/fixes/new`) and **Change the
+  architecture…** (the architecture design's session; left out framed,
+  since the page is already there). One link for the card, not one per
+  finding, because putting a finding's text in the message box would need a
+  new mechanism (a prefilled message in the URL).
+- **Ask or fix offers each finding as a starting point** (R-f3n), as it
+  offers a stopped build: "Fix: <finding>", with a message naming the file,
+  its part and the use, asking the agent to change the code to match, or say
+  why a decision should change instead. It's for the build, in
+  `troublesOf`/`_starters.eta`: the fix page isn't in this design.
+- `_check` and the overview (unchanged, so it includes the new card) are
+  back in the design, with `_decision-item` copied unchanged for the
+  overview's include.
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in
