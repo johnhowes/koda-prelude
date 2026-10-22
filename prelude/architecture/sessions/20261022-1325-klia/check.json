@@ -29,7 +29,7 @@
       "state": "Typical",
       "page": "Decisions",
       "group": "Decisions",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "typical~f_prelude_architecture_decisions_D-r0k",
