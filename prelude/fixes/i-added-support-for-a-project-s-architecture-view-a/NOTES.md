@@ -45,12 +45,25 @@
   project has none, as it does the design system and the shell
   (prelude/project-landing-page: R-wm3 and the view changed, NOTES says why).
 
+- **An architecture session shows the Architecture page beside the chat**,
+  as a design-system session shows its gallery (the person, second turn: "it
+  would behave similarly to designing a design system"). Before, its design
+  surface was empty, and its prompt said "There is no screen, view or state
+  to make", without saying where the person sees what's written.
+  - `server/main.js` (`surfaceOf`): an architecture design's one page is
+    Prelude's `/f/<folder>/architecture`, for the session's folder, once
+    overview.md is written; Capture opens it with `?framed=1`.
+  - Framed (`sec-fetch-dest: iframe`, or `?framed=1`), the page leaves out
+    the bar (`bare`, in `layout.eta` and `shaped`), the crumbs and "Change it
+    with the agent" (`overview.eta`).
+  - `_surface.eta`: "Nothing written yet…" before the overview is.
+  - `server/agent.js` (`architectureSection`): the agent is told the person
+    watches the page beside the chat, and to write the overview first.
+  - Notes in prelude/architecture and prelude/design-workspace.
+
 ## Not changed
 
 - The design system's gallery itself, and the design session for it.
-- What an architecture design's own page shows beside the chat (it has no
-  screens): still an open question in prelude/architecture/NOTES.md, for a
-  design session on Design Workspace.
 
 ## What to check
 
@@ -58,11 +71,16 @@
   in the app with the gallery framed; Tokens, Components and Guidelines switch
   it; "Change it with the agent" opens the design. Light and dark both.
 - New design (on a project without an architecture) offers "The project’s
-  architecture"; creating it opens its design page.
+  architecture"; creating it opens its design page, whose surface says
+  nothing's written yet. Ask the agent to draft it: once overview.md is
+  written, the bar offers Load changes, and the Architecture page shows
+  beside the chat, without Prelude's bar.
+- In the desktop app too: the frame relies on `sec-fetch-dest: iframe` to
+  leave the bar out.
 - Prelude's gallery has its own Tokens / Components / Guidelines links, so
   the page shows that choice twice (an open question in Design System Page's
   NOTES).
-- Run the tests: `node --test test/system-page.test.js test/preview.test.js test/system.test.js`
+- Run the tests: `node --test test/system-page.test.js test/preview.test.js test/system.test.js test/architecture.test.js`
   (and the whole suite, `npm test`).
 - Snapshots that will differ on purpose: Project Landing Page's
   `new-project` New design modal (the new kind).

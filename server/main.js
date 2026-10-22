@@ -600,13 +600,17 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/architecture/decision-list   the decisions, as ?q= and ?status= leave them, a region
     // The check region reloads on architecture-checked, sent down the app's
     // channel when a turn's check has read the code again (R-4vx).
+    // In a frame (the architecture design's surface, or ?framed=1 for its
+    // capture), the page has no bar, crumbs or way to the design: it's shown
+    // beside the design's own chat.
     const architectureViews = { '/architecture': 'architecture/overview', '/architecture/check': 'architecture/_check', '/architecture/decision-list': 'architecture/_decisions' };
     if (Object.hasOwn(architectureViews, rest) && req.method === 'GET') {
       let model;
       try { model = architectureOf(app, folder, { query, filter: rest === '/architecture/decision-list' }); } catch (error) { return unreadable(error); }
+      const framed = req.headers['sec-fetch-dest'] === 'iframe' || query.framed === '1';
       // The page alone for a region asking from a page in the app layout (askedFromLayout); its parts alone for any region.
       const alone = fragment && (rest !== '/architecture' || askedFromLayout(req, 'app'));
-      return send(res, 200, shaped(architectureViews[rest], model, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
+      return send(res, 200, shaped(architectureViews[rest], { ...model, framed }, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true, bare: framed }));
     }
 
     // The design system to read (the Reference card, R-x4b), on the design
@@ -1283,6 +1287,22 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         review,
       };
     }
+    // The architecture has no screens: its surface is the Architecture page,
+    // as Prelude reads this folder's files (framed, without the bar), once
+    // its overview is written, as the design system's is its gallery.
+    if (design.kind === 'architecture') {
+      const screens = isWritten(findArchitecture(app, folder)) ? [{ id: 'architecture', title: 'Architecture' }] : [];
+      return {
+        ...common,
+        origin: `/f/${folder.id}/`,
+        screens,
+        current: screens[0]?.id ?? null,
+        states: [], state: null, changed: false, events: [], approved: 0,
+        review: { failures: [], differ: [] },
+        screensOnly: true,
+        architecture: true,
+      };
+    }
     // Plain screens/*.html (the design system's gallery): served as files.
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
@@ -1569,7 +1589,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const looking = fromForm(form);
     const answer = (data, also = '') => sendView(200, '_captured', data, also);
     const page = String(form.get('page') ?? '');
-    const known = hosted ? Boolean(matchRoute(routes, page)) : listScreens(dir).some(screen => screen.file === page);
+    const known = hosted ? Boolean(matchRoute(routes, page))
+      : design.kind === 'architecture' ? page === 'architecture' && isWritten(findArchitecture(app, folder))
+      : listScreens(dir).some(screen => screen.file === page);
     if (!known) return answer({ error: 'That page is no longer in the design.' });
     // Where the frame is (its page says, _surface.eta): opened instead of the
     // page picked when it's an address the design answers, an overlay over
@@ -1591,7 +1613,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
       const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
       const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
-      const at = hosted ? `${designOrigin(req, folder, design)}${target}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+      const at = hosted ? `${designOrigin(req, folder, design)}${target}`
+        : design.kind === 'architecture' ? `http://${req.headers.host}/f/${folder.id}/architecture?framed=1`
+        : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
       try {
         bytes = await capture({ url: at, width, height, whole, attributes: client.attributes ?? {} });
       } catch (error) {

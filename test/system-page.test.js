@@ -16,12 +16,13 @@ import { createFakeRunner } from './fake-runner.js';
 const home = mkdtempSync(join(tmpdir(), 'prelude-home-'));
 const repo = mkdtempSync(join(tmpdir(), 'prelude-repo-'));
 const fid = folderId(repo);
+const runner = createFakeRunner();
 let server;
 let base;
 
 before(async () => {
   createDesign(repo, { title: 'Sign up' });
-  server = createServer({ home, runner: createFakeRunner() });
+  server = createServer({ home, runner });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${server.address().port}`;
   await post('/folders', { path: repo });
@@ -107,4 +108,32 @@ test('New design offers the architecture until the project has one', async () =>
   assert.equal(made.status, 303);
   assert.equal(made.headers.get('location'), `/f/${fid}/d/architecture`);
   assert.doesNotMatch(await (await get(`/f/${fid}/designs/new`)).text(), /value="architecture"/);
+});
+
+test('the architecture design shows the Architecture page beside its chat, as the system shows its gallery', async () => {
+  const empty = await (await get(`/f/${fid}/d/architecture/preview`)).text();
+  assert.match(empty, /Nothing written yet/);
+  assert.doesNotMatch(empty, /<iframe/);
+
+  const at = join(repo, 'prelude', 'architecture', 'architecture');
+  mkdirSync(join(at, 'parts'), { recursive: true });
+  writeFileSync(join(at, 'overview.md'), '# Demo architecture\n\nA small server.\n\n## Layers\n\n1. Server\n');
+  writeFileSync(join(at, 'parts', 'routes.md'), '# Routes\n\nlayer: Server\nfiles: server/main.js\n\nEvery URL.\n');
+  const surface = await (await get(`/f/${fid}/d/architecture/preview`)).text();
+  assert.match(surface, new RegExp(`<iframe title="Architecture" src="/f/${fid}/architecture(\\?v=\\d+)?"`));
+
+  // Framed, the page has no bar, crumbs or way back to the design it's in.
+  const framed = await (await fetch(`${base}/f/${fid}/architecture`, { headers: { 'sec-fetch-dest': 'iframe' } })).text();
+  assert.match(framed, /<h1>Architecture<\/h1>/);
+  assert.doesNotMatch(framed, /class="shell-bar"/);
+  assert.doesNotMatch(framed, /Change it with the agent/);
+  assert.doesNotMatch(framed, /class="crumbs"/);
+  const whole = await (await get(`/f/${fid}/architecture`, false)).text();
+  assert.match(whole, /class="shell-bar"/);
+  assert.match(whole, /Change it with the agent/);
+
+  // Its agent is told the person watches it there.
+  runner.turns.length = 0;
+  await post(`/f/${fid}/d/architecture/sessions`, { message: 'Draft it from the code' });
+  assert.match(runner.turns[0].systemPrompt, /shows the person the Architecture page beside this chat/);
 });

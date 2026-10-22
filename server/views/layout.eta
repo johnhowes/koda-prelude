@@ -3,7 +3,9 @@
      The page holds itself to a readable width (.center); the shell gives it
      its room above and below. The root keeps .prelude, which prelude.css
      scopes its pages' rules to and desktop.js marks; the main region keeps
-     its id, #workspace. `system` is false for pages still in ds/v1. */%>
+     its id, #workspace. `system` is false for pages still in ds/v1. `bare`
+     leaves the bar out, for a page framed in a design's surface (the
+     Architecture page, in the architecture design's). */%>
 <!doctype html>
 <html lang="en">
 <head>
@@ -13,7 +15,7 @@
 <link rel="stylesheet" href="/static/workspace.css">
 </head>
 <body class="shell prelude">
-<%~ include('./_bar', it.layout ?? {}) %>
+<% if (!it.bare) { %><%~ include('./_bar', it.layout ?? {}) %><% } %>
 <main id="workspace" class="shell-main" ko-scope="/" ko-location="<%= it.path %>" ko-history><%~ it.body %></main>
 <%~ include('./_regions', it) %>
 </body>

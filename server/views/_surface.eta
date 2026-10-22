@@ -13,7 +13,9 @@
      The frame is the page itself: an iframe on the design's own origin. At a
      size, the page is laid out at that width and height and scaled down to
      fit the panel. The real app opens in a window of its own, from a build
-     session (prelude/build), not here.
+     session (prelude/build), not here. The architecture design has no pages
+     of its own: its frame is Prelude's Architecture page, read from its files
+     (`s.architecture`), as the design system's is its gallery.
 
      `view` is 'inline' (beside the chat) or 'window' (the pop-out). While a
      window is open, the inline surface shrinks to its bar. */%>
@@ -61,6 +63,8 @@
   <div class="design-frame<%= size.width ? ' sized' : '' %>" ko-as="frame">
     <% if (cur) { %>
     <%~ include('./_frame', { cur, state, size, client, src }) %>
+    <% } else if (s.architecture) { %>
+    <p class="empty">Nothing written yet. Ask the agent to draft the architecture from the code, and the Architecture page appears here once its overview is written.</p>
     <% } else if (s.screensOnly) { %>
     <p class="empty">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
     <% } else { %>
