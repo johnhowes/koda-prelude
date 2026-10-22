@@ -49,7 +49,7 @@
       "state": "Typical",
       "page": "A flow",
       "group": "A flow",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "not-written~f_prelude_architecture",
