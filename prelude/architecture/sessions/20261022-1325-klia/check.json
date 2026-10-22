@@ -19,7 +19,7 @@
       "state": "Typical",
       "page": "A part",
       "group": "A part",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "typical~f_prelude_architecture_decisions",
