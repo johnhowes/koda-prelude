@@ -35,7 +35,7 @@ import { renderMarkdown } from '@kodalang/core';
 
 import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { headOf } from './branches.js';
-import { ago } from './home.js';
+import { ago } from './words.js';
 import { filterModel } from './host.js';
 
 /**
@@ -421,6 +421,18 @@ export function createArchitectureChecks() {
 export function runCheck(app, folder, found, written = readArchitecture(found, { id: folder.id, name: folder.name })) {
   const { files, findings } = checkCode(folder.path, written);
   return app.architectureChecks.set(folder.id, { head: headOf(folder.path), at: new Date().toISOString(), files, findings });
+}
+
+/**
+ * What doesn't match in a folder's code now, from its last check (read again
+ * when its commit has moved): [] with no architecture written.
+ * @returns {Finding[]}
+ */
+export function findingsOf(app, folder) {
+  const found = findArchitecture(app, folder);
+  if (!isWritten(found)) return [];
+  const last = app.architectureChecks.get(folder.id);
+  return (last?.head && last.head === headOf(folder.path) ? last : runCheck(app, folder, found)).findings;
 }
 
 /**

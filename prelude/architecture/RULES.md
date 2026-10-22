@@ -10,5 +10,7 @@
   *shown-on: /f/:folder/architecture @ drifted*
 - **R-k5e.** A part may use the parts its file says it may, in its own layer or below it; any other use is reported, and so is a file no part names or a named file that isn't there.
   *shown-on: /f/:folder/architecture/parts/:part @ drifted*
+- **R-f3n.** While the code doesn't match the architecture, asking the agent to fix something in the project offers each finding to start from, and starting from one tells the agent the file, its part and what doesn't match.
+  *shown-on: /f/:folder/architecture @ typical*
 - **R-w8d.** Decisions are listed newest first.
   *shown-on: /f/:folder/architecture/decisions*

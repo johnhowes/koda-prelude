@@ -148,6 +148,36 @@ now offers one starter, **Draft it from the code** ("Draft the architecture
 from the code."), and its intro says the page shows beside the chat once
 the overview is written (`server/views/_starters.eta`).
 
+## Designing: fixing what the check found (2026-10-22, with the person)
+
+- **The check card offers both ways to settle its findings**: **Fix the
+  code…** (Ask or fix, `/f/:project/d/fixes/new`) and **Change the
+  architecture…** (the architecture design's session; left out framed,
+  since the page is already there). One link for the card, not one per
+  finding, because putting a finding's text in the message box would need a
+  new mechanism (a prefilled message in the URL).
+- **Ask or fix offers each finding as a starting point** (R-f3n), as it
+  offers a stopped build: "Fix: <finding>", with a message naming the file,
+  its part and the use, asking the agent to change the code to match, or say
+  why a decision should change instead. It's for the build, in
+  `troublesOf`/`_starters.eta`: the fix page isn't in this design.
+- `_check` and the overview (unchanged, so it includes the new card) are
+  back in the design, with `_decision-item` copied unchanged for the
+  overview's include.
+
+## Built: fixing what the check found (2026-10-22)
+
+- **The check card's two links** are in the app's `_check`; the overview was
+  unchanged, so it's as it was.
+- **Ask or fix offers each finding** (R-f3n): `troublesOf` in `server/main.js`
+  adds the project's findings (`findingsOf` in `architecture.js`, its last
+  check, read again when the commit has moved) as troubles with their own
+  starter, "Fix: <finding>", detailed with the file and its part. Starting
+  from one puts "<file>, in <part>, doesn’t match the architecture: <finding>
+  Change the code to match it, or tell me why a decision should change the
+  architecture instead." in the box. Only in the project, as the other
+  troubles are, not in a branch's worktree.
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in
