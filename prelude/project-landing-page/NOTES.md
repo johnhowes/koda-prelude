@@ -468,6 +468,27 @@ beside them in `server/views/projects/`. Every route's view is `@app` again.
   gives it a page of its own (see Open questions). With no gallery it goes
   back to the project's page.
 
+## Reference always offers both, and New design the architecture (fix, 2026-10-22)
+
+A project with no architecture had no way to one from this page: the
+Reference card hid empty rows (and itself), and New design offered only the
+system and shell kinds (prelude/fixes/after-the-most-recent-change-should-i-be-able-to-create-an).
+The person decided both rows always show, so it's clear they're available,
+and New design offers the architecture too (R-x4b, R-wm3):
+
+- **Design system**: with components, `/system` as before; made but empty,
+  its design ("Nothing designed yet · design it with the agent"); not made,
+  New design with `?kind=system` in the modal ("Design system", "Not made
+  yet · …").
+- **Architecture**: always `/architecture`, whose empty page drafts it
+  ("Nothing written yet · draft it from the code").
+- **New design's Kind** gains "The project’s architecture" until there is
+  one; the stack hint says the architecture, like the system, can start
+  straight away. `?kind=architecture` (the Architecture page's) is unchanged.
+
+`_reference` and `_new-design` changed in place (both `@app`). New project
+shows neither made; long names an empty design system and no architecture.
+
 ## Open questions
 
 - **`/f/:project/system` is the Prelude Design System design's to make** (the

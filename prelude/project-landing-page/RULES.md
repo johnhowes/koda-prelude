@@ -7,7 +7,7 @@
 - **R-k4n.** Pushing a branch is always asked first, saying which branch goes to which remote, and nothing is pushed until the person says yes.
   *shown-on: /f/:project/branches/:branch/publish @ typical*
 - **R-8dz.** The page's work and its app follow what happens elsewhere without a reload: a turn, a build, a push or a merge changes them as it happens, and they're read again every five minutes for what Prelude can't see, such as a pull request merged on the Git server.
-- **R-wm3.** New design offers the design system and the app shell as kinds only until the project has one of each.
+- **R-wm3.** New design offers the design system, the app shell and the architecture as kinds only until the project has one of each.
   *shown-on: /f/:project/designs/new @ new-project*
 - **R-r6b.** A design under Designs says it's ready to build when it has approved pages not yet built, and only once the project's app exists. A design that changed since it was approved isn't ready: it says it changed, until it's approved again.
   *shown-on: /f/:project @ typical*
@@ -29,5 +29,5 @@
 - **R-m2e.** A branch or worktree the agent is working in can't be picked in Clean up, and a branch with nothing done is listed only once it's a week old.
 - **R-w8p.** Any branch in progress can be discarded unfinished, without merging it or opening a pull request, after a question that says what goes with it (a design never merged goes altogether); its copy on the remote goes only if the person ticks it, and Discard isn't offered while the agent is working on the branch.
   *shown-on: /f/:project/branches/:branch/discard @ typical*
-- **R-x4b.** A project's design system and architecture can be read from its page without opening a design, each once it has something in it; the app shell isn't offered there.
-  *shown-on: /f/:project @ typical*
+- **R-x4b.** A project's page always offers its design system and architecture: each can be read there without opening a design once it has something in it, and is the way to start it until then; the app shell isn't offered there.
+  *shown-on: /f/:project @ typical, /f/:project @ new-project, /f/:project @ long-names*
