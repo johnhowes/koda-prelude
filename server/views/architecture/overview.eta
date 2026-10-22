@@ -1,0 +1,111 @@
+<%/* A project's architecture, read from the architecture design's files
+     (overview.md, parts/, decisions/, flows/): what the app is, a map of its
+     parts in layers, and its principles; beside them, how the code compares
+     with it (the check after every turn that changes code), the latest
+     decisions, the flows, and what agents do with it. A project with no
+     parts written yet is the way to draft them: a session on the
+     architecture design, made first if there isn't one. `layers` is
+     prepared by the app, each part with how many findings it has. */%>
+<% const a = it, base = `/f/${a.project.id}/architecture`;
+   const parts = a.parts ?? [], decisions = a.decisions ?? [], flows = a.flows ?? [];
+   const proposed = decisions.filter(decision => decision.status === 'proposed').length;
+   const draftUrl = a.design ? a.design.url : `/f/${a.project.id}/designs/new?kind=architecture`; %>
+<div class="center wide architecture" ko-item>
+  <div class="stack gap-8">
+    <div class="cluster gap-4">
+      <div class="stack gap-1">
+        <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= a.project.id %>"><%= a.project.name %></a></nav>
+        <h1>Architecture</h1>
+      </div>
+      <span class="spacer"></span>
+      <% if (parts.length) { %>
+      <a class="btn" href="<%= a.design.url %>"><span class="icon icon-agent" aria-hidden="true"></span>Change it with the agent</a>
+      <% } %>
+    </div>
+
+    <% if (!parts.length) { %>
+    <div class="empty page">
+      <span class="icon icon-document" aria-hidden="true"></span>
+      <div class="stack gap-2">
+        <h2>Write down how <%= a.project.name %> is built</h2>
+        <p class="secondary">Its parts, the principles they keep, the decisions behind them and the flows through them, as files every agent reads before it changes anything. Shown here for the people who build it.</p>
+      </div>
+      <div class="cluster actions">
+        <a class="btn primary large" href="<%= draftUrl %>"<% if (!a.design) { %> ko-target="modal?"<% } %>><span class="icon icon-agent" aria-hidden="true"></span>Draft it from the code…</a>
+      </div>
+      <p class="muted">The agent reads the code and its guidance first, and asks before it writes what it can’t tell.</p>
+    </div>
+    <% } else { %>
+    <div class="split" style="--side: 20rem">
+      <div class="stack gap-6">
+        <p class="secondary"><%= a.summary %></p>
+
+        <section class="card" aria-labelledby="parts-title">
+          <h2 id="parts-title">Parts</h2>
+          <figure class="stack gap-2">
+            <div class="map" aria-label="<%= a.project.name %>’s parts">
+              <% for (const layer of a.layers ?? []) { %>
+              <section class="map-layer" aria-label="<%= layer.title %>">
+                <h3 class="map-label"><%= layer.title %></h3>
+                <ul class="map-nodes">
+                  <% for (const node of layer.parts) { %>
+                  <li><a class="map-node<% if (node.outside) { %> outside<% } %><% if (node.findings) { %> warn<% } %>" href="<%= base %>/parts/<%= node.id %>"><span class="map-node-title"><%= node.title %><% if (node.findings) { %><span class="pill warn"><%= node.findings %> to look at</span><% } %></span><span class="muted"><%= node.summary %></span></a></li>
+                  <% } %>
+                </ul>
+              </section>
+              <% } %>
+            </div>
+            <figcaption class="muted">Each part uses parts in its own layer or below it. Open one for what it’s responsible for, what it uses and its files.</figcaption>
+          </figure>
+        </section>
+
+        <section class="card" aria-labelledby="principles-title">
+          <h2 id="principles-title">Principles</h2>
+          <% if (!(a.principles ?? []).length) { %>
+          <p class="muted">No principles written yet.</p>
+          <% } else { %>
+          <ul class="list">
+            <% for (const principle of a.principles) { %>
+            <li class="item"><span class="item-text"><span class="item-title"><%= principle.title %></span><span class="secondary"><%= principle.why %></span></span></li>
+            <% } %>
+          </ul>
+          <% } %>
+        </section>
+      </div>
+
+      <aside class="side stack gap-6" aria-label="About the architecture">
+        <%/* Refreshed when a turn's check has read the code again. */%>
+        <section class="card" aria-labelledby="check-title" ko-as="check" ko-source="<%= base %>/check" ko-invoke="event:architecture-checked"><%~ include('./_check', a) %></section>
+
+        <section class="card" aria-labelledby="decisions-title">
+          <h2 id="decisions-title">Decisions</h2>
+          <% if (proposed) { %><p class="secondary"><%= proposed === 1 ? '1 is proposed' : `${proposed} are proposed` %>, waiting for its branch to be merged.</p><% } %>
+          <ul class="list">
+            <% for (const decision of decisions.slice(0, 5)) { %>
+            <li><%~ include('./_decision-item', { decision, base }) %></li>
+            <% } %>
+          </ul>
+          <a href="<%= base %>/decisions">All <%= decisions.length %> decisions</a>
+        </section>
+
+        <% if (flows.length) { %>
+        <section class="card" aria-labelledby="flows-title">
+          <h2 id="flows-title">Flows</h2>
+          <ul class="list">
+            <% for (const flow of flows) { %>
+            <li><a class="item" href="<%= base %>/flows/<%= flow.id %>"><span class="item-text"><span class="item-title"><%= flow.title %></span><span class="muted"><%= flow.steps.length %> steps</span></span></a></li>
+            <% } %>
+          </ul>
+        </section>
+        <% } %>
+
+        <section class="card" aria-labelledby="agents-title">
+          <h2 id="agents-title">Read by every agent</h2>
+          <p class="secondary">Design, build and fix sessions read the principles and the parts their change reaches. A change that would go against them is proposed as a decision, on its branch, for you to review.</p>
+          <p class="muted">From <code><%= a.design.path %>/</code></p>
+        </section>
+      </aside>
+    </div>
+    <% } %>
+  </div>
+</div>

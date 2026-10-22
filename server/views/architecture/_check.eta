@@ -1,0 +1,25 @@
+<%/* How the code compares with the architecture: after every turn that
+     changes code, Prelude reads the imports of the files that changed, finds
+     each file's part, and lists a use a part doesn't say it may make, a file
+     no part names, and a named file that isn't there. A finding names its
+     part when it has one. */%>
+<% const a = it, base = `/f/${a.project.id}/architecture`, check = a.check ?? {}, findings = check.findings ?? [];
+   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`; %>
+<h2 id="check-title">Checked against the code</h2>
+<% if (!findings.length) { %>
+<p class="secondary"><span class="pill good">Matches</span> Every file belongs to a part, and uses only what its part may.</p>
+<% } else { %>
+<p class="secondary"><%= findings.length === 1 ? '1 thing in the code doesn’t' : `${findings.length} things in the code don’t` %> match the architecture. Change the code, or propose a decision that changes the architecture.</p>
+<ul class="list">
+  <% for (const finding of findings) { %>
+  <li class="item">
+    <span class="item-text">
+      <span class="item-title"><%= finding.text %></span>
+      <span class="muted"><code><%= finding.file %></code><% if (finding.part) { %> · <a href="<%= base %>/parts/<%= finding.part.id %>"><%= finding.part.title %></a><% } %></span>
+      <span class="secondary"><%= finding.next %></span>
+    </span>
+  </li>
+  <% } %>
+</ul>
+<% } %>
+<p class="muted">Checked <%= check.checked ?? 'not yet' %>, <%= count(check.files ?? 0, 'file', 'files') %> read.</p>

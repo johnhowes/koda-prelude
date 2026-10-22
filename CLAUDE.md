@@ -148,6 +148,13 @@ its skills. The ones in `.claude/skills/` are copies of the installed package's;
     runs in `mode: 'fix'` (`fixPrompt`, `fixContext` in main.js) and may write
     the app and every design; its check covers the designs it touched. Its page
     has no design surface.
+  - The architecture (prelude/architecture): a design of `"kind":
+    "architecture"`, one per project, is markdown in its `architecture/`
+    folder. `server/architecture.js` reads it for the Architecture page
+    (`/f/<id>/architecture`) and checks the code against it: after each build
+    or fix turn, what the changed files break is told with the next message
+    (`drift` in turns.js). Every design, build and fix prompt gets
+    `architectureBrief` (agent.js).
   - `server/design-state.js` holds each design's live state: the current screen,
     the version, and how many windows are open. All windows re-render on its
     `design-changed` event.

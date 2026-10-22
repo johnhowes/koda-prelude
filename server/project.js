@@ -25,7 +25,7 @@ import { changedSinceApproved } from './workspace.js';
 
 /**
  * @typedef {import('./home.js').NeedKind} NeedKind
- * @typedef {'design' | 'system' | 'shell' | 'fix'} DesignKind
+ * @typedef {'design' | 'system' | 'shell' | 'architecture' | 'fix'} DesignKind
  *
  * @typedef {object} Need          Something waiting on the person here.
  * @property {string} id

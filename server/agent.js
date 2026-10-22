@@ -237,6 +237,35 @@ const LAYOUTS = 'A layout is the document around the page, and in a Koda app a c
 // a wrapped row grows to its content, so the window scrolls and a panel can
 // collapse. Learned on Prelude's own design page, at a narrow window's width.
 const FILLS = 'In a page or layout that fills the window (the window doesn\'t scroll, its panels do), never lay the panels out with something that wraps: they fill the height, each scrolls inside itself (min-block-size: 0, overflow: auto), and in a narrow container they stack (a container query), sharing the height. Check it at a narrow window\'s width (about 1000px) as well as a wide one.';
+/**
+ * What every design, build and fix agent is told about the project's
+ * architecture (prelude/architecture), once it has one: read the principles,
+ * and the parts the change reaches, before changing anything (R-c2m); and
+ * propose a decision on the branch rather than go against it silently
+ * (R-h9w). `architecture` is { path }: its architecture/ folder.
+ */
+export function architectureBrief(architecture) {
+  const at = architecture.path;
+  return `This project's architecture is written down in ${at}/: overview.md (its layers, top to bottom, and its principles), parts/<id>.md (each part: its job, what isn't, the parts it may use, and its files), decisions/ (why it's built the way it is) and flows/.
+
+- Before you change anything, read ${at}/overview.md, and the parts/ file of every part your change reaches: the parts whose files you'll change (each part's header lists its files), and those they use. Keep to the principles.
+- A part may use only the parts its file says it may, in its own layer or below it. Every file belongs to a part.
+- If your change would go against the architecture (a use a part doesn't say it may make, a new part, a principle bent), don't make it without saying so. Propose a decision on this branch: write ${at}/decisions/D-<three random lower-case letters or digits>.md, as the others are written, with "status: proposed", today's date, the parts it binds, and its Context, Decision and Consequences; change the parts' files to match (a new use, a new part, its files). It's reviewed with this branch, and accepted when the branch is merged. Say in the chat that you proposed it, and why.`;
+}
+
+/** How the architecture design's agent writes it: the files architecture.js reads. */
+function architectureSection(designPath) {
+  const at = `${designPath}/architecture`;
+  return `This is the project's architecture: how the app is built, written down as markdown files that every design, build and fix agent reads before it changes anything, and that Prelude shows to the team on the project's Architecture page. There is no screen, view or state to make: only these files, in ${at}/.
+
+- ${at}/overview.md: "# <project> architecture", a short summary of what the app is and how it runs (one paragraph), then "## Layers", a numbered list of the layers' names, top to bottom (the windows or pages first, outside services last; a part may use parts in its own layer or below), then "## Principles", a list of "- **<the principle, as a sentence.>** <why, in a sentence or two>".
+- ${at}/parts/<id>.md, one per part (a module, a process, or something outside the project the code uses: a tool, a service), its id a short lower-case word: "# <title>", then straight after it a header, one "key: value" per line: "layer: <a layer's name>", "kind: module" (or process, or outside), "short: <a few words for the map>", "files: <comma-separated globs from the repository's root, such as server/host.js, server/views/**>" (none for outside), "uses: <comma-separated ids of the parts it may use>". Then a paragraph saying what it is, and the sections "## Responsible for", "## Not its job" and "## Owns" (what it keeps: files, data), each a list.
+- ${at}/decisions/<id>.md, one per decision that explains why the code is as it is: its id is "D-" and three random lower-case letters or digits, so branches never clash. "# <the decision, as a sentence>", then the header: "status: accepted" (or proposed, or superseded), "date: YYYY-MM-DD", "parts: <ids>", and "supersedes: <id>" if it replaced one. Then "## Context", "## Decision" and "## Consequences", a short paragraph each.
+- ${at}/flows/<id>.md, for the few paths through the app worth following (a request, a save): "# <title>", an optional header line "decisions: <ids>", a one-sentence summary, then numbered steps, each "<part id>: <what happens there>".
+
+Draft it from the code: read the repository (its README, guidance such as CLAUDE.md and docs/, the code and its imports) before writing anything, and ask the person about what you can't tell from it. Every code file should belong to a part (by its files), and each part's uses should be what its imports really use: after each turn that changes code, Prelude checks the code against these files and reports what doesn't match. Keep it short: a part's paragraph is two or three sentences, and a list a few lines.`;
+}
+
 const COMPOSE = `Compose pages from the system's layout primitives and leave the space between blocks to their gaps: no margins between blocks, and no spacing values of the design's own. A design's styles.css is for what the system can't express. If a primitive is missing, treat it as any missing component. ${FILLS}`;
 
 /**
@@ -257,15 +286,17 @@ const COMPOSE = `Compose pages from the system's layout primitives and leave the
  *   shell               the folder's shell, if it has one and this isn't it:
  *                       { title, path }
  *   kodaPath            where Koda's own guidance is, for a design of views
+ *   architecture        the project's architecture, once it has one and this
+ *                       isn't it: { path } (architectureBrief)
  */
-export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null, stack = null, shared = [] }) {
-  const what = { system: 'design system', shell: 'app shell' }[kind] ?? 'design';
+export function designPrompt({ title, designPath, references = [], kind = 'design', format = 'screens', system = null, shell = null, kodaPath = null, stack = null, shared = [], architecture = null }) {
+  const what = { system: 'design system', shell: 'app shell', architecture: 'architecture' }[kind] ?? 'design';
   const where = shared.length ? `${designPath}/ (and, when this design needs it, ${shared.map(path => `${path}/`).join(' and ')}; see below)` : `${designPath}/`;
   const parts = [`You are working in Prelude, a tool where a person designs an application with you.
 
 You are working on the ${what} "${title}". Its folder is ${designPath}/, relative to the current directory, which is the person's repository.
 
-- Write only inside ${where}, and never inside a design's sessions/ or snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
+- Write only inside ${where}${architecture && kind !== 'architecture' ? `, and in ${architecture.path}/ only to propose a decision (see below)` : ''}, and never inside a design's sessions/ or snapshots/ (the screens the person approved). Everything else in the repository is for reading: use it to understand the product, its domain and its existing UI.${references.length ? `
 - You may also read these folders, and nothing else outside the repository: ${references.map(r => `${r.name} (${r.path})`).join(', ')}. Read them; never write to them.` : ''}
 - What you may read is set in Prelude, not in this conversation. If you need a folder outside the repository (another app's code or CSS, say) and can't read it, ask the person to add it under "What the agent can read" on this folder's page in Prelude; you can read it from their next message. Don't ask them to copy files into the repository or paste them instead.
 - A design is built up over many sessions, and this conversation is one of them. Its memory is its files, not past conversations. At the start of a session, read ${designPath}/NOTES.md if it exists, and look at what the design already has.
@@ -273,6 +304,11 @@ You are working on the ${what} "${title}". Its folder is ${designPath}/, relativ
 - When a request is ambiguous or large, say briefly what you plan to do and ask before building. Keep replies short.`];
 
   const mayChange = path => shared.includes(path);
+  if (kind === 'architecture') {
+    parts.push(architectureSection(designPath));
+    return parts.join('\n\n');
+  }
+  if (architecture) parts.push(architectureBrief(architecture));
   if (format === 'views') parts.push(viewsSection({ designPath, kind, system, shell, kodaPath, stack, mayChange }));
   else parts.push(`Screens are plain, static HTML files in ${designPath}/screens/, named NN-kebab-name.html (for example 01-sign-in.html), each with a short <title> that names the screen. The person watches them in a preview that reloads as you save. Link between screens with relative links. No build step, no frameworks, no requests to other sites.`);
 
@@ -491,7 +527,7 @@ ${referenceHost()}${references.length ? `\n\nYou may also read: ${references.map
  * a design - a page, its overlays, fragments and forms - in the app's real
  * code, on a branch of its own. `group` is a backlog group (backlog.js).
  */
-export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], layouts = [], stories = null, branch, references = [], stack = null, kodaPath = null }) {
+export function buildPrompt({ title, designPath, group, change = null, designWide = [], designEvents = [], layouts = [], stories = null, branch, references = [], stack = null, kodaPath = null, architecture = null }) {
   const views = route => (route.ported ? `already the app's own: ${route.view.slice(5)}` : `${designPath}/views/${route.view}${route.from ? `, redesigned from ${route.from.slice(5)}: port it back over that file, and remove the route's "from"` : ''}`);
   const describe = route => `  - ${route.pattern}${route.title ? ` (${route.title})` : ''}${route.over ? `, an overlay in "${route.in}" over ${route.over}` : ''}: ${views(route)}`;
   const describePost = post => `  - POST ${post.pattern}: ${post.verb} ${post.at}${post.require.length ? `, requiring ${post.require.join(', ')}` : ''}`;
@@ -541,9 +577,9 @@ For each of them:
 - Make each proposed rule true, then remove its *proposed* line from RULES.md. Change nothing else in RULES.md.${events ? `
 - Send each server event from where it happens in the app (the code that makes that change), over the app's live channel: server-sent events at an address the app gives its layouts as it.layout.live, which they open with ko-connect. An event is Koda's message format ("name" or "name:value"); markup is the event's push views, rendered and wrapped in ko-into envelopes. If the app has no channel yet, add one, as small as it can be.` : ''}
 
-Never change the design's views, states, approved screens (${designPath}/snapshots/) or sessions; Prelude refuses those writes. If the design is wrong, incomplete or can't be built as it is, don't redesign it: say what and why in ${designPath}/NOTES.md, build the rest, and tell the person.
+Never change the design's views, states, approved screens (${designPath}/snapshots/) or sessions; Prelude refuses those writes. If the design is wrong, incomplete or can't be built as it is, don't redesign it: say what and why in ${designPath}/NOTES.md, build the rest, and tell the person.${architecture ? `\n\n${architectureBrief(architecture)}` : ''}
 
-You can't run commands. After each turn Prelude renders every route of the design in every state through the app's own views, which builds the app, and tells you with the next message what fails, a state that no longer fits a model included. It also shows the person how each page differs from its approved screen. When the group is built, say what you changed, and what the person should look at before approving the screens and opening the pull request.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+You can't run commands. After each turn Prelude renders every route of the design in every state through the app's own views, which builds the app, and tells you with the next message what fails, a state that no longer fits a model included${architecture ? ', and what in the files you changed doesn’t match the architecture' : ''}. It also shows the person how each page differs from its approved screen. When the group is built, say what you changed, and what the person should look at before approving the screens and opening the pull request.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
 }
 
 /**
@@ -552,8 +588,8 @@ You can't run commands. After each turn Prelude renders every route of the desig
  * the shell - on a branch of its own, keeping the designs the specification.
  * `designs` are the project's designs, `app` its app (app-config.js).
  */
-export function fixPrompt({ title, fixPath, designs = [], app = null, branch, references = [], stack = null, kodaPath = null }) {
-  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : ''})`).join('\n') || '  (none yet)';
+export function fixPrompt({ title, fixPath, designs = [], app = null, branch, references = [], stack = null, kodaPath = null, architecture = null }) {
+  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : design.kind === 'architecture' ? ', the architecture' : ''})`).join('\n') || '  (none yet)';
   return `You are fixing one problem in this project: "${title}". The person describes it in the chat. It isn't one design's: find where it really lives, and fix it there. You are working in a git worktree on the branch ${branch}; Prelude commits your work to it after each turn, and the person reviews it and merges it.
 
 The project:
@@ -569,9 +605,9 @@ How to fix it:
 5. **Write ${fixPath}/NOTES.md as you go:** the problem, the cause, the change, and what the person should check.
 6. **Tests:** add or change tests where the app has them. You can't run commands, so say which tests to run.
 
-Never change anyone's sessions or approved screens (snapshots/), or .git; Prelude refuses those writes.
+Never change anyone's sessions or approved screens (snapshots/), or .git; Prelude refuses those writes.${architecture ? `\n\n${architectureBrief(architecture)}` : ''}
 
-After each turn Prelude renders every page of each design whose files you've changed, and of each design whose built pages use an app file you've changed, and tells you with the next message what doesn't render. It shows the person, not you, which pages now differ from their approved screens: a fix may change a page on purpose.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+After each turn Prelude renders every page of each design whose files you've changed, and of each design whose built pages use an app file you've changed, and tells you with the next message what doesn't render${architecture ? ', and what in the files you changed doesn’t match the architecture' : ''}. It shows the person, not you, which pages now differ from their approved screens: a fix may change a page on purpose.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
 }
 
 /**
@@ -580,7 +616,7 @@ After each turn Prelude renders every page of each design whose files you've cha
  * (R-h7w), and ends with what it would change, for Fix it on a branch.
  */
 export function askPrompt({ designs = [], app = null, references = [], stack = null, kodaPath = null }) {
-  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : ''})`).join('\n') || '  (none yet)';
+  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : design.kind === 'architecture' ? ', the architecture' : ''})`).join('\n') || '  (none yet)';
   return `You are answering questions about this project, in Prelude. The person asks how something works, or says what's wrong. You only read: you can't change anything in the project, and nothing is committed. If something needs fixing, the person fixes it on a branch, and this conversation carries on there, where you can change the project.
 
 The project:

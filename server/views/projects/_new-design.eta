@@ -2,19 +2,27 @@
      project lacks a design system or an app shell (one each). The first time,
      it also says which stack the app will be. A title left empty comes back
      into the fields alone, with what was typed; made, the design opens.
-     ?kind=system or ?kind=shell picks that kind, from the first-run page.
+     ?kind=system or ?kind=shell picks that kind, from the first-run page;
+     ?kind=architecture, from the Architecture page (prelude/architecture),
+     makes the project's architecture, which has no other kind to pick.
      `it` is the project; `it.$fields` the fields as refused, on a cold load. */%>
-<% const p = it, kind = ['system', 'shell'].includes(it.$query?.kind) ? it.$query.kind : 'design';
+<% const p = it, kind = ['system', 'shell', 'architecture'].includes(it.$query?.kind) ? it.$query.kind : 'design';
    const areas = [...new Set((p.designs ?? []).concat((p.inProgress ?? []).map(item => item.design)).map(design => design.area).filter(Boolean))]; %>
 <div class="stack gap-4" ko-item>
   <h2>New design</h2>
+  <% if (kind === 'architecture') { %>
+  <p class="secondary">The project’s architecture: the agent drafts it from the code, and every agent reads it before it changes anything.</p>
+  <% } else { %>
   <p class="secondary">A design usually describes one feature, and grows over many sessions with the agent.</p>
+  <% } %>
   <form class="stack" action="/f/<%= p.id %>/designs" method="post" ko-target="fields">
     <div ko-as="fields"><%~ include('./_new-design-fields', it.$fields ?? {}) %></div>
     <datalist id="new-design-areas">
       <% for (const area of areas) { %><option value="<%= area %>"></option><% } %>
     </datalist>
-    <% if (!p.system || !p.shell) { %>
+    <% if (kind === 'architecture') { %>
+    <input type="hidden" name="kind" value="architecture">
+    <% } else if (!p.system || !p.shell) { %>
     <fieldset class="choices">
       <legend class="label">Kind</legend>
       <label class="choice"><input type="radio" name="kind" value="design"<% if (kind === 'design') { %> checked<% } %>> <span>A design <span class="muted">· usually one feature</span></span></label>
@@ -30,7 +38,7 @@
     <% } %>
     <%/* Asked once, the first time a design is made: the app's stack, which
          its designs are written in. The default is one click (step 8). */%>
-    <% if (!p.app.stack && p.app.status === 'none') { %>
+    <% if (kind !== 'architecture' && !p.app.stack && p.app.status === 'none') { %>
     <div class="stack gap-2">
       <p class="muted">Designs are written as the app’s own views. The app will be <strong><%= p.defaultStack %></strong>.</p>
       <details class="disclosure">

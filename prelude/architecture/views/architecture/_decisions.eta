@@ -1,0 +1,13 @@
+<%/* The decisions the search and the status leave (the route filters). */%>
+<% const a = it, base = `/f/${a.project.id}/architecture`, decisions = a.decisions ?? [];
+   const filtered = Boolean(a.$query?.q || a.$query?.status); %>
+<% if (!decisions.length) { %>
+<p class="empty"><%= filtered ? 'No decisions match. Try fewer words, or show all of them.' : 'No decisions written yet. The agent writes them as it drafts the architecture, and proposes one whenever a change needs it.' %></p>
+<% } else { %>
+<% if (filtered) { %><p class="muted" role="status"><%= decisions.length === 1 ? '1 decision' : `${decisions.length} decisions` %></p><% } %>
+<ul class="list">
+  <% for (const decision of decisions) { %>
+  <li><%~ include('./_decision-item', { decision, base }) %></li>
+  <% } %>
+</ul>
+<% } %>

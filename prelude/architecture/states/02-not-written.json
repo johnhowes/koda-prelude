@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "architecture": {
+        "project": { "id": "prelude", "name": "Prelude" },
+        "design": null,
+        "summary": "",
+        "principles": [],
+        "layers": [],
+        "parts": [],
+        "decisions": [],
+        "flows": [],
+        "check": { "checked": "not yet", "files": 0, "findings": [] }
+      }
+    }
+  ]
+}

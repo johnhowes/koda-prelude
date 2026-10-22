@@ -105,6 +105,12 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **Rows to pick** (`label.item` with a checkbox first): a list whose rows
   are chosen, not opened; the whole row is the label. Added for "Project
   Landing Page" (prelude/project-landing-page): choosing what to clean up.
+- **Map** (`.map`, `.map-layer`, `.map-label`, `.map-nodes`, `.map-node`
+  with `.outside`, `.warn`, `aria-current`; `--label`, `--node-min`): the
+  parts of something in layers, read top to bottom, each part a link. The
+  label goes above its parts in a narrow map (container query). Added for
+  "Architecture" (prelude/architecture): a project's parts. Its words
+  (architecture, part, decision, flow) are in the Words table too.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).

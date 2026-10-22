@@ -1,0 +1,45 @@
+<h2 id="check-title">
+Checked against the code
+</h2>
+<p class="secondary">
+2 things in the code don’t match the architecture. Change the code, or propose a decision that changes the architecture.
+</p>
+<ul class="list">
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+Design host uses Branches, which it doesn’t say it may.
+</span>
+<span class="muted">
+<code>
+server/host.js
+</code>
+·
+<a href="/f/prelude/architecture/parts/host">
+Design host
+</a>
+</span>
+<span class="secondary">
+Add Branches to what it may use, or move the use into Turns.
+</span>
+</span>
+</li>
+<li class="item">
+<span class="item-text">
+<span class="item-title">
+server/capture.js belongs to no part.
+</span>
+<span class="muted">
+<code>
+server/capture.js
+</code>
+</span>
+<span class="secondary">
+Name it in a part’s files.
+</span>
+</span>
+</li>
+</ul>
+<p class="muted">
+Checked 2 minutes ago, 64 files read.
+</p>
