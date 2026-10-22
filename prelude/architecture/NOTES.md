@@ -85,8 +85,19 @@ and the words architecture, part, decision, flow.
   (`server/views/architecture/`), answered in `server/main.js` from
   `server/architecture.js`, which reads the files and runs the check. **A
   part** is too (`architecture/part`, the overview's model's part by id; a
-  404 for an id no part has). The decision, flow and Decisions pages are
-  still to build.
+  404 for an id no part has). So are **Decisions** (`architecture/decisions`,
+  newest first, filtered by ?q= and ?status= as the list region is) and **a
+  decision** (`architecture/_decision`, in the drawer; a cold load has
+  Decisions beneath it; a 404 for an id none has). The flow page is still to
+  build.
+- **Proposed decisions, accepted by merging** (R-7tq): merging a branch here
+  rewrites its proposed decisions' `status:` to `accepted` and commits that
+  before the merge (`acceptProposed`). A branch merged by a pull request
+  can't be rewritten, so the pages also derive it: a decision is shown
+  proposed only on the branch whose files have it and main's don't; in main
+  it's accepted whatever its file says, and agents are told the same.
+  Agents on other branches don't see it, since it's only in its branch's
+  files.
 - **The files' format** is what `architecture.js` reads and the architecture
   design's agent is told (`architectureSection` in agent.js): a `# title`,
   then `key: value` header lines (a part's `layer`, `kind`, `short` for the
@@ -145,5 +156,5 @@ the overview is written (`server/views/_starters.eta`).
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
 - The readers for other stacks (above): agreed, or the host after all?
-- The decision, flow and Decisions pages aren't built, so their links
-  in the framed overview lead nowhere yet, as on the page itself.
+- The flow page isn't built, so its links in the framed overview lead
+  nowhere yet, as on the page itself.

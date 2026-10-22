@@ -19,7 +19,7 @@ import { fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
+import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
 import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
@@ -447,6 +447,8 @@ async function handle(req, res, app) {
 
       // Merged, the branch leaves In progress and its design is under Designs again (R-2hx).
       if (action === 'merge') {
+        // The decisions it proposed are accepted by the merge (R-7tq), so main has them so.
+        if (!app.branches.merging(entry) && acceptProposed(entry.path)) app.branches.commit(entry, `${design.title}: its proposed decisions, accepted by merging (committed by Prelude)`);
         const merged = app.branches.merge(entry, `Merge ${entry.branch}: ${design.title} (merged by Prelude)`);
         if (merged.error) return work(409, merged.error);
         // Tidied now, so the answer has it gone; merged here, there's nothing to fetch.
@@ -597,20 +599,34 @@ async function handle(req, res, app) {
     // architecture design's files (architecture.js), on the design system:
     //   GET  /f/<id>/architecture                 the overview
     //   GET  /f/<id>/architecture/check           how the code compares with it, a region
+    //   GET  /f/<id>/architecture/decisions       Decisions, newest first (R-w8d); ?q= and ?status= filter them
     //   GET  /f/<id>/architecture/decision-list   the decisions, as ?q= and ?status= leave them, a region
     // The check region reloads on architecture-checked, sent down the app's
     // channel when a turn's check has read the code again (R-4vx).
     // In a frame (the architecture design's surface, or ?framed=1 for its
     // capture), the page has no bar, crumbs or way to the design: it's shown
     // beside the design's own chat.
-    const architectureViews = { '/architecture': 'architecture/overview', '/architecture/check': 'architecture/_check', '/architecture/decision-list': 'architecture/_decisions' };
+    const architectureViews = { '/architecture': 'architecture/overview', '/architecture/decisions': 'architecture/decisions', '/architecture/check': 'architecture/_check', '/architecture/decision-list': 'architecture/_decisions' };
+    const architecturePages = ['/architecture', '/architecture/decisions'];
     if (Object.hasOwn(architectureViews, rest) && req.method === 'GET') {
       let model;
-      try { model = architectureOf(app, folder, { query, filter: rest === '/architecture/decision-list' }); } catch (error) { return unreadable(error); }
+      try { model = architectureOf(app, folder, { query, filter: rest === '/architecture/decisions' || rest === '/architecture/decision-list' }); } catch (error) { return unreadable(error); }
       const framed = req.headers['sec-fetch-dest'] === 'iframe' || query.framed === '1';
-      // The page alone for a region asking from a page in the app layout (askedFromLayout); its parts alone for any region.
-      const alone = fragment && (rest !== '/architecture' || askedFromLayout(req, 'app'));
-      return send(res, 200, shaped(architectureViews[rest], { ...model, framed }, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true, bare: framed }));
+      // A page alone for a region asking from a page in the app layout (askedFromLayout); its parts alone for any region.
+      const alone = fragment && (!architecturePages.includes(rest) || askedFromLayout(req, 'app'));
+      const title = rest === '/architecture/decisions' ? `Decisions · Architecture · ${folder.name}` : `Architecture · ${folder.name}`;
+      return send(res, 200, shaped(architectureViews[rest], { ...model, framed }, { fragment: alone, path: `${path}${url.search}`, title, layout: alone ? {} : layout(), system: true, bare: framed }));
+    }
+    //   GET  /f/<id>/architecture/decisions/<d>   a decision, in the drawer over Decisions; a cold load has Decisions beneath
+    const decisionId = rest.match(/^\/architecture\/decisions\/([\w-]+)$/)?.[1];
+    if (decisionId && req.method === 'GET') {
+      let model;
+      try { model = architectureOf(app, folder); } catch (error) { return unreadable(error); }
+      const decision = model.decisions.find(candidate => candidate.id === decisionId);
+      if (!decision) return page(404, 'not-found', { what: 'The architecture has no such decision.' }, 'Not found');
+      const html = render('./architecture/_decision', decision);
+      if (fragment) return send(res, 200, html);
+      return send(res, 200, shaped('architecture/decisions', { ...model, $query: {} }, { fragment: false, path: `${here}/architecture/decisions`, title: `${decision.title} · Decisions · ${folder.name}`, layout: layout(), regions: { drawer: { html, location: path } }, system: true }));
     }
     //   GET  /f/<id>/architecture/parts/<part>    a part: its job, decisions, findings, uses and files
     const partId = rest.match(/^\/architecture\/parts\/([\w-]+)$/)?.[1];

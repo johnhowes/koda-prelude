@@ -1,0 +1,12 @@
+{
+  "title": "Build: Decisions",
+  "claudeSessionId": "ddf47e7b-9276-4a06-ad0c-c559a7149801",
+  "started": true,
+  "startedAt": "2026-10-22T19:06:04.091Z",
+  "updatedAt": "2026-10-22T19:11:04.248Z",
+  "build": {
+    "group": "/f/:folder/architecture/decisions",
+    "title": "Decisions"
+  },
+  "from": "62619a3d356bb74bfca13cb940c0d0e397f6a9f3"
+}

@@ -1,10 +1,10 @@
 import { strict as assert } from 'node:assert';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 
-import { architectureOf, checkAfterTurn, createArchitectureChecks, importsOf } from '../server/architecture.js';
+import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, importsOf } from '../server/architecture.js';
 import { createDesign } from '../server/designs.js';
 
 const write = (root, path, text) => {
@@ -76,6 +76,29 @@ test('decisions filter by ?q= and ?status= where the route says so', () => {
   assert.deepEqual(architectureOf(app, folder, { query: { status: 'accepted' }, filter: true }).decisions.map(d => d.id), ['D-c2d']);
   assert.deepEqual(architectureOf(app, folder, { query: { q: 'older' }, filter: true }).decisions.map(d => d.id), ['D-a1b']);
   assert.equal(architectureOf(app, folder, { query: { q: 'older' } }).decisions.length, 2);
+});
+
+test('a decision is proposed only on the branch that proposed it; in main it is accepted, and merging accepts it in its file (R-7tq)', () => {
+  const main = project();
+  const branch = project();
+  const at = 'prelude/architecture/architecture/decisions';
+  write(branch.root, `${at}/D-e3f.md`, '# Proposed here\n\nstatus: proposed\ndate: 2026-10-23\nparts: host\n');
+  // Merged by a pull request without its status changed: in main, it's accepted.
+  write(branch.root, `${at}/D-g4h.md`, '# Merged before\n\nstatus: proposed\ndate: 2026-10-21\n');
+  write(main.root, `${at}/D-g4h.md`, '# Merged before\n\nstatus: proposed\ndate: 2026-10-21\n');
+  const entry = { id: 'def', parentId: 'abc', path: branch.root, design: 'architecture', branch: 'prelude/architecture' };
+  const app = { ...branch.app, folders: { get: id => (id === 'abc' ? main.folder : null) } };
+  const onBranch = architectureOf(app, { id: 'def', name: 'Demo · prelude/architecture', path: branch.root, branch: entry });
+  assert.deepEqual(onBranch.decisions.map(d => [d.id, d.status]), [['D-e3f', 'proposed'], ['D-c2d', 'accepted'], ['D-g4h', 'accepted'], ['D-a1b', 'superseded']]);
+  assert.deepEqual(onBranch.decisions[0].proposedIn, { title: 'Architecture', branch: 'prelude/architecture' });
+  assert.equal(onBranch.decisions[2].proposedIn, undefined);
+  assert.equal(architectureOf(main.app, main.folder).decisions.find(d => d.id === 'D-g4h').status, 'accepted');
+  // Agents on other branches don't see it: it's in no file but this branch's.
+  assert.equal(architectureOf(main.app, main.folder).decisions.some(d => d.id === 'D-e3f'), false);
+
+  assert.equal(acceptProposed(branch.root), 2);
+  assert.match(readFileSync(join(branch.root, ...`${at}/D-e3f.md`.split('/')), 'utf8'), /^status: accepted$/m);
+  assert.equal(acceptProposed(branch.root), 0);
 });
 
 test('a project with no architecture written has none to show, and a turn’s check finds nothing', () => {
