@@ -1,6 +1,6 @@
 # Every design works on its own branch, in a worktree
 status: accepted
-date: 2026-10-17
+date: 2026-10-15
 parts: branches, server
 
 ## Context
