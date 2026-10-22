@@ -3,7 +3,7 @@ layer: Pages
 kind: module
 short: Home, project, design, build pages
 files: server/home.js, server/project.js, server/workspace.js, server/build.js, server/check.js, server/system.js
-uses: architecture, turns, views, stories, host, branches, designs, sessions, folders, preview
+uses: architecture, turns, views, stories, host, branches, designs, sessions, folders, preview, words
 
 The models behind Prelude's own pages, each shaped like the states of the design it was built from: Home, a project's page, a design's page (`DesignPage`), the Build page and its stories, the check's results and the design system page. They're read afresh from the project's files on every request.
 

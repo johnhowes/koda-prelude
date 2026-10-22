@@ -3,7 +3,7 @@ layer: Pages
 kind: module
 short: Reads these files, checks the code
 files: server/architecture.js
-uses: pages, host, branches, designs, koda
+uses: host, branches, designs, words, koda
 
 Reads a project's architecture (a design of kind `architecture`, markdown in its `architecture/` folder) for the Architecture page, and checks the code against it. The files are the one source: what's derived, such as each part's "used by" and the map's layers, is prepared here.
 

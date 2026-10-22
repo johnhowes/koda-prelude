@@ -10,7 +10,8 @@ Prelude is a tool for designing and then building an app with an agent: you pick
 4. Agent and live state
 5. Designs and hosting
 6. Project files
-7. Outside
+7. Shared helpers
+8. Outside
 
 ## Principles
 
