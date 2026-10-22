@@ -1,0 +1,3 @@
+# Fix: I followed the architecture link from the project landing…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
