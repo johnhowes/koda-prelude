@@ -1,6 +1,7 @@
 <%/* A project's page: the work (what needs the person here, what's in
      progress on branches, what they've asked lately, and every design)
-     beside the project's setup (the app, and what the agent can read). The
+     beside the project's setup (what to read for reference, the app, and
+     what the agent can read). The
      work and the app reload whenever the server says something changed,
      down the app's live channel, and every five minutes for what Prelude
      can't see happen (a pull request merged on the Git server); the designs
@@ -85,6 +86,7 @@
         <% } %>
       </div>
       <aside class="side stack gap-6" aria-label="The project’s setup">
+        <%~ include('./_reference', p) %>
         <% if (started || p.app.status !== 'none') { %>
         <%/* The app also follows its own running copy: starting, running,
              stopped (app-changed). */%>

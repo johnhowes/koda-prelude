@@ -445,6 +445,29 @@ session (the person). Decided:
 **Brought back for it**: `page` (changed), `_designs` (changed); page's other
 partials are copied unchanged. New: `_reference`.
 
+## Built: Reference (2026-10-22)
+
+`page` and `_designs` are ported over the app's, and `_reference` is new
+beside them in `server/views/projects/`. Every route's view is `@app` again.
+
+- **The model** (`projectOf()` in `server/project.js`): `system` gains
+  `components` (its `system/components/*.html`, as its Designs row counts
+  them), and `architecture` is `{ id, title, parts, decisions }` or null: its
+  `architecture/parts/*.md` and `decisions/*.md`. Each is read where the
+  design is, in main or on its own branch while it's only there, as the
+  Architecture pages find it (`findArchitecture`).
+- **An architecture counts nothing until its overview is written**: the
+  Architecture pages show nothing before then (`isWritten`), so the card
+  doesn't link to an empty page, and its Designs row says "nothing written
+  yet".
+- **An architecture's `stage`** is `approved` once it has parts and
+  `designing` before: it's markdown, never built, so the filter shows it
+  under Still designing only while it's empty.
+- **`/f/:project/system` takes you to the design system's gallery**, its
+  first screen on the preview origin, until the Prelude Design System design
+  gives it a page of its own (see Open questions). With no gallery it goes
+  back to the project's page.
+
 ## Open questions
 
 - **`/f/:project/system` is the Prelude Design System design's to make** (the

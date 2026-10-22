@@ -31,4 +31,3 @@
   *shown-on: /f/:project/branches/:branch/discard @ typical*
 - **R-x4b.** A project's design system and architecture can be read from its page without opening a design, each once it has something in it; the app shell isn't offered there.
   *shown-on: /f/:project @ typical*
-  *proposed*
