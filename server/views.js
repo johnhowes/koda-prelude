@@ -33,8 +33,8 @@ export function render(name, data) {
  * puts in its region ({ modal: { html, location } }), and `system` asks for
  * the folder's design system instead of ds/v1 (pages ported from a design).
  */
-export function shaped(view, data, { fragment, path, title, layout = {}, regions = {}, system = false }) {
+export function shaped(view, data, { fragment, path, title, layout = {}, regions = {}, system = false, bare = false }) {
   const body = render(view.includes('/') ? `./${view}` : `./_${view}`, data);
   if (fragment) return body;
-  return render('./layout', { body, path, title, layout, regions, system });
+  return render('./layout', { body, path, title, layout, regions, system, bare });
 }

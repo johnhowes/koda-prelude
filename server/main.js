@@ -20,6 +20,7 @@ import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost,
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
 import { architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
+import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
@@ -173,7 +174,9 @@ async function handle(req, res, app) {
   // It serves the folder's whole prelude/ directory at /f/<folder>/p/<path>,
   // so its URLs mirror the folders: a screen's relative link to another
   // design (the folder's design system, say) resolves the same here as on any
-  // static host the folder is shared on.
+  // static host the folder is shared on. At /f/<folder>/r/<path> it serves
+  // the same files to read, outside a session (the Design System page,
+  // system.js): following a link there changes no session's screen.
   // A design's own origin: the Eta host (host.js).
   const designHost = designHostOf(req);
   if (designHost) {
@@ -181,14 +184,14 @@ async function handle(req, res, app) {
   }
 
   if (isPreviewHost(req)) {
-    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/p\/(.+)$/);
+    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/([pr])\/(.+)$/);
     const folder = match && folders.get(match[1]);
     if (!folder) return notFoundText();
-    const rel = match[2];
+    const rel = match[3];
     // A screen loading in a frame is the screen on show: when someone follows a
     // link inside a screen, every window follows it. A screen opened in a tab
-    // of its own (sec-fetch-dest: document) changes nothing.
-    const found = req.headers['sec-fetch-dest'] === 'iframe' && findDesign(folder.path, rel.split('/'));
+    // of its own (sec-fetch-dest: document), or read (/r/), changes nothing.
+    const found = match[2] === 'p' && req.headers['sec-fetch-dest'] === 'iframe' && findDesign(folder.path, rel.split('/'));
     const screen = found && found.rest.length === 2 && found.rest[0] === 'screens' && found.rest[1].match(/^(.+)\.html$/i);
     if (screen && existsSync(join(found.dir, 'screens', found.rest[1]))) {
       app.designs.show(designKey(folder, found.design), screen[1], { shown: listScreens(found.dir)[0]?.id });
@@ -597,26 +600,27 @@ async function handle(req, res, app) {
     //   GET  /f/<id>/architecture/decision-list   the decisions, as ?q= and ?status= leave them, a region
     // The check region reloads on architecture-checked, sent down the app's
     // channel when a turn's check has read the code again (R-4vx).
+    // In a frame (the architecture design's surface, or ?framed=1 for its
+    // capture), the page has no bar, crumbs or way to the design: it's shown
+    // beside the design's own chat.
     const architectureViews = { '/architecture': 'architecture/overview', '/architecture/check': 'architecture/_check', '/architecture/decision-list': 'architecture/_decisions' };
     if (Object.hasOwn(architectureViews, rest) && req.method === 'GET') {
       let model;
       try { model = architectureOf(app, folder, { query, filter: rest === '/architecture/decision-list' }); } catch (error) { return unreadable(error); }
+      const framed = req.headers['sec-fetch-dest'] === 'iframe' || query.framed === '1';
       // The page alone for a region asking from a page in the app layout (askedFromLayout); its parts alone for any region.
       const alone = fragment && (rest !== '/architecture' || askedFromLayout(req, 'app'));
-      return send(res, 200, shaped(architectureViews[rest], model, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
+      return send(res, 200, shaped(architectureViews[rest], { ...model, framed }, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true, bare: framed }));
     }
 
-    // The design system to read (the Reference card, R-x4b): its gallery, on
-    // the preview origin, until the Prelude Design System design gives it a
-    // page of its own here (prelude/project-landing-page, Open questions). In
-    // main, or on its own branch while it's only there.
+    // The design system to read (the Reference card, R-x4b), on the design
+    // system (prelude/design-system-page): its gallery, framed from the
+    // preview origin, ?screen= picking which. In main, or on its own branch
+    // while it's only there (system.js).
     if (rest === '/system' && req.method === 'GET') {
-      const onMain = findSystem(folder.path);
-      const entry = !onMain && !folder.branch ? app.branches.of(folder.id).find(candidate => listDesigns(candidate.path).some(design => design.id === candidate.design && design.kind === 'system')) : null;
-      const system = onMain ?? (entry && findSystem(entry.path));
-      const at = onMain ? folder : entry;
-      const first = system && listScreens(join(at.path, PRELUDE_DIR, ...system.id.split('/')))[0];
-      return redirect(res, first ? `${previewOrigin(req)}/f/${at.id}/p/${system.id}/screens/${encodeURIComponent(first.file)}` : here);
+      const model = { ...systemOf(app, folder, { query, origin: previewOrigin(req) }), $query: query };
+      const alone = fragment && askedFromLayout(req, 'app');
+      return send(res, 200, shaped('system/page', model, { fragment: alone, path: `${path}${url.search}`, title: `Design system · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
     }
 
     // Clean up, in the modal: what Prelude leaves to the person (R-c3j).
@@ -942,7 +946,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }
@@ -1283,6 +1287,22 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         review,
       };
     }
+    // The architecture has no screens: its surface is the Architecture page,
+    // as Prelude reads this folder's files (framed, without the bar), once
+    // its overview is written, as the design system's is its gallery.
+    if (design.kind === 'architecture') {
+      const screens = isWritten(findArchitecture(app, folder)) ? [{ id: 'architecture', title: 'Architecture' }] : [];
+      return {
+        ...common,
+        origin: `/f/${folder.id}/`,
+        screens,
+        current: screens[0]?.id ?? null,
+        states: [], state: null, changed: false, events: [], approved: 0,
+        review: { failures: [], differ: [] },
+        screensOnly: true,
+        architecture: true,
+      };
+    }
     // Plain screens/*.html (the design system's gallery): served as files.
     const screens = listScreens(dir);
     const wanted = designs.current(dKey);
@@ -1569,7 +1589,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const looking = fromForm(form);
     const answer = (data, also = '') => sendView(200, '_captured', data, also);
     const page = String(form.get('page') ?? '');
-    const known = hosted ? Boolean(matchRoute(routes, page)) : listScreens(dir).some(screen => screen.file === page);
+    const known = hosted ? Boolean(matchRoute(routes, page))
+      : design.kind === 'architecture' ? page === 'architecture' && isWritten(findArchitecture(app, folder))
+      : listScreens(dir).some(screen => screen.file === page);
     if (!known) return answer({ error: 'That page is no longer in the design.' });
     // Where the frame is (its page says, _surface.eta): opened instead of the
     // page picked when it's an address the design answers, an overlay over
@@ -1591,7 +1613,9 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       const width = size?.width ?? measured(form.get('frame.width')) ?? 1280;
       const height = size?.height ?? measured(form.get('frame.height')) ?? 800;
       const client = clients.find(candidate => candidate.id === looking.client) ?? clients[0];
-      const at = hosted ? `${designOrigin(req, folder, design)}${target}` : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
+      const at = hosted ? `${designOrigin(req, folder, design)}${target}`
+        : design.kind === 'architecture' ? `http://${req.headers.host}/f/${folder.id}/architecture?framed=1`
+        : `${previewOrigin(req)}/f/${folder.id}/p/${design.id}/screens/${encodeURIComponent(page)}`;
       try {
         bytes = await capture({ url: at, width, height, whole, attributes: client.attributes ?? {} });
       } catch (error) {

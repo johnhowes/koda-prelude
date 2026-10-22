@@ -1,5 +1,6 @@
 <%/* New design, in the modal: its title and area, and its kind while the
-     project lacks a design system or an app shell (one each). The first time,
+     project lacks a design system, an app shell or an architecture (one
+     each). The first time,
      it also says which stack the app will be. A title left empty comes back
      into the fields alone, with what was typed; made, the design opens.
      ?kind=system or ?kind=shell picks that kind, from the first-run page;
@@ -22,7 +23,7 @@
     </datalist>
     <% if (kind === 'architecture') { %>
     <input type="hidden" name="kind" value="architecture">
-    <% } else if (!p.system || !p.shell) { %>
+    <% } else if (!p.system || !p.shell || !p.architecture) { %>
     <fieldset class="choices">
       <legend class="label">Kind</legend>
       <label class="choice"><input type="radio" name="kind" value="design"<% if (kind === 'design') { %> checked<% } %>> <span>A design <span class="muted">· usually one feature</span></span></label>
@@ -31,6 +32,9 @@
       <% } %>
       <% if (!p.shell) { %>
       <label class="choice"><input type="radio" name="kind" value="shell"<% if (kind === 'shell') { %> checked<% } %>> <span>The app’s shell <span class="muted">· its layouts; every other design renders in it</span></span></label>
+      <% } %>
+      <% if (!p.architecture) { %>
+      <label class="choice"><input type="radio" name="kind" value="architecture"> <span>The project’s architecture <span class="muted">· how it’s built, drafted from the code; every agent reads it</span></span></label>
       <% } %>
     </fieldset>
     <% } else { %>

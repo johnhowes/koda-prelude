@@ -106,6 +106,23 @@ and the words architecture, part, decision, flow.
 - **Design sessions** may write in the architecture's folder, to propose a
   decision (R-h9w); build and fix sessions could already.
 
+## Fixed: designing it shows it (2026-10-22)
+
+From the fix "I added support for a project's architecture view…"
+(prelude/fixes/i-added-support-for-a-project-s-architecture-view-a); the
+person: it should behave like designing the design system.
+
+- **The architecture design's session shows the overview beside the chat**,
+  as the system's shows its gallery: the design surface frames this page for
+  the session's folder (its branch's files), once overview.md is written.
+  Its agent is told so (`architectureSection`), and to write the overview
+  first.
+- **Framed, the overview has no crumbs and no "Change it with the agent"**
+  (`framed`): it's inside that design already. The app layout leaves its bar
+  out (`bare`). The overview's states don't show it framed.
+- **New design offers the architecture as a kind** while there's none, so
+  it can be made without knowing the empty page's address.
+
 ## Open questions
 
 - The project page's link to Architecture: the person will design it in
@@ -115,5 +132,5 @@ and the words architecture, part, decision, flow.
 - Can a principle carry a check of its own (e.g. "nothing outside the
   renderer imports eta")?
 - The readers for other stacks (above): agreed, or the host after all?
-- The architecture design's own page has no design surface to show (no
-  screens or views): should it show the Architecture page beside the chat?
+- The part, decision, flow and Decisions pages aren't built, so their links
+  in the framed overview lead nowhere yet, as on the page itself.

@@ -468,13 +468,23 @@ beside them in `server/views/projects/`. Every route's view is `@app` again.
   gives it a page of its own (see Open questions). With no gallery it goes
   back to the project's page.
 
-## Open questions
+## Fixed: reading the design system, and making the architecture (2026-10-22)
 
-- **`/f/:project/system` is the Prelude Design System design's to make** (the
-  person, 2026-10-22), as Architecture's pages were the Architecture
-  design's: the design system read outside a session (tokens, components,
-  guidelines). Until it's built, the build could point the link at the
-  gallery.
+From the fix "I added support for a project's architecture view…"
+(prelude/fixes/i-added-support-for-a-project-s-architecture-view-a):
+
+- **`/f/:project/system` is a page of the app now**, not a redirect to the
+  bare gallery: designed in a design of its own, Design System Page
+  (prelude/design-system-page), since a design of kind `system` is only its
+  gallery and can't have routes. The Reference card's link is unchanged.
+- **New design offers "The project’s architecture"** as a kind while the
+  project has none (R-wm3 now says so), as it does the system and the shell.
+  Before, the only way to make one was the Architecture page's empty state,
+  which nothing linked to until an architecture was written. The view
+  (`_new-design`) changed; the `new-project` state's New design shows the new
+  choice.
+
+## Open questions
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own

@@ -5,7 +5,9 @@
      decisions, the flows, and what agents do with it. A project with no
      parts written yet is the way to draft them: a session on the
      architecture design, made first if there isn't one. `layers` is
-     prepared by the app, each part with how many findings it has. */%>
+     prepared by the app, each part with how many findings it has. `framed`
+     is the page as the architecture design's surface shows it, beside its
+     chat: no crumbs, and no way to the design it's already in. */%>
 <% const a = it, base = `/f/${a.project.id}/architecture`;
    const parts = a.parts ?? [], decisions = a.decisions ?? [], flows = a.flows ?? [];
    const proposed = decisions.filter(decision => decision.status === 'proposed').length;
@@ -14,11 +16,11 @@
   <div class="stack gap-8">
     <div class="cluster gap-4">
       <div class="stack gap-1">
-        <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= a.project.id %>"><%= a.project.name %></a></nav>
+        <% if (!a.framed) { %><nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= a.project.id %>"><%= a.project.name %></a></nav><% } %>
         <h1>Architecture</h1>
       </div>
       <span class="spacer"></span>
-      <% if (parts.length) { %>
+      <% if (parts.length && !a.framed) { %>
       <a class="btn" href="<%= a.design.url %>"><span class="icon icon-agent" aria-hidden="true"></span>Change it with the agent</a>
       <% } %>
     </div>
