@@ -1,0 +1,3 @@
+{
+  "/f/:folder/system": { "view": "@app/server/views/system/page", "title": "Design system", "data": "folders/:folder/system" }
+}

@@ -7,7 +7,7 @@
 - **R-k4n.** Pushing a branch is always asked first, saying which branch goes to which remote, and nothing is pushed until the person says yes.
   *shown-on: /f/:project/branches/:branch/publish @ typical*
 - **R-8dz.** The page's work and its app follow what happens elsewhere without a reload: a turn, a build, a push or a merge changes them as it happens, and they're read again every five minutes for what Prelude can't see, such as a pull request merged on the Git server.
-- **R-wm3.** New design offers the design system and the app shell as kinds only until the project has one of each.
+- **R-wm3.** New design offers the design system, the app shell and the architecture as kinds only until the project has one of each.
   *shown-on: /f/:project/designs/new @ new-project*
 - **R-r6b.** A design under Designs says it's ready to build when it has approved pages not yet built, and only once the project's app exists. A design that changed since it was approved isn't ready: it says it changed, until it's approved again.
   *shown-on: /f/:project @ typical*

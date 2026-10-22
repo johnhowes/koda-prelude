@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "system": {
+        "project": { "id": "prelude", "name": "Prelude" },
+        "design": { "title": "Prelude Design System", "url": "/f/prelude/d/prelude-design-system" },
+        "screens": [
+          { "id": "01-tokens", "title": "Tokens", "url": "/f/prelude/system?screen=01-tokens", "current": true },
+          { "id": "02-components", "title": "Components", "url": "/f/prelude/system?screen=02-components", "current": false },
+          { "id": "03-guidelines", "title": "Guidelines", "url": "/f/prelude/system?screen=03-guidelines", "current": false }
+        ],
+        "frame": { "title": "Tokens", "src": "about:blank" }
+      }
+    }
+  ]
+}

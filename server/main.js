@@ -20,6 +20,7 @@ import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost,
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
 import { architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, isWritten } from './architecture.js';
+import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
@@ -173,7 +174,9 @@ async function handle(req, res, app) {
   // It serves the folder's whole prelude/ directory at /f/<folder>/p/<path>,
   // so its URLs mirror the folders: a screen's relative link to another
   // design (the folder's design system, say) resolves the same here as on any
-  // static host the folder is shared on.
+  // static host the folder is shared on. At /f/<folder>/r/<path> it serves
+  // the same files to read, outside a session (the Design System page,
+  // system.js): following a link there changes no session's screen.
   // A design's own origin: the Eta host (host.js).
   const designHost = designHostOf(req);
   if (designHost) {
@@ -181,14 +184,14 @@ async function handle(req, res, app) {
   }
 
   if (isPreviewHost(req)) {
-    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/p\/(.+)$/);
+    const match = req.method === 'GET' && path.match(/^\/f\/([0-9a-f]+)\/([pr])\/(.+)$/);
     const folder = match && folders.get(match[1]);
     if (!folder) return notFoundText();
-    const rel = match[2];
+    const rel = match[3];
     // A screen loading in a frame is the screen on show: when someone follows a
     // link inside a screen, every window follows it. A screen opened in a tab
-    // of its own (sec-fetch-dest: document) changes nothing.
-    const found = req.headers['sec-fetch-dest'] === 'iframe' && findDesign(folder.path, rel.split('/'));
+    // of its own (sec-fetch-dest: document), or read (/r/), changes nothing.
+    const found = match[2] === 'p' && req.headers['sec-fetch-dest'] === 'iframe' && findDesign(folder.path, rel.split('/'));
     const screen = found && found.rest.length === 2 && found.rest[0] === 'screens' && found.rest[1].match(/^(.+)\.html$/i);
     if (screen && existsSync(join(found.dir, 'screens', found.rest[1]))) {
       app.designs.show(designKey(folder, found.design), screen[1], { shown: listScreens(found.dir)[0]?.id });
@@ -606,17 +609,14 @@ async function handle(req, res, app) {
       return send(res, 200, shaped(architectureViews[rest], model, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
     }
 
-    // The design system to read (the Reference card, R-x4b): its gallery, on
-    // the preview origin, until the Prelude Design System design gives it a
-    // page of its own here (prelude/project-landing-page, Open questions). In
-    // main, or on its own branch while it's only there.
+    // The design system to read (the Reference card, R-x4b), on the design
+    // system (prelude/design-system-page): its gallery, framed from the
+    // preview origin, ?screen= picking which. In main, or on its own branch
+    // while it's only there (system.js).
     if (rest === '/system' && req.method === 'GET') {
-      const onMain = findSystem(folder.path);
-      const entry = !onMain && !folder.branch ? app.branches.of(folder.id).find(candidate => listDesigns(candidate.path).some(design => design.id === candidate.design && design.kind === 'system')) : null;
-      const system = onMain ?? (entry && findSystem(entry.path));
-      const at = onMain ? folder : entry;
-      const first = system && listScreens(join(at.path, PRELUDE_DIR, ...system.id.split('/')))[0];
-      return redirect(res, first ? `${previewOrigin(req)}/f/${at.id}/p/${system.id}/screens/${encodeURIComponent(first.file)}` : here);
+      const model = { ...systemOf(app, folder, { query, origin: previewOrigin(req) }), $query: query };
+      const alone = fragment && askedFromLayout(req, 'app');
+      return send(res, 200, shaped('system/page', model, { fragment: alone, path: `${path}${url.search}`, title: `Design system · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
     }
 
     // Clean up, in the modal: what Prelude leaves to the person (R-c3j).
@@ -942,7 +942,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }

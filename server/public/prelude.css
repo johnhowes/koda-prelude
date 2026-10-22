@@ -117,3 +117,11 @@
   /* The stories to copy, in full. */
   .story { inline-size: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
 }
+
+/* A project's design system, to read (prelude/design-system-page): what the design system can't say. */
+@scope (.system-page) {
+  /* The gallery, framed: the card is only its edge, and it takes the window's
+     height less the bar and the page's heading, so the gallery scrolls inside. */
+  .system-frame { padding: 0; overflow: hidden; }
+  .system-frame > iframe { display: block; inline-size: 100%; block-size: max(32rem, 100dvh - 14rem); border: 0; }
+}
