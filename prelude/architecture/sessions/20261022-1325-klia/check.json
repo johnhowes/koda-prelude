@@ -9,7 +9,7 @@
       "state": "Typical",
       "page": "Architecture",
       "group": "Architecture",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "typical~f_prelude_architecture_parts_desktop",
