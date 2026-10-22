@@ -99,7 +99,7 @@
       "state": "Drifted",
       "page": "Decisions",
       "group": "Decisions",
-      "status": "differs"
+      "status": "matches"
     },
     {
       "id": "drifted~f_prelude_architecture_decisions_D-r0k",
