@@ -42,7 +42,7 @@ test('before there is a system, a design is told it has none', async () => {
   const modal = await (await get(`/f/${fid}/designs/new`)).text();
   assert.match(modal, /value="system"/);
   assert.match(modal, /value="shell"/);
-  assert.match(modal, /value="architecture"/);
+  assert.equal(modal.match(/value="architecture"/g)?.length, 1, 'the architecture is offered once');
   // The Reference card always shows both, each a way to start it while there's none (R-x4b).
   const page = await (await get(`/f/${fid}`)).text();
   assert.match(page, new RegExp(`<a class="item" href="/f/${fid}/designs/new\\?kind=system" ko-target="modal\\?">[\\s\\S]*?<span class="item-title">Design system</span>[\\s\\S]*?Not made yet`));

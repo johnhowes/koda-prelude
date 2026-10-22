@@ -489,7 +489,6 @@ and New design offers the architecture too (R-x4b, R-wm3):
 `_reference` and `_new-design` changed in place (both `@app`). New project
 shows neither made; long names an empty design system and no architecture.
 
-## Open questions
 ## Fixed: reading the design system, and making the architecture (2026-10-22)
 
 From the fix "I added support for a project's architecture view…"
@@ -505,6 +504,14 @@ From the fix "I added support for a project's architecture view…"
   which nothing linked to until an architecture was written. The view
   (`_new-design`) changed; the `new-project` state's New design shows the new
   choice.
+
+## Fixed: the architecture offered twice in New design (2026-10-22)
+
+The two fixes above each added "The project’s architecture" to New design's
+Kind, worded differently; merging both kept both radios. `_new-design` keeps
+the one worded like the modal's own intro ("drafted from the code; every agent
+reads it before it changes anything")
+(prelude/fixes/the-option-to-create-an-architecture-is-duplicated-in-the).
 
 ## Open questions
 
