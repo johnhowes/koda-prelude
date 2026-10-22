@@ -606,6 +606,19 @@ async function handle(req, res, app) {
       return send(res, 200, shaped(architectureViews[rest], model, { fragment: alone, path: `${path}${url.search}`, title: `Architecture · ${folder.name}`, layout: alone ? {} : layout(), system: true }));
     }
 
+    // The design system to read (the Reference card, R-x4b): its gallery, on
+    // the preview origin, until the Prelude Design System design gives it a
+    // page of its own here (prelude/project-landing-page, Open questions). In
+    // main, or on its own branch while it's only there.
+    if (rest === '/system' && req.method === 'GET') {
+      const onMain = findSystem(folder.path);
+      const entry = !onMain && !folder.branch ? app.branches.of(folder.id).find(candidate => listDesigns(candidate.path).some(design => design.id === candidate.design && design.kind === 'system')) : null;
+      const system = onMain ?? (entry && findSystem(entry.path));
+      const at = onMain ? folder : entry;
+      const first = system && listScreens(join(at.path, PRELUDE_DIR, ...system.id.split('/')))[0];
+      return redirect(res, first ? `${previewOrigin(req)}/f/${at.id}/p/${system.id}/screens/${encodeURIComponent(first.file)}` : here);
+    }
+
     // Clean up, in the modal: what Prelude leaves to the person (R-c3j).
     // Only what's picked goes: each item posts removed.<id>, a hidden false
     // before its checkbox, so the last value is the one that counts. One the

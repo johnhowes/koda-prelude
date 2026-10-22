@@ -22,8 +22,9 @@
       "app": { "status": "built", "stack": "ASP.NET Core MVC with Razor", "path": "src/Spark.Web", "existing": true, "branch": null, "url": null,
         "run": { "command": null, "url": null, "state": "stopped", "log": null } },
       "defaultStack": "Node with Eta",
-      "system": { "id": "spark-design-system", "title": "Spark Design System" },
+      "system": { "id": "spark-design-system", "title": "Spark Design System", "components": 31 },
       "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "architecture": { "id": "architecture", "title": "Architecture", "parts": 23, "decisions": 41 },
       "needs": [
         { "id": "n-a6", "kind": "stopped", "design": "Rate lock", "says": "The build stopped: 2 pages don’t render in the app.", "when": "1 hour ago", "url": "/f/spark-platform/d/rate-lock/build" },
         { "id": "n-a8", "kind": "question", "design": "Document upload", "says": "The agent asked whether a borrower can replace a document after the underwriter has accepted it.", "when": "12 minutes ago", "url": "/f/spark-platform/d/document-upload" },
@@ -63,6 +64,7 @@
       ],
       "designs": [
         { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 31, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "last month" },
+        { "id": "architecture", "title": "Architecture", "kind": "architecture", "area": null, "parts": 23, "decisions": 41, "pages": 0, "approved": 0, "built": 0, "stage": "approved", "changed": "yesterday" },
         { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 3, "layoutsBuilt": 3, "pages": 1, "approved": 1, "built": 1, "stage": "built", "changed": "last month" },
 
         { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "3 weeks ago" },

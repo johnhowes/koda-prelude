@@ -18,7 +18,7 @@
       "app": { "status": "existing", "stack": null, "path": null, "existing": true, "branch": null, "url": null,
         "run": { "command": null, "url": null, "state": "stopped", "log": null } },
       "defaultStack": "Node with Eta",
-      "system": { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets" },
+      "system": { "id": "spark-mortgage-design-system", "title": "Spark Mortgage Design System, drafted from the servicing portal’s stylesheets", "components": 0 },
       "shell": null,
       "needs": [
         {

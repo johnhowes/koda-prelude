@@ -420,7 +420,61 @@ Shell). `progressOf()` now counts its layouts as `allShellLayouts()` in
 are built: "2 layouts, all built", `built`. The design already shows this
 (typical's Spark Shell); the views and states are unchanged.
 
+## Reference: read the design system and architecture (redesign, 2026-10-22)
+
+Reading them is by far their most common use, and it needed a design
+session (the person). Decided:
+
+- **A Reference card at the top of the side column** (the person chose it
+  over making the Designs rows open the read-only view): it's always in
+  sight, and searching or filtering Designs doesn't hide it. The rows link to
+  `/f/:project/system` and `/f/:project/architecture`, the counts beneath
+  them. A row shows once there's something in it (components, parts), and
+  the card shows once a row does (R-x4b). The Designs rows still open the
+  design pages, which is where you change them.
+- **No app shell** (the person: leave it out for now).
+- **The design system gets a page of its own in the app**, as Architecture
+  has (the person: treat them the same). The Prelude Design System design
+  makes it, as the Architecture design made Architecture's; its gallery today
+  is plain HTML on the preview origin. See Open questions.
+- Designs lists the architecture design too: "Architecture" pill, document
+  icon, "14 parts and 9 decisions".
+- The model gains `system.components` and `architecture` (`id`, `title`,
+  `parts`, `decisions`, or null if there isn't one).
+
+**Brought back for it**: `page` (changed), `_designs` (changed); page's other
+partials are copied unchanged. New: `_reference`.
+
+## Built: Reference (2026-10-22)
+
+`page` and `_designs` are ported over the app's, and `_reference` is new
+beside them in `server/views/projects/`. Every route's view is `@app` again.
+
+- **The model** (`projectOf()` in `server/project.js`): `system` gains
+  `components` (its `system/components/*.html`, as its Designs row counts
+  them), and `architecture` is `{ id, title, parts, decisions }` or null: its
+  `architecture/parts/*.md` and `decisions/*.md`. Each is read where the
+  design is, in main or on its own branch while it's only there, as the
+  Architecture pages find it (`findArchitecture`).
+- **An architecture counts nothing until its overview is written**: the
+  Architecture pages show nothing before then (`isWritten`), so the card
+  doesn't link to an empty page, and its Designs row says "nothing written
+  yet".
+- **An architecture's `stage`** is `approved` once it has parts and
+  `designing` before: it's markdown, never built, so the filter shows it
+  under Still designing only while it's empty.
+- **`/f/:project/system` takes you to the design system's gallery**, its
+  first screen on the preview origin, until the Prelude Design System design
+  gives it a page of its own (see Open questions). With no gallery it goes
+  back to the project's page.
+
 ## Open questions
+
+- **`/f/:project/system` is the Prelude Design System design's to make** (the
+  person, 2026-10-22), as Architecture's pages were the Architecture
+  design's: the design system read outside a session (tokens, components,
+  guidelines). Until it's built, the build could point the link at the
+  gallery.
 
 - **Running it while the design host runs in the same folder**: two
   `dotnet run`s in one folder fight over `bin/obj`. The run may need its own

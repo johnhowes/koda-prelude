@@ -1,6 +1,7 @@
 // A project's page (prelude/project-landing-page): its work - what needs the
 // person here, the designs in progress on their branches, and the rest of its
-// designs - beside its setup: the app, and what the agent can read. Read
+// designs - beside its setup: the design system and architecture to read, the
+// app, and what the agent can read. Read
 // afresh every time, since a turn, a build, a push or a merge may have
 // changed any of it (R-8dz).
 //
@@ -8,10 +9,11 @@
 // ("2 hours ago"), needs are oldest first for the view to show newest first,
 // and each design's `stage` is prepared here for the filter and its pill.
 
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { appOf, DEFAULT_STACK } from './app-config.js';
+import { ARCHITECTURE_DIR } from './architecture.js';
 import { backlogOf } from './backlog.js';
 import { buildable, gitState, mainBranch, remoteOf, uncommittedIn } from './branches.js';
 import { PRELUDE_DIR, findDesign, listDesigns } from './designs.js';
@@ -110,6 +112,8 @@ import { changedSinceApproved } from './workspace.js';
  * @property {DesignKind} kind
  * @property {string | null} area
  * @property {number} [components]   the design system's
+ * @property {number} [parts]        the architecture's
+ * @property {number} [decisions]    the architecture's
  * @property {number} [layouts]      the app shell's
  * @property {number} [layoutsBuilt] the shell's layouts the app has (none before it exists)
  * @property {number} pages          a shell's are its own, not its gallery's
@@ -162,8 +166,9 @@ import { changedSinceApproved } from './workspace.js';
  * @property {string | null} appError
  * @property {App} app
  * @property {string} defaultStack
- * @property {{ id: string, title: string } | null} system
+ * @property {{ id: string, title: string, components: number } | null} system
  * @property {{ id: string, title: string } | null} shell
+ * @property {{ id: string, title: string, parts: number, decisions: number } | null} [architecture]   null before there's one
  * @property {Need[]} needs           oldest first
  * @property {Branch[]} inProgress
  * @property {Asked[]} asked          newest first
@@ -196,6 +201,18 @@ function componentsOf(dir) {
 }
 
 /**
+ * How many parts and decisions an architecture has: its architecture/parts
+ * and decisions/*.md. None until its overview is written, since its pages
+ * show nothing before (architecture.js's isWritten).
+ */
+function architectureCountsOf(dir) {
+  const root = join(dir, ARCHITECTURE_DIR);
+  if (!existsSync(join(root, 'overview.md'))) return { parts: 0, decisions: 0 };
+  const count = folder => { try { return readdirSync(join(root, folder)).filter(file => file.endsWith('.md')).length; } catch { return 0; } };
+  return { parts: count('parts'), decisions: count('decisions') };
+}
+
+/**
  * A design's pages and how far they've got, as its Build page counts them (a
  * shell's gallery isn't built), and its stage: ready (approved pages not yet
  * built, once the app exists: R-r6b), designing (pages still to approve, or
@@ -218,6 +235,11 @@ function progressOf(design, dir, appExists, ext) {
     const components = componentsOf(dir);
     const stage = !components ? 'designing' : appExists ? 'built' : 'approved';
     return { components, pages: pages.length, approved, built, stage };
+  }
+  // The architecture is markdown, never built: written is as far as it goes.
+  if (design.kind === 'architecture') {
+    const { parts, decisions } = architectureCountsOf(dir);
+    return { parts, decisions, pages: 0, approved: 0, built: 0, stage: parts ? 'approved' : 'designing' };
   }
   const shell = design.kind === 'shell' ? { layouts: allShellLayouts(dir, ext).length, layoutsBuilt: 0 } : null;
   if (shell && appExists) shell.layoutsBuilt = shell.layouts - unbuiltLayouts(dir, ext).length;
@@ -371,6 +393,9 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
   const all = [...onMain, ...onBranches];
   const system = all.find(design => design.kind === 'system') ?? null;
   const shell = all.find(design => design.kind === 'shell') ?? null;
+  const architecture = all.find(design => design.kind === 'architecture') ?? null;
+  // Where a design is read: in main, or on its own branch while it's only there.
+  const dirHere = design => dirOf(onMain.includes(design) ? folder.path : entries.find(entry => entry.design === design.id).path, design);
 
   const config = appOf(folder.path);
   const shellEntry = shell ? entries.find(entry => entry.design === shell.id) ?? null : null;
@@ -409,8 +434,10 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     appError,
     app: appModel,
     defaultStack: DEFAULT_STACK,
-    system: system && { id: system.id, title: system.title },
+    // The Reference card reads these: each is offered once it has something in it (R-x4b).
+    system: system && { id: system.id, title: system.title, components: componentsOf(dirHere(system)) },
     shell: shell && { id: shell.id, title: shell.title },
+    architecture: architecture && { id: architecture.id, title: architecture.title, ...architectureCountsOf(dirHere(architecture)) },
     needs: work ? needsOfProject(app, folder, { now }) : [],
     inProgress: work ? branchesOf(app, folder, { branchOf, storiesOf, finishError, updated, now }) : [],
     asked: work ? askedOf(app, folder, { now }) : [],

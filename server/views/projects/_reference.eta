@@ -1,0 +1,39 @@
+<%/* Reference: the design system and the architecture to read, without
+     opening a design session, which is how they're mostly used. Each opens
+     its own pages in the app (the architecture's overview; the design
+     system's tokens, components and guidelines); changing one is its
+     design's, under Designs. A row shows once there's something in it to
+     read, and the card once a row does. The app shell isn't here: its
+     gallery is for changing it. `it` is the project. */%>
+<% const p = it, components = p.system?.components ?? 0, parts = p.architecture?.parts ?? 0, decisions = p.architecture?.decisions ?? 0;
+   const counted = (n, one, many) => `${n} ${n === 1 ? one : many}`; %>
+<% if (components || parts) { %>
+<section class="card" id="reference" aria-labelledby="reference-title">
+  <h2 id="reference-title">Reference</h2>
+  <p class="secondary">What every design and build here follows.</p>
+  <ul class="list">
+    <% if (components) { %>
+    <li>
+      <a class="item" href="/f/<%= p.id %>/system">
+        <span class="icon icon-design-system" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= p.system.title %></span>
+          <span class="muted">Tokens, <%= counted(components, 'component', 'components') %> and the guidelines</span>
+        </span>
+      </a>
+    </li>
+    <% } %>
+    <% if (parts) { %>
+    <li>
+      <a class="item" href="/f/<%= p.id %>/architecture">
+        <span class="icon icon-document" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><%= p.architecture.title %></span>
+          <span class="muted"><%= counted(parts, 'part', 'parts') %> and <%= counted(decisions, 'decision', 'decisions') %></span>
+        </span>
+      </a>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %>
