@@ -37,7 +37,7 @@
      (D-v3x). Open, since it's the turn's outcome; it folds away. */%>
 <li class="entry note">
   <details class="disclosure" open><summary><%= e.map.count === 1 ? 'This turn changed 1 part of the app' : `This turn changed ${e.map.count} parts of the app` %><% if (e.files) { %> (<%= e.files === 1 ? '1 file' : `${e.files} files` %>)<% } %>.</summary>
-  <%~ include('./_visual-map', e.map) %></details>
+  <%~ include('./_visual-map', { ...e.map, target: 'drawer?' }) %></details>
 </li>
 <% } else if (e.type === 'check' && e.failures.length) { %>
 <li class="entry note failed">

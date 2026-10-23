@@ -16,7 +16,9 @@
 
      The model, ready to print: label (the map's name), mark ('touched',
      'named' or none), count (parts marked), and layers, each with title
-     and parts (id, title, url, summary, outside, marked, note). */%>
+     and parts (id, title, url, summary, outside, marked, note); `target`,
+     if given, is the region a part's page opens in (the chat's drawer; the
+     Architecture page gives none, so its parts open as pages). */%>
 <% const parts = n => n === 1 ? '1 part' : `${n} parts`;
    const said = it.mark === 'touched' ? `${parts(it.count)} changed. ` : ''; %>
 <figure class="stack gap-2">
@@ -26,7 +28,7 @@
       <h3 class="map-label"><%= layer.title %></h3>
       <ul class="map-nodes">
         <% for (const part of layer.parts) { %>
-        <li><a class="map-node<%= part.outside ? ' outside' : '' %><%= part.marked ? ` ${it.mark}` : '' %>" href="<%= part.url %>">
+        <li><a class="map-node<%= part.outside ? ' outside' : '' %><%= part.marked ? ` ${it.mark}` : '' %>" href="<%= part.url %>"<% if (it.target) { %> ko-target="<%= it.target %>"<% } %>>
           <span class="map-node-title"><%= part.title %><% if (part.marked && it.mark === 'touched') { %><span class="pill accent">Changed</span><% } %></span>
           <% if (part.marked || !it.mark) { %><span class="muted"><%= part.note ?? part.summary %></span><% } %>
         </a></li>

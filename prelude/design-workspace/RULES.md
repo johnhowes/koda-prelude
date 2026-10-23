@@ -53,7 +53,7 @@
 - **R-6jw.** A flow or a map the agent writes shows as a picture exactly where it wrote it, between its words, however many a message has.
   *shown-on: /f/:folder/d/:design @ several-visuals*
   *proposed*
-- **R-p3e.** Every part on a flow or a map opens that part's page in the project's architecture.
+- **R-p3e.** Every part on a flow or a map in a conversation opens that part's page from the project's architecture in a drawer over the conversation, which stays as it was.
   *shown-on: /f/:folder/d/:design @ a-flow-and-a-map*
   *proposed*
 - **R-k9u.** A map shows every part of the project, layer by layer; the parts it picks out stand out, each with the agent's note, and the rest show only their names. Only a map of what a turn changed says "Changed"; an agent's map says nothing about change.

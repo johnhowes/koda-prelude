@@ -280,8 +280,18 @@ the record picker, was dropped).
   `pieces` (text, flow, map, drawing, unread) in the order written, each
   ready to print; a message with none is one text piece (`html` still
   reads). Each part links to `/f/<project>/architecture/parts/<id>`.
-  - **Each part links to its page on the Architecture page**, leaving the
-    session (the person, 2026-10-23: fine for now; no drawer route).
+  - **A part opens its page in the drawer** (the person, 2026-10-23): the
+    link is the part's own URL with `ko-target="drawer?"`, and the part's
+    page is laid out to fit there (its `.split` and grids wrap), so no
+    drawer view of its own. The chat passes `target` to the visual
+    partials; the Architecture page passes none, so its map still opens
+    pages. In the app, the part's route (`server/main.js`,
+    `/architecture/parts/<part>`) answers alone only for a request from
+    the app layout (`askedFromLayout(req, 'app')`); from the design page
+    (workspace layout) it would send the whole page into the drawer. It
+    should answer alone for any fragment request aimed at a drawer, as a
+    decision's route does. Not in the preview: the design has no route for
+    a part, so the drawer can't show one here.
   - **The agent's map says nothing about change** (the person, 2026-10-23):
     its parts are outlined (`.named`, added to the design system) with its
     notes, no pill, since a `prelude-map-1` block can't say whether it
