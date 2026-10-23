@@ -261,20 +261,30 @@
   .item-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); font-weight: var(--weight-strong); }
   .item-text > .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Menu: a button that opens a list of choices (details/summary, no script) */
-  .menu { position: relative; display: inline-block; }
-  .menu > summary { list-style: none; max-width: 18rem; }
-  .menu > summary::-webkit-details-marker { display: none; }
+  /* Menu: a button that opens a list of choices. The list is a popover, so the
+     browser closes it on a click outside or Escape (focus back on the button),
+     keeps one open at a time, and draws it above every panel. It is anchored to
+     its button and flips to where there is room. */
+  .menu { display: inline-block; anchor-scope: --menu; }
+  .menu > button { anchor-name: --menu; max-width: 18rem; }
+  .menu > button:has(+ .menu-list:popover-open) { background: var(--surface-sunken); color: var(--fg); }
   .menu-list {
-    position: absolute; inset-inline-end: 0; top: calc(100% + var(--space-1)); z-index: 10;
     display: grid; list-style: none; margin: 0; padding: var(--space-1);
-    min-width: 20rem; max-height: 60vh; overflow: auto;
+    min-width: 20rem; max-height: 60vh; overflow: auto; color: var(--fg);
     background: var(--surface-raised); border: var(--border-width) solid var(--border);
     border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
   }
-  .menu.start .menu-list { inset-inline: 0 auto; }
-  /* .up opens above its button, for a menu at the foot of a panel (the composer). */
-  .menu.up .menu-list { top: auto; bottom: calc(100% + var(--space-1)); }
+  .menu-list[popover] {
+    position: fixed; inset: auto; margin: var(--space-1) 0;
+    position-anchor: --menu; position-area: block-end span-inline-start;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+  /* A popover's own display: none is the browser's, which ours would beat. */
+  .menu-list[popover]:not(:popover-open) { display: none; }
+  .menu.start .menu-list[popover] { position-area: block-end span-inline-end; }
+  /* .up opens above its button first, for a menu at the foot of a panel (the composer). */
+  .menu.up .menu-list[popover] { position-area: block-start span-inline-start; }
+  .menu.up.start .menu-list[popover] { position-area: block-start span-inline-end; }
   .menu-list > .menu-note { padding: var(--space-2) var(--space-3); }
   /* Its choices; a real button in a form inside it (Go) stays a button. */
   .menu-list a:not(.btn), .menu-list button:not(.btn) {

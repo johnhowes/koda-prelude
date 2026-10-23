@@ -68,11 +68,12 @@ block can be moved without bringing stray margins with it.
 - Do: `<div class="stack gap-1"><h3 class="group-label">Onboarding</h3><ul class="list">…</ul></div>`.
 - Don't: `style="margin-top: var(--space-4)"`, or a class that adds margin to a card.
 
-**9. Work without script.** Menus are `details`, the transcript keeps to the
+**9. Work without script.** Menus are popovers (the browser closes them on a
+click outside or Escape), disclosures are `details`, the transcript keeps to the
 bottom with a reversed column, filters use `:has()`. Script only for what the
 platform can't express (Enter to send, copying to the clipboard).
 *Why:* views are server-rendered and swapped in place; script is the part that breaks.
-- Do: `<details class="menu">`.
+- Do: `<button popovertarget="…">` and `<div class="menu-list" popover>` in a `.menu`.
 - Don't: a click handler that toggles a class.
 
 **10. Keyboard and screen reader first.** Every control is a real `button`, `a`
