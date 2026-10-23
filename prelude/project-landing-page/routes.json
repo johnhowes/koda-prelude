@@ -73,11 +73,11 @@
     "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
   },
   "POST /f/:project/koda/upgrade": {
-    "update": "projects/:project/app/koda",
+    "update": "projects/:project/app",
     "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
   },
   "POST /f/:project/koda/install": {
-    "update": "projects/:project/app/koda",
+    "update": "projects/:project/app",
     "answer": { "view": "@app/server/views/projects/_app", "data": "projects/:project" }
   },
   "POST /f/:project/references": {

@@ -534,7 +534,8 @@ thing at a time:
 
 Typical shows the upgrade offered (0.1.4 → 0.1.5). The new POSTs are
 `/f/:project/koda/upgrade` and `/f/:project/koda/install`, both answering
-with the app. In the app, the upgrade redirects to the fix's page instead.
+with the app. Each updates `projects/:project/app`, which every state has,
+not `app/koda`, which only typical has. In the app, the upgrade redirects to the fix's page instead.
 `_app` changed in place (`@app`).
 
 ## Open questions
