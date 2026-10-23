@@ -18,6 +18,8 @@
 // The page (and every region) sees the request's query string as `it.$query`,
 // so a search or filter form can show what was asked.
 
+import { extname, join } from 'node:path';
+
 import { Eta } from 'eta';
 
 const engines = new Map();   // views folder -> Eta
@@ -38,14 +40,32 @@ function withQuery(data, query) {
   return data ?? { $query: query };
 }
 
+// A view that doesn't compile: Eta's message ends with the whole compiled
+// template, tens of thousands of characters of its own code, told for every
+// route that renders the view. The error alone, and the view rendered, say
+// more.
+function viewError(error, file) {
+  const message = String(error?.message ?? error);
+  if (!/^Bad template syntax/.test(message)) return error;
+  return new Error(`${message.replace(/\n=+\n[\s\S]*$/, '').trim()}\n(in ${file}, or a partial it includes)`);
+}
+
+function renderView({ views, template }, data) {
+  try {
+    return engine(views).render(template, data);
+  } catch (error) {
+    throw viewError(error, `${join(views, template)}${extname(template) ? '' : '.eta'}`);
+  }
+}
+
 function render({ page, layout, regions = {}, query = {} }) {
-  const body = engine(page.views).render(page.template, withQuery(page.data, query));
+  const body = renderView(page, withQuery(page.data, query));
   if (!layout) return body;
   const rendered = {};
   for (const [name, region] of Object.entries(regions)) {
-    rendered[name] = { html: engine(region.views).render(region.template, withQuery(region.data, query)), location: region.location };
+    rendered[name] = { html: renderView(region, withQuery(region.data, query)), location: region.location };
   }
-  return engine(layout.views).render(layout.template, { ...layout.data, body, regions: rendered });
+  return renderView(layout, { ...layout.data, body, regions: rendered });
 }
 
 process.on('message', message => {
