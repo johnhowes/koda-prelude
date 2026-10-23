@@ -49,6 +49,17 @@
   new MutationObserver(follow).observe(region, { childList: true });
   dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); });
   follow();
+
+  // A menu is a popover (the design system's), which the browser closes on a
+  // click outside it or Escape. A row pressed inside it doesn't leave the
+  // page here: Koda swaps the page in or sends the form, and the bar or panel
+  // stays put. So pressing a row closes its menu, as the person expects; a
+  // form's own .btn (Use this size) isn't a row, and leaves it to its form.
+  document.addEventListener('click', event => {
+    const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)');
+    const menu = row?.closest('.menu-list[popover]');
+    if (menu?.matches(':popover-open')) menu.hidePopover();
+  });
 </script>
 <script type="module">
   import { start } from '@kodalang/core';

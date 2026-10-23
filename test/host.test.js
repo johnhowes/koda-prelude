@@ -214,7 +214,7 @@ test('the preview offers the design’s pages and states, framed on its own orig
   await hostGet('orders', '/orders/2', { 'sec-fetch-dest': 'iframe' });
   const moved = await (await get(`/f/${fid}/d/orders/preview`)).text();
   assert.ok(moved.includes(`preview.localhost:${port}/orders/2?v=`));
-  assert.match(moved, /<summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"><\/span><span class="clip">Order<\/span><\/summary>/);
+  assert.match(moved, /<button class="btn small ghost" type="button" popovertarget ko-for="pageMenu"><span class="icon icon-screen" aria-hidden="true"><\/span><span class="clip">Order<\/span><\/button>/);
   // A region loading a fragment changes nothing.
   await hostGet('orders', '/orders/1/row', { 'sec-fetch-dest': 'empty', 'x-koda-fragment': '1' });
   assert.ok((await (await get(`/f/${fid}/d/orders/preview`)).text()).includes('/orders/2?v='));

@@ -16,9 +16,9 @@
 <section class="panel side chat" aria-label="Session">
   <div class="toolbar">
     <% if (it.sessions.length > 0) { %>
-    <details class="menu start sessions-menu">
-      <summary class="btn small ghost"><span class="icon icon-session" aria-hidden="true"></span><span class="clip"><%= it.session ? it.session.title : 'New session' %></span></summary>
-      <ul class="menu-list">
+    <div class="menu start sessions-menu">
+      <button class="btn small ghost" type="button" popovertarget ko-for="sessionMenu"><span class="icon icon-session" aria-hidden="true"></span><span class="clip"><%= it.session ? it.session.title : 'New session' %></span></button>
+      <ul class="menu-list" ko-as="sessionMenu" popover>
         <% for (const s of it.sessions) { %>
         <li><a href="<%= base %>/sessions/<%= s.id %>" <% if (it.session && s.id === it.session.id) { %>aria-current="page"<% } %>>
           <span class="item-title"><%= s.title %></span>
@@ -26,7 +26,7 @@
         </a></li>
         <% } %>
       </ul>
-    </details>
+    </div>
     <% } else if (fresh) { %>
     <span class="muted">A new conversation</span>
     <% } else { %>
