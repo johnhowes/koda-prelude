@@ -1,0 +1,126 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
+    ],
+    "needsYou": 5,
+    "agents": [
+      { "design": "Loan offers", "project": "spark-lending", "url": "/f/spark-lending/d/loan-offers" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "built", "stack": "Node with Eta", "path": "app", "existing": false, "branch": null, "url": null,
+        "run": { "command": "npm start --prefix app", "url": "http://localhost:3100", "state": "stopped", "log": null },
+        "koda": { "version": "0.1.4", "wanted": "0.1.4", "latest": "0.1.5", "behind": true, "install": "npm install @kodalang/core@0.1.5", "upgradeBranch": null, "upgradeUrl": null, "checkout": null } },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-design-system", "title": "Spark Design System", "components": 24 },
+      "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "architecture": { "id": "architecture", "title": "Architecture", "parts": 14, "decisions": 9 },
+      "needs": [
+        {
+          "id": "n-q81",
+          "kind": "stopped",
+          "design": "Rate lock",
+          "says": "The build stopped: 1 page doesn’t render in the app.",
+          "when": "25 minutes ago",
+          "url": "/f/spark-lending/d/rate-lock/build"
+        }
+      ],
+      "inProgress": [
+        {
+          "id": "a41c07",
+          "design": { "id": "loan-offers", "title": "Loan offers", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/loan-offers",
+          "buildUrl": "/f/spark-lending/d/loan-offers/build",
+          "finish": "/f/spark-lending/branches/a41c07",
+          "branch": "prelude/loan-offers",
+          "into": "main",
+          "check": "unchecked",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "ahead": 3,
+          "uncommitted": 0,
+          "inMain": false,
+          "working": false,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "c90f13",
+          "design": { "id": "repayment-schedule", "title": "Repayment schedule", "kind": "design", "area": "Servicing" },
+          "url": "/f/spark-lending/d/repayment-schedule",
+          "buildUrl": "/f/spark-lending/d/repayment-schedule/build",
+          "finish": "/f/spark-lending/branches/c90f13",
+          "branch": "prelude/repayment-schedule",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 2,
+          "worked": true,
+          "ahead": 9,
+          "uncommitted": 1,
+          "inMain": false,
+          "working": false,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": { "running": true, "approved": true, "url": "http://localhost:3000", "open": "/f/spark-lending/branches/c90f13/app" },
+          "merging": null,
+          "finishError": null,
+          "stories": [
+            {
+              "title": "Schedule",
+              "kind": "new",
+              "state": "built",
+              "summary": "Every payment of the loan, with what goes to principal and to interest.",
+              "story": "Schedule\n\nAs a borrower, I see every payment of my loan in order, each split into principal and interest, with the balance after it.",
+              "session": "/f/spark-lending/d/repayment-schedule/sessions/s-2kq"
+            },
+            {
+              "title": "Pay extra",
+              "kind": "new",
+              "state": "to-build",
+              "summary": "An extra payment, and how much sooner the loan ends because of it.",
+              "story": "Pay extra\n\nAs a borrower, I can make an extra payment toward principal and see how many months sooner my loan ends.",
+              "session": null
+            }
+          ]
+        }
+      ],
+      "designs": [
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 24, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 2, "layoutsBuilt": 2, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "architecture", "title": "Architecture", "kind": "architecture", "area": null, "parts": 14, "decisions": 9, "pages": 0, "approved": 0, "built": 0, "stage": "approved", "changed": "4 days ago" },
+        { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "document-checklist", "title": "Document checklist", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "2 days ago" },
+        { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "last week" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/document-checklist", "into": "main", "when": "2 days ago" },
+        { "id": "m-2", "branch": "prelude/borrower-profile", "into": "main", "when": "last week" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+      ],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
+    }
+  ]
+}

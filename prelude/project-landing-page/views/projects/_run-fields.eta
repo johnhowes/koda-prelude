@@ -1,0 +1,16 @@
+<%/* How the app runs from here: its command, run in the project's folder,
+     and its address. Refused, they come back with what was typed and why.
+     `it` is the app's run settings. */%>
+<% const run = it, errors = it.$errors ?? {}; %>
+<label class="field">
+  <span class="label">Command</span>
+  <input name="command" value="<%= run.command ?? '' %>" placeholder="npm start" autocomplete="off" spellcheck="false"
+         <% if (errors.command) { %>ko-invalid-server="<%= errors.command %>" aria-describedby="run-command-error"<% } %>>
+  <% if (errors.command) { %><span class="error" id="run-command-error"><%= errors.command %></span><% } else { %><span class="hint">Run in the project’s folder, as you would in a terminal.</span><% } %>
+</label>
+<label class="field">
+  <span class="label">Address</span>
+  <input name="url" value="<%= run.url ?? '' %>" placeholder="http://localhost:3100" autocomplete="off" spellcheck="false"
+         <% if (errors.url) { %>ko-invalid-server="<%= errors.url %>" aria-describedby="run-url-error"<% } %>>
+  <% if (errors.url) { %><span class="error" id="run-url-error"><%= errors.url %></span><% } else { %><span class="hint">On this computer, and not the design host’s. Its port is given to the command as PORT.</span><% } %>
+</label>

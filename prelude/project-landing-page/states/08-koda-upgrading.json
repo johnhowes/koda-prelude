@@ -1,0 +1,100 @@
+{
+  "layout": {
+    "projects": [
+      { "id": "spark-lending", "name": "spark-lending", "path": "C:\\Projects\\spark-lending" },
+      { "id": "borrower-portal", "name": "borrower-portal", "path": "C:\\Projects\\borrower-portal" },
+      { "id": "prelude", "name": "Prelude", "path": "C:\\Projects\\Prelude" }
+    ],
+    "needsYou": 1,
+    "agents": [
+      { "design": "Upgrade Koda to 0.1.5", "project": "spark-lending", "url": "/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5" }
+    ]
+  },
+  "projects": [
+    {
+      "id": "spark-lending",
+      "name": "spark-lending",
+      "path": "C:\\Projects\\spark-lending",
+      "git": "repository",
+      "canBuild": true,
+      "appError": null,
+      "app": { "status": "built", "stack": "Node with Eta", "path": "app", "existing": false, "branch": null, "url": null,
+        "run": { "command": "npm start --prefix app", "url": "http://localhost:3100", "state": "stopped", "log": null },
+        "koda": { "version": "0.1.4", "wanted": "0.1.4", "latest": "0.1.5", "behind": true, "install": "npm install @kodalang/core@0.1.5", "upgradeBranch": "prelude/fixes/upgrade-koda-to-0-1-5", "upgradeUrl": "/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5", "checkout": null } },
+      "defaultStack": "Node with Eta",
+      "system": { "id": "spark-design-system", "title": "Spark Design System", "components": 24 },
+      "shell": { "id": "spark-shell", "title": "Spark Shell" },
+      "architecture": { "id": "architecture", "title": "Architecture", "parts": 14, "decisions": 9 },
+      "needs": [],
+      "inProgress": [
+        {
+          "id": "f3k9a1",
+          "design": { "id": "fixes/upgrade-koda-to-0-1-5", "title": "Upgrade Koda to 0.1.5", "kind": "fix", "area": null },
+          "url": "/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5",
+          "buildUrl": null,
+          "finish": "/f/spark-lending/branches/f3k9a1",
+          "branch": "prelude/fixes/upgrade-koda-to-0-1-5",
+          "into": "main",
+          "check": "unchecked",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "ahead": 1,
+          "uncommitted": 3,
+          "inMain": false,
+          "working": true,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": ["app/package.json", "app/package-lock.json", "app/views/loans/_rate-card.eta"],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        },
+        {
+          "id": "a41c07",
+          "design": { "id": "loan-offers", "title": "Loan offers", "kind": "design", "area": "Applications" },
+          "url": "/f/spark-lending/d/loan-offers",
+          "buildUrl": "/f/spark-lending/d/loan-offers/build",
+          "finish": "/f/spark-lending/branches/a41c07",
+          "branch": "prelude/loan-offers",
+          "into": "main",
+          "check": "passing",
+          "failures": 0,
+          "behind": 0,
+          "worked": true,
+          "ahead": 3,
+          "uncommitted": 0,
+          "inMain": false,
+          "working": false,
+          "remote": { "name": "origin", "pulls": "https://github.com/lendwithspark/spark-lending/pulls" },
+          "pushed": false,
+          "building": null,
+          "alsoChanges": [],
+          "running": null,
+          "merging": null,
+          "finishError": null,
+          "stories": []
+        }
+      ],
+      "designs": [
+        { "id": "spark-design-system", "title": "Spark Design System", "kind": "system", "area": null, "components": 24, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "spark-shell", "title": "Spark Shell", "kind": "shell", "area": null, "layouts": 2, "layoutsBuilt": 2, "pages": 0, "approved": 0, "built": 0, "stage": "built", "changed": "2 weeks ago" },
+        { "id": "architecture", "title": "Architecture", "kind": "architecture", "area": null, "parts": 14, "decisions": 9, "pages": 0, "approved": 0, "built": 0, "stage": "approved", "changed": "4 days ago" },
+        { "id": "loan-application", "title": "Loan application", "kind": "design", "area": "Applications", "pages": 6, "approved": 6, "built": 6, "stage": "built", "changed": "last week" },
+        { "id": "prequalification", "title": "Prequalification", "kind": "design", "area": "Applications", "pages": 4, "approved": 4, "built": 0, "stage": "ready", "changed": "yesterday" },
+        { "id": "rate-lock", "title": "Rate lock", "kind": "design", "area": "Applications", "pages": 3, "approved": 3, "built": 3, "stage": "built", "changed": "yesterday" },
+        { "id": "borrower-profile", "title": "Borrower profile", "kind": "design", "area": "Servicing", "pages": 4, "approved": 4, "built": 4, "stage": "built", "changed": "last week" }
+      ],
+      "merged": [
+        { "id": "m-1", "branch": "prelude/rate-lock", "into": "main", "when": "yesterday" },
+        { "id": "m-2", "branch": "prelude/borrower-profile", "into": "main", "when": "last week" }
+      ],
+      "references": [
+        { "id": "r-1", "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+      ],
+      "cleanup": { "into": "main", "items": [], "removed": {} }
+    }
+  ]
+}

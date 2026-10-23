@@ -8,11 +8,12 @@ across projects and links here; this page holds the project's whole picture.
 Pages: `/f/:project` (Project), `/f/:project/designs/new` (New design, modal),
 `/f/:project/branches/:branch/publish` (Push a branch, modal),
 `/f/:project/cleanup` (Clean up, modal), `/f/:project/branches/:branch/discard`
-(Discard a branch, modal). Fragments:
-`/f/:project/work`, `/f/:project/app`. States: typical (spark-lending), new
-project, app being built, update clashed (with the app on the shell's branch
-and a failed push), long names (an existing app to connect, no remote),
-large project (a hundred features).
+(Discard a branch, modal), `/f/:project/app/koda` (Upgrade Koda, modal).
+Fragments: `/f/:project/work`, `/f/:project/app`. States: typical
+(spark-lending), new project, app being built, update clashed (with the app
+on the shell's branch and a failed push), long names (an existing app to
+connect, no remote), large project (a hundred features), Koda behind, Koda
+upgrading, Koda to install. Also `/f/:project/app/koda/install` (modal).
 
 ## Decisions (the person asked for all eleven, 2026-10-18)
 
@@ -512,6 +513,49 @@ Kind, worded differently; merging both kept both radios. `_new-design` keeps
 the one worded like the modal's own intro ("drafted from the code; every agent
 reads it before it changes anything")
 (prelude/fixes/the-option-to-create-an-architecture-is-duplicated-in-the).
+
+## Koda behind, and upgrading it (redesign, 2026-10-23)
+
+The person asked for a way to see the app's Koda is older than Prelude's and
+start upgrading it, as a fix, following D-k7v (the versions come from the
+app's installed `node_modules/@kodalang/core/package.json`, Prelude's own as
+`latest`). Decided:
+
+- **In the app card, quietly**: a muted line after the run controls, "This
+  app uses Koda 0.1.4; Prelude knows 0.1.5.", with a ghost "Upgrade Koda…"
+  (only on a built app). New design stays the page's one primary (R-k2d).
+- **It asks first in a modal** (`/f/:project/app/koda`): the fix it starts,
+  and in a `.notice.warn` the exact install command and where it runs (the
+  fix's copy of the app). Clicking Upgrade Koda is the approval of that
+  command, as Run is (R-q7w). Started, the modal closes and the card links to
+  the fix; the app opens the fix's page instead.
+- **An upgrade under way** (`upgradeBranch`, `upgradeUrl`): the line links to
+  the fix's branch and the button goes; the fix is under In progress as any
+  fix. Up to date or no Koda (`koda` null): nothing.
+- **Then installing it in the person's own folder** (D-k7v step 12; the
+  person, 2026-10-23): once the upgrade is merged, the folder still has the
+  old Koda installed. The same place in the card says so, with "Install
+  Koda 0.1.5…", which asks in its own modal (`/f/:project/app/koda/install`),
+  showing the command and folder; confirming is the approval (R-n6t).
+  Installing shows a pulse; done, the line goes (`app-changed`); failed, a
+  `.notice.danger` with the last of its output and Try again…. This comes
+  before any further upgrade.
+- Model: `app.koda` = `{ version, wanted, latest, behind, install,
+  upgradeBranch, upgradeUrl, checkout }` or null. `version` is what's
+  installed in the folder, `wanted` what the app's `package.json` asks for;
+  `behind` is the app's comparison (semver) of `wanted` with `latest`;
+  `install` the upgrade's fixed command for the project's package manager.
+  `checkout` is null while `version` is `wanted`, else `{ state: ready /
+  installing / failed, command, log }`.
+- States: typical (up to date), large project (no Koda), `koda-behind`,
+  `koda-upgrading` (the fix working, under In progress), `koda-to-install`
+  (the fix merged). Events `koda-installed` and `koda-install-failed` (for
+  `koda-to-install`, after clicking Install).
+
+**Brought back for it**: `_app` (changed), `page` (unchanged, so its
+includes resolve here) and page's other partials, copied unchanged. New:
+`_koda`, `_koda-install`. The upgrade modal's hidden `upgradeBranch`/
+`upgradeUrl` are stand-ins; the app makes the fix and its branch name.
 
 ## Open questions
 

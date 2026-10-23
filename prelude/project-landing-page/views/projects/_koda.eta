@@ -1,0 +1,39 @@
+<%/* Upgrade the app's Koda, asked first in the modal (D-k7v): it starts a
+     fix, "Upgrade Koda to <latest>", on a branch of its own. Prelude installs
+     the new version in the fix's worktree with the project's package manager
+     (`koda.install`, a fixed command that names only Koda), then the agent
+     changes the app's views where the new version needs it. The person's own
+     folder isn't touched until the fix is merged (R-q7w). Clicking Upgrade
+     approves the command it shows. Reached when there's nothing to upgrade,
+     or with an upgrade already under way, it says so. Started, the modal
+     closes and the app card links to the fix; the app opens the fix's page.
+     `it` is the project. */%>
+<% const p = it, koda = p.app?.koda; %>
+<div class="stack gap-4">
+<% if (koda?.upgradeUrl) { %>
+  <h2>Koda is already being upgraded</h2>
+  <p class="secondary">A fix is upgrading this app to Koda <%= koda.latest %> on <code><%= koda.upgradeBranch %></code>. Carry on with it there, or discard it under In progress to start again.</p>
+  <div class="cluster actions">
+    <a class="btn" href="<%= koda.upgradeUrl %>">Open the fix</a>
+    <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
+  </div>
+<% } else if (koda?.behind) { %>
+  <h2>Upgrade Koda to <%= koda.latest %>?</h2>
+  <p class="secondary">This app uses Koda <%= koda.version %>. Upgrading starts a fix on a branch of its own, where the agent reads <%= koda.latest %>’s guidance and changes the app’s views where it needs to. You check them and finish the fix like any other.</p>
+  <div class="notice warn">
+    <p>Prelude runs <code><%= koda.install %></code> in the fix’s copy of <code><%= p.app.path ? `${p.app.path}/` : 'the project' %></code>. Installing runs code from the package registry. Your own folder isn’t changed: once the fix is merged, the app card offers to install <%= koda.latest %> there too.</p>
+  </div>
+  <form class="cluster actions" action="/f/<%= p.id %>/app/koda" method="post">
+    <input type="hidden" name="upgradeBranch" value="prelude/fixes/upgrade-koda-to-<%= koda.latest.replaceAll('.', '-') %>">
+    <input type="hidden" name="upgradeUrl" value="/f/<%= p.id %>/d/fixes/upgrade-koda-to-<%= koda.latest.replaceAll('.', '-') %>">
+    <button class="btn primary" type="submit">Upgrade Koda</button>
+    <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+  </form>
+<% } else { %>
+  <h2>Nothing to upgrade</h2>
+  <p class="secondary"><%= koda ? `This app already uses Koda ${koda.version}, the version Prelude knows.` : 'This app doesn’t use Koda.' %></p>
+  <div class="cluster actions">
+    <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
+  </div>
+<% } %>
+</div>

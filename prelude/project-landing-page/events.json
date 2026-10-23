@@ -23,6 +23,21 @@
     "with": { "state": "running", "log": null },
     "send": "app-changed"
   },
+  "koda-installed": {
+    "title": "Koda 0.1.5 finishes installing in the folder (to install, after clicking Install)",
+    "update": "projects/spark-lending/app/koda",
+    "with": { "version": "0.1.5", "checkout": null },
+    "send": "app-changed"
+  },
+  "koda-install-failed": {
+    "title": "Koda’s install in the folder fails (to install, after clicking Install)",
+    "update": "projects/spark-lending/app/koda/checkout",
+    "with": {
+      "state": "failed",
+      "log": "npm error code ETIMEDOUT\nnpm error network request to https://registry.npmjs.org/@kodalang%2fcore failed, reason: connect ETIMEDOUT 104.16.2.35:443\nnpm error network This is a problem related to network connectivity.\n\n(the install stopped, exit 1)"
+    },
+    "send": "app-changed"
+  },
   "app-failed": {
     "title": "The app stops before it answers",
     "update": "projects/spark-lending/app/run",
