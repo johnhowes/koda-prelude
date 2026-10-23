@@ -9,7 +9,8 @@ From the project page noticing the app's Koda is behind Prelude's to the upgrade
 4. branches: makes the fix's branch and worktree
 5. installs: shows the person `<package manager> install @kodalang/core@<version>` and, once they approve, runs it in the worktree's app folder
 6. designs: now finds the new Koda in the worktree, and the server passes its path to the prompt
-7. agent: spawns the CLI with the fix prompt, pointed at the new Koda's reference and skills
-8. claude: changes the app's views where the new version needs it
-9. architecture: checks the changed files against these files
-10. branches: commits `package.json`, the lockfile and the agent's changes to the fix's branch
+7. host: serves the new Koda's runtime to the fix's designs, so the review renders with it
+8. agent: spawns the CLI with the fix prompt, pointed at the new Koda's reference and skills
+9. claude: changes the app's views where the new version needs it
+10. architecture: checks the changed files against these files
+11. branches: commits `package.json`, the lockfile and the agent's changes to the fix's branch

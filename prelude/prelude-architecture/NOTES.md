@@ -15,8 +15,8 @@ Prelude's own architecture, as markdown in `architecture/`, read by every design
 - **The agent follows the app's own Koda; Prelude installs only in a fix's worktree** (D-k7v, proposed 2026-10-23). `designs` finds the app's Koda (worktree, then checkout, then Prelude's, since a fresh worktree has no `node_modules`). `pages` compares versions, and a new `installs` part (`server/installs.js`) runs the package manager, fenced to worktrees, with a fixed command. Flow: `koda-upgrade`. Until it's built, the check reports `server/installs.js` missing.
 - **Installs handle only `@kodalang/core`** (the person, 2026-10-23): no other package, so the agent can't steer what gets installed.
 - **An install runs only after the person approves its command** (the person, 2026-10-23), scripts included, as with a host: install scripts are outside code.
+- **The design host serves a design the app's Koda runtime** (the person, 2026-10-23), found the same way as the agent's, so designs behave as the app will. Prelude's own pages keep Prelude's Koda.
 
 ## Open questions
 
-- Should the design host serve the app's Koda runtime to designs instead of Prelude's (`/koda/` in main.js)?
 - After merging an upgrade, should Prelude offer to install in the person's checkout, or leave that to them?

@@ -11,6 +11,7 @@ Serves a design with `routes.json` on its own origin, `<design>.<folder>.preview
 - Routes, overlays, POST routes and query filters against a state's working copy
 - A design's server events (`events.json`) and its live channel
 - `reviewDesign`: rendering every route in every state after a turn
+- Serving a design's pages the app's own Koda runtime, not Prelude's (D-k7v)
 - Starting, stopping and approving hosts
 
 ## Not its job
