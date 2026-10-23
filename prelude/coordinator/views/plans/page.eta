@@ -7,11 +7,13 @@
 
      Drafted, nothing starts until the person starts the plan (R-h9w): that's
      the page's one primary action then. Running, it can be paused, which
-     holds back steps that haven't started (R-c7n). The plan itself is kept
-     on its own branch (R-q2x), named in the header. */%>
+     holds back steps that haven't started (R-c7n). The plan is drafted on
+     its own branch, named in the header, and starting it puts it into main
+     so the whole project's Prelude sees it (R-q2x). Each person sees the
+     same plan from their own computer; `me` says who's here. */%>
 <% const p = it, project = p.project, base = `/f/${project.id}/plans/${p.id}`, steps = p.steps ?? [];
    const merged = steps.filter(step => step.state === 'merged').length;
-   const waiting = steps.filter(step => ['asking', 'ready', 'stopped'].includes(step.state)).length;
+   const waiting = steps.filter(step => step.state === 'open' || (p.me && step.owner === p.me && ['asking', 'ready', 'stopped'].includes(step.state))).length;
    const stage = !steps.length ? ['Drafting', 'The agent is reading the project and drafting the steps.']
      : p.status === 'planning' ? ['Drafted', 'Read the steps, change what you like here or in the chat, then start the plan.']
      : p.status === 'paused' ? ['Paused', `${merged} of ${steps.length} steps merged. No step starts until you resume it.`]
@@ -26,11 +28,11 @@
     </div>
     <span class="spacer"></span>
     <div class="cluster">
-      <% if (p.branch) { %><span class="muted" title="The plan itself is kept on a branch of its own, and goes into main when it finishes."><span class="icon icon-push" aria-hidden="true"></span> <code><%= p.branch %></code></span><% } %>
+      <% if (p.branch) { %><span class="muted" title="The plan is drafted on a branch of its own. Starting it puts it into main, so everyone on the project sees it; a later change goes the same way."><span class="icon icon-push" aria-hidden="true"></span> <code><%= p.branch %></code></span><% } %>
       <% if (p.status === 'planning' && steps.length) { %>
       <form action="<%= base %>/start" method="post">
         <input type="hidden" name="status" value="running">
-        <button class="btn small primary" type="submit" title="Steps that wait for nothing start now; each of the others starts once what it waits for is done."><span class="icon icon-run" aria-hidden="true"></span>Start the plan</button>
+        <button class="btn small primary" type="submit" title="Puts the plan into main, so everyone on the project sees it. Steps that wait for nothing start on their owners’ computers; each of the others once what it waits for is done."><span class="icon icon-run" aria-hidden="true"></span>Start the plan</button>
       </form>
       <% } else if (p.status === 'running') { %>
       <form action="<%= base %>/pause" method="post">
@@ -51,8 +53,6 @@
     <section class="panel plan-surface" aria-label="The plan">
       <% if (p.status === 'paused') { %>
       <div class="notice warn" role="status"><p>The plan is paused. Steps already working carry on, and still ask you when they’re done.</p></div>
-      <% } else if (p.status === 'done' && p.branch) { %>
-      <div class="notice good" role="status"><p>Every step is merged into main. The plan itself is on <code><%= p.branch %></code>: finish it from <a href="/f/<%= project.id %>">the project’s page</a>, as any branch, so main keeps it beside what it built.</p></div>
       <% } %>
       <div class="panel-body inset">
         <div class="split" style="--side: 18rem">

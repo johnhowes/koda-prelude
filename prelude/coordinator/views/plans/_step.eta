@@ -9,12 +9,17 @@
      (R-f8d). Started, the prompt is what was sent, and can't change: the
      rest is said in the step's session (R-m3k). `finish` is how a step
      ready to finish is finished: "push" when the project has a remote,
-     otherwise "merge". */%>
-<% const s = it, errors = it.$errors ?? {}, started = !['planned', 'waiting'].includes(s.state);
+     otherwise "merge". `owner` is a git identity (`Name <email>`), or none
+     for a step anyone may claim (R-b8y); owners are given in the chat. */%>
+<% const s = it, errors = it.$errors ?? {}, started = !['planned', 'waiting', 'open', 'handed'].includes(s.state);
    const kinds = { discussion: 'Discussion', design: 'Design', build: 'Build', fix: 'Fix' };
+   const ownerName = s.owner ? s.owner.split(' <')[0] : null;
    const states = {
      planned: { label: 'Not started', tone: '' },
      waiting: { label: 'Waiting', tone: '' },
+     open: { label: 'Ready to claim', tone: 'accent' },
+     handed: { label: `Ready for ${(ownerName ?? '').split(' ')[0]}`, tone: '' },
+     elsewhere: { label: 'In progress', tone: '' },
      working: { label: 'Working', tone: 'accent', pulse: true },
      asking: { label: 'Your turn', tone: 'accent' },
      ready: { label: 'Ready to finish', tone: 'accent' },
@@ -33,7 +38,7 @@
       <span class="pill <%= state.tone %>"><% if (state.pulse) { %><span class="pulse" aria-hidden="true"></span><% } %><%= state.label %></span>
       <span class="muted"><code><%= s.branch %></code></span>
     </div>
-    <% if (s.says && started) { %><p class="secondary"><%= s.says %></p><% } %>
+    <% if (s.says && (started || s.state === 'handed')) { %><p class="secondary"><%= s.says %></p><% } %>
   </div>
 
   <% if (started && (s.session || s.state === 'ready')) { %>
@@ -50,6 +55,16 @@
     <% } %>
   </div>
   <% } %>
+
+  <section class="stack gap-2" aria-labelledby="step-owner">
+    <h3 class="group-label" id="step-owner">Whose</h3>
+    <% if (s.owner) { %>
+    <p><%= ownerName %> <span class="muted">· <%= s.owner.split(' <')[1]?.replace('>', '') %></span></p>
+    <p class="muted">It starts on their computer, and only theirs. To give it to someone else, say so in the plan’s chat.</p>
+    <% } else { %>
+    <p class="secondary">Anyone on the project. Once it’s ready, whoever claims it from Needs you has it, and it starts on their computer.</p>
+    <% } %>
+  </section>
 
   <section class="stack gap-2" aria-labelledby="step-waits">
     <h3 class="group-label" id="step-waits">Waits for</h3>

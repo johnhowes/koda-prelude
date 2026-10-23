@@ -40,7 +40,7 @@
       <h2 id="plans-title">Plans <span class="muted"><%= plans.length %></span></h2>
       <p class="secondary">Each carries one change through the designs and builds it needs, in order.</p>
       <ul class="list">
-        <% for (const plan of plans) { const steps = plan.steps ?? [], merged = steps.filter(step => step.state === 'merged').length, waiting = steps.filter(step => needsYou.includes(step.state)).length, s = status[plan.status] ?? status.planning; %>
+        <% for (const plan of plans) { const steps = plan.steps ?? [], merged = steps.filter(step => step.state === 'merged').length, waiting = steps.filter(step => step.state === 'open' || (plan.me && step.owner === plan.me && needsYou.includes(step.state))).length, s = status[plan.status] ?? status.planning; %>
         <li>
           <a class="item" href="/f/<%= p.id %>/plans/<%= plan.id %>">
             <span class="icon icon-document" aria-hidden="true"></span>

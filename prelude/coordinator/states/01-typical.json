@@ -10,6 +10,7 @@
           "id": "visuals-in-the-chat",
           "title": "Visuals in the chat",
           "project": { "id": "prelude", "name": "Prelude" },
+          "me": "John Howes <john.howes@lendwithspark.com>",
           "status": "running",
           "remote": { "name": "origin", "host": "GitHub" },
           "mergeAlone": false,
@@ -68,15 +69,15 @@
                       { "id": "local", "title": "Local programs", "url": "/f/prelude/architecture/parts/local", "summary": "Edge or Chrome, whisper.cpp, ffmpeg", "outside": true }] }
                   ]
                 } },
-                { "kind": "text", "html": "<ul><li><strong>Prelude Architecture</strong> and <strong>Prelude Design System</strong> wait for nothing, so they start together: the decision on how visuals fit, and the series colours, flow and map markers.</li><li><strong>Design Workspace</strong> waits for both, since it draws with those components and follows that decision. Fix Something and Build reuse its transcript, so its design is finished first and built on a branch of its own.</li><li><strong>Fix Something</strong> and <strong>Build</strong> are each approved, then built on their own branch, one pull request each.</li></ul><p>Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.</p><p>Change any prompt on the right, or tell me here. Nothing starts until you start the plan.</p>" }
+                { "kind": "text", "html": "<ul><li><strong>Prelude Architecture</strong> and <strong>Prelude Design System</strong> wait for nothing, so they start together: the decision on how visuals fit, and the series colours, flow and map markers.</li><li><strong>Design Workspace</strong> waits for both, since it draws with those components and follows that decision. Fix Something and Build reuse its transcript.</li><li><strong>Fix Something</strong> and <strong>Build</strong> follow it, then each build.</li></ul><p>Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.</p><p>Who should have each step? I can see John Howes, Priya Raman and Marcus Bell in the history.</p>" }
               ] },
-              { "type": "user", "message": "Looks right. The design system’s prompt should say the series colours can be named by role if a better name fits." },
+              { "type": "user", "message": "I’ll take the architecture. Priya has the design system and Design Workspace and Fix Something; Marcus has Design Workspace’s build and the Build page’s. Leave Build’s design and Fix Something’s build open for whoever gets there first." },
               { "type": "tool", "name": "Edit", "summary": "prelude/plans/visuals-in-the-chat/plan.json" },
-              { "type": "text", "html": "<p>Done: its prompt now says to name them by role if a better name fits.</p>" },
-              { "type": "note", "says": "You started the plan. Prelude Architecture and Prelude Design System started: they wait for nothing.", "when": "12:51" },
+              { "type": "text", "html": "<p>Done, on the right. Since Fix Something’s design and its build now have different people, the design goes into main through its own pull request, and the build starts once that’s merged: the pull request is where it changes hands. Build’s design and the Build page’s build the same.</p><p>Nothing starts until you start the plan. Starting it puts the plan into main, so Priya’s and Marcus’s Prelude see it.</p>" },
+              { "type": "note", "says": "You started the plan, and pushed it for a pull request (#57), merged. Prelude Architecture started here; Prelude Design System is Priya’s.", "when": "12:51" },
               { "type": "note", "says": "You pushed Prelude Architecture for a pull request (#58).", "when": "14:20" },
               { "type": "note", "says": "Pull request #58 was merged on GitHub: Prelude Architecture is in main. Design Workspace now waits only for Prelude Design System.", "when": "14:58" },
-              { "type": "note", "says": "Prelude Design System is your turn: the agent drew the series colours, the flow and the map markers.", "when": "15:12" }
+              { "type": "note", "says": "Priya pushed Prelude Design System for a pull request (#59).", "when": "15:40" }
             ]
           },
           "steps": [
@@ -87,6 +88,7 @@
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
               "branch": "prelude/prelude-architecture",
               "session": "/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq",
+              "owner": "John Howes <john.howes@lendwithspark.com>",
               "waitsFor": [],
               "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.",
               "finish": "push", "state": "merged",
@@ -101,11 +103,11 @@
               "kind": "design",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system",
               "branch": "prelude/prelude-design-system",
-              "session": "/f/prelude/d/prelude-design-system/s/20261023-1251-zw1z",
+              "owner": "Priya Raman <priya.raman@lendwithspark.com>",
               "waitsFor": [],
               "doneWhen": "Its screens are approved and it’s merged into main.",
-              "finish": "push", "state": "asking",
-              "says": "The agent drew the series colours, the flow and the map markers. Approve the screens in its session when you’re happy with them.",
+              "finish": "push", "state": "pushed",
+              "says": "Priya pushed it for a pull request (#59), its screens approved. The plan goes on once it’s merged.",
               "started": "Today 12:51",
               "prompt": "Support rich visuals in agent chats, starting with flow diagrams and maps of the parts a change touches.\n\n1. Series colours. Bring --series-* back in tokens.css (ds/v1 had five), named by role if a better name fits, in both themes, and show them on the tokens screen. Add to guideline 3: series colours tell things apart, never mean good, warn or danger, and always have a label.\n\n2. A flow component: a flow’s steps through the parts that do them, a column per part and a row per step, with what passes between them. No script; it has to fit a chat column, so use container queries. And two markers on the map: touched in this change, and would change. Each says which in words.\n\n3. A guideline for rich components, so every stack builds them the same way: the component’s HTML file is the contract, each stack renders it from a model with one partial, script only for what’s truly imperative, no custom elements except a host’s renderers. Update the gallery in the same turn.",
               "refs": []
@@ -116,6 +118,7 @@
               "kind": "design",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-workspace",
               "branch": "prelude/design-workspace",
+              "owner": "Priya Raman <priya.raman@lendwithspark.com>",
               "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }, { "id": "design-system", "title": "Prelude Design System" }],
               "doneWhen": "Its screens are approved and it’s merged into main.",
               "finish": "push", "state": "waiting",
@@ -131,8 +134,9 @@
               "kind": "design",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/fix-something",
               "branch": "prelude/fix-something",
+              "owner": "Priya Raman <priya.raman@lendwithspark.com>",
               "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
-              "doneWhen": "Its screens are approved. Its build carries on on this branch, and both go into main in one pull request.",
+              "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.",
               "finish": "push", "state": "waiting",
               "prompt": "Asks and fixes should use the chat’s new visuals, as Design Workspace shows them. Design:\n\n- an ask about how something works, answered with a flow through the real parts, each linking to its architecture page;\n- an ask that ends with what it would change: a map with the parts it would reach, marked “would change”, above the list of files;\n- a fix on its branch: the cause explained with a flow before changing anything, and after each turn the map of the parts it touched, beside the check’s findings, as in Build;\n- fixing it on a branch: the visuals from the ask stay in the conversation as they were.\n\nAdd states for each, and rules for when the agent should draw (and when a few lines of text are enough). Keep the chat at its readable width.",
               "refs": [
@@ -146,7 +150,7 @@
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-design",
               "branch": "prelude/build",
               "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
-              "doneWhen": "Its screens are approved. Its build carries on on this branch, and both go into main in one pull request.",
+              "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.",
               "finish": "push", "state": "waiting",
               "prompt": "Build sessions should help the developer see what’s being built and where it fits. Using the transcript visuals from Design Workspace, design:\n\n- after each build turn, a map of the parts the turn touched, shown by Prelude without the agent asking, beside the check’s findings;\n- when the agent should draw a flow itself: when it starts a story, when a change crosses parts, when it proposes a decision, written as rules the build agent is told;\n- how a visual ties to the story or page being built.\n\nKeep the stand-in transcript in step with the app’s. Add states: a turn touching one part, one touching several layers, and one with a drift finding.",
               "refs": [
@@ -159,6 +163,7 @@
               "kind": "build",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace",
               "branch": "prelude/design-workspace",
+              "owner": "Marcus Bell <marcus.bell@lendwithspark.com>",
               "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
               "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
               "finish": "push", "state": "waiting",
@@ -175,8 +180,9 @@
               "kind": "build",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-build",
               "branch": "prelude/build",
-              "waitsFor": [{ "id": "build-design", "title": "Build", "until": "approved" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
-              "doneWhen": "Every story is built, the check passes, and it’s merged into main with its design.",
+              "owner": "Marcus Bell <marcus.bell@lendwithspark.com>",
+              "waitsFor": [{ "id": "build-design", "title": "Build" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
               "finish": "push", "state": "waiting",
               "prompt": "Build the Build page’s visuals on the parser and partials the build of Design Workspace made: the map of the parts each build turn touched, beside the check’s findings, shown without the agent asking; the rules for when the build agent draws a flow, in its prompt; and the stand-in transcript kept in step with the app’s.",
               "refs": [
@@ -190,8 +196,8 @@
               "kind": "build",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something",
               "branch": "prelude/fix-something",
-              "waitsFor": [{ "id": "fix-something", "title": "Fix Something", "until": "approved" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
-              "doneWhen": "Every story is built, the check passes, and it’s merged into main with its design.",
+              "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
               "finish": "push", "state": "waiting",
               "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made: the architecture brief and the vocabulary in askPrompt and fixPrompt, the map of what an ask would change above its files, and the parts a fix touched beside its check.",
               "refs": [
@@ -204,6 +210,7 @@
           "id": "run-the-app",
           "title": "Run the app from here",
           "project": { "id": "prelude", "name": "Prelude" },
+          "me": "John Howes <john.howes@lendwithspark.com>",
           "status": "done",
           "remote": { "name": "origin", "host": "GitHub" },
           "mergeAlone": false,
@@ -222,9 +229,9 @@
             ]
           },
           "steps": [
-            { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "url": "/f/prelude/plans/run-the-app/steps/architecture", "branch": "prelude/prelude-architecture", "waitsFor": [], "doneWhen": "Its part is written and merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Add a part for running the built app, apart from the design host.", "refs": [] },
-            { "id": "project-page", "title": "Project Landing Page", "kind": "design", "url": "/f/prelude/plans/run-the-app/steps/project-page", "branch": "prelude/project-landing-page", "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Launch the app from main on the project’s page.", "refs": [] },
-            { "id": "build", "title": "Build Project Landing Page", "kind": "build", "url": "/f/prelude/plans/run-the-app/steps/build", "branch": "prelude/project-landing-page", "waitsFor": [{ "id": "project-page", "title": "Project Landing Page" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Build running the app from the project’s page.", "refs": [] }
+            { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/run-the-app/steps/architecture", "branch": "prelude/prelude-architecture", "waitsFor": [], "doneWhen": "Its part is written and merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Add a part for running the built app, apart from the design host.", "refs": [] },
+            { "id": "project-page", "title": "Project Landing Page", "kind": "design", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/run-the-app/steps/project-page", "branch": "prelude/project-landing-page", "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Launch the app from main on the project’s page.", "refs": [] },
+            { "id": "build", "title": "Build Project Landing Page", "kind": "build", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/run-the-app/steps/build", "branch": "prelude/project-landing-page", "waitsFor": [{ "id": "project-page", "title": "Project Landing Page" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Build running the app from the project’s page.", "refs": [] }
           ]
         }
       ]

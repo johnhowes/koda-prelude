@@ -1,6 +1,6 @@
 # Rules: Coordinator
 
-- **R-s6t.** A step starts by itself once every step it waits for is merged into main, with its branch brought up to date with main first; a design or discussion starts with the plan sending its first message, and the rest of that session is the person’s.
+- **R-s6t.** A step starts by itself on its owner’s computer, and only there, once every step it waits for is merged into main, with its branch brought up to date with main first; a design or discussion starts with the plan sending its first message, and the rest of that session is its owner’s.
   *shown-on: /f/:project/plans/:plan*
   *proposed*
 - **R-f8d.** When a step starts, its session’s first message is the plan’s brief and then its prompt, with each thing it asks for from earlier steps named as those steps actually made it.
@@ -25,11 +25,17 @@
 - **R-n7b.** Each build covers one design, on that design’s branch; a build that uses code another build makes waits for that build to be merged.
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*
-- **R-k4d.** A design that no other step needs before it’s built is built on its own branch once approved, and the two go into main together; a design another step needs is finished first and built on a new branch.
+- **R-k4d.** A design that one person has with its build, and that no other step needs before it’s built, is built on its own branch once approved, and the two go into main together; otherwise the design is finished first, through a pull request when its build is someone else’s, and built on a new branch.
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*
-- **R-q2x.** A plan is kept in the project on a branch of its own while it runs, and goes into main, as any branch does, once it’s finished.
-  *shown-on: /f/:project/plans/:plan @ done*
+- **R-q2x.** A plan is drafted on a branch of its own; starting it puts it into main (through a pull request when the project has a remote), so everyone on the project sees it, and a later change to it goes into main the same way.
+  *shown-on: /f/:project/plans/:plan @ typical*
+  *proposed*
+- **R-b8y.** A step may have an owner, one of the people who have committed to the project, or be open to anyone; an open step that’s ready waits in everyone’s Needs you until someone claims it, and then it’s theirs.
+  *shown-on: /f/:project/plans/:plan @ handed-on*
+  *proposed*
+- **R-r3z.** Someone else’s step shows as much as the remote tells: ready for them, in progress once its branch is pushed, a pull request open, merged; how their session is going shows only on their computer.
+  *shown-on: /f/:project/plans/:plan @ handed-on*
   *proposed*
 - **R-d6m.** What happens as a plan runs (a step starting, a pull request merged, a build stopping) is said in the plan’s session, and the agent is told it with the next message.
   *shown-on: /f/:project/plans/:plan @ build-stopped*

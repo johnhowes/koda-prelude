@@ -1,5 +1,6 @@
 <%/* What the plan does by itself, and what it leaves to the person. It
-     starts each step once what it waits for is merged, and sends a design
+     starts each of this person's steps once what it waits for is merged
+     (another's start on their computer), and sends a design
      or discussion session its first message (R-s6t). Merging waits for the
      person unless they let the plan do it, which only a project with no
      remote can: with a remote, each step is pushed for a pull request, and
@@ -8,8 +9,9 @@
 <% const p = it, base = `/f/${p.project.id}/plans/${p.id}`, alone = p.mergeAlone === true || p.mergeAlone === 'true'; %>
 <h2 id="settings-title">By itself</h2>
 <ul class="stack gap-2">
-  <li class="secondary">Starts each step once the steps it waits for are merged into main, bringing its branch up to date first.</li>
-  <li class="secondary">Sends a design or discussion its first message. The rest of that session is yours.</li>
+  <li class="secondary">Starts each of your steps on this computer once the steps it waits for are merged into main, bringing its branch up to date first. Other people’s start on theirs.</li>
+  <li class="secondary">Sends a design or discussion its first message. The rest of that session is its owner’s.</li>
+  <li class="secondary">Leaves a step nobody owns for someone to claim.</li>
 </ul>
 <% if (p.remote) { %>
 <p class="secondary">Never pushes. When a step is ready to finish, you push it to <code><%= p.remote.name %></code> for a pull request, and the plan carries on once it’s merged on <%= p.remote.host %>.</p>

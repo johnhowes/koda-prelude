@@ -46,6 +46,10 @@
     "form": "plans/_step",
     "answer": { "view": "plans/_step", "data": "projects/:project/plans/:plan/steps/:step" }
   },
+  "POST /f/:project/plans/:plan/steps/:step/claim": {
+    "update": "projects/:project/plans/:plan/steps/:step",
+    "answer": { "view": "plans/_work", "data": "projects/:project/plans/:plan" }
+  },
   "POST /f/:project/plans/:plan/steps/:step/merge": {
     "update": "projects/:project/plans/:plan/steps/:step",
     "answer": { "view": "plans/_work", "data": "projects/:project/plans/:plan", "also": [{ "into": "drawer?" }] }

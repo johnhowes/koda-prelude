@@ -9,11 +9,13 @@ the person kept by hand. That plan is the typical state.
 Pages: `/f/:project/plans` (Plans), `/f/:project/plans/new` (New plan,
 modal), `/f/:project/plans/:plan` (Plan), a step in the drawer
 (`…/steps/:step`), Push a step (modal, `…/steps/:step/push`). Fragments:
-`…/work` (needs you and the steps), `…/transcript`. States: typical (half
-way: architecture merged, the design system the person’s turn, the rest
-waiting), planning (drafted, not started, no remote), build-stopped (a build
-stopped, two designs approved waiting on it, the person asking why in the
-chat), done.
+`…/work` (needs you and the steps), `…/transcript`. States (John Howes at
+the computer; Priya Raman designs, Marcus Bell builds): typical (a team,
+architecture merged, Priya’s design system pull request open, the rest
+waiting), planning (drafted, nobody assigned, no remote), build-stopped
+(John alone: a build stopped, two designs approved waiting on it, asking why
+in the chat), done (a team), handed-on (one step ready for Marcus, one in
+progress on Priya’s computer, one ready to claim).
 
 ## What the person’s prompts showed
 
@@ -80,9 +82,9 @@ chat), done.
 12. **The plan lives in the project, on its own branch** (the person,
    2026-10-23; R-q2x): `prelude/plan-<id>`, its file
    `prelude/plans/<id>/plan.json`, written only by the plan’s session.
-   Prelude reads it from that worktree while it runs, so no step waits for
-   it; finished, the branch goes into main the project’s usual way (a pull
-   request here). The page shows the branch under the title.
+   Starting the plan puts it into main the project’s usual way (a pull
+   request here), so teammates see it (decision 15). The page shows the
+   branch in its header.
 13. **A design and its build share a branch when nothing else needs the
    design first** (the person, 2026-10-23; R-k4d), one pull request for
    both, as Prelude already finishes them. The design step is then
@@ -91,24 +93,35 @@ chat), done.
    Fix Something and Build, so it’s finished first; Fix Something and Build
    each go in one pull request with their builds.
 
+15. **Several people share a plan** (the person, 2026-10-23: a PM plans, a
+   designer designs and opens a pull request, a developer reviews it and
+   builds).
+   - **Owners are git identities** (`Name <email>`), from the people who
+     have committed to the project; a team can be configured later. Given in
+     the plan’s chat (the agent asks), not a form. `me` is who’s at this
+     computer.
+   - **An open step is claimed** (the person): ready and unowned, it’s in
+     everyone’s Needs you with Claim it; claimed, it’s theirs and starts on
+     their computer (R-b8y).
+   - **A step starts only on its owner’s computer** (R-s6t); someone else’s
+     ready step reads “Ready for Marcus” and is in his Needs you.
+   - **Starting a plan puts it into main** (R-q2x, replacing “goes into main
+     when finished”), so every teammate’s Prelude sees it; later edits go the
+     same way. Where steps stand isn’t in it.
+   - **Someone else’s step is read from the remote** (R-r3z): ready for
+     them, in progress (branch pushed), pull request open, merged. The finer
+     states only where it runs.
+   - **A hand-off is a pull request**: a design and its build share a branch
+     only when one person has both (R-k4d).
+   - Steps show their owner (“You”, a name, “Anyone”), and Everyone’s / Mine
+     filters the map with `:has()`. The drawer has Whose.
+
 ## Open questions
 
-- **Several people** (the person asked, 2026-10-23: a PM plans, a designer
-  designs and opens a pull request, a developer reviews it and builds). The
-  design so far assumes one computer: Prelude starts every step itself, and
-  reads where steps stand from local branches and sessions. Proposed,
-  waiting on the person:
-  - steps have an owner (a git identity; anyone by default), and Prelude
-    starts only this person’s steps; another’s says “Ready for Dana”, and is
-    in Dana’s Needs you on her computer;
-  - starting a plan merges (or pushes for a pull request) the plan’s file
-    into main, so every teammate’s Prelude sees it; after that it changes
-    only when steps are edited;
-  - another person’s step is read from the remote: not started, in progress
-    (its branch pushed), pull request open, merged; the finer states (your
-    turn, working, stopped) only where it runs;
-  - a design and its build share a branch only when one person owns both;
-    a hand-off goes through a pull request, which is the review.
+- Claim is in Needs you, not the drawer: the drawer’s model is the step
+  alone, without who’s at the computer. The app can give it `me`.
+- The project page’s Needs you (Project Landing Page) should list plan steps
+  waiting on this person from every plan: add it to the prompt given there.
 
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a

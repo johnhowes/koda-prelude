@@ -2,6 +2,11 @@
    their line breaks (a list of "- " lines), which .prose can't know. */
 .prose.prompt p { white-space: pre-line; }
 
+/* Mine: only the steps that are this person's, and only the layers that
+   hold one. A choice on the page, so it's :has(), not a request. */
+.plan-steps:has(.steps-mine:checked) .map-nodes > li:not(.mine),
+.plan-steps:has(.steps-mine:checked) .map-layer:not(.has-mine) { display: none; }
+
 /* A plan's page fills the window, as a design's page does (the shell reads
    .fills): the chat and the plan fill what the header leaves, and each
    scrolls inside itself. Side by side, the chat keeps its width and the plan
