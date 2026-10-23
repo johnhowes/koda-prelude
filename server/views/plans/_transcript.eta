@@ -1,7 +1,8 @@
 <%/* The planning session's transcript, oldest first, as the app's transcript
      draws it (server/views/_entry.eta): the person's messages, the agent's
-     words with the visuals it drew among them (the app's _message, with its
-     _visual-* partials), what it read, and Prelude's notes. The agent draws
+     words with the visuals it drew among them (_message and its _visual-*
+     partials, copies of the app's kept beside these views), what it read,
+     and Prelude's notes. The agent draws
      as in any session: a map of the parts the plan reaches when it drafts or
      changes it, a flow when it explains why one step waits for another
      (R-w5c).
@@ -18,12 +19,12 @@
    const working = p.chat?.state === 'working' || !steps.length; %>
 <% for (const entry of entries) { %>
 <% if (entry.type === 'user') { %><li class="entry user"><div class="bubble"><%= entry.message %></div></li>
-<% } else if (entry.type === 'text') { %><li class="entry agent"><%~ include('../_message', { pieces: entry.pieces ?? [{ kind: 'text', html: entry.html }] }) %></li>
+<% } else if (entry.type === 'text') { %><li class="entry agent"><%~ include('./_message', { pieces: entry.pieces ?? [{ kind: 'text', html: entry.html }] }) %></li>
 <% } else if (entry.type === 'tool') { %><li class="entry tool"><span class="tool-name"><%= entry.name %></span> <%= entry.summary %></li>
 <% } else if (entry.type === 'parts') { %>
 <li class="entry note">
   <details class="disclosure" open><summary><%= entry.says %><% if (entry.when) { %> <span class="muted">· <%= entry.when %></span><% } %></summary>
-  <%~ include('../_visual-map', { ...entry.map, target: 'drawer?' }) %></details>
+  <%~ include('./_visual-map', { ...entry.map, target: 'drawer?' }) %></details>
 </li>
 <% } else if (entry.type === 'note') { %><li class="entry note<%= entry.failed ? ' failed' : '' %>"><%= entry.says %><% if (entry.when) { %> <span class="muted">· <%= entry.when %></span><% } %></li>
 <% } %>

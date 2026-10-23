@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-23T22:17:19.367Z",
+  "at": "2026-10-23T22:27:36.129Z",
   "shots": [
     {
       "id": "typical~f_prelude_plans",
@@ -29,8 +29,7 @@
       "state": "Typical",
       "page": "Plan",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "typical~f_prelude_plans_visuals-in-the-chat_steps_architecture",
@@ -40,8 +39,7 @@
       "state": "Typical",
       "page": "A step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "typical~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
@@ -51,8 +49,7 @@
       "state": "Typical",
       "page": "Push a step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "planning~f_prelude_plans",
@@ -82,8 +79,7 @@
       "state": "Planning",
       "page": "Plan",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "planning~f_prelude_plans_visuals-in-the-chat_steps_architecture",
@@ -93,8 +89,7 @@
       "state": "Planning",
       "page": "A step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "planning~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
@@ -104,8 +99,7 @@
       "state": "Planning",
       "page": "Push a step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "build-stopped~f_prelude_plans",
@@ -135,8 +129,7 @@
       "state": "Build stopped",
       "page": "Plan",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "build-stopped~f_prelude_plans_visuals-in-the-chat_steps_architecture",
@@ -146,8 +139,7 @@
       "state": "Build stopped",
       "page": "A step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "build-stopped~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
@@ -157,8 +149,7 @@
       "state": "Build stopped",
       "page": "Push a step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "done~f_prelude_plans",
@@ -188,8 +179,7 @@
       "state": "Done",
       "page": "Plan",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "done~f_prelude_plans_visuals-in-the-chat_steps_architecture",
@@ -199,8 +189,7 @@
       "state": "Done",
       "page": "A step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "done~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
@@ -210,8 +199,7 @@
       "state": "Done",
       "page": "Push a step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "handed-on~f_prelude_plans",
@@ -241,8 +229,7 @@
       "state": "Handed on",
       "page": "Plan",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "handed-on~f_prelude_plans_visuals-in-the-chat_steps_architecture",
@@ -252,8 +239,7 @@
       "state": "Handed on",
       "page": "A step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     },
     {
       "id": "handed-on~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
@@ -263,8 +249,7 @@
       "state": "Handed on",
       "page": "Push a step",
       "group": "Plan",
-      "status": "fails",
-      "error": "Template '../_message.eta' is not in the views directory"
+      "status": "matches"
     }
   ]
 }

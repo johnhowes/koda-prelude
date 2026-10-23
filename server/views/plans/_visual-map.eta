@@ -1,0 +1,25 @@
+<%/* A map of the project's parts, with some marked: a copy of the app's
+     server/views/_visual-map.eta for a plan's session (see _message.eta
+     here). Keep it in step with that one. The model: label, mark ('touched',
+     'named' or none), count, layers (title, parts: id, title, url, summary,
+     outside, marked, note), and `target`, the region a part's page opens in. */%>
+<% const parts = n => n === 1 ? '1 part' : `${n} parts`;
+   const said = it.mark === 'touched' ? `${parts(it.count)} changed. ` : ''; %>
+<figure class="stack gap-2">
+  <div class="map" aria-label="<%= it.label %>">
+    <% for (const layer of it.layers) { %>
+    <section class="map-layer" aria-label="<%= layer.title %>">
+      <h3 class="map-label"><%= layer.title %></h3>
+      <ul class="map-nodes">
+        <% for (const part of layer.parts) { %>
+        <li><a class="map-node<%= part.outside ? ' outside' : '' %><%= part.marked ? ` ${it.mark}` : '' %>" href="<%= part.url %>"<% if (it.target) { %> ko-target="<%= it.target %>"<% } %>>
+          <span class="map-node-title"><%= part.title %><% if (part.marked && it.mark === 'touched') { %><span class="pill accent">Changed</span><% } %></span>
+          <% if (part.marked || !it.mark) { %><span class="muted"><%= part.note ?? part.summary %></span><% } %>
+        </a></li>
+        <% } %>
+      </ul>
+    </section>
+    <% } %>
+  </div>
+  <figcaption class="muted"><%= said %>Read from the top: each part uses parts in its own layer or below it.</figcaption>
+</figure>

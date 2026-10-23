@@ -182,6 +182,11 @@ too (`server/views/plans/`, D-j6p updated):
   fitting a plan into it is a change of its own. So the transcript reloads
   on `plans-changed` when a turn starts and ends, not word by word, and
   messages sent while the agent works wait unseen until it's done.
+- **The visual partials are copies** in `server/views/plans/` (`_message`,
+  `_visual-*`), as the design had them (decision 14): the design host
+  renders an `@app` view with only its own folder reachable, so the app's
+  `server/views/_message.eta` can't be included from there. They have to be
+  kept in step with the app's by hand.
 - **R-u3t on another computer**: a step merged there shows its parts when
   its merge commit names its branch (a pull request merged with a merge
   commit); a squashed one shows a plain note.

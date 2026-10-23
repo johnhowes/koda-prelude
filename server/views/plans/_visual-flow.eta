@@ -1,0 +1,22 @@
+<%/* A prelude-flow-1 block, drawn: a copy of the app's
+     server/views/_visual-flow.eta for a plan's session (see _message.eta
+     here). Keep it in step with that one. The model (visuals.js): title,
+     lanes, many; parts (title, url, series); steps (lane, series, part, html,
+     pass); `target`, the region a part's page opens in. */%>
+<% const aim = it.target ? ` ko-target="${it.target}"` : ''; %>
+<figure class="flow<%= it.many ? ' many' : '' %>" style="--lanes: <%= it.lanes %>">
+  <% if (it.title) { %><figcaption class="flow-title"><%= it.title %></figcaption><% } %>
+  <ul class="flow-parts" aria-hidden="true">
+    <% for (const part of it.parts) { %>
+    <li class="flow-part" style="--series: var(--series-<%= part.series %>)"><a href="<%= part.url %>"<%~ aim %> tabindex="-1"><%= part.title %></a></li>
+    <% } %>
+  </ul>
+  <ol class="flow-steps">
+    <% for (const step of it.steps) { %>
+    <li class="flow-step" style="--lane: <%= step.lane %>; --series: var(--series-<%= step.series %>)">
+      <div class="flow-box"><a class="flow-part" href="<%= step.part.url %>"<%~ aim %>><%= step.part.title %></a><span class="flow-text"><%~ step.html %></span></div>
+      <% if (step.pass) { %><p class="flow-pass<%= step.pass.back ? ' back' : '' %><%= step.pass.down ? ' down' : '' %>" style="--from: <%= step.pass.from %>; --to: <%= step.pass.to %>"><%= step.pass.text %></p><% } %>
+    </li>
+    <% } %>
+  </ol>
+</figure>
