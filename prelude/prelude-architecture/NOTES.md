@@ -17,6 +17,8 @@ Prelude's own architecture, as markdown in `architecture/`, read by every design
 - **Installs handle only `@kodalang/core`** (the person, 2026-10-23): no other package, so the agent can't steer what gets installed.
 - **An install runs only after the person approves its command** (the person, 2026-10-23), scripts included, as with a host: install scripts are outside code.
 - **The design host serves a design the app's Koda runtime** (the person, 2026-10-23), found the same way as the agent's, so designs behave as the app will. Prelude's own pages keep Prelude's Koda.
+- **Visuals in the chat are fenced blocks in a versioned vocabulary** (D-v3x, proposed; the person agreed 2026-10-23). The tags are `prelude-flow-1` and `prelude-map-1`. The version goes in the tag because Koda's fence regex allows only `[A-Za-z0-9_-]` and nothing after it. Blocks come out before `renderMarkdown`, since it has no hook. The new `visuals` part (Shared helpers, `server/visuals.js`) is a registry of kinds, so a new visual is one entry plus a `_visual-<kind>.eta` partial. Blocks are parsed and checked when shown, against the branch's parts, and a failed one stays a code block without telling the agent. The automatic map of changed parts is recorded at save time. Flow: `visual`. Until it's built, the check reports `server/visuals.js` missing.
+- **Every prompt gets the vocabulary** (design, build, fix and ask; the person, 2026-10-23) once there's an architecture. Ask also gets a read-only architecture brief.
 
 ## Open questions
 
