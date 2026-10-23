@@ -4,6 +4,12 @@
      page reloads it whenever something changes; the designs list is
      another, which reloads only when designs do.
 
+     A branch's card opens where its work is now (R-e5n): a build running,
+     its build session; a build stopped, or stories on the branch, the
+     design's Build page; otherwise (still designing, or a design turn
+     running) the design's page, which opens its latest session. A fix's
+     opens the fix's page.
+
      Asked lately is the conversations about the project that have no
      branch: questions, and problems not yet fixed. They're kept on this
      computer, not in the project (R-2qz). Fixed on a branch, one moves to In
@@ -24,6 +30,14 @@
    };
    const kindPill = kind => kind === 'system' ? 'Design system' : kind === 'shell' ? 'App shell' : kind === 'fix' ? 'Fix' : null;
    const kindIcon = kind => kind === 'system' ? 'design-system' : kind === 'fix' ? 'agent' : 'screen';
+   const openOf = item => {
+     const stories = item.stories ?? [];
+     if (item.design.kind === 'fix') return item.url;
+     if (item.building && !item.building.stopped) return stories.find(story => story.state === 'building' && story.session)?.session ?? item.buildUrl;
+     if (item.building) return item.buildUrl;
+     if (item.working) return item.url;
+     return stories.length ? item.buildUrl : item.url;
+   };
    /* Only the stories the agent has written: one is written when asked for (R-w3n). */
    const toBuild = inProgress.flatMap(item => item.stories.filter(story => story.state !== 'built' && story.story).map(story => story.story)).join('\n\n---\n\n'); %>
 <% if (needs.length) { %>
@@ -59,7 +73,7 @@
   <ul class="stack gap-6 in-progress">
     <% for (const item of inProgress) { %>
     <li class="stack gap-2">
-      <a class="item" href="<%= item.url %>">
+      <a class="item" href="<%= openOf(item) %>">
         <span class="icon icon-<%= kindIcon(item.design.kind) %>" aria-hidden="true"></span>
         <span class="item-text">
           <span class="item-title"><%= item.design.title %><% if (kindPill(item.design.kind)) { %><span class="pill"><%= kindPill(item.design.kind) %></span><% } %></span>

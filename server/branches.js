@@ -558,7 +558,11 @@ export function createBranches({ home }) {
     merging(entry) {
       if (!existsSync(entry.path) || !gitOk(entry.path, 'rev-parse', '-q', '--verify', 'MERGE_HEAD')) return null;
       const recorded = read()[entry.id] ?? {};
-      const clashes = recorded.clashes ?? [];
+      // Those recorded when the update clashed, and any git still holds as
+      // unmerged: a clash recorded nowhere would otherwise be committed with
+      // its markers in it, and break whatever reads the file.
+      const unmerged = (() => { try { return git(entry.path, 'diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean); } catch { return []; } })();
+      const clashes = [...new Set([...(recorded.clashes ?? []), ...unmerged])];
       const marked = /^(<{7}|>{7})(\s|$)/m;
       const unresolved = clashes.filter(path => {
         const file = join(entry.path, ...path.split('/'));

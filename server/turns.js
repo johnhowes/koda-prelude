@@ -69,17 +69,49 @@ export function statusMessage(state) {
 
 let liveCount = 0;
 
+// What the agent is told of a check is kept short, however much failed: one
+// broken view a whole design renders fails every route in every state, and
+// told in full that once made a message too long for the agent to start.
+const FINDING_LINES = 20;
+const FINDING_CHARS = 1500;
+const MAX_WHERE = 6;       // the places one problem is named at
+const MAX_FINDINGS = 20;   // distinct problems, per kind
+
+/** An error as the agent is told it: its first lines, and not too many characters. */
+function clipFinding(error) {
+  const lines = String(error ?? '').split('\n');
+  let text = lines.slice(0, FINDING_LINES).join('\n');
+  if (text.length > FINDING_CHARS) text = `${text.slice(0, FINDING_CHARS)}…`;
+  else if (lines.length > FINDING_LINES) text += '\n…';
+  return text;
+}
+
+/** Findings as lines: the same error once, naming where it happened. */
+function findingLines(failures) {
+  const groups = new Map();   // clipped error -> places
+  for (const f of failures) {
+    const error = clipFinding(f.error);
+    if (!groups.has(error)) groups.set(error, []);
+    groups.get(error).push(`${f.path}${f.state ? ` (state "${f.state}")` : ''}`);
+  }
+  const lines = [...groups].slice(0, MAX_FINDINGS).map(([error, where]) => {
+    const more = where.length > MAX_WHERE ? `, and ${where.length - MAX_WHERE} more` : '';
+    return `- ${where.slice(0, MAX_WHERE).join(', ')}${more}: ${error}`;
+  });
+  if (groups.size > MAX_FINDINGS) lines.push(`- …and ${groups.size - MAX_FINDINGS} more, not listed here.`);
+  return lines.join('\n');
+}
+
 /** The person's message, preceded by what Prelude's last check of the design found. */
 export function withFindings(failures, message) {
   if (!failures?.length) return message;
-  const line = f => `- ${f.path}${f.state ? ` (state "${f.state}")` : ''}: ${f.error}`;
   const fix = failures.filter(f => !f.info && !f.architecture);
   const info = failures.filter(f => f.info);
   const drifted = failures.filter(f => f.architecture);
   const parts = [];
-  if (fix.length) parts.push(`(From Prelude, not the person: after your last turn, these didn't render, or point at nothing. Fix them along with what's asked below.)\n${fix.map(line).join('\n')}`);
-  if (drifted.length) parts.push(`(From Prelude, not the person: after your last turn, these in the files you changed don't match the project's architecture. Change the code, or propose a decision that changes the architecture, along with what's asked below.)\n${drifted.map(line).join('\n')}`);
-  if (info.length) parts.push(`(From Prelude, for your information: how pages now differ from the screens the person approved. Expected porting differences are theirs to approve; anything else means the port isn't faithful.)\n${info.map(line).join('\n')}`);
+  if (fix.length) parts.push(`(From Prelude, not the person: after your last turn, these didn't render, or point at nothing. Fix them along with what's asked below.)\n${findingLines(fix)}`);
+  if (drifted.length) parts.push(`(From Prelude, not the person: after your last turn, these in the files you changed don't match the project's architecture. Change the code, or propose a decision that changes the architecture, along with what's asked below.)\n${findingLines(drifted)}`);
+  if (info.length) parts.push(`(From Prelude, for your information: how pages now differ from the screens the person approved. Expected porting differences are theirs to approve; anything else means the port isn't faithful.)\n${findingLines(info)}`);
   return `${parts.join('\n\n')}\n\n${message}`;
 }
 
@@ -172,8 +204,9 @@ export function createTurns({ runner, live, onChange = () => {} }) {
      * system, as designPrompt takes it. `view` is how the pages show entries,
      * and `onIdle` runs once the turn is over and the design is free.
      * `recap` is told instead of `preface` if the conversation can't be
-     * resumed (one carried onto a fix's branch, prelude/fix-something): the
-     * agent starts afresh, once, with what was said so far.
+     * resumed (one carried onto a fix's branch, prelude/fix-something, or
+     * one grown too long for the agent): the agent starts afresh, once, with
+     * what was said so far.
      * `architecture` is the project's ({ path }, architectureBrief), which a
      * design's agent reads and may propose a decision in; `drift()`, after a
      * turn of a build or a fix, checks the code it changed against it and

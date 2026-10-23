@@ -31,3 +31,5 @@
   *shown-on: /f/:project/branches/:branch/discard @ typical*
 - **R-x4b.** A project's page always offers its design system and architecture: each can be read there without opening a design once it has something in it, and is the way to start it until then; the app shell isn't offered there.
   *shown-on: /f/:project @ typical, /f/:project @ new-project, /f/:project @ long-names*
+- **R-e5n.** A branch under In progress opens where its work is now: a build running opens that build's session; a stopped build, or stories on the branch, open the design's Build page; a design still being designed, or with the agent working on it, opens the design's session.
+  *shown-on: /f/:project @ typical, /f/:project @ app-being-built*

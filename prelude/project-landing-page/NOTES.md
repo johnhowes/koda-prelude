@@ -538,6 +538,37 @@ with the app. Each updates `projects/:project/app`, which every state has,
 not `app/koda`, which only typical has. In the app, the upgrade redirects to the fix's page instead.
 `_app` changed in place (`@app`).
 
+## In progress opens where the work is (redesign, 2026-10-23)
+
+Every In progress card opened the design's page (its latest session), so
+during a build the person had to follow on to the Build page (the person).
+Now the card opens where the branch's work is (R-e5n), worked out in `_work`
+from what the branch already has, so the model is unchanged:
+
+- a build running: its build session (the building story's `session`),
+  else the Build page;
+- a build stopped: the Build page, as Needs you's "Build stopped" does;
+- the agent working with no build (a design turn): the design's page;
+- stories on the branch (to build, or all built and waiting on the check):
+  the Build page;
+- otherwise (still designing), and a fix always: the design's or fix's page.
+
+Typical: Rate lock and Repayment schedule open their Build pages, the others
+their designs; app being built opens the shell's build.
+
+**Brought back for it**: `_work` (changed) and `page`, which includes it;
+`page`'s other partials and `_branch` copied unchanged. Their own fragment
+routes (designs, app) stay `@app`.
+
+## Built: In progress opens where the work is (2026-10-23)
+
+`_work` is ported over the app's; `page` was already the app's as designed,
+so it's unchanged. Every route's view is `@app` again. The model needed
+nothing new: `building.stopped` is "no turn running" (as Home says),
+`working` is a turn running in the worktree, and a story's `session` is its
+group's newest build session, so the building story's is the build running
+now (R-e5n).
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two

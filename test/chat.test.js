@@ -92,6 +92,14 @@ test('stream-json becomes plain events', () => {
   assert.deepEqual(result, { ok: true, costUsd: 0.01, error: null });
 });
 
+test('a conversation too long to go on is lost, so it starts afresh', () => {
+  const read = createStreamReader(() => {});
+  const result = read({ type: 'result', subtype: 'success', is_error: true, result: 'Prompt is too long · the request is ~1201455 tokens (limit 1000000)' });
+  assert.equal(result.ok, false);
+  assert.equal(result.lost, true);
+  assert.equal(createStreamReader(() => {})({ type: 'result', subtype: 'error_during_execution', is_error: true, result: 'Something else' }).lost, undefined);
+});
+
 test('partial messages stream text; the whole message does not repeat it', () => {
   const events = [];
   const read = createStreamReader(e => events.push(e));
@@ -412,5 +420,18 @@ test('a new session is listed in the switcher, newest first', async () => {
   assert.equal((await get(`${designUrl}/sessions/20990101-0000-zzzz`)).status, 404);
   assert.equal((await get(`/f/${fid}/d/onboarding/nope`)).status, 404);
   assert.equal((await get(`/f/${fid}/d/onboarding/sign-up/sessions/../../x`)).status, 404);
+});
+
+test('a design session that can’t go on starts afresh, once, told what was said', async () => {
+  const from = runner.turns.length;
+  runner.queue([{ type: 'lost' }]);
+  const res = await post(`${designUrl}/sessions`, { message: 'Make the sign-up page friendlier' });
+  assert.equal(res.status, 303, await res.text());
+  await until(() => runner.turns.length >= from + 2);
+  const [lost, again] = runner.turns.slice(from);
+  assert.notEqual(again.sessionId, lost.sessionId);
+  assert.equal(again.resume, false);
+  assert.match(again.prompt, /^\(From Prelude, not the person: this conversation couldn’t go on as it was/);
+  assert.match(again.prompt, /Make the sign-up page friendlier$/);
 });
 

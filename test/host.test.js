@@ -251,6 +251,36 @@ test('a view that never finishes is stopped, and the next render still works', a
   assert.equal((await hostGet('orders', '/orders')).status, 200);
 });
 
+test('a view that doesn’t compile says why and where, without the compiled template', async () => {
+  createDesign(repo, { title: 'Garbled' });
+  write('garbled/routes.json', { '/': { view: 'home', title: 'Home', data: '' } });
+  write('garbled/views/home.eta', '<% let p = 1 %>\n<% let p = 2 %>');
+  write('garbled/states/01-typical.json', {});
+  const garbled = await hostGet('garbled', '/');
+  assert.equal(garbled.status, 500);
+  assert.match(garbled.body, /Bad template syntax/);
+  assert.match(garbled.body, /Identifier 'p' has already been declared/);
+  assert.match(garbled.body, /home\.eta, or a partial it includes/);
+  assert.doesNotMatch(garbled.body, /__eta/);
+});
+
+test('what the agent is told of a check is grouped and kept short', async () => {
+  const { withFindings } = await import('../server/turns.js');
+  // One broken view: every route in every state fails the same way, at length.
+  const huge = `Bad template syntax\n\n${'let x = 1;\n'.repeat(5000)}`;
+  const failures = [];
+  for (let route = 0; route < 40; route++) {
+    for (const state of ['Typical', 'Empty']) failures.push({ path: `/r${route}`, state, error: huge });
+  }
+  for (let other = 0; other < 30; other++) failures.push({ path: `/o${other}`, state: null, error: `boom ${other}` });
+  const told = withFindings(failures, 'Hi');
+  assert.ok(told.length < 10000, `told ${told.length} characters`);
+  assert.match(told, /- \/r0 \(state "Typical"\), \/r0 \(state "Empty"\), .*, and 74 more: Bad template syntax/);
+  assert.match(told, /\n…/);
+  assert.match(told, /- …and 11 more, not listed here\./);
+  assert.match(told, /\n\nHi$/);
+});
+
 test('after a turn, every route is rendered; what fails is shown, and told to the agent next time', async () => {
   const { samplePaths } = await import('../server/host.js');
   const { withFindings } = await import('../server/turns.js');

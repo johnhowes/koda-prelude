@@ -383,6 +383,12 @@ test('an update from main that clashes is left for the agent to resolve, then co
 
   // Resolved by the agent: told with the next message, committed once no marker is left.
   await clashed();
+  // A clash Prelude kept no record of is a clash still: git holds the file as
+  // unmerged, so it's never committed with its markers in it.
+  const builds = join(home, 'builds.json');
+  const recorded = JSON.parse(readFileSync(builds, 'utf8'));
+  for (const one of Object.values(recorded)) delete one.clashes;
+  writeFileSync(builds, JSON.stringify(recorded));
   const session = listSessions(workDir)[0];
   const turnsBefore = readEntries(workDir, session.id).filter(e => e.type === 'turn').length;
   runner.turns.length = 0;
