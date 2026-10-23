@@ -93,6 +93,23 @@ chat), done.
 
 ## Open questions
 
+- **Several people** (the person asked, 2026-10-23: a PM plans, a designer
+  designs and opens a pull request, a developer reviews it and builds). The
+  design so far assumes one computer: Prelude starts every step itself, and
+  reads where steps stand from local branches and sessions. Proposed,
+  waiting on the person:
+  - steps have an owner (a git identity; anyone by default), and Prelude
+    starts only this person’s steps; another’s says “Ready for Dana”, and is
+    in Dana’s Needs you on her computer;
+  - starting a plan merges (or pushes for a pull request) the plan’s file
+    into main, so every teammate’s Prelude sees it; after that it changes
+    only when steps are edited;
+  - another person’s step is read from the remote: not started, in progress
+    (its branch pushed), pull request open, merged; the finer states (your
+    turn, working, stopped) only where it runs;
+  - a design and its build share a branch only when one person owns both;
+    a hand-off goes through a pull request, which is the review.
+
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
   planning prompt in agent. Propose the decision when it’s built.
