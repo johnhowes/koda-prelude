@@ -12,6 +12,12 @@ Prelude's own architecture, as markdown in `architecture/`, read by every design
 
 - **Word helpers move to `server/words.js`** (D-w4n, proposed; the person agreed 2026-10-22): `ago`, `plain`, `sentences`, `clip` from home.js and `whenWords`, `startedWords`, `sinceWords` from workspace.js, in a new lowest layer, Shared helpers. The `words` part and the `uses` are written as the target. The code moves in a fix or build session, so until then the check reports `server/words.js` missing and architecture's import of home.js.
 
+- **The agent follows the app's own Koda** (D-k7v, proposed 2026-10-23). `designs` finds the app's Koda (worktree, then checkout, then Prelude's, since a fresh worktree has no `node_modules`). `pages` compares versions, and a new `installs` part (`server/installs.js`) runs the package manager with a fixed command. Flow: `koda-upgrade`. Until it's built, the check reports `server/installs.js` missing.
+- **After an upgrade merges, Prelude offers to install it in the person's checkout** (the person, 2026-10-23), since `node_modules` isn't in git and the checkout keeps the old Koda otherwise. `pages` offers it when the installed version isn't the one `package.json` asks for; it's the one place Prelude changes the checkout, and only `node_modules`.
+- **Installs handle only `@kodalang/core`** (the person, 2026-10-23): no other package, so the agent can't steer what gets installed.
+- **An install runs only after the person approves its command** (the person, 2026-10-23), scripts included, as with a host: install scripts are outside code.
+- **The design host serves a design the app's Koda runtime** (the person, 2026-10-23), found the same way as the agent's, so designs behave as the app will. Prelude's own pages keep Prelude's Koda.
+
 ## Open questions
 
 - None right now.

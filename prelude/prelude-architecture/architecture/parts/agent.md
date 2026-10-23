@@ -14,6 +14,7 @@ Runs the Claude Code CLI and holds every prompt Prelude gives it: design, build,
 
 ## Not its job
 - When a turn runs, or what's done with its output (turns)
+- Choosing which Koda the prompts point at (designs, server)
 
 ## Owns
 - The prompts and permission rules

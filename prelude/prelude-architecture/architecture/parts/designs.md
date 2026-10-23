@@ -10,6 +10,7 @@ Finds and creates designs: any folder under `prelude/` with a `design.json`, inc
 ## Responsible for
 - Listing, finding and creating designs and fixes
 - The app's stack and path (`prelude.json`)
+- The app's Koda: where it's installed (worktree, then checkout), its version, and the version `package.json` asks for (D-k7v)
 - Approved screens in `snapshots/`, compared as normalised HTML
 
 ## Not its job
