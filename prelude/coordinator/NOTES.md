@@ -62,18 +62,22 @@ design ready to push), done.
    prompt for it was given in the chat (a Plans link, In progress grouped by
    plan, plans needing the person in Needs you).
 
+12. **The plan lives in the project, on its own branch** (the person,
+   2026-10-23; R-q2x): `prelude/plan-<id>`, its file
+   `prelude/plans/<id>/plan.json`, written only by the plan’s session.
+   Prelude reads it from that worktree while it runs, so no step waits for
+   it; finished, the branch goes into main the project’s usual way (a pull
+   request here). The page shows the branch under the title.
+13. **A design and its build share a branch when nothing else needs the
+   design first** (the person, 2026-10-23; R-k4d), one pull request for
+   both, as Prelude already finishes them. The design step is then
+   “Approved” (not merged), and its build waits for that approval
+   (`waitsFor[].until: "approved"`). Design Workspace’s design is needed by
+   Fix Something and Build, so it’s finished first; Fix Something and Build
+   each go in one pull request with their builds.
+
 ## Open questions
 
-- **Where the plan’s file lives** (recommended, waiting on the person): in
-  the repository, on a branch of its own (`prelude/plans/<id>/plan.json`),
-  written only by the plan’s session. Prelude reads it from that worktree
-  while it runs, so no step waits for it; when the plan finishes, its branch
-  is finished the project’s usual way (a pull request here), so main keeps
-  the record beside what it built.
-- **A design and its build on one branch?** Prelude finishes a design and
-  its build together. A plan could do the same (one pull request per design)
-  whenever no other step needs the design before it’s built; Design
-  Workspace’s design is needed first, the others aren’t.
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
   planning prompt in agent. Propose the decision when it’s built.

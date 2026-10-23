@@ -25,6 +25,12 @@
 - **R-n7b.** Each build covers one design, on that design’s branch; a build that uses code another build makes waits for that build to be merged.
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*
+- **R-k4d.** A design that no other step needs before it’s built is built on its own branch once approved, and the two go into main together; a design another step needs is finished first and built on a new branch.
+  *shown-on: /f/:project/plans/:plan @ build-stopped*
+  *proposed*
+- **R-q2x.** A plan is kept in the project on a branch of its own while it runs, and goes into main, as any branch does, once it’s finished.
+  *shown-on: /f/:project/plans/:plan @ done*
+  *proposed*
 - **R-e2q.** A plan is finished when every one of its steps is merged into main.
   *shown-on: /f/:project/plans/:plan @ done*
   *proposed*

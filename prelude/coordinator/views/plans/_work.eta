@@ -6,8 +6,10 @@
      Where a step stands is worked out from its branch, its session and its
      stories, never kept by hand: waiting (on steps not yet merged), working,
      the person's turn (a discussion or design session, after the first
-     message the plan sent), ready to finish, a pull request open, a build
-     stopped, merged. A waiting step names only what it still waits for.
+     message the plan sent), approved (a design whose build carries on on
+     its branch, both merged together, R-k4d), ready to finish, a pull
+     request open, a build stopped, merged. A waiting step names only what it
+     still waits for.
 
      Ready to finish is merged here, or pushed for a pull request when the
      project has a remote (asked first in the modal). Neither happens without
@@ -30,17 +32,22 @@
      working: { label: 'Working', tone: 'accent', pulse: true },
      asking: { label: 'Your turn', tone: 'accent' },
      ready: { label: 'Ready to finish', tone: 'accent' },
+     approved: { label: 'Approved', tone: '' },
      pushed: { label: 'Pull request open', tone: '' },
      stopped: { label: 'Build stopped', tone: 'warn' },
      merged: { label: 'Merged', tone: '' },
    };
-   const list = titles => titles.length > 1 ? `${titles.slice(0, -1).join(', ')} and ${titles.at(-1)}` : titles[0];
+   const list = words => words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words.at(-1)}` : words[0];
+   /* A build waits for its own design's approval (they share a branch),
+      and for anything else to be merged. */
+   const met = w => byId[w.id]?.state === 'merged' || (w.until === 'approved' && byId[w.id]?.state === 'approved');
+   const awaited = w => `${w.title} is ${w.until === 'approved' ? 'approved' : 'merged'}`;
    const saysOf = step => {
      if (step.state === 'waiting') {
-       const left = step.waitsFor.filter(w => byId[w.id]?.state !== 'merged').map(w => w.title);
-       return left.length ? `Starts once ${list(left)} ${left.length === 1 ? 'is' : 'are'} merged.` : 'Starts in a moment: what it waits for is merged.';
+       const left = step.waitsFor.filter(w => !met(w));
+       return left.length ? `Starts once ${list(left.map(awaited))}.` : 'Starts in a moment: what it waits for is done.';
      }
-     if (step.state === 'planned') return step.waitsFor.length ? `Starts once ${list(step.waitsFor.map(w => w.title))} ${step.waitsFor.length === 1 ? 'is' : 'are'} merged.` : 'Starts as soon as the plan does.';
+     if (step.state === 'planned') return step.waitsFor.length ? `Starts once ${list(step.waitsFor.map(awaited))}.` : 'Starts as soon as the plan does.';
      return step.says;
    };
    const needs = steps.filter(step => ['asking', 'ready', 'stopped'].includes(step.state)); %>
@@ -103,7 +110,7 @@
       </section>
       <% } %>
     </div>
-    <figcaption class="muted">Read from the top. Each step starts by itself once the steps it waits for are merged into main, with its branch brought up to date first; steps side by side run at the same time.</figcaption>
+    <figcaption class="muted">Read from the top. Each step starts by itself once the steps it waits for are merged into main, with its branch brought up to date first; a build follows its own design’s approval on the same branch. Steps side by side run at the same time.</figcaption>
   </figure>
 </section>
 <% } %>

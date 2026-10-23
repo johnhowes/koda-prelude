@@ -18,6 +18,7 @@
      working: { label: 'Working', tone: 'accent', pulse: true },
      asking: { label: 'Your turn', tone: 'accent' },
      ready: { label: 'Ready to finish', tone: 'accent' },
+     approved: { label: 'Approved', tone: '' },
      pushed: { label: 'Pull request open', tone: '' },
      stopped: { label: 'Build stopped', tone: 'warn' },
      merged: { label: 'Merged', tone: '' },
@@ -54,9 +55,8 @@
     <h3 class="group-label" id="step-waits">Waits for</h3>
     <% if (s.waitsFor.length) { %>
     <ul class="stack gap-1">
-      <% for (const w of s.waitsFor) { %><li><%= w.title %></li><% } %>
+      <% for (const w of s.waitsFor) { %><li><%= w.title %> <span class="muted">· <%= w.until === 'approved' ? 'approved: its own design, on this branch' : 'merged into main' %></span></li><% } %>
     </ul>
-    <p class="muted">It starts once <%= s.waitsFor.length === 1 ? 'that is' : 'all of them are' %> merged into main.</p>
     <% } else { %>
     <p class="secondary">Nothing: it starts as soon as the plan does.</p>
     <% } %>

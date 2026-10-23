@@ -15,6 +15,7 @@
       <div class="stack gap-1">
         <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= project.id %>"><%= project.name %></a><span aria-hidden="true">›</span><a href="/f/<%= project.id %>/plans">Plans</a></nav>
         <h1><%= p.title || 'A new plan' %></h1>
+        <% if (p.branch) { %><span class="muted" title="The plan itself is kept on a branch of its own, and goes into main when it finishes."><code><%= p.branch %></code></span><% } %>
       </div>
       <span class="spacer"></span>
       <% if (p.session) { %>
@@ -50,6 +51,7 @@
     <% } else if (p.status === 'done') { %>
     <div class="notice good" role="status">
       <p>Finished <%= p.finished %>. Every step is merged into main.</p>
+      <% if (p.branch) { %><p>The plan itself is on <code><%= p.branch %></code>: finish it from <a href="/f/<%= project.id %>">the project’s page</a>, as any branch, so main keeps it beside what it built.</p><% } %>
     </div>
     <% } %>
 
