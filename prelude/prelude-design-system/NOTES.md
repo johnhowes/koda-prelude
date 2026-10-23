@@ -152,6 +152,11 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   the map's parts and the flow's heads included (sent images lose a stray
   indent too). Added for "Design Workspace" (prelude/design-workspace):
   visuals in the chat, each part opening its page in the architecture.
+- **Map `.named`** (2026-10-23): a part picked out with nothing said about
+  change, accent border, no pill; its note says why it's there. The person:
+  an agent's map shouldn't speak of change when there's none. Added for
+  "Design Workspace" (prelude/design-workspace): the agent's
+  `prelude-map-1` blocks.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).

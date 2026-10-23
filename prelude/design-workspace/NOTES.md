@@ -280,8 +280,13 @@ the record picker, was dropped).
   `pieces` (text, flow, map, drawing, unread) in the order written, each
   ready to print; a message with none is one text piece (`html` still
   reads). Each part links to `/f/<project>/architecture/parts/<id>`.
-  - **The agent's map marks "Would change"** (`.proposed`); Prelude's own
-    map after a turn that changed code marks "Changed" (`.touched`), as an
+  - **Each part links to its page on the Architecture page**, leaving the
+    session (the person, 2026-10-23: fine for now; no drawer route).
+  - **The agent's map says nothing about change** (the person, 2026-10-23):
+    its parts are outlined (`.named`, added to the design system) with its
+    notes, no pill, since a `prelude-map-1` block can't say whether it
+    proposes or explains; the agent's words say which. Only Prelude's own
+    map after a turn that changed code says "Changed" (`.touched`), as an
     entry of its own (`type: 'parts'`, open, folds away). A marked map's
     other parts show only their names, so it fits a chat column; with no
     mark it's the plain map, which the Architecture page can share.
@@ -299,7 +304,8 @@ the record picker, was dropped).
     labels sit above; popped out or in a fix's conversation (`--measure`)
     a flow of up to four parts gets columns, five or more stay a list
     (R-9tz). States 09–14 show each.
-  - Added to the design system: linked flow parts, and `.entry :where(ul)`.
+  - Added to the design system: linked flow parts, `.entry :where(ul)`, and
+    the map's `.named`.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -525,13 +531,6 @@ Where the app differs from the screens, on purpose:
 
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-- A part's link on a visual leaves the session for the Architecture page.
-  Should it open in the drawer over the chat instead? That needs a drawer
-  route for a part, which the app doesn't have.
-- "Would change" fits a map the agent draws to propose something, not one
-  that only explains which parts take part. Should `prelude-map-1` say
-  which, or is a proposal the only use?
-
 ## Limits of the preview
 
 What the fake routes can't do; the app does each.

@@ -482,7 +482,7 @@
           <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
         </figure>
       </div>
-      <p class="secondary">A change on the map, in a chat column. After a build or fix turn, the parts it changed (<code>.touched</code>, “Changed”); for an ask’s proposal, the parts it would change (<code>.proposed</code>, dashed, “Would change”). The rest step back.</p>
+      <p class="secondary">A change on the map, in a chat column. After a build or fix turn, the parts it changed (<code>.touched</code>, “Changed”); for an ask’s proposal, the parts it would change (<code>.proposed</code>, dashed, “Would change”); for a map that only explains, the parts named (<code>.named</code>, no pill, each with its note). The rest step back.</p>
       <div class="grid gap-3" style="--min: 20rem">
         <div class="stage">
           <figure class="stack gap-2">
@@ -524,6 +524,27 @@
               </section>
             </div>
             <figcaption class="muted">This proposal would change 2 parts.</figcaption>
+          </figure>
+        </div>
+        <div class="stage">
+          <figure class="stack gap-2">
+            <div class="map" aria-label="The parts a visual takes part in">
+              <section class="map-layer" aria-label="Pages">
+                <h3 class="map-label">Pages</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node named" href="#"><span class="map-node-title">Views</span><span class="muted">Draws it with its partial</span></a></li>
+                  <li><a class="map-node" href="#"><span class="map-node-title">Pages</span></a></li>
+                </ul>
+              </section>
+              <section class="map-layer" aria-label="Agent and live state">
+                <h3 class="map-label">Agent and live state</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node" href="#"><span class="map-node-title">Agent</span></a></li>
+                  <li><a class="map-node named" href="#"><span class="map-node-title">Visuals</span><span class="muted">Reads and checks the block</span></a></li>
+                </ul>
+              </section>
+            </div>
+            <figcaption class="muted">The parts named are outlined, each with why. Nothing is said about change.</figcaption>
           </figure>
         </div>
       </div>

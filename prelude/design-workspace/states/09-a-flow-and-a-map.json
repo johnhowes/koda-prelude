@@ -76,7 +76,7 @@
                   "kind": "map",
                   "map": {
                     "label": "borrower-portal’s parts",
-                    "mark": "proposed",
+                    "mark": "named",
                     "count": 3,
                     "layers": [
                       { "title": "Pages", "parts": [

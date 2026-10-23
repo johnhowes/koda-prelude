@@ -489,7 +489,10 @@
      says which in a pill; the parts it leaves alone step back. */
   .map-node.touched { border-color: var(--accent); box-shadow: inset calc(3 * var(--border-width)) 0 0 var(--accent); }
   .map-node.proposed { border-color: var(--accent); border-style: dashed; }
-  .map:has(.map-node:is(.touched, .proposed)) .map-node:not(.touched, .proposed) { color: var(--fg-subtle); }
+  /* .named: a part picked out with nothing said about change (a map that
+     explains); its note says why it's there. */
+  .map-node.named { border-color: var(--accent); }
+  .map:has(.map-node:is(.touched, .proposed, .named)) .map-node:not(.touched, .proposed, .named) { color: var(--fg-subtle); }
 
   /* Flow: a flow's steps through the parts that do them. Wide, a column per
      part (--lanes of them, over each a line down its middle) and a row per

@@ -56,7 +56,7 @@
 - **R-p3e.** Every part on a flow or a map opens that part's page in the project's architecture.
   *shown-on: /f/:folder/d/:design @ a-flow-and-a-map*
   *proposed*
-- **R-k9u.** A map shows every part of the project, layer by layer; the parts it marks stand out with what would change or what changed, and the rest show only their names.
+- **R-k9u.** A map shows every part of the project, layer by layer; the parts it picks out stand out, each with the agent's note, and the rest show only their names. Only a map of what a turn changed says "Changed"; an agent's map says nothing about change.
   *shown-on: /f/:folder/d/:design @ a-flow-and-a-map*
   *proposed*
 - **R-x2a.** A visual is drawn only if every part it names is in the project's architecture as it stands on the session's branch when the conversation is shown; otherwise it shows as the agent wrote it, with a line naming the parts that aren't.
