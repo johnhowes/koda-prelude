@@ -8,6 +8,25 @@ app/
 </code>
 . Each design’s Build page builds its features into it.
 </p>
+<div class="stack gap-2">
+<form action="/f/spark-lending/koda/upgrade" class="stack gap-2" ko-target="app" method="post">
+<p class="secondary">
+The app uses Koda 0.1.4; Prelude has 0.1.5.
+</p>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Upgrade Koda
+</button>
+</div>
+<p class="muted">
+Starts a fix on a branch of its own and runs
+<code>
+npm install --save-exact @kodalang/core@0.1.5
+</code>
+there, its install scripts too. The agent then changes what the new version needs.
+</p>
+</form>
+</div>
 <form action="/f/spark-lending/app/run/start" class="stack gap-2" ko-target="app" method="post">
 <input name="state" type="hidden" value="starting">
 <div class="cluster actions">

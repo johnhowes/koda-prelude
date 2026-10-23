@@ -560,6 +560,15 @@ their designs; app being built opens the shell's build.
 `page`'s other partials and `_branch` copied unchanged. Their own fragment
 routes (designs, app) stay `@app`.
 
+## Built: In progress opens where the work is (2026-10-23)
+
+`_work` is ported over the app's; `page` was already the app's as designed,
+so it's unchanged. Every route's view is `@app` again. The model needed
+nothing new: `building.stopped` is "no turn running" (as Home says),
+`working` is a turn running in the worktree, and a story's `session` is its
+group's newest build session, so the building story's is the build running
+now (R-e5n).
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two
