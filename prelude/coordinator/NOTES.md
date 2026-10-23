@@ -81,5 +81,9 @@ design ready to push), done.
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
   planning prompt in agent. Propose the decision when it’s built.
-- The plan’s session page (Talk it over) isn’t designed here: is it a design
-  page’s chat without a surface?
+- **The planning session uses the app’s chat** (the person, 2026-10-23), as
+  design, build and fix sessions do. Recommended, waiting on the person: the
+  plan’s page becomes a session page, the chat beside the plan as its
+  surface (as a design page has the design), so the steps appear as the
+  agent drafts them; Talk it over goes. The other way: a chat-only page, as
+  a fix’s, linked from the plan.
