@@ -397,7 +397,9 @@ function sendHtml(res, status, html) {
 
 /**
  * Answer a request on a design's origin.
- *   app: { folders, designs (design-state), renderers, kodaDir, designKey }
+ *   app: { folders, designs (design-state), renderers, kodaDirOf, designKey }
+ * kodaDirOf(folder) is where the app's own Koda runtime is (D-k7v), so a
+ * design's pages behave as the app's will.
  */
 export async function handleDesignHost(req, res, app, host) {
   const notFound = (message = 'Not found') => sendHtml(res, 404, `<p>${message}</p>`);
@@ -419,7 +421,7 @@ export async function handleDesignHost(req, res, app, host) {
   if (path.startsWith('/_prelude/')) {
     const [, , area, ...rest] = path.split('/');
     const rel = rest.join('/');
-    if (area === 'koda') return sendFile(res, app.kodaDir, rel, notFound);
+    if (area === 'koda') return sendFile(res, app.kodaDirOf(folder), rel, notFound);
     if (area === 'design') return sendFile(res, designDir, rel, notFound);
     if (area === 'system' && dirOf('system')) return sendFile(res, join(dirOf('system'), 'system'), rel, notFound);
     if (area === 'shell' && dirOf('shell')) return sendFile(res, dirOf('shell'), rel, notFound);

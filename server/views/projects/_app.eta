@@ -9,11 +9,46 @@
      copy that renders designs. `app.run` is how it runs (command and url,
      kept on this computer, null until set) and its state: stopped,
      starting, running or failed (with the last of its output in `log`).
-     Clicking Run approves the command it shows (R-h2w). */%>
-<% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}; %>
+     Clicking Run approves the command it shows (R-h2w).
+
+     `app.koda`, once it's built and uses Koda (D-k7v): an upgrade to
+     Prelude's version when the app's is older, made as a fix on a branch of
+     its own; that fix while it's in progress; and, once it's merged, an
+     install in the project's own folder, since node_modules isn't in git.
+     Each button shows the command it runs, and clicking it approves it,
+     install scripts and all. */%>
+<% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}, koda = app.koda ?? null; %>
 <h2 id="app-title">The app</h2>
 <% if (app.status === 'built') { %>
 <p class="secondary"><%= app.stack %><% if (app.path) { %>, in <code><%= app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
+<% if (koda && (koda.installing || koda.install || koda.upgrading || koda.upgrade)) { %>
+<div class="stack gap-2">
+  <% if (koda.installing?.state === 'running') { %>
+  <p class="cluster gap-2 secondary" role="status"><span class="pulse" aria-hidden="true"></span><span>Installing Koda <%= koda.installing.version %> <%= koda.installing.here ? `in ${p.name}’s folder` : 'on the upgrade’s branch' %>…</span></p>
+  <% } else if (koda.installing?.state === 'failed') { %>
+  <div class="notice danger" role="alert">
+    <strong>Installing Koda <%= koda.installing.version %> failed.</strong>
+    <p>The last of what <code><%= koda.installing.command %></code> said:</p>
+    <pre><%= koda.installing.log %></pre>
+  </div>
+  <% } %>
+  <% if (koda.install) { %>
+  <form class="stack gap-2" action="/f/<%= p.id %>/koda/install" method="post" ko-target="app">
+    <p class="secondary">The app asks for Koda <%= koda.install.version %>, and <%= koda.version ? `${koda.version} is` : 'none is' %> installed in <%= p.name %>’s folder.</p>
+    <div class="cluster actions"><button class="btn small" type="submit">Install Koda <%= koda.install.version %></button></div>
+    <p class="muted">Runs <code><%= koda.install.command %></code> in <span class="project-path"><%= p.path %></span>, its install scripts too. Only <code>node_modules</code> changes.</p>
+  </form>
+  <% } else if (koda.upgrading) { %>
+  <p class="muted">Koda is being upgraded to <%= koda.prelude %> on <a href="<%= koda.upgrading.url %>"><code><%= koda.upgrading.branch %></code></a>, under In progress.</p>
+  <% } else if (koda.upgrade) { %>
+  <form class="stack gap-2" action="/f/<%= p.id %>/koda/upgrade" method="post" ko-target="app">
+    <p class="secondary">The app uses Koda <%= koda.version ?? 'an older version' %>; Prelude has <%= koda.upgrade.version %>.</p>
+    <div class="cluster actions"><button class="btn small" type="submit">Upgrade Koda</button></div>
+    <p class="muted">Starts a fix on a branch of its own and runs <code><%= koda.upgrade.command %></code> there, its install scripts too. The agent then changes what the new version needs.</p>
+  </form>
+  <% } %>
+</div>
+<% } %>
 <% if (!run.command) { %>
 <form class="stack gap-3" action="/f/<%= p.id %>/app/run" method="post" ko-target="runFields">
   <p class="secondary">To run it from here, say how it starts. It runs from <%= p.name %>’s own folder, apart from the copy Prelude renders designs with, so give it an address of its own.</p>

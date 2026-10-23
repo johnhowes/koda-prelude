@@ -22,11 +22,10 @@
 import { spawn as nodeSpawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { join, resolve } from 'node:path';
 
-import { appOf } from './app-config.js';
+import { KODA as PACKAGE, appDirOf } from './app-config.js';
 
-export const PACKAGE = '@kodalang/core';
 const TIMEOUT_MS = 5 * 60 * 1000;
 const LOG_LIMIT = 20000;
 const EXACT = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
@@ -35,14 +34,6 @@ const same = (a, b) => {
   const norm = path => resolve(path).replace(/[\\/]+$/, '');
   return process.platform === 'win32' ? norm(a).toLowerCase() === norm(b).toLowerCase() : norm(a) === norm(b);
 };
-
-/** The app's folder in a checkout or worktree: prelude.json's app path, else its root. Null if it has no package.json. */
-export function appDirOf(root) {
-  const path = appOf(root).path;
-  const dir = path ? resolve(root, path) : resolve(root);
-  if (dir !== resolve(root) && !dir.startsWith(resolve(root) + sep)) return null;
-  return existsSync(join(dir, 'package.json')) ? dir : null;
-}
 
 /** The package manager the app uses, by its lockfile (in the app's folder, then the root): npm, pnpm or yarn. */
 export function packageManagerOf(appDir, root = appDir) {
@@ -91,6 +82,17 @@ export function createInstalls({ branches, spawn = nodeSpawn, timeoutMs = TIMEOU
   };
 
   return {
+    /**
+     * The command an install of Koda `version` would run in `root`, to show the
+     * person before they ask for it (a fix's worktree is made from the checkout,
+     * so the checkout's says what it will be): its text, or null if it can't run.
+     */
+    commandFor({ root, version, save = true }) {
+      const appDir = appDirOf(root);
+      if (!appDir) return null;
+      try { return installCommand(packageManagerOf(appDir, root), version, { save }).text; } catch { return null; }
+    },
+
     /**
      * An install of Koda `version` in `where` (the folder's own path or one of its
      * worktrees), waiting for approval: { install } with the command to show, or { error }.

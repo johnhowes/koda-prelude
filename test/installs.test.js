@@ -5,7 +5,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 
-import { appDirOf, createInstalls, installCommand, packageManagerOf } from '../server/installs.js';
+import { appDirOf, findKoda, kodaOf } from '../server/app-config.js';
+import { createInstalls, installCommand, packageManagerOf } from '../server/installs.js';
+import { kodaModelOf, newerVersion } from '../server/project.js';
 
 const folderWith = files => {
   const root = mkdtempSync(join(tmpdir(), 'prelude-installs-'));
@@ -51,6 +53,29 @@ test('the app folder is prelude.json’s app path, and needs a package.json', ()
   assert.equal(appDirOf(folderWith({ 'prelude/prelude.json': { app: { path: '../elsewhere' } } })), null);
 });
 
+test('the app’s Koda: what’s installed, what package.json asks for, the worktree first', () => {
+  const koda = version => JSON.stringify({ name: '@kodalang/core', version, exports: { '.': './src/koda.js' } });
+  const checkout = folderWith({
+    'prelude/prelude.json': { app: { path: 'app' } },
+    'app/package.json': { dependencies: { '@kodalang/core': '0.1.4' } },
+    'app/node_modules/@kodalang/core/package.json': koda('0.1.4'),
+  });
+  assert.deepEqual(kodaOf(checkout), {
+    installed: { path: join(checkout, 'app', 'node_modules', '@kodalang', 'core'), entry: './src/koda.js', version: '0.1.4' },
+    wanted: '0.1.4',
+  });
+  // A fresh worktree has no node_modules: the checkout's is found instead.
+  const worktree = folderWith({ 'prelude/prelude.json': { app: { path: 'app' } }, 'app/package.json': { dependencies: { '@kodalang/core': '0.1.5' } } });
+  assert.deepEqual(kodaOf(worktree), { installed: null, wanted: '0.1.5' });
+  assert.equal(findKoda([worktree, checkout]).version, '0.1.4');
+  // Installed at the root of a monorepo.
+  const hoisted = folderWith({ 'package.json': { devDependencies: { '@kodalang/core': '0.1.5' } }, 'node_modules/@kodalang/core/package.json': koda('0.1.5') });
+  assert.equal(kodaOf(hoisted).installed.version, '0.1.5');
+  // An app without Koda.
+  assert.equal(kodaOf(folderWith({ 'package.json': { dependencies: { express: '4.0.0' } } })), null);
+  assert.equal(findKoda([folderWith({ 'README.md': '' })]), null);
+});
+
 test('the command installs only Koda, at an exact version', () => {
   assert.equal(installCommand('npm', '0.2.0').text, 'npm install --save-exact @kodalang/core@0.2.0');
   assert.equal(installCommand('npm', '0.2.0', { save: false }).text, 'npm install --no-save @kodalang/core@0.2.0');
@@ -91,6 +116,39 @@ test('an install runs only in the project’s folder or its own worktrees, once 
   installs.decline(inCheckout.id);
   assert.equal(installs.status(inCheckout.id), null);
   await assert.rejects(installs.approve(inCheckout.id), /no install waiting/);
+});
+
+test('the app card offers an upgrade, then the install once it’s merged', () => {
+  const koda = version => JSON.stringify({ name: '@kodalang/core', version, main: './src/koda.js' });
+  const project = (wanted, installed) => folderWith({
+    'package.json': { dependencies: { '@kodalang/core': wanted } },
+    'package-lock.json': '{}',
+    'node_modules/@kodalang/core/package.json': koda(installed),
+  });
+  const cardOf = (path, entries = []) => {
+    const installs = createInstalls({ branches: { of: () => entries }, spawn: fakeSpawn(0).spawn });
+    return kodaModelOf({ koda: { version: '0.1.5' }, installs }, { id: 'f3', path }, entries);
+  };
+
+  const behind = cardOf(project('0.1.4', '0.1.4'));
+  assert.deepEqual(behind.upgrade, { version: '0.1.5', command: 'npm install --save-exact @kodalang/core@0.1.5' });
+  assert.equal(behind.install, null);
+
+  const upgrading = cardOf(project('0.1.4', '0.1.4'), [{ id: 'w1', path: 'elsewhere', branch: 'prelude/fix-upgrade-koda-to-0-1-5', design: 'fixes/upgrade-koda-to-0-1-5' }]);
+  assert.equal(upgrading.upgrade, null);
+  assert.deepEqual(upgrading.upgrading, { branch: 'prelude/fix-upgrade-koda-to-0-1-5', url: '/f/w1/d/fixes/upgrade-koda-to-0-1-5' });
+
+  const merged = cardOf(project('0.1.5', '0.1.4'));
+  assert.equal(merged.upgrade, null);
+  assert.deepEqual(merged.install, { version: '0.1.5', command: 'npm install --no-save @kodalang/core@0.1.5' });
+
+  const current = cardOf(project('0.1.5', '0.1.5'));
+  assert.equal(current.upgrade, null);
+  assert.equal(current.install, null);
+
+  assert.equal(newerVersion('0.1.5', '0.1.4'), true);
+  assert.equal(newerVersion('0.2.0', '0.10.0'), false);
+  assert.equal(newerVersion('1.0.0', '1.0.0-beta.1'), true);
 });
 
 test('a failed install says so, and one that takes too long is stopped', async () => {

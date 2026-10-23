@@ -63,6 +63,52 @@ export function appAssets(folderPath) {
     .sort((a, b) => b.prefix.length - a.prefix.length);
 }
 
+export const KODA = '@kodalang/core';
+
+const readJson = file => { try { return JSON.parse(readFileSync(file, 'utf8')); } catch { return null; } };
+
+/** The app's folder in a checkout or worktree: prelude.json's app path, else its root. Null if it has no package.json. */
+export function appDirOf(root) {
+  const path = appOf(root).path;
+  const top = resolve(root);
+  const dir = path ? resolve(top, path) : top;
+  if (dir !== top && !dir.startsWith(top + sep)) return null;
+  return readJson(join(dir, 'package.json')) ? dir : null;
+}
+
+/**
+ * The app's Koda (D-k7v) in a checkout or worktree: what's installed in the
+ * app's node_modules (or the root's), and what its package.json asks for.
+ * { installed: { path, entry, version } | null, wanted: string | null }, or
+ * null when the app doesn't use Koda.
+ */
+export function kodaOf(root) {
+  const appDir = appDirOf(root);
+  if (!appDir) return null;
+  const manifest = readJson(join(appDir, 'package.json'));
+  const wanted = manifest?.dependencies?.[KODA] ?? manifest?.devDependencies?.[KODA] ?? null;
+  let installed = null;
+  for (const dir of [appDir, resolve(root)]) {
+    const path = join(dir, 'node_modules', ...KODA.split('/'));
+    const own = readJson(join(path, 'package.json'));
+    if (own?.version) {
+      const entry = typeof own.exports?.['.'] === 'string' ? own.exports['.'] : typeof own.main === 'string' ? own.main : 'src/koda.js';
+      installed = { path, entry, version: own.version };
+      break;
+    }
+  }
+  return wanted || installed ? { installed, wanted: typeof wanted === 'string' ? wanted : null } : null;
+}
+
+/** The first of `roots` (a worktree, then its project's checkout) with the app's Koda installed: { path, entry, version }, or null. */
+export function findKoda(roots) {
+  for (const root of roots) {
+    const found = kodaOf(root)?.installed;
+    if (found) return found;
+  }
+  return null;
+}
+
 /** Record that the project already has an app, to be connected rather than built (plan, 8b). */
 export function markExisting(folderPath) {
   const config = read(folderPath);

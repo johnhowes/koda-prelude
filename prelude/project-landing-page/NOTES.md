@@ -513,6 +513,30 @@ the one worded like the modal's own intro ("drafted from the code; every agent
 reads it before it changes anything")
 (prelude/fixes/the-option-to-create-an-architecture-is-duplicated-in-the).
 
+## Upgrade the app's Koda (fix, 2026-10-23)
+
+From the fix "server/installs.js, in Installs, doesn't match the…", which built
+D-k7v (the agent follows the app's own Koda). The person allowed minor changes
+to this page for it. The built app's card gains `app.koda` (`version`,
+`prelude`, `upgrade`, `upgrading`, `install`, `installing`), and shows one
+thing at a time:
+
+- **Upgrade Koda** when the app's version is older than Prelude's. It shows
+  the command it runs, and clicking it is the approval (install scripts too),
+  as Run is (R-h2w). It starts a fix, "Upgrade Koda to <version>", on a branch
+  of its own, installs the version there, and opens the fix's page.
+- **While that fix is in progress**, a line links to its branch.
+- **Install Koda <version>** once it's merged, when the folder's installed
+  version isn't the one package.json asks for, since node_modules isn't in
+  git. Only node_modules changes.
+- **Installing…** with a pulse while either install runs, and the last of
+  its output if it failed.
+
+Typical shows the upgrade offered (0.1.4 → 0.1.5). The new POSTs are
+`/f/:project/koda/upgrade` and `/f/:project/koda/install`, both answering
+with the app. In the app, the upgrade redirects to the fix's page instead.
+`_app` changed in place (`@app`).
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two
