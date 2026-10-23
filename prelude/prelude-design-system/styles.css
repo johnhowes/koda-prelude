@@ -24,6 +24,8 @@
 .demo { padding: var(--space-2) var(--space-3); background: var(--accent-soft); border: var(--border-width) solid var(--accent); border-radius: var(--radius-sm); font-size: var(--text-sm); }
 .demo.tall { min-block-size: 6rem; }
 .stage.resizable { resize: horizontal; overflow: auto; max-inline-size: 100%; }
+/* As wide as the chat beside a design */
+.stage.chat-column { max-inline-size: 24rem; padding: 0; }
 
 /* Tokens */
 .swatch { font-size: var(--text-xs); }
@@ -42,3 +44,4 @@
 .rule-pair > div { padding: var(--space-3); border-radius: var(--radius-md); font-size: var(--text-sm); }
 .rule-pair .do { background: var(--good-soft); }
 .rule-pair .dont { background: var(--danger-soft); }
+.rule-list { padding-inline-start: var(--space-5); }

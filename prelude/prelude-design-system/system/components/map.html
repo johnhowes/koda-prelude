@@ -6,13 +6,18 @@
      or a <span> when there's nowhere to go. Mark a part that isn't the thing's
      own .outside (dashed), one with something to look at .warn (with a pill
      saying what: never the colour alone), and the one on show aria-current.
+     A change on the map (in a session, drawn by one partial, guideline 13):
+     .touched for a part it changed, after a build or fix turn, with
+     <span class="pill accent">Changed</span>; .proposed for one it would
+     change, an ask's proposal, with <span class="pill accent">Would change</span>.
+     The parts it leaves alone step back. A note on a part goes in its .muted line.
      Say how to read it in a figcaption. -->
 <figure class="stack gap-2">
   <div class="map" aria-label="Prelude’s parts">
     <section class="map-layer" aria-label="Server">
       <h3 class="map-label">Server</h3>
       <ul class="map-nodes">
-        <li><a class="map-node" href="#"><span class="map-node-title">Routes</span><span class="muted">Every URL Prelude answers</span></a></li>
+        <li><a class="map-node touched" href="#"><span class="map-node-title">Routes<span class="pill accent">Changed</span></span><span class="muted">Every URL Prelude answers</span></a></li>
         <li><a class="map-node warn" href="#"><span class="map-node-title">Design host<span class="pill warn">1 to look at</span></span><span class="muted">Serves each design on its own origin</span></a></li>
       </ul>
     </section>
@@ -23,5 +28,5 @@
       </ul>
     </section>
   </div>
-  <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
+  <figcaption class="muted">This build changed 1 part. Each part uses parts in its own layer or below it.</figcaption>
 </figure>

@@ -482,6 +482,85 @@
   .map-node.warn { border-color: color-mix(in oklch, var(--warn) 55%, var(--border)); }
   .map-node[aria-current]:not([aria-current="false"]) { background: var(--accent-soft); border-color: var(--accent); }
   .map-node-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); font-weight: var(--weight-strong); }
+  /* A change on the map: .touched for a part it changed (after a build or
+     fix turn), .proposed for one it would change (an ask's proposal). Each
+     says which in a pill; the parts it leaves alone step back. */
+  .map-node.touched { border-color: var(--accent); box-shadow: inset calc(3 * var(--border-width)) 0 0 var(--accent); }
+  .map-node.proposed { border-color: var(--accent); border-style: dashed; }
+  .map:has(.map-node:is(.touched, .proposed)) .map-node:not(.touched, .proposed) { color: var(--fg-subtle); }
+
+  /* Flow: a flow's steps through the parts that do them. Wide, a column per
+     part (--lanes of them, over each a line down its middle) and a row per
+     step: each step's box sits in its part's column (--lane), and what it
+     hands on (.flow-pass) is an arrow to the next step's part, spanning
+     --from to --to (grid lines, from < to; .back when it points back, .down
+     when the next step is the same part's). Narrow, a numbered list, each
+     step naming its part. Lanes need room: up to four from 34rem, .many
+     (five or more) from 58rem. --series is the part's series colour, beside
+     its name everywhere. */
+  .flow { --lanes: 3; --flow-gap: var(--space-2); container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+  .flow-title { font-weight: var(--weight-strong); }
+  .flow-parts, .flow-steps {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(var(--lanes), minmax(0, 1fr)); column-gap: var(--flow-gap);
+  }
+  .flow-part { display: flex; align-items: center; gap: var(--space-1); min-inline-size: 0; font-size: var(--text-xs); font-weight: var(--weight-strong); color: var(--fg-muted); overflow-wrap: anywhere; }
+  .flow-part::before { content: ""; flex: none; inline-size: var(--space-2); block-size: var(--space-2); border-radius: var(--radius-full); background: var(--series, var(--fg-subtle)); }
+  .flow-parts > .flow-part { justify-content: center; text-align: center; }
+  /* Each lane's line, down the middle of its column: one tile per lane and its gap. */
+  .flow-steps {
+    counter-reset: flow-step; row-gap: var(--space-1);
+    background: linear-gradient(to right, transparent calc(50% - var(--flow-gap) / 2 - var(--border-width) / 2), var(--border-strong) 0 calc(50% - var(--flow-gap) / 2 + var(--border-width) / 2), transparent 0)
+                0 0 / calc((100% + var(--flow-gap)) / var(--lanes)) 100% repeat-x;
+  }
+  .flow-step { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; row-gap: var(--space-1); counter-increment: flow-step; }
+  .flow-box {
+    grid-column: var(--lane); grid-row: 1;
+    display: flex; flex-direction: column; gap: var(--space-half);
+    padding: var(--space-2); background: var(--surface);
+    border: var(--border-width) solid var(--border); border-block-start: calc(3 * var(--border-width)) solid var(--series, var(--border-strong));
+    border-radius: var(--radius-md); overflow-wrap: anywhere;
+  }
+  .flow-text::before { content: counter(flow-step) ". "; color: var(--fg-subtle); font-weight: var(--weight-strong); }
+  /* The part's name in each box is for reading aloud while the columns are shown. */
+  .flow-box > .flow-part { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .flow-pass {
+    --span: calc(var(--to) - var(--from));
+    --inset: calc((100% - (var(--span) - 1) * var(--flow-gap)) / (2 * var(--span)));
+    position: relative; grid-column: var(--from) / var(--to); grid-row: 2;
+    padding: 0 var(--inset) var(--space-2); text-align: center;
+    font-size: var(--text-xs); color: var(--fg-muted); overflow-wrap: anywhere;
+  }
+  .flow-pass::before { content: ""; position: absolute; inset: auto var(--inset) var(--space-1); border-block-end: var(--border-width) solid var(--fg-subtle); }
+  .flow-pass::after {
+    content: ""; position: absolute; inset-block-end: calc(var(--space-1) + var(--border-width) / 2); inset-inline-end: var(--inset);
+    translate: 0 50%; border-block: var(--space-1) solid transparent; border-inline-start: var(--space-2) solid var(--fg-subtle);
+  }
+  .flow-pass.back::after { inset-inline: var(--inset) auto; border-inline-start: 0; border-inline-end: var(--space-2) solid var(--fg-subtle); }
+  .flow-pass.down, .flow-pass.down::after { position: static; }
+  .flow-pass.down { display: flex; flex-direction: column; align-items: center; gap: var(--space-half); padding: 0; }
+  .flow-pass.down::before { content: none; }
+  .flow-pass.down::after { translate: none; border-block: 0; border-inline: var(--space-1) solid transparent; border-block-start: var(--space-2) solid var(--fg-subtle); }
+
+  /* Narrow: a numbered list; each box names its part, each hand-on an arrow down. */
+  @container (width < 34rem) {
+    .flow-parts { display: none; }
+    .flow-steps, .flow-step { display: flex; flex-direction: column; gap: var(--space-1); background: none; }
+    .flow-box > .flow-part { position: static; inline-size: auto; block-size: auto; overflow: visible; clip: auto; white-space: normal; }
+    .flow .flow-pass, .flow .flow-pass::after { position: static; }
+    .flow .flow-pass { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); text-align: start; }
+    .flow .flow-pass::before { content: none; }
+    .flow .flow-pass::after { order: -1; flex: none; translate: none; border-block: 0; border-inline: var(--space-1) solid transparent; border-block-start: var(--space-2) solid var(--fg-subtle); }
+  }
+  @container (width < 58rem) {
+    .flow.many .flow-parts { display: none; }
+    .flow.many :is(.flow-steps, .flow-step) { display: flex; flex-direction: column; gap: var(--space-1); background: none; }
+    .flow.many .flow-box > .flow-part { position: static; inline-size: auto; block-size: auto; overflow: visible; clip: auto; white-space: normal; }
+    .flow.many .flow-pass, .flow.many .flow-pass::after { position: static; }
+    .flow.many .flow-pass { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); text-align: start; }
+    .flow.many .flow-pass::before { content: none; }
+    .flow.many .flow-pass::after { order: -1; flex: none; translate: none; border-block: 0; border-inline: var(--space-1) solid transparent; border-block-start: var(--space-2) solid var(--fg-subtle); }
+  }
 
   /* The gap, from the space scale, for any primitive (and .card). Last in
      the layer, so a modifier beats the default its element sets. */
