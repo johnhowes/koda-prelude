@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+New plan
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/prelude/plans" ko-scope="/">
+<div class="center plans" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude">
+Prelude
+</a>
+</nav>
+<h1>
+Plans
+</h1>
+</div>
+<span class="spacer">
+</span>
+<a class="btn primary" href="/f/prelude/plans/new" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+New plan…
+</a>
+</div>
+<section aria-labelledby="plans-title" class="card">
+<h2 id="plans-title">
+Plans
+<span class="muted">
+1
+</span>
+</h2>
+<p class="secondary">
+Each carries one change through the designs and builds it needs, in order.
+</p>
+<ul class="list">
+<li>
+<a class="item" href="/f/prelude/plans/visuals-in-the-chat">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span class="item-title">
+Visuals in the chat
+<span class="pill ">
+Planning
+</span>
+</span>
+<span class="secondary">
+8 steps drafted, not started yet.
+</span>
+<span class="muted">
+Asked for Today 12:31
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/f/prelude/plans/new" ko-region tabindex="-1">
+<div class="stack gap-4">
+<h2>
+New plan
+</h2>
+<p class="secondary">
+Say what you want changed, and why. The agent reads the project and its architecture, then drafts the steps: which designs and builds it takes, what each waits for, and each one’s prompt. Nothing starts until you start the plan.
+</p>
+<form action="/f/prelude/plans" class="stack" ko-target="modal?" method="post">
+<input name="project.id" type="hidden" value="prelude">
+<input name="project.name" type="hidden" value="Prelude">
+<input name="status" type="hidden" value="planning">
+<input name="mergeAlone" type="hidden" value="false">
+<div class="fields">
+<label class="field wide">
+<span class="label">
+Title
+<span class="muted">
+(optional)
+</span>
+</span>
+<input autocomplete="off" name="title" placeholder="Visuals in the chat" value="">
+<span class="hint">
+The agent names it from the goal if you don’t.
+</span>
+</label>
+<label class="field wide">
+<span class="label">
+What should change
+</span>
+<textarea name="goal" placeholder="Agent sessions should show flow diagrams and maps of the parts a change touches, drawn with our design system…" rows="8">
+</textarea>
+<span class="hint">
+Name the designs you know it touches, if you like; the agent finds the rest.
+</span>
+</label>
+</div>
+<div class="cluster actions">
+<button class="btn primary" type="submit">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Draft the plan
+</button>
+<button class="btn ghost" command="--koda-empty" commandfor="modal" type="button">
+Not now
+</button>
+</div>
+</form>
+</div>
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

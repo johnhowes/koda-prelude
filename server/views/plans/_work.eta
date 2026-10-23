@@ -1,0 +1,147 @@
+<%/* A plan's steps: what needs the person, then every step in the order they
+     can start, as layers of a map read from top to bottom. A step sits one
+     layer below the last step it waits for, so steps side by side run at the
+     same time. Each opens in the drawer, with its prompt.
+
+     A plan is shared by the people on the project. Each step has an owner (a
+     git identity, `Name <email>`), or none: open to anyone, who claims it
+     once it's ready (R-b8y). `me` is the identity of whoever is at this
+     computer. A step starts by itself on its owner's computer, never on
+     another's (R-s6t): someone else's ready step says "Ready for" them.
+
+     Where a step stands is worked out, never kept by hand (plans-page.js).
+     Ours, from its branch, session and stories: waiting, working, our turn,
+     approved (a design whose build carries on on its branch, one owner,
+     R-k4d), ready to finish, a build stopped. Anyone's, from the remote:
+     ready for its owner, in progress (its branch pushed), a pull request
+     open, merged (R-r3z). A waiting step names only what it still waits for.
+
+     Needs you is ours alone: our turn, ready to finish, a stopped build, and
+     open steps ready to claim. Ready to finish is merged here, or pushed for
+     a pull request when the project has a remote (asked first in the modal);
+     neither without the person, unless they let the plan merge by itself
+     (R-p4h). A stopped build holds back only what waits for it (R-v2j).
+     Mine shows only our steps, by :has(), with no request. The forms' hidden
+     fields are the design's; the server works out what changes. */%>
+<% const p = it, steps = p.steps ?? [], me = p.me;
+   const byId = Object.fromEntries(steps.map(step => [step.id, step]));
+   const layerOf = (step, seen = new Set()) => {
+     if (seen.has(step.id)) return 0;
+     seen.add(step.id);
+     return Math.max(0, ...step.waitsFor.map(w => byId[w.id] ? layerOf(byId[w.id], seen) + 1 : 0));
+   };
+   const layers = [];
+   for (const step of steps) (layers[layerOf(step)] ??= []).push(step);
+   const names = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth'];
+   const kinds = { discussion: 'Discussion', design: 'Design', build: 'Build', fix: 'Fix' };
+   const nameOf = owner => owner ? owner.split(' <')[0] : 'Anyone';
+   const mine = step => Boolean(me) && step.owner === me;
+   const stateOf = step => ({
+     planned: { label: 'Not started', tone: '' },
+     waiting: { label: 'Waiting', tone: '' },
+     open: { label: 'Ready to claim', tone: 'accent' },
+     handed: { label: `Ready for ${nameOf(step.owner).split(' ')[0]}`, tone: '' },
+     elsewhere: { label: 'In progress', tone: '' },
+     working: { label: 'Working', tone: 'accent', pulse: true },
+     asking: { label: 'Your turn', tone: 'accent' },
+     ready: { label: 'Ready to finish', tone: 'accent' },
+     approved: { label: 'Approved', tone: '' },
+     pushed: { label: 'Pull request open', tone: '' },
+     stopped: { label: 'Build stopped', tone: 'warn' },
+     merged: { label: 'Merged', tone: '' },
+   })[step.state];
+   const list = words => words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words.at(-1)}` : words[0];
+   /* A build waits for its own design's approval when one person owns both
+      (they share a branch), and for anything else to be merged. */
+   const met = w => byId[w.id]?.state === 'merged' || (w.until === 'approved' && byId[w.id]?.state === 'approved');
+   const awaited = w => `${w.title} is ${w.until === 'approved' ? 'approved' : 'merged'}`;
+   const saysOf = step => {
+     if (step.state === 'waiting') {
+       const left = step.waitsFor.filter(w => !met(w));
+       return left.length ? `Starts once ${list(left.map(awaited))}.` : 'Starts in a moment: what it waits for is done.';
+     }
+     if (step.state === 'planned') return step.waitsFor.length ? `Starts once ${list(step.waitsFor.map(awaited))}.` : 'Starts as soon as the plan does.';
+     return step.says;
+   };
+   const needs = steps.filter(step => step.state === 'open' || (mine(step) && ['asking', 'ready', 'stopped'].includes(step.state)));
+   const owners = new Set(steps.map(step => step.owner ?? ''));
+   const team = owners.size > 1 || (owners.size === 1 && !owners.has(me)); %>
+<% if (!steps.length) { %>
+<section class="card" aria-labelledby="steps-title">
+  <h2 id="steps-title">Steps</h2>
+  <div class="status" role="status">
+    <span class="pulse" aria-hidden="true"></span>
+    <span>The agent is reading the project and its architecture, and drafting the steps…</span>
+  </div>
+  <p class="secondary">They appear here as it writes them. Tell it in the chat if there’s more it should know, such as who does what.</p>
+</section>
+<% } else { %>
+<% if (needs.length) { %>
+<section class="card" aria-labelledby="needs-title">
+  <h2 id="needs-title">Needs you</h2>
+  <ul class="list">
+    <% for (const step of needs) { const s = stateOf(step); %>
+    <li>
+      <span class="item">
+        <span class="icon icon-<%= step.kind === 'build' ? 'code' : step.kind === 'discussion' ? 'document' : 'screen' %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><a href="<%= step.url %>" ko-target="drawer?"><%= step.title %></a><span class="pill <%= s.tone %>"><%= s.label %></span></span>
+          <span class="secondary"><%= step.state === 'open' ? 'Ready, and nobody has it yet. Claim it and it starts on your computer.' : step.says %></span>
+        </span>
+        <span class="spacer"></span>
+        <% if (step.state === 'open' && me) { %>
+        <form action="<%= step.url %>/claim" method="post" ko-target="planWork">
+          <input type="hidden" name="owner" value="<%= me %>">
+          <input type="hidden" name="state" value="working">
+          <input type="hidden" name="says" value="Started on your computer just now.">
+          <button class="btn small" type="submit" title="Make it yours. It starts here, and the others see it’s yours.">Claim it</button>
+        </form>
+        <% } else if (step.state === 'ready' && step.finish === 'push') { %>
+        <a class="btn small" href="<%= step.url %>/push" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
+        <% } else if (step.state === 'ready') { %>
+        <form action="<%= step.url %>/merge" method="post" ko-target="planWork">
+          <input type="hidden" name="state" value="merged">
+          <input type="hidden" name="says" value="Merged into main just now.">
+          <button class="btn small" type="submit" title="Merge <%= step.branch %> into main. The steps waiting for it start once it’s in.">Merge into main</button>
+        </form>
+        <% } else if (step.session) { %>
+        <a class="btn small" href="<%= step.session %>"><%= step.state === 'stopped' ? 'Open the build' : 'Open its session' %></a>
+        <% } %>
+      </span>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %>
+
+<section class="card plan-steps" aria-labelledby="steps-title">
+  <div class="cluster gap-2">
+    <h2 id="steps-title">Steps <span class="muted"><%= steps.filter(step => step.state === 'merged').length %> of <%= steps.length %> merged</span></h2>
+    <% if (team && me) { %>
+    <span class="spacer"></span>
+    <span class="segmented" role="radiogroup" aria-label="Show">
+      <label class="btn small"><input class="sr-only" type="radio" name="whose" value="all" checked>Everyone’s</label>
+      <label class="btn small"><input class="sr-only steps-mine" type="radio" name="whose" value="mine">Mine</label>
+    </span>
+    <% } %>
+  </div>
+  <figure class="stack gap-2">
+    <div class="map" aria-label="The plan’s steps, in the order they start">
+      <% for (const [i, layer] of layers.entries()) { if (!layer) continue; %>
+      <section class="map-layer<%= layer.some(mine) ? ' has-mine' : '' %>" aria-label="<%= names[i] ?? `Step ${i + 1}` %>">
+        <h3 class="map-label"><%= names[i] ?? `Step ${i + 1}` %></h3>
+        <ul class="map-nodes">
+          <% for (const step of layer) { const s = stateOf(step); %>
+          <li<% if (mine(step)) { %> class="mine"<% } %>><a class="map-node<%= step.state === 'stopped' ? ' warn' : '' %>" href="<%= step.url %>" ko-target="drawer?">
+            <span class="map-node-title"><%= step.title %><span class="pill"><%= kinds[step.kind] %></span><span class="pill <%= s.tone %>"><% if (s.pulse) { %><span class="pulse" aria-hidden="true"></span><% } %><%= s.label %></span></span>
+            <span class="muted"><% if (team) { %><%= mine(step) ? 'You' : nameOf(step.owner) %> · <% } %><%= saysOf(step) %></span>
+          </a></li>
+          <% } %>
+        </ul>
+      </section>
+      <% } %>
+    </div>
+    <figcaption class="muted">Read from the top. Each step starts on its owner’s computer once the steps it waits for are merged into main; an open step waits for someone to claim it. A build follows its own design’s approval on the same branch when one person has both. Steps side by side run at the same time.</figcaption>
+  </figure>
+</section>
+<% } %>

@@ -1,0 +1,7 @@
+<%/* A visual the agent is still writing: a copy of the app's
+     server/views/_visual-drawing.eta for a plan's session (see _message.eta
+     here). Keep it in step with that one. `it.of` is 'flow' or 'map'. */%>
+<figure class="stack gap-2" aria-busy="true">
+  <span class="skeleton block" aria-hidden="true"></span>
+  <figcaption class="muted"><%= it.of === 'map' ? 'Drawing a map of the parts…' : 'Drawing a flow…' %></figcaption>
+</figure>

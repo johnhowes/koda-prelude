@@ -13,9 +13,11 @@ import { Readable } from 'node:stream';
 import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { appBuildPrompt, architectureBrief, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
+import { appBuildPrompt, architectureBrief, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, planPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, SPECIAL_KINDS, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
 import { createFix, fixSlug, listFixes } from './fixes.js';
+import { PLANS_DIR, createPlan, planDir, planIdOf, updatePlan, updateStep } from './plans.js';
+import { designOf, firstName, hasStarted, planDesign, planRuns, planSessionOf, plansOf, samePerson, stepModel } from './plans-page.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
@@ -24,7 +26,7 @@ import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
-import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, filesChangedSince, gitState, gitUser, headOf, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
+import { addedAfter, baselineOf, beforeRemoval, branchFiles, buildable, changedSince, committers, createBranches, designCommitsSince, fetchRemote, filesChangedSince, gitState, gitUser, headOf, mainBranch, mergedFiles, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
 import { DEFAULT_STACK, appOf, chooseStack, findKoda, markExisting } from './app-config.js';
 import { createInstalls } from './installs.js';
 import { createChannels, readEvents } from './events.js';
@@ -125,9 +127,11 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     live,
     // A turn starting or ending changes what needs the person and what's in
     // its project; one that ended while its session was on screen was seen.
-    turns: createTurns({ runner, live, onChange: ({ seen, finished, watched }) => {
+    turns: createTurns({ runner, live, onChange: ({ key, seen, finished, watched }) => {
       if (finished && watched) app.seen.mark(seen);
       tell(app, { needs: true, projects: true });
+      // ...and moves a plan's step: working, your turn, stopped (prelude/coordinator).
+      plansMovedBy(app, key);
     } }),
     seen: createSeen(home),   // the sessions the person has opened (home.js)
     waiting: null,            // how many things wait on the person, once counted (the bar)
@@ -148,6 +152,10 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     dictation: createDictation({ home, live }),   // the speech model, on this machine
     stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
     architectureChecks: createArchitectureChecks(),   // each project's last check against its architecture (architecture.js)
+    planStates: new Map(),    // folder id -> Map("<plan>/<step>" -> state), as last worked out (announcePlans)
+    planFiles: new Map(),     // "<folder id>:<design>" -> the files its branch changed, kept as it's tidied away (R-u3t)
+    planRuns: new Set(),      // folder ids whose plans' steps are being started or merged now (runPlans)
+    planRefused: new Set(),   // "<folder id>:<plan>/<step>" that couldn't start, said once until it can
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -762,6 +770,254 @@ async function handle(req, res, app) {
       return send(res, 200, [envelope('modal?'), envelope('workspace', render('./projects/page', model)), envelope('notice?', notice)].join('\n'));
     }
 
+    // A project's plans (prelude/coordinator), on the design system:
+    //   GET  /f/<id>/plans        Plans, newest first, each where it stands (plans-page.js)
+    //   GET  /f/<id>/plans/new    New plan, in the modal over Plans
+    //   POST /f/<id>/plans        make one, on its own branch (R-q2x): Plans with it at
+    //                             the top, the modal closed; or New plan, refused
+    // Reading Plans fetches, as the project's page does: what came in is said
+    // down the channel (announcePlans).
+    const plansPage = (status, { model = plansOf(app, folder), regions = {} } = {}) => {
+      const alone = fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length;
+      return send(res, status, shaped('plans/list', model, { fragment: alone, path: `${here}/plans`, title: `Plans · ${folder.name}`, layout: alone ? {} : layout(), regions, system: true }));
+    };
+    if (rest === '/plans' && req.method === 'GET' && !folder.branch) {
+      tidy();
+      return plansPage(200);
+    }
+    if (rest === '/plans/new' && req.method === 'GET' && !folder.branch) {
+      const model = plansOf(app, folder);
+      const html = render('./plans/_new', model);
+      return fragment ? send(res, 200, html) : plansPage(200, { model, regions: { modal: { html, location: path } } });
+    }
+    if (rest === '/plans' && req.method === 'POST' && !folder.branch) {
+      const form = await readForm(req);
+      const input = { title: String(form.get('title') ?? ''), goal: String(form.get('goal') ?? ''), mergeAlone: form.get('mergeAlone') === 'true' };
+      // Refused, New plan comes back with what was typed and why; on a cold
+      // load, in the modal over Plans.
+      const refused = (status, errors) => {
+        const model = plansOf(app, folder);
+        const html = render('./plans/_new', { ...model, title: input.title, goal: input.goal, $errors: errors });
+        return fragment ? send(res, status, html) : plansPage(status, { model, regions: { modal: { html, location: `${here}/plans/new` } } });
+      };
+      if (!input.goal.trim()) return refused(422, { goal: 'Say what should change, so the agent can draft the steps.' });
+      const taken = new Set(plansOf(app, folder).plans.map(plan => plan.id));
+      const base = planIdOf(input);
+      let id = base;
+      for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+      // In a repository, a plan is drafted on its own branch, prelude/plan-<id>.
+      let made = null;
+      if (repository) {
+        made = branchFor(`${PLANS_DIR}/${id}`, input.title.trim() || 'A new plan');
+        if (made.error) return refused(409, { goal: made.error });
+      }
+      const result = createPlan(made ? made.entry.path : folder.path, { id, ...input });
+      if (result.errors) return refused(422, { goal: result.errors.goal ?? result.errors.title });
+      if (made) app.branches.commit(made.entry, `${result.plan.title || 'A new plan'}: a new plan (committed by Prelude)`);
+      // The agent drafts its steps from what was asked, in the plan's session (R-h9w).
+      const drafting = startPlanTurn(app, folder, result.plan, [{ text: result.plan.goal }]);
+      if (drafting.error) console.error(`Drafting the plan ${id}: ${drafting.error}`);
+      if (!fragment) return redirect(res, `${here}/plans`);
+      return send(res, 200, [envelope('modal?'), envelope('workspace', render('./plans/list', plansOf(app, folder)))].join('\n'));
+    }
+
+    // A plan's page (prelude/coordinator): its session beside the plan, on the design system:
+    //   GET  /f/<id>/plans/<plan>                    the page
+    //   GET  /f/<id>/plans/<plan>/work               Needs you and the steps, a region (reloaded on plans-changed)
+    //   GET  /f/<id>/plans/<plan>/transcript         the plan's session, a region (reloaded on plans-changed)
+    //   GET  /f/<id>/plans/<plan>/steps/<s>          a step, in the drawer over the page
+    //   GET  /f/<id>/plans/<plan>/steps/<s>/push     Push a step, asked first in the modal
+    //   POST /f/<id>/plans/<plan>/start              start it, into main (R-q2x), or resume it: the page
+    //   POST /f/<id>/plans/<plan>/pause              pause it (R-c7n): the page
+    //   POST /f/<id>/plans/<plan>/messages           a message to the agent: the box afresh, and the transcript
+    //   POST /f/<id>/plans/<plan>/brief              change the brief: the card
+    //   POST /f/<id>/plans/<plan>/settings           whether it merges by itself, with no remote (R-p4h): the card
+    //   POST /f/<id>/plans/<plan>/steps/<s>          change its prompt, until it starts (R-m3k): the step
+    //   POST /f/<id>/plans/<plan>/steps/<s>/claim    make an open step yours (R-b8y): the work
+    //   POST /f/<id>/plans/<plan>/steps/<s>/merge    merge it into main: the work, the drawer closed
+    //   POST /f/<id>/plans/<plan>/steps/<s>/push     push it for a pull request: the work, the modal and drawer closed
+    // A form's hidden fields (status, state, says, owner) are the design's: what
+    // changes is worked out here, from who's at this computer and where the plan stands.
+    const planMatch = !folder.branch && rest.match(/^\/plans\/([a-z0-9-]+)(\/[^?]*)?$/);
+    if (planMatch && planMatch[1] !== 'new') {
+      const planId = planMatch[1];
+      const tail = planMatch[2] ?? '';
+      const base = `${here}/plans/${planId}`;
+      const planNow = () => plansOf(app, folder).plans.find(candidate => candidate.id === planId) ?? null;
+      const runOf = () => planRuns(app, folder).find(run => run.plan.id === planId) ?? null;
+      let model;
+      try { model = planNow(); } catch (error) { return unreadable(error); }
+      if (!model) return page(404, 'not-found', { what: 'This project has no such plan.' }, 'Not found');
+      const planTitle = `${model.title || 'A new plan'} · Plans · ${folder.name}`;
+      // One URL, two shapes; a cold load of an overlay is the page, with it in its region.
+      const planPage = (status, { plan = model, regions = {} } = {}) => {
+        const alone = fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length;
+        return send(res, status, shaped('plans/page', plan, { fragment: alone, path: base, title: planTitle, layout: alone ? {} : layout(), regions, system: true }));
+      };
+      const part = (status, view, data, also = []) => (fragment ? send(res, status, [render(`./plans/${view}`, data), ...also].join('\n')) : planPage(status));
+
+      if (req.method === 'GET' && tail === '') { tidy(); return planPage(200); }
+      if (req.method === 'GET' && tail === '/work') { tidy(); return part(200, '_work', model); }
+      if (req.method === 'GET' && tail === '/transcript') return part(200, '_transcript', model);
+
+      const stepMatch = tail.match(/^\/steps\/([a-z0-9-]+)(\/(claim|merge|push))?$/);
+      const step = stepMatch && model.steps.find(candidate => candidate.id === stepMatch[1]);
+      if (stepMatch && !step) return page(404, 'not-found', { what: 'This plan has no such step.' }, 'Not found');
+      const stepAction = stepMatch?.[3] ?? null;
+      const overlayOver = (status, into, html) => (fragment ? send(res, status, html) : planPage(status, { regions: { [into]: { html, location: path } } }));
+      if (req.method === 'GET' && step && !stepAction) return overlayOver(200, 'drawer', render('./plans/_step', step));
+      if (req.method === 'GET' && step && stepAction === 'push') return overlayOver(200, 'modal', render('./plans/_push', step));
+      if (req.method !== 'POST') return page(404, 'not-found', { what: 'There’s nothing at this address.' }, 'Not found');
+
+      const form = await readForm(req);
+      const run = runOf();
+      const kept = planHome(app, folder, run.plan);
+      if (kept.error) return planPage(409, { regions: { notice: { html: `<p role="alert">${escapeHtml(kept.error)}</p>`, location: path } } });
+      const note = (text, extra = {}) => notePlan(app, folder, run.plan, { text, ...extra });
+      const changed = () => { if (app.live.listening(APP_CHANNEL)) app.live.publish(APP_CHANNEL, 'plans-changed'); };
+      const started = Boolean(run.plan.startedAt);
+      const remote = Boolean(remoteOf(folder.path));
+
+      // Start: nothing in a plan starts until the person starts it, once its
+      // steps are drafted (R-h9w). Starting puts it into main, so everyone on
+      // the project sees it (R-q2x); its ready steps start at once. Resume,
+      // from paused, lets the steps that hadn't started start again (R-c7n).
+      if (tail === '/start' || tail === '/pause') {
+        const starting = tail === '/start' && model.status === 'planning' && model.steps.length > 0;
+        const resuming = tail === '/start' && model.status === 'paused';
+        const pausing = tail === '/pause' && model.status === 'running';
+        if (starting || resuming || pausing) {
+          updatePlan(kept.home.path, planId, { status: pausing ? 'paused' : 'running', ...(starting ? { startedAt: new Date().toISOString() } : {}) });
+          const now = runOf().plan;
+          const saved = savePlan(app, folder, kept, now, starting ? 'started' : resuming ? 'resumed' : 'paused', { toMain: true });
+          note(saved.error ? `Prelude couldn’t put the plan into main: ${saved.error}`
+            : starting ? (remote ? `You started the plan, and pushed it for a pull request${saved.pr ? ` (${saved.pr})` : ''}: once it’s merged, everyone on the project sees it.` : 'You started the plan, and it went into main.')
+            : resuming ? 'You resumed the plan: steps that haven’t started start once they’re ready.'
+            : 'You paused the plan: no step starts until you resume it. Steps already working carry on.', saved.error ? { failed: true } : {});
+          tidy();
+          if (!pausing) await runPlans(app, folder);
+          changed();
+        }
+        return redirect(res, base);
+      }
+
+      // A message to the agent: it changes the plan, and says what it changed.
+      // Sent while it works, it waits, and goes when it's done.
+      if (tail === '/messages') {
+        const text = String(form.get('message') ?? '').trim();
+        const refused = (status, message) => (fragment
+          ? send(res, status, render('./plans/_composer', { ...model, $errors: { message } }))
+          : planPage(status, { plan: { ...model, $errors: { message } } }));
+        if (!text) return refused(422, 'This is required.');
+        const design = planDesign(run.plan);
+        if (app.turns.busy(kept.home, design)) {
+          app.turns.enqueue(kept.home, design, { sessionId: planSession(kept.home, run.plan).session.id, text, prompt: text, images: [], lookingAt: null });
+        } else {
+          const sent = startPlanTurn(app, folder, run.plan, [{ text }]);
+          if (sent.error) return refused(409, sent.error);
+        }
+        if (!fragment) return redirect(res, base);
+        const fresh = planNow();
+        return send(res, 200, [render('./plans/_composer', fresh), envelope('planTranscript', render('./plans/_transcript', fresh))].join('\n'));
+      }
+
+      // The brief: what every step's first message starts with (R-f8d). Steps
+      // already started keep what they were sent.
+      if (tail === '/brief') {
+        const brief = String(form.get('brief') ?? '').trim();
+        if (!brief) {
+          const refusedModel = { ...model, $errors: { brief: 'This is required.' } };
+          return fragment ? send(res, 422, render('./plans/_brief', refusedModel)) : planPage(422, { plan: refusedModel });
+        }
+        updatePlan(kept.home.path, planId, { brief });
+        savePlan(app, folder, kept, runOf().plan, 'its brief, changed', { toMain: started });
+        changed();
+        return fragment ? send(res, 200, render('./plans/_brief', planNow())) : redirect(res, base);
+      }
+
+      // By itself: only a project with no remote may let the plan merge a
+      // finished step; with one, every step is pushed by the person (R-p4h).
+      if (tail === '/settings') {
+        if (!remote && model.status !== 'done') {
+          updatePlan(kept.home.path, planId, { mergeAlone: form.getAll('mergeAlone').map(String).at(-1) === 'true' });
+          savePlan(app, folder, kept, runOf().plan, 'what it does by itself, changed', { toMain: started });
+          await runPlans(app, folder);
+          changed();
+        }
+        return fragment ? send(res, 200, render('./plans/_settings', planNow())) : redirect(res, base);
+      }
+
+      if (!step) return page(404, 'not-found', { what: 'There’s nothing at this address.' }, 'Not found');
+      const drafted = run.plan.steps.find(candidate => candidate.id === step.id);
+      const hasBegun = Boolean(drafted?.started) || !['planned', 'waiting', 'open', 'handed'].includes(step.state);
+
+      // A step's prompt changes until the step starts, and not after (R-m3k).
+      if (!stepAction) {
+        const prompt = String(form.get('prompt') ?? '').replace(/\r\n/g, '\n').trim();
+        const refused = (status, message) => {
+          const html = render('./plans/_step', { ...step, prompt: String(form.get('prompt') ?? ''), $errors: { prompt: message } });
+          return overlayOver(status, 'drawer', html);
+        };
+        if (!prompt) return refused(422, 'This is required.');
+        // Started since the drawer opened: it shows the prompt as it was sent, with no form.
+        if (hasBegun) return overlayOver(409, 'drawer', render('./plans/_step', step));
+        updateStep(kept.home.path, planId, step.id, { prompt });
+        savePlan(app, folder, kept, runOf().plan, `${step.title}’s prompt, changed`, { toMain: started });
+        changed();
+        const fresh = planNow().steps.find(candidate => candidate.id === step.id);
+        return overlayOver(200, 'drawer', render('./plans/_step', fresh));
+      }
+
+      const work = (status, also = []) => (fragment ? send(res, status, [render('./plans/_work', planNow()), ...also].join('\n')) : redirect(res, base));
+
+      // Claim: an open step that's ready becomes this person's, and starts
+      // here (R-b8y, R-s6t); the others see it's theirs once it's in main.
+      if (stepAction === 'claim') {
+        const me = model.me;
+        if (step.state !== 'open' || !me) return work(409);
+        updateStep(kept.home.path, planId, step.id, { owner: me });
+        note(`You claimed ${step.title}: it’s yours, and starts here.`);
+        savePlan(app, folder, kept, runOf().plan, `${step.title}, claimed by ${me}`, { toMain: true });
+        await runPlans(app, folder);
+        changed();
+        return work(200);
+      }
+
+      // Merge: only a step ready to finish, and only when the person says so
+      // (R-p4h). The drawer closes; the steps waiting for it start once it's in.
+      if (stepAction === 'merge') {
+        if (step.state !== 'ready' || remote) return work(409);
+        const merged = mergeStep(app, folder, run.plan, step);
+        if (merged.error) {
+          note(`${step.title} couldn’t be merged: ${merged.error}`, { failed: true });
+          return work(409);
+        }
+        await runPlans(app, folder);
+        changed();
+        return work(200, [envelope('drawer?')]);
+      }
+
+      // Push: asked first in the modal, saying what goes where; the plan
+      // never pushes by itself (R-p4h). Pushed, the modal and the drawer
+      // close, and the steps show the pull request open.
+      if (stepAction === 'push') {
+        const entry = app.branches.forDesign(folder.id, designOf(step));
+        if (step.state !== 'ready' || !entry) return work(409, [envelope('modal?')]);
+        const design = findDesign(entry.path, entry.design.split('/'))?.design ?? { id: entry.design, title: step.title };
+        const published = app.branches.publish(entry, { title: `${design.title} (designed and built with Prelude)`, body: pullRequestBody(app, entry, design) });
+        if (published.error) {
+          console.error(`Pushing ${entry.branch} failed: ${published.error}`);
+          const notice = `<p role="alert">${escapeHtml(published.error)}</p>`;
+          return fragment ? send(res, 409, [render('./plans/_push', step), envelope('notice?', notice)].join('\n')) : planPage(409, { regions: { modal: { html: render('./plans/_push', step), location: `${step.url}/push` }, notice: { html: notice, location: path } } });
+        }
+        note(`You pushed ${step.title} for a pull request${published.pr ? ` (${published.pr})` : ''}. The steps waiting for it start once it’s merged.`);
+        tell(app, { needs: true, projects: true });
+        changed();
+        if (!fragment) return redirect(res, base);
+        return send(res, 200, [envelope('modal?'), envelope('drawer?'), envelope('planWork', render('./plans/_work', planNow()))].join('\n'));
+      }
+    }
+
     // New design, in the modal; ?kind= picks the design system or the shell.
     if (rest === '/designs/new' && req.method === 'GET' && !folder.branch) {
       return overlay(200, render('./projects/_new-design', projectModel()));
@@ -1069,7 +1325,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*|plans(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }
@@ -1106,11 +1362,22 @@ function tidyFolder(app, folder, { fetch = true } = {}) {
   // Where the pushed branches' pull requests stand: one merged with commits
   // since isn't tidied, but its row changes (R-t5w).
   const pulls = () => { try { return app.branches.of(folder.id).filter(entry => entry.published).map(entry => `${entry.id}:${app.branches.pullRequest(entry, folder.path)?.state}`).join(); } catch { return ''; } };
+  // A plan's branch stays while it runs: it's where its file and session are
+  // here (R-q2x). What a step's branch changed is kept as it goes, for the
+  // plan's map (R-u3t).
+  const keep = entry => entry.design.startsWith(`${PLANS_DIR}/`);
+  const beforeRemove = entry => {
+    if (entry.base) app.planFiles.set(`${folder.id}:${entry.design}`, branchFiles(folder.path, entry.branch, entry.base));
+    app.hosts.stop({ path: entry.path });
+  };
   const tidyNow = (before = null) => {
     try {
-      const notes = app.branches.tidy(folder, { fetch: false, beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
+      const notes = app.branches.tidy(folder, { fetch: false, keep, beforeRemove });
       if (notes.length || (before !== null && pulls() !== before)) tell(app, { needs: true, projects: true });
     } catch { /* git couldn't say: try again next time */ }
+    // What came in may have moved a plan's steps: a pull request merged, a
+    // teammate's step started on their computer (R-r3z).
+    announcePlans(app, folder);
   };
   if (!fetch || !remoteOf(folder.path)) return tidyNow();
   // One fetch at a time per project.
@@ -1122,6 +1389,372 @@ function tidyFolder(app, folder, { fetch = true } = {}) {
     app.fetching.delete(folder.id);
     if (existsSync(folder.path)) tidyNow(before);
   });
+}
+
+/**
+ * Say what moved in a project's plans since their steps were last worked out
+ * (prelude/coordinator's events): in each plan's session, so the person reads
+ * it there and the agent is told it with the next message (R-d6m); and down
+ * the app's channel, plans-changed when any step's state changed, which a
+ * plan's page reloads on, and each step that started, in the notice. Then
+ * the plans run on (runPlans). The first time a project is read only sets
+ * where things stood.
+ */
+function announcePlans(app, folder) {
+  let runs;
+  try { runs = planRuns(app, folder); } catch { return; }
+  const steps = runs.flatMap(run => run.worked.map(worked => [`${run.plan.id}/${worked.step.id}`, worked, run]));
+  const before = app.planStates.get(folder.id);
+  app.planStates.set(folder.id, new Map(steps.map(([key, worked]) => [key, worked.state])));
+  if (before) {
+    const moved = steps.filter(([key, worked]) => before.has(key) && before.get(key) !== worked.state);
+    for (const [, worked, run] of moved) {
+      try { notePlanMoved(app, folder, run, worked); } catch (error) { console.error(error); }
+    }
+    if (moved.length && app.live.listening(APP_CHANNEL)) {
+      app.live.publish(APP_CHANNEL, 'plans-changed');
+      // One that started here says so as it starts, with its session (startStep).
+      for (const [key, worked, run] of moved) {
+        if (hasStarted(worked.state) && !hasStarted(before.get(key)) && !samePerson(worked.step.owner, run.me)) {
+          app.live.publish(APP_CHANNEL, `<div ko-into="notice?">${render('./plans/_started', stepModel(folder, run.plan, worked.step, worked)).trim()}</div>`);
+        }
+      }
+    }
+  }
+  runPlans(app, folder, runs).catch(error => console.error(error));
+}
+
+/** A turn started or ended in a project: its plans' steps may have moved. `key` is the turn's session's. */
+function plansMovedBy(app, key) {
+  const where = app.folders.get(String(key ?? '').split('/')[0]);
+  const project = where?.branch ? app.folders.get(where.branch.parentId) : where;
+  if (project && !project.branch && gitState(project.path) === 'repository') announcePlans(app, project);
+}
+
+/**
+ * Where a plan is kept on this computer, to change it or its session: its
+ * branch's worktree, made from main if it has none here (R-q2x), or the
+ * project itself when it isn't a repository. { home, entry } or { error }.
+ */
+function planHome(app, folder, plan) {
+  if (gitState(folder.path) !== 'repository') return { home: folder, entry: null };
+  const made = app.branches.ensure({ folder, designId: `${PLANS_DIR}/${plan.id}`, title: plan.title || 'A new plan' });
+  if (made.error) return made;
+  return { home: app.folders.get(made.entry.id), entry: made.entry };
+}
+
+/** The plan's session in its home, made if it has none yet. */
+function planSession(home, plan) {
+  const dir = planDir(home.path, plan.id);
+  return { dir, session: planSessionOf(dir) ?? createSession(dir, { title: plan.title || 'Planning' }) };
+}
+
+/** Prelude says something in a plan's session (R-d6m): a note, or the parts a merged step changed. */
+function notePlan(app, folder, plan, entry) {
+  const kept = planHome(app, folder, plan);
+  if (kept.error) return console.error(`The plan ${plan.id}: ${kept.error}`);
+  const { dir, session } = planSession(kept.home, plan);
+  appendEntry(dir, session.id, entry.type ? entry : { type: 'note', ...entry });
+}
+
+/**
+ * Commit a change to a plan on its branch, and, once it has started, put it
+ * into main the project's way (R-q2x): a pull request with a remote (the
+ * person's own click, so asked), else merged here. Prelude's own changes as
+ * it runs (a step started) are only committed, and go with the next. {} or
+ * { error }, with { pr } when pushed.
+ */
+function savePlan(app, folder, { entry }, plan, what, { toMain = false } = {}) {
+  if (!entry) return {};
+  try { app.branches.commit(entry, `${plan.title || 'A new plan'}: ${what} (committed by Prelude)`); } catch (error) { return { error: String(error.stderr || error.message).trim() }; }
+  if (!toMain) return {};
+  if (remoteOf(folder.path)) {
+    const published = app.branches.publish(entry, {
+      title: `Plan: ${plan.title || plan.id} (planned with Prelude)`,
+      body: `The plan “${plan.title || plan.id}”, in \`${PRELUDE_DIR}/${PLANS_DIR}/${plan.id}/plan.json\`. Merged into main, everyone on the project sees it in Prelude, and each step starts on its owner’s computer.`,
+    });
+    return published.error ? { error: published.error } : { pr: published.pr ?? published.compare ?? null };
+  }
+  const merged = app.branches.merge(entry, `Merge ${entry.branch}: the plan ${plan.title || plan.id} (merged by Prelude)`);
+  return merged.error ? { error: merged.error } : {};
+}
+
+/** Words for a list: "a", "a and b", "a, b and c". */
+const listWords = words => (words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words.at(-1)}` : words[0] ?? '');
+
+/** Said in a plan's session when a step moved (R-d6m); a step started here says so as it starts (startStep). */
+function notePlanMoved(app, folder, run, { step, state }) {
+  const who = samePerson(step.owner, run.me) ? 'You' : firstName(step.owner) || 'Someone';
+  const remote = Boolean(remoteOf(folder.path));
+  if (state === 'merged') {
+    // A step that changed the app's code shows the parts it changed, on the map (R-u3t).
+    const files = app.planFiles.get(`${folder.id}:${designOf(step)}`) ?? mergedFiles(folder.path, step.branch, Date.parse(run.plan.startedAt ?? '') || 0);
+    const changed = files && ['build', 'fix'].includes(step.kind) ? partsChanged(app, folder, files) : null;
+    if (changed?.parts.length) {
+      const says = `${step.title} is in main, and changed ${changed.parts.length === 1 ? '1 part' : `${changed.parts.length} parts`} of the app.`;
+      return notePlan(app, folder, run.plan, { type: 'parts', says, files: changed.files, parts: changed.parts });
+    }
+    return notePlan(app, folder, run.plan, { text: `${step.title} is in main.` });
+  }
+  // One pushed from here says so as it's pushed.
+  if (state === 'pushed' && who === 'You') return;
+  const said = {
+    pushed: `${who} pushed ${step.title} for a pull request. The steps waiting for it start once it’s merged.`,
+    elsewhere: `${step.title} started on ${who === 'You' ? 'your other' : `${who}’s`} computer.`,
+    stopped: `${step.title}’s build stopped. The steps waiting for it stay waiting; the others carry on.`,
+    open: `${step.title} is ready, and nobody has it yet: whoever claims it from Needs you has it.`,
+    handed: `${step.title} is ready for ${who}: it starts when they next open Prelude.`,
+    ready: `${step.title} is ready to finish: ${remote ? 'push it for a pull request' : run.plan.mergeAlone ? 'the plan merges it into main' : 'merge it into main'}.`,
+    approved: `${step.title}’s screens are approved: its build carries on on its branch.`,
+  }[state];
+  if (said) notePlan(app, folder, run.plan, { text: said, ...(state === 'stopped' ? { failed: true } : {}) });
+}
+
+/**
+ * Run a project's plans on, as far as this computer may (prelude/coordinator):
+ *   - start each of this person's steps that's ready, here only (R-s6t);
+ *   - carry a build on to its design's next page once one is built;
+ *   - merge a step ready to finish, only when the project has no remote and
+ *     the person let the plan merge by itself; it never pushes (R-p4h);
+ *   - finish a plan once every step is merged into main (R-e2q).
+ * Nothing runs in a plan that's drafted (R-h9w) or paused (R-c7n). One run
+ * at a time per project.
+ */
+async function runPlans(app, folder, runs = null) {
+  if (folder.branch || app.planRuns.has(folder.id)) return;
+  app.planRuns.add(folder.id);
+  let moved = false;
+  try {
+    for (const run of runs ?? planRuns(app, folder)) {
+      if (run.plan.status !== 'running') continue;
+      for (const { step, state, start } of run.worked) {
+        const key = `${folder.id}:${run.plan.id}/${step.id}`;
+        if (start) moved = (await startStep(app, folder, run, step, key)) || moved;
+        else if (state === 'asking' && step.kind === 'build' && step.started) moved = (await buildOn(app, folder, run, step, key)) || moved;
+        else if (state === 'ready' && step.finish === 'merge' && run.plan.mergeAlone && !remoteOf(folder.path)) {
+          const merged = mergeStep(app, folder, run.plan, step);
+          if (merged.error) refusedOnce(app, folder, run.plan, key, `The plan couldn’t merge ${step.title}: ${merged.error}`);
+          else moved = true;
+        }
+      }
+      const fresh = planRuns(app, folder).find(other => other.plan.id === run.plan.id);
+      if (fresh?.plan.status === 'running' && fresh.worked.length && fresh.worked.every(worked => worked.state === 'merged')) {
+        finishPlan(app, folder, fresh);
+        moved = true;
+      }
+    }
+  } finally {
+    app.planRuns.delete(folder.id);
+  }
+  if (moved && app.live.listening(APP_CHANNEL)) app.live.publish(APP_CHANNEL, 'plans-changed');
+}
+
+/** Said once in the plan's session, until the step can go on: why it can't. */
+function refusedOnce(app, folder, plan, key, text) {
+  console.error(text);
+  if (app.planRefused.has(key)) return;
+  app.planRefused.add(key);
+  notePlan(app, folder, plan, { text, failed: true });
+}
+
+/** Every step is merged into main: the plan is finished (R-e2q). */
+function finishPlan(app, folder, run) {
+  const kept = planHome(app, folder, run.plan);
+  if (kept.error) return console.error(kept.error);
+  updatePlan(kept.home.path, run.plan.id, { status: 'done', finishedAt: new Date().toISOString() });
+  notePlan(app, folder, run.plan, { text: 'Every step is in main: the plan is finished.' });
+  savePlan(app, folder, kept, run.plan, 'finished, every step in main');
+}
+
+/**
+ * What a prompt asks for from earlier steps, named as those steps actually
+ * made it (R-f8d), from what they brought into main since the plan started:
+ * a decision by its id, a design's new files by their paths, a build by its
+ * branch. Named once; kept with the step.
+ */
+function namedRefs(folder, plan, step) {
+  const since = Date.parse(plan.startedAt ?? '') || 0;
+  return (step.refs ?? []).map(ref => {
+    if (ref.named) return ref;
+    const from = plan.steps.find(other => other.title === ref.from || other.id === ref.from);
+    if (!from) return ref;
+    const designId = designOf(from);
+    const added = addedAfter(folder.path, `${PRELUDE_DIR}/${designId}`, since).filter(path => !/\/(sessions|snapshots|stories)\//.test(path));
+    const decisions = added.map(path => path.match(/\/decisions\/(D-[a-z0-9]{3})\.md$/)?.[1]).filter(Boolean);
+    const named = decisions.length ? listWords(decisions)
+      : ['build', 'fix'].includes(from.kind) ? `what ${from.title} built, merged into main from ${from.branch}`
+      : added.length ? listWords([...added.slice(0, 4), ...(added.length > 4 ? [`${added.length - 4} more in ${PRELUDE_DIR}/${designId}/`] : [])])
+      : `${from.title} as it is in main, in ${PRELUDE_DIR}/${designId}/`;
+    return { ...ref, named };
+  });
+}
+
+/** A step's first message (R-f8d): the plan's brief, then its prompt, then what it asks for, as it was made. */
+const firstMessage = (plan, step, refs) => [
+  plan.brief.trim(),
+  String(step.prompt ?? '').trim(),
+  refs.some(ref => ref.named) ? `(From Prelude, for this step of the plan “${plan.title}”: what this prompt asks for from earlier steps, as they made it. Read each before you start.)\n${refs.filter(ref => ref.named).map(ref => `- “${ref.asks}”: ${ref.named}`).join('\n')}` : null,
+].filter(Boolean).join('\n\n');
+
+/** A post Prelude makes to its own routes, as a step starting does: { status, location, error }. */
+async function postInternally(app, folder, found, rest, fields) {
+  const url = `/f/${folder.id}/d/${found.design.id}/${rest.join('/')}`;
+  const body = Readable.from([Buffer.from(new URLSearchParams(fields).toString())]);
+  const req = Object.assign(body, { method: 'POST', url, headers: { host: 'localhost', 'content-type': 'application/x-www-form-urlencoded' } });
+  const answer = { status: 0, location: null, error: null };
+  const res = { headersSent: false, writeHead(status, headers = {}) { answer.status = status; answer.location = headers.location ?? null; }, end() {}, write() {} };
+  const page = (status, view, data) => { answer.status = status; answer.error = data?.what ?? data?.error ?? null; };
+  await handleDesign({ req, res, url: new URL(url, 'http://localhost'), page, app, folder, ...found, rest });
+  return answer;
+}
+
+/**
+ * Start a step here (R-s6t): its branch made from main, or main brought into
+ * it first; a design the plan makes, made on it. A design or a discussion
+ * starts with its first message, and the rest of its session is its
+ * owner's; a build starts building its design's first page to build. The
+ * first message is the plan's brief and then its prompt, with what it asks
+ * for named (R-f8d). What it started is kept in the plan, and said in its
+ * session (R-d6m). Whether it started.
+ */
+async function startStep(app, folder, run, step, key) {
+  const { plan } = run;
+  const designId = designOf(step);
+  const refuse = why => { refusedOnce(app, folder, plan, key, `${step.title} couldn’t start: ${why}`); return false; };
+  let entry = app.branches.forDesign(folder.id, designId);
+  if (entry) {
+    if (app.turns.busy({ id: entry.id }, { id: designId })) return false;   // its agent is working: next time
+    const updated = app.branches.update(entry);
+    if (updated.error) return refuse(updated.error);
+    if (updated.clashes) return refuse(`bringing ${updated.from} into ${entry.branch} clashed in ${updated.clashes.join(', ')}. Resolve it on the branch, and it starts.`);
+  } else {
+    const made = app.branches.ensure({ folder, designId, title: step.title });
+    if (made.error) return refuse(made.error);
+    entry = made.entry;
+  }
+  const worktree = app.folders.get(entry.id);
+  let found = findDesign(worktree.path, designId.split('/'));
+  if (!found && step.kind !== 'build') {
+    // A design the plan asked for that isn't there yet, made as New design makes one.
+    const input = { title: step.title, area: designId.includes('/') ? designId.split('/').slice(0, -1).join('/') : '', kind: 'design' };
+    if (designIdOf(input) !== designId) return refuse(`there’s no design at ${PRELUDE_DIR}/${designId}, and one titled “${step.title}” would be ${PRELUDE_DIR}/${designIdOf(input)}. Ask the agent to name its branch after its title.`);
+    const created = createDesign(worktree.path, input);
+    if (created.errors) return refuse(Object.values(created.errors)[0]);
+    app.branches.commit(entry, `${step.title}: a new design, for the plan ${plan.title} (committed by Prelude)`);
+    found = findDesign(worktree.path, created.design.id.split('/'));
+  }
+  if (!found) return refuse(`there’s no design at ${PRELUDE_DIR}/${designId} on ${entry.branch}.`);
+  const refs = namedRefs(folder, plan, step);
+  const message = firstMessage(plan, step, refs);
+  let session = null;
+  if (step.kind === 'build') {
+    const group = groupsOf(app, { entry, design: found.design, dir: found.dir }).groups.find(one => one.toBuild);
+    if (!group) return refuse(`${found.design.title} has no page left to build.`);
+    const answer = await postInternally(app, worktree, found, ['builds'], { group: group.key, asked: message });
+    if (answer.status !== 303) return refuse(answer.error ?? 'its build couldn’t start.');
+    session = answer.location;
+  } else {
+    const answer = await postInternally(app, worktree, found, ['sessions'], { message });
+    if (answer.status !== 303) return refuse(answer.error ?? 'its session couldn’t start.');
+    session = answer.location;
+  }
+  app.planRefused.delete(key);
+  const kept = planHome(app, folder, plan);
+  if (kept.error) return true;
+  updateStep(kept.home.path, plan.id, step.id, { started: new Date().toISOString(), ...(session ? { session } : {}), refs });
+  const named = refs.filter(ref => ref.named).map(ref => ref.named);
+  notePlan(app, folder, plan, { text: `${step.title} started here, on ${entry.branch}: its first message was the plan’s brief and its prompt${named.length ? `, naming ${listWords(named)}` : ''}.` });
+  savePlan(app, folder, kept, plan, `${step.title} started`);
+  if (app.live.listening(APP_CHANNEL)) {
+    app.live.publish(APP_CHANNEL, `<div ko-into="notice?">${render('./plans/_started', { ...step, session }).trim()}</div>`);
+  }
+  return true;
+}
+
+/** A build step whose page is built goes on to its design's next page to build, by itself. Whether it did. */
+async function buildOn(app, folder, run, step, key) {
+  const designId = designOf(step);
+  const entry = app.branches.forDesign(folder.id, designId);
+  const worktree = entry && app.folders.get(entry.id);
+  const found = worktree && findDesign(worktree.path, designId.split('/'));
+  if (!found || app.turns.busy(worktree, found.design)) return false;
+  const group = groupsOf(app, { entry, design: found.design, dir: found.dir }).groups.find(one => one.toBuild);
+  if (!group) return false;
+  const answer = await postInternally(app, worktree, found, ['builds'], { group: group.key });
+  if (answer.status !== 303) {
+    refusedOnce(app, folder, run.plan, key, `${step.title} couldn’t go on to ${group.title}: ${answer.error ?? 'its build didn’t start.'}`);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Merge a step ready to finish into main, here (no remote: R-p4h), as a
+ * project's branch is merged: its proposed decisions accepted first. Said in
+ * the plan's session once it's tidied away (announcePlans). {} or { error }.
+ */
+function mergeStep(app, folder, plan, step) {
+  const entry = app.branches.forDesign(folder.id, designOf(step));
+  if (!entry) return { error: `${step.branch} isn’t on this computer.` };
+  const title = findDesign(entry.path, entry.design.split('/'))?.design.title ?? step.title;
+  if (!app.branches.merging(entry) && acceptProposed(entry.path)) app.branches.commit(entry, `${title}: its proposed decisions, accepted by merging (committed by Prelude)`);
+  const merged = app.branches.merge(entry, `Merge ${entry.branch}: ${title} (merged by Prelude, for the plan ${plan.title || plan.id})`);
+  if (merged.error) return merged;
+  app.tidied.delete(folder.id);
+  tidyFolder(app, folder, { fetch: false });
+  tell(app, { needs: true, projects: true });
+  return {};
+}
+
+/**
+ * A turn of the plan's session: the person's messages, preceded by what
+ * happened as the plan ran since the agent's last turn (R-d6m). The agent
+ * writes only the plan's file, and draws as in any session (R-w5c). Each turn
+ * is committed to the plan's branch; once the plan has started, a change to
+ * its file goes into main the same way (R-q2x). Messages sent while it works
+ * wait, and go together when it's done. {} or { error }.
+ */
+function startPlanTurn(app, folder, plan, items) {
+  const kept = planHome(app, folder, plan);
+  if (kept.error) return kept;
+  const { home, entry } = kept;
+  const design = planDesign(plan);
+  const { dir, session } = planSession(home, plan);
+  const file = join(dir, 'plan.json');
+  const said = readEntries(dir, session.id);
+  const since = said.slice(said.findLastIndex(item => item.type === 'turn') + 1)
+    .filter(item => item.type === 'note' || item.type === 'parts').map(item => `- ${item.text ?? item.says}`);
+  const architecture = (() => {
+    const found = findArchitecture(app, home);
+    return isWritten(found) && found.dir.startsWith(join(home.path, PRELUDE_DIR)) ? { path: `${found.path}/architecture` } : null;
+  })();
+  const references = app.references.of(folder.id);
+  let before = null;
+  try { before = readFileSync(file, 'utf8'); } catch { /* none */ }
+  const started = app.turns.start({
+    folder: home, design, designDir: dir, sessionId: session.id,
+    message: items.map(item => item.text).join('\n\n'),
+    shown: items.map(item => ({ text: item.text })),
+    stopUrl: `/f/${folder.id}/plans/${plan.id}`,
+    references,
+    systemPrompt: planPrompt({ title: plan.title || 'A new plan', planPath: `${PRELUDE_DIR}/${PLANS_DIR}/${plan.id}`, branch: entry?.branch ?? null, designs: listDesigns(home.path), people: committers(folder.path), references, architecture }),
+    preface: since.length ? `(From Prelude, not the person: what happened as the plan ran since your last turn.)\n${since.join('\n')}` : null,
+    afterTurn: entry ? () => {
+      let after = null;
+      try { after = readFileSync(file, 'utf8'); } catch { /* none */ }
+      const now = planRuns(app, folder).find(run => run.plan.id === plan.id)?.plan ?? plan;
+      const saved = savePlan(app, folder, kept, now, 'the plan, as the agent changed it', { toMain: Boolean(now.startedAt) && after !== before });
+      return saved.error ? { type: 'note', failed: true, text: `Prelude couldn’t put the plan’s change into main: ${saved.error}` } : null;
+    } : null,
+    onIdle: () => {
+      if (app.live.listening(APP_CHANNEL)) app.live.publish(APP_CHANNEL, 'plans-changed');
+      const waiting = app.turns.takeQueued(home, design);
+      if (waiting.length) startPlanTurn(app, folder, plan, waiting);
+    },
+  });
+  if (started.error) return started;
+  if (app.live.listening(APP_CHANNEL)) app.live.publish(APP_CHANNEL, 'plans-changed');
+  return {};
 }
 
 /** Whether a design has pages to build: a feature, or the shell's own (its Settings, say). */
@@ -2607,7 +3240,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   // Build a group on the design's branch: a build session, briefed from the
   // group, its first turn started. The app build (group @app) is the shell's.
   if (req.method === 'POST' && rest[0] === 'builds' && rest.length === 1 && entry) {
-    const key = String((await readForm(req)).get('group') ?? '');
+    const form = await readForm(req);
+    const key = String(form.get('group') ?? '');
+    // A plan's build step starts with the plan's brief and its prompt (prelude/coordinator, R-f8d).
+    const asked = String(form.get('asked') ?? '').trim();
     const isApp = key === APP_GROUP.key && design.kind === 'shell';
     const work = buildsPages(design) && hosted ? groupsOf(app, { entry, design, dir }).groups : [];
     const group = isApp ? APP_GROUP : work.find(g => g.key === key) ?? null;
@@ -2636,7 +3272,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     if (turns.state(folder, design, null).kind !== 'idle') return refuse('The agent is working on this design. Wait for it to finish.');
     app.branches.building(entry, group);
     const connecting = isApp && appOf(folder.path).existing;
-    const message = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : group.key === LAYOUTS_GROUP.key ? 'Build the shell’s layouts.' : `Build ${group.title}.`;
+    const order = connecting ? 'Connect the app.' : isApp ? 'Build the app.' : group.key === LAYOUTS_GROUP.key ? 'Build the shell’s layouts.' : `Build ${group.title}.`;
+    const message = asked ? `${asked}\n\n${order}` : order;
     const made = createSession(dir, { title: connecting ? 'Connect the app' : isApp ? 'Build the app' : `Build: ${group.title}`, build: { group: group.key, title: group.title } });
     // Where the branch was when it started: what the build changed is since then.
     const session = updateSession(dir, made.id, { from: headOf(folder.path) }) ?? made;

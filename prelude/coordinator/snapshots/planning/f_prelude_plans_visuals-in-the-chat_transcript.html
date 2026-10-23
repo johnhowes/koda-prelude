@@ -1,0 +1,81 @@
+<li class="entry user">
+<div class="bubble">
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/overview.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/parts/views.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/design-workspace/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/fix-something/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/build/NOTES.md
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+I’ve drafted 8 steps, on the right.
+</p>
+<ul>
+<li>
+<strong>
+Prelude Architecture
+</strong>
+and
+<strong>
+Prelude Design System
+</strong>
+wait for nothing, so they start together.
+</li>
+<li>
+<strong>
+Design Workspace
+</strong>
+waits for both. Fix Something and Build reuse its transcript, so its design is finished first and built on a branch of its own.
+</li>
+<li>
+<strong>
+Fix Something
+</strong>
+and
+<strong>
+Build
+</strong>
+are each approved, then built on their own branch, one merge each.
+</li>
+</ul>
+<p>
+Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.
+</p>
+<p>
+This project has no remote, so each step is merged here when it’s done. I’ll ask you first unless you let the plan merge by itself.
+</p>
+<p>
+Nobody has a step yet, so each is open to whoever claims it. Tell me who should have which: I can see John Howes, Priya Raman and Marcus Bell in the history. Nothing starts until you start the plan.
+</p>
+</div>
+</div>
+</li>

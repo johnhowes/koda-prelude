@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+A step
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/prelude/plans/visuals-in-the-chat" ko-scope="/">
+<div class="stack gap-3 plan fills" ko-item>
+<header class="cluster gap-3">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude">
+Prelude
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/prelude/plans">
+Plans
+</a>
+</nav>
+<h1>
+Visuals in the chat
+</h1>
+<p class="secondary">
+<strong>
+Running
+</strong>
+· 1 of 8 steps merged.
+</p>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+<span class="muted" title="The plan is drafted on a branch of its own. Starting it puts it into main, so everyone on the project sees it; a later change goes the same way.">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+<code>
+prelude/plan-visuals-in-the-chat
+</code>
+</span>
+<form action="/f/prelude/plans/visuals-in-the-chat/pause" method="post">
+<input name="status" type="hidden" value="paused">
+<button class="btn small" title="No step starts until you resume it. Steps already working carry on." type="submit">
+Pause
+</button>
+</form>
+</div>
+</header>
+<div class="split gap-3 plan-workspace" style="--side: 26rem">
+<section aria-label="Planning session" class="panel side chat">
+<div class="toolbar">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+<span class="muted">
+Planning session
+</span>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="planTranscript" ko-invoke="event:plans-changed" ko-source="/f/prelude/plans/visuals-in-the-chat/transcript">
+<li class="entry user">
+<div class="bubble">
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/overview.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/parts/views.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/parts/agent.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/design-workspace/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/fix-something/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/build/NOTES.md
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+I’ve drafted 8 steps, on the right. This is what the change reaches in the app, as the architecture stands:
+</p>
+</div>
+<figure class="stack gap-2">
+<div aria-label="Prelude’s parts" class="map">
+<section aria-label="Windows" class="map-layer">
+<h3 class="map-label">
+Windows
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/desktop" ko-target="drawer?">
+<span class="map-node-title">
+Desktop shell
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Entry points" class="map-layer">
+<h3 class="map-label">
+Entry points
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/server" ko-target="drawer?">
+<span class="map-node-title">
+Server
+</span>
+<span class="muted">
+Gives the chat the parts of the session’s branch
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/tools" ko-target="drawer?">
+<span class="map-node-title">
+Command-line tools
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Pages" class="map-layer">
+<h3 class="map-label">
+Pages
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/pages" ko-target="drawer?">
+<span class="map-node-title">
+Page models
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/turns" ko-target="drawer?">
+<span class="map-node-title">
+Turns
+</span>
+<span class="muted">
+Records the parts a build or fix turn changed
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/views" ko-target="drawer?">
+<span class="map-node-title">
+Views
+</span>
+<span class="muted">
+Splits a message on its fences and draws each visual
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/architecture" ko-target="drawer?">
+<span class="map-node-title">
+Architecture
+</span>
+<span class="muted">
+Maps a turn’s changed files to their parts
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Agent and live state" class="map-layer">
+<h3 class="map-label">
+Agent and live state
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/agent" ko-target="drawer?">
+<span class="map-node-title">
+Agent
+</span>
+<span class="muted">
+Tells every prompt the vocabulary; ask gets the architecture brief
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/live" ko-target="drawer?">
+<span class="map-node-title">
+Live state
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/media" ko-target="drawer?">
+<span class="map-node-title">
+Pictures and dictation
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Designs and hosting" class="map-layer">
+<h3 class="map-label">
+Designs and hosting
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/branches" ko-target="drawer?">
+<span class="map-node-title">
+Branches
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/host" ko-target="drawer?">
+<span class="map-node-title">
+Design host
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/renderer" ko-target="drawer?">
+<span class="map-node-title">
+Renderer
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/runs" ko-target="drawer?">
+<span class="map-node-title">
+App runs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/stories" ko-target="drawer?">
+<span class="map-node-title">
+Backlog and increment
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/installs" ko-target="drawer?">
+<span class="map-node-title">
+Installs
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Project files" class="map-layer">
+<h3 class="map-label">
+Project files
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/designs" ko-target="drawer?">
+<span class="map-node-title">
+Designs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/sessions" ko-target="drawer?">
+<span class="map-node-title">
+Sessions
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/folders" ko-target="drawer?">
+<span class="map-node-title">
+Projects
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/preview" ko-target="drawer?">
+<span class="map-node-title">
+Preview files
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Shared helpers" class="map-layer">
+<h3 class="map-label">
+Shared helpers
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/visuals" ko-target="drawer?">
+<span class="map-node-title">
+Visuals
+</span>
+<span class="muted">
+New: reads, checks and describes each kind of block
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/words" ko-target="drawer?">
+<span class="map-node-title">
+Words
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside" class="map-layer">
+<h3 class="map-label">
+Outside
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/claude" ko-target="drawer?">
+<span class="map-node-title">
+Claude Code CLI
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/git" ko-target="drawer?">
+<span class="map-node-title">
+Git and hosting CLIs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/koda" ko-target="drawer?">
+<span class="map-node-title">
+Koda and Eta
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/local" ko-target="drawer?">
+<span class="map-node-title">
+Local programs
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Read from the top: each part uses parts in its own layer or below it.
+</figcaption>
+</figure>
+<div class="prose">
+<ul>
+<li>
+<strong>
+Prelude Architecture
+</strong>
+and
+<strong>
+Prelude Design System
+</strong>
+wait for nothing, so they start together: the decision on how visuals fit, and the series colours, flow and map markers.
+</li>
+<li>
+<strong>
+Design Workspace
+</strong>
+waits for both, since it draws with those components and follows that decision. Fix Something and Build reuse its transcript.
+</li>
+<li>
+<strong>
+Fix Something
+</strong>
+and
+<strong>
+Build
+</strong>
+follow it, then each build.
+</li>
+</ul>
+<p>
+Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.
+</p>
+<p>
+Who should have each step? I can see John Howes, Priya Raman and Marcus Bell in the history.
+</p>
+</div>
+</div>
+</li>
+<li class="entry user">
+<div class="bubble">
+I’ll take the architecture. Priya has the design system and Design Workspace and Fix Something; Marcus has Design Workspace’s build and the Build page’s. Leave Build’s design and Fix Something’s build open for whoever gets there first.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+prelude/plans/visuals-in-the-chat/plan.json
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+Done, on the right. Since Fix Something’s design and its build now have different people, the design goes into main through its own pull request, and the build starts once that’s merged: the pull request is where it changes hands. Build’s design and the Build page’s build the same.
+</p>
+<p>
+Nothing starts until you start the plan. Starting it puts the plan into main, so Priya’s and Marcus’s Prelude see it.
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+You started the plan, and pushed it for a pull request (#57), merged. Prelude Architecture started here; Prelude Design System is Priya’s.
+<span class="muted">
+· 12:51
+</span>
+</li>
+<li class="entry note">
+You pushed Prelude Architecture for a pull request (#58).
+<span class="muted">
+· 14:20
+</span>
+</li>
+<li class="entry note">
+Pull request #58 was merged on GitHub: Prelude Architecture is in main. Design Workspace now waits only for Prelude Design System.
+<span class="muted">
+· 14:58
+</span>
+</li>
+<li class="entry note">
+Priya pushed Prelude Design System for a pull request (#59).
+<span class="muted">
+· 15:40
+</span>
+</li>
+</ol>
+</div>
+<div id="planComposer" ko-region>
+<form action="/f/prelude/plans/visuals-in-the-chat/messages" class="composer" ko-target="planComposer" method="post">
+<input name="type" type="hidden" value="user">
+<input name="to" type="hidden" value="/f/prelude/plans/visuals-in-the-chat/messages">
+<label class="sr-only" for="planMessage">
+Message
+</label>
+<textarea id="planMessage" name="message" placeholder="Change the plan: add a step, change what one waits for, rewrite a prompt. Enter to send, Shift+Enter for a new line." rows="3">
+</textarea>
+<div class="composer-foot">
+<div class="composer-tools">
+</div>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+</form>
+</div>
+</section>
+<section aria-label="The plan" class="panel plan-surface">
+<div class="panel-body inset">
+<div class="split" style="--side: 18rem">
+<div class="stack gap-6">
+<div class="stack gap-6" id="planWork" ko-invoke="event:plans-changed" ko-source="/f/prelude/plans/visuals-in-the-chat/work">
+<section aria-labelledby="steps-title" class="card plan-steps">
+<div class="cluster gap-2">
+<h2 id="steps-title">
+Steps
+<span class="muted">
+1 of 8 merged
+</span>
+</h2>
+<span class="spacer">
+</span>
+<span aria-label="Show" class="segmented" role="radiogroup">
+<label class="btn small">
+<input checked class="sr-only" name="whose" type="radio" value="all">
+Everyone’s
+</label>
+<label class="btn small">
+<input class="sr-only steps-mine" name="whose" type="radio" value="mine">
+Mine
+</label>
+</span>
+</div>
+<figure class="stack gap-2">
+<div aria-label="The plan’s steps, in the order they start" class="map">
+<section aria-label="First" class="map-layer has-mine">
+<h3 class="map-label">
+First
+</h3>
+<ul class="map-nodes">
+<li class="mine">
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/architecture" ko-target="drawer?">
+<span class="map-node-title">
+Prelude Architecture
+<span class="pill">
+Discussion
+</span>
+<span class="pill ">
+Merged
+</span>
+</span>
+<span class="muted">
+You · Merged into main by pull request #58, today 14:58. It proposed D-v3x.
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/design-system" ko-target="drawer?">
+<span class="map-node-title">
+Prelude Design System
+<span class="pill">
+Design
+</span>
+<span class="pill ">
+Pull request open
+</span>
+</span>
+<span class="muted">
+Priya Raman · Priya pushed it for a pull request (#59), its screens approved. The plan goes on once it’s merged.
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Second" class="map-layer">
+<h3 class="map-label">
+Second
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/design-workspace" ko-target="drawer?">
+<span class="map-node-title">
+Design Workspace
+<span class="pill">
+Design
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Priya Raman · Starts once Prelude Design System is merged.
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Third" class="map-layer">
+<h3 class="map-label">
+Third
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/fix-something" ko-target="drawer?">
+<span class="map-node-title">
+Fix Something
+<span class="pill">
+Design
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Priya Raman · Starts once Design Workspace is merged.
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/build-design" ko-target="drawer?">
+<span class="map-node-title">
+Build
+<span class="pill">
+Design
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Anyone · Starts once Design Workspace is merged.
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/build-workspace" ko-target="drawer?">
+<span class="map-node-title">
+Build Design Workspace
+<span class="pill">
+Build
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Marcus Bell · Starts once Design Workspace is merged.
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Fourth" class="map-layer">
+<h3 class="map-label">
+Fourth
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/build-build" ko-target="drawer?">
+<span class="map-node-title">
+Build the Build page
+<span class="pill">
+Build
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Marcus Bell · Starts once Build is merged and Build Design Workspace is merged.
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something" ko-target="drawer?">
+<span class="map-node-title">
+Build Fix Something
+<span class="pill">
+Build
+</span>
+<span class="pill ">
+Waiting
+</span>
+</span>
+<span class="muted">
+Anyone · Starts once Fix Something is merged and Build Design Workspace is merged.
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Read from the top. Each step starts on its owner’s computer once the steps it waits for are merged into main; an open step waits for someone to claim it. A build follows its own design’s approval on the same branch when one person has both. Steps side by side run at the same time.
+</figcaption>
+</figure>
+</section>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="planWork">
+<p>
+Prelude couldn’t read where the plan’s steps stand. What’s shown may be out of date; try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" commandfor="planWork" type="button">
+Try again
+</button>
+</div>
+</div>
+</div>
+<aside aria-label="About the plan" class="side stack gap-6">
+<section aria-labelledby="brief-title" class="card" id="planBrief" ko-region>
+<h2 id="brief-title">
+Brief
+</h2>
+<p class="secondary">
+Every step’s prompt starts with this.
+</p>
+<div class="prose prompt">
+<p>
+Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.
+</p>
+<p>
+The agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.
+</p>
+<p>
+Ask and fix conversations use the same transcript, so whatever a design session shows, they show too.
+</p>
+</div>
+<details class="disclosure">
+<summary>
+What you asked for
+</summary>
+<div class="prose prompt">
+<p>
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.
+</p>
+</div>
+</details>
+<details class="disclosure">
+<summary>
+Change the brief
+</summary>
+<form action="/f/prelude/plans/visuals-in-the-chat/brief" class="stack" ko-target="planBrief" method="post">
+<label class="field">
+<span class="label">
+Brief
+</span>
+<textarea name="brief" rows="10">
+Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components. The agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it. Ask and fix conversations use the same transcript, so whatever a design session shows, they show too.
+</textarea>
+<span class="hint">
+Steps that haven’t started get the new brief. Those already started keep what they were sent.
+</span>
+</label>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Save the brief
+</button>
+</div>
+</form>
+</details>
+</section>
+<section aria-labelledby="settings-title" class="card" id="planSettings" ko-region>
+<h2 id="settings-title">
+By itself
+</h2>
+<ul class="stack gap-2">
+<li class="secondary">
+Starts each of your steps on this computer once the steps it waits for are merged into main, bringing its branch up to date first. Other people’s start on theirs.
+</li>
+<li class="secondary">
+Sends a design or discussion its first message. The rest of that session is its owner’s.
+</li>
+<li class="secondary">
+Leaves a step nobody owns for someone to claim.
+</li>
+</ul>
+<p class="secondary">
+Never pushes. When a step is ready to finish, you push it to
+<code>
+origin
+</code>
+for a pull request, and the plan carries on once it’s merged on GitHub.
+</p>
+</section>
+</aside>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-location="/f/prelude/plans/visuals-in-the-chat/steps/architecture" ko-region tabindex="-1">
+<div class="stack gap-6 plan-step">
+<div class="stack gap-2">
+<h2>
+Prelude Architecture
+</h2>
+<div class="cluster gap-2">
+<span class="pill">
+Discussion
+</span>
+<span class="pill ">
+Merged
+</span>
+<span class="muted">
+<code>
+prelude/prelude-architecture
+</code>
+</span>
+</div>
+<p class="secondary">
+Merged into main by pull request #58, today 14:58. It proposed D-v3x.
+</p>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+Open its session
+</a>
+</div>
+<section aria-labelledby="step-owner" class="stack gap-2">
+<h3 class="group-label" id="step-owner">
+Whose
+</h3>
+<p>
+John Howes
+<span class="muted">
+· john.howes@lendwithspark.com
+</span>
+</p>
+<p class="muted">
+It starts on their computer, and only theirs. To give it to someone else, say so in the plan’s chat.
+</p>
+</section>
+<section aria-labelledby="step-waits" class="stack gap-2">
+<h3 class="group-label" id="step-waits">
+Waits for
+</h3>
+<p class="secondary">
+Nothing: it starts as soon as the plan does.
+</p>
+</section>
+<section aria-labelledby="step-done" class="stack gap-2">
+<h3 class="group-label" id="step-done">
+Done when
+</h3>
+<p class="secondary">
+Its decision is proposed, you’ve agreed it, and it’s merged into main.
+</p>
+</section>
+<section aria-labelledby="step-prompt" class="stack gap-3">
+<div class="stack gap-1">
+<h3 class="group-label" id="step-prompt">
+Prompt
+</h3>
+<p class="muted">
+Sent Today 12:51, after the plan’s brief, as the session’s first message.
+</p>
+</div>
+<div class="prose prompt">
+<p>
+Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.
+</p>
+<p>
+Decide with me which part parses and renders visuals (views, or a new part); how the vocabulary is versioned, and how agents are told it (agent.js); and where it happens in the turn flow (flows/turn.md): at save time or at render time.
+</p>
+<p>
+Before proposing, check how Koda’s renderMarkdown handles a fenced block’s language tag, since that decides whether blocks are pulled out before rendering or after. Then write the proposed decision, any new or changed part, and a flow “A visual in a message”.
+</p>
+<p>
+Ask and fix conversations use the same transcript. askPrompt gets no architecture brief today: decide whether it should. The vocabulary goes into askPrompt and fixPrompt too.
+</p>
+</div>
+</section>
+</div>
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

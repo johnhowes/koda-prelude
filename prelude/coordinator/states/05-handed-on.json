@@ -1,0 +1,48 @@
+{
+  "projects": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "remote": { "name": "origin", "host": "GitHub" },
+      "plans": [
+        {
+          "id": "visuals-in-the-chat",
+          "title": "Visuals in the chat",
+          "project": { "id": "prelude", "name": "Prelude" },
+          "me": "John Howes <john.howes@lendwithspark.com>",
+          "status": "running",
+          "remote": { "name": "origin", "host": "GitHub" },
+          "mergeAlone": false,
+          "created": "23 Oct 12:31",
+          "branch": "prelude/plan-visuals-in-the-chat",
+          "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system.",
+          "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks and renders with a design-system partial.",
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system." },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right. Who should have each?</p>" },
+              { "type": "user", "message": "I’ll take the architecture. Priya has the design system, Design Workspace and Fix Something; Marcus has Design Workspace’s build and the Build page’s. Leave Build’s design and Fix Something’s build open." },
+              { "type": "text", "html": "<p>Done. Each starts on its owner’s computer; the open ones wait for someone to claim them.</p>" },
+              { "type": "note", "says": "You started the plan, and it went into main (#57).", "when": "23 Oct 12:51" },
+              { "type": "note", "says": "Pull request #58 was merged: Prelude Architecture is in main.", "when": "23 Oct 14:58" },
+              { "type": "note", "says": "Pull request #59 was merged: Prelude Design System is in main. Design Workspace started on Priya’s computer.", "when": "23 Oct 16:31" },
+              { "type": "note", "says": "Pull request #60 was merged: Design Workspace is in main. Fix Something started on Priya’s computer; Design Workspace’s build is ready for Marcus; Build’s design is ready for anyone to claim.", "when": "10:05" }
+            ]
+          },
+          "steps": [
+            { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture", "branch": "prelude/prelude-architecture", "session": "/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq", "waitsFor": [], "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #58, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.", "refs": [] },
+            { "id": "design-system", "title": "Prelude Design System", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system", "branch": "prelude/prelude-design-system", "waitsFor": [], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #59, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Support rich visuals in agent chats: series colours, a flow component, map markers, and a guideline for rich components.", "refs": [] },
+            { "id": "design-workspace", "title": "Design Workspace", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-workspace", "branch": "prelude/design-workspace", "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }, { "id": "design-system", "title": "Prelude Design System" }], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #60, today 10:05.", "started": "23 Oct 16:31", "prompt": "The chat should show visuals the agent asks for, drawn with components/flow.html and components/map.html, following D-v3x.", "refs": [{ "asks": "the architecture’s decision on visuals in the chat", "from": "Prelude Architecture", "named": "D-v3x" }] },
+            { "id": "fix-something", "title": "Fix Something", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/fix-something", "branch": "prelude/fix-something", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.", "finish": "push", "state": "elsewhere", "says": "Priya is working on it on her computer: its branch is pushed, 4 commits ahead of main.", "started": "Today 10:06", "prompt": "Asks and fixes should use the chat’s new visuals, as Design Workspace shows them (views/sessions/_visual-flow.eta and _visual-map.eta).", "refs": [{ "asks": "the chat’s new visuals, as Design Workspace shows them", "from": "Design Workspace", "named": "views/sessions/_visual-flow.eta and _visual-map.eta" }] },
+            { "id": "build-design", "title": "Build", "kind": "design", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-design", "branch": "prelude/build", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.", "finish": "push", "state": "open", "prompt": "Build sessions should help the developer see what’s being built and where it fits, using the transcript visuals from Design Workspace.", "refs": [{ "asks": "the transcript visuals from Design Workspace", "from": "Design Workspace" }] },
+            { "id": "build-workspace", "title": "Build Design Workspace", "kind": "build", "owner": "Marcus Bell <marcus.bell@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace", "branch": "prelude/design-workspace", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "handed", "says": "Ready since Design Workspace was merged, today 10:05. It starts when Marcus next opens Prelude; it’s in his Needs you.", "prompt": "Build Design Workspace’s visuals in the chat, following the architecture’s decision.", "refs": [{ "asks": "the architecture’s decision", "from": "Prelude Architecture" }] },
+            { "id": "build-build", "title": "Build the Build page", "kind": "build", "owner": "Marcus Bell <marcus.bell@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-build", "branch": "prelude/build", "waitsFor": [{ "id": "build-design", "title": "Build" }, { "id": "build-workspace", "title": "Build Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "waiting", "prompt": "Build the Build page’s visuals on the parser and partials the build of Design Workspace made.", "refs": [] },
+            { "id": "build-fix-something", "title": "Build Fix Something", "kind": "build", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something", "branch": "prelude/fix-something", "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "waiting", "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made.", "refs": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}

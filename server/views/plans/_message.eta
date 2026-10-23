@@ -1,0 +1,26 @@
+<%/* An agent's message in a plan's session: a copy of the app's
+     server/views/_message.eta, with its _visual-* partials beside it, so the
+     plan's views render where only their own folder is reachable (the design
+     host). Keep it in step with that one.
+
+     Its words, and the visuals it drew, in the order it wrote them (D-v3x):
+       - text: the words between, rendered as markdown (html);
+       - flow, map: a visual Prelude read and checked (_visual-flow, _visual-map);
+       - drawing: a visual the agent is still writing (_visual-drawing);
+       - unread: a block Prelude couldn't read, shown as written (_visual-unread).
+     A part on a visual opens its page in the drawer, over the conversation. */%>
+<div class="stack gap-3 message"<% if (it.id) { %> id="<%= it.id %>-text" ko-region<% } %>>
+<% for (const piece of it.pieces ?? []) { %>
+<% if (piece.kind === 'text') { %>
+  <div class="prose"><%~ piece.html %></div>
+<% } else if (piece.kind === 'flow') { %>
+  <%~ include('./_visual-flow', { ...piece.flow, target: 'drawer?' }) %>
+<% } else if (piece.kind === 'map') { %>
+  <%~ include('./_visual-map', { ...piece.map, target: 'drawer?' }) %>
+<% } else if (piece.kind === 'drawing') { %>
+  <%~ include('./_visual-drawing', piece) %>
+<% } else { %>
+  <%~ include('./_visual-unread', piece) %>
+<% } %>
+<% } %>
+</div>

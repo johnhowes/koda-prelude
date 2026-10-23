@@ -142,6 +142,8 @@ apostrophes (’); "…" for something in progress or that asks for more.
 | flow | sequence, trace | A request or a job, step by step through the parts. |
 | build, the app build | generate, compile, deploy | Turning a design into the app's code. |
 | story | ticket, task, issue | What's left to build, as text to copy. |
+| plan, step | epic, initiative, workflow, pipeline | A plan carries one change through several designs and builds; each step is one of them, on one branch. "Change" is a story's word ("A change"). |
+| claim | take, grab, assign to me | Making an open step yours, so it starts on your computer. |
 | check, render | test, validate | Prelude renders every page in every state. |
 | approve, approve again | snapshot, baseline, accept | Approving saves the screens as they render now. |
 | branch, merge, push, pull request | publish, ship, sync | Git's own words, for people who use git. |

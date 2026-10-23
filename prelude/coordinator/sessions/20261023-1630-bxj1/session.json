@@ -1,0 +1,12 @@
+{
+  "title": "Build: Plans",
+  "claudeSessionId": "2b8f6a49-4bbb-4da1-b255-11301dcf9778",
+  "started": true,
+  "startedAt": "2026-10-23T21:30:50.621Z",
+  "updatedAt": "2026-10-23T21:43:36.643Z",
+  "build": {
+    "group": "/f/:project/plans",
+    "title": "Plans"
+  },
+  "from": "1e0f98b9e6b251bc1c3cf605df5199c908596bb1"
+}

@@ -1,0 +1,255 @@
+{
+  "at": "2026-10-23T21:43:35.343Z",
+  "shots": [
+    {
+      "id": "typical~f_prelude_plans",
+      "key": "typical/f_prelude_plans",
+      "path": "/f/prelude/plans",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Plans",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_plans_new",
+      "key": "typical/f_prelude_plans_new",
+      "path": "/f/prelude/plans/new",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "New plan",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_plans_visuals-in-the-chat",
+      "key": "typical/f_prelude_plans_visuals-in-the-chat",
+      "path": "/f/prelude/plans/visuals-in-the-chat",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Plan",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "key": "typical/f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "A step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "key": "typical/f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture/push",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Push a step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "planning~f_prelude_plans",
+      "key": "planning/f_prelude_plans",
+      "path": "/f/prelude/plans",
+      "stateId": "planning",
+      "state": "Planning",
+      "page": "Plans",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "planning~f_prelude_plans_new",
+      "key": "planning/f_prelude_plans_new",
+      "path": "/f/prelude/plans/new",
+      "stateId": "planning",
+      "state": "Planning",
+      "page": "New plan",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "planning~f_prelude_plans_visuals-in-the-chat",
+      "key": "planning/f_prelude_plans_visuals-in-the-chat",
+      "path": "/f/prelude/plans/visuals-in-the-chat",
+      "stateId": "planning",
+      "state": "Planning",
+      "page": "Plan",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "planning~f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "key": "planning/f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+      "stateId": "planning",
+      "state": "Planning",
+      "page": "A step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "planning~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "key": "planning/f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture/push",
+      "stateId": "planning",
+      "state": "Planning",
+      "page": "Push a step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "build-stopped~f_prelude_plans",
+      "key": "build-stopped/f_prelude_plans",
+      "path": "/f/prelude/plans",
+      "stateId": "build-stopped",
+      "state": "Build stopped",
+      "page": "Plans",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "build-stopped~f_prelude_plans_new",
+      "key": "build-stopped/f_prelude_plans_new",
+      "path": "/f/prelude/plans/new",
+      "stateId": "build-stopped",
+      "state": "Build stopped",
+      "page": "New plan",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "build-stopped~f_prelude_plans_visuals-in-the-chat",
+      "key": "build-stopped/f_prelude_plans_visuals-in-the-chat",
+      "path": "/f/prelude/plans/visuals-in-the-chat",
+      "stateId": "build-stopped",
+      "state": "Build stopped",
+      "page": "Plan",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "build-stopped~f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "key": "build-stopped/f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+      "stateId": "build-stopped",
+      "state": "Build stopped",
+      "page": "A step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "build-stopped~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "key": "build-stopped/f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture/push",
+      "stateId": "build-stopped",
+      "state": "Build stopped",
+      "page": "Push a step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "done~f_prelude_plans",
+      "key": "done/f_prelude_plans",
+      "path": "/f/prelude/plans",
+      "stateId": "done",
+      "state": "Done",
+      "page": "Plans",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "done~f_prelude_plans_new",
+      "key": "done/f_prelude_plans_new",
+      "path": "/f/prelude/plans/new",
+      "stateId": "done",
+      "state": "Done",
+      "page": "New plan",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "done~f_prelude_plans_visuals-in-the-chat",
+      "key": "done/f_prelude_plans_visuals-in-the-chat",
+      "path": "/f/prelude/plans/visuals-in-the-chat",
+      "stateId": "done",
+      "state": "Done",
+      "page": "Plan",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "done~f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "key": "done/f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+      "stateId": "done",
+      "state": "Done",
+      "page": "A step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "done~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "key": "done/f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture/push",
+      "stateId": "done",
+      "state": "Done",
+      "page": "Push a step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "handed-on~f_prelude_plans",
+      "key": "handed-on/f_prelude_plans",
+      "path": "/f/prelude/plans",
+      "stateId": "handed-on",
+      "state": "Handed on",
+      "page": "Plans",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "handed-on~f_prelude_plans_new",
+      "key": "handed-on/f_prelude_plans_new",
+      "path": "/f/prelude/plans/new",
+      "stateId": "handed-on",
+      "state": "Handed on",
+      "page": "New plan",
+      "group": "Plans",
+      "status": "matches"
+    },
+    {
+      "id": "handed-on~f_prelude_plans_visuals-in-the-chat",
+      "key": "handed-on/f_prelude_plans_visuals-in-the-chat",
+      "path": "/f/prelude/plans/visuals-in-the-chat",
+      "stateId": "handed-on",
+      "state": "Handed on",
+      "page": "Plan",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "handed-on~f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "key": "handed-on/f_prelude_plans_visuals-in-the-chat_steps_architecture",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+      "stateId": "handed-on",
+      "state": "Handed on",
+      "page": "A step",
+      "group": "Plan",
+      "status": "matches"
+    },
+    {
+      "id": "handed-on~f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "key": "handed-on/f_prelude_plans_visuals-in-the-chat_steps_architecture_push",
+      "path": "/f/prelude/plans/visuals-in-the-chat/steps/architecture/push",
+      "stateId": "handed-on",
+      "state": "Handed on",
+      "page": "Push a step",
+      "group": "Plan",
+      "status": "matches"
+    }
+  ]
+}

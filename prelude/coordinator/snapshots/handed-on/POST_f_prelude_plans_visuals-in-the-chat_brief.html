@@ -1,0 +1,47 @@
+<h2 id="brief-title">
+Brief
+</h2>
+<p class="secondary">
+Every step’s prompt starts with this.
+</p>
+<div class="prose prompt">
+<p>
+Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.
+</p>
+<p>
+The agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks and renders with a design-system partial.
+</p>
+</div>
+<details class="disclosure">
+<summary>
+What you asked for
+</summary>
+<div class="prose prompt">
+<p>
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system.
+</p>
+</div>
+</details>
+<details class="disclosure" open>
+<summary>
+Change the brief
+</summary>
+<form action="/f/prelude/plans/visuals-in-the-chat/brief" class="stack" ko-target="planBrief" method="post">
+<label class="field">
+<span class="label">
+Brief
+</span>
+<textarea aria-describedby="brief-error" ko-invalid-server="This is required." name="brief" rows="10">
+Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components. The agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks and renders with a design-system partial.
+</textarea>
+<span class="error" id="brief-error">
+This is required.
+</span>
+</label>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Save the brief
+</button>
+</div>
+</form>
+</details>

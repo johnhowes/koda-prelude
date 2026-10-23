@@ -1,0 +1,19 @@
+<%/* Push a step that's ready to finish, asked first in the modal: pushing
+     publishes it. It says exactly what goes where, and that the plan goes on
+     once the pull request is merged on the Git server. Pushed, the modal and
+     the drawer close and the steps refresh. `it` is the step (PlanStep,
+     server/plans-page.js). */%>
+<% const s = it; %>
+<div class="stack gap-4">
+  <h2>Push <%= s.title %>?</h2>
+  <div class="notice warn">
+    <p>This pushes <code><%= s.branch %></code> to <code>origin</code>, where others can see it, and opens a pull request for it into main.</p>
+    <p>The steps waiting for it start once the pull request is merged.</p>
+  </div>
+  <form class="cluster actions" action="<%= s.url %>/push" method="post" ko-target="modal?">
+    <input type="hidden" name="state" value="pushed">
+    <input type="hidden" name="says" value="Pushed for a pull request just now. The plan carries on once it’s merged.">
+    <button class="btn primary" type="submit"><span class="icon icon-push" aria-hidden="true"></span>Push and open the pull request</button>
+    <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+  </form>
+</div>

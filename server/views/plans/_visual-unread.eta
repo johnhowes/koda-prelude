@@ -1,0 +1,8 @@
+<%/* A block tagged as a visual that Prelude couldn't read, shown as the
+     agent wrote it with why: a copy of the app's
+     server/views/_visual-unread.eta for a plan's session (see _message.eta
+     here). Keep it in step with that one. `it` has tag, code and why. */%>
+<figure class="stack gap-1">
+  <div class="prose"><pre><code><%= '```' + it.tag + '\n' + it.code + '\n```' %></code></pre></div>
+  <figcaption class="muted">Not drawn: <%~ it.why %></figcaption>
+</figure>

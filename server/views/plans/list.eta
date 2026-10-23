@@ -1,0 +1,60 @@
+<%/* A project's plans (prelude/coordinator): each carries one change through
+     several designs, builds and the architecture, in order. Newest first, as
+     the app gives them. A row says where the plan stands: how many steps are
+     merged, and how many wait on the person. New plan is the page's one
+     primary action, and opens in the modal. `it` is the project's plans,
+     each step where it stands (ProjectPlans, plans-page.js). */%>
+<% const p = it, plans = [...(p.plans ?? [])].reverse();
+   const needsYou = ['asking', 'ready', 'stopped'];
+   const status = {
+     planning: { label: 'Planning', tone: '' },
+     running: { label: 'Running', tone: 'accent' },
+     paused: { label: 'Paused', tone: 'warn' },
+     done: { label: 'Finished', tone: '' },
+   }; %>
+<div class="center plans" ko-item>
+  <div class="stack gap-8">
+    <div class="cluster gap-4">
+      <div class="stack gap-1">
+        <nav class="crumbs" aria-label="Where you are"><a href="/">Projects</a><span aria-hidden="true">›</span><a href="/f/<%= p.id %>"><%= p.name %></a></nav>
+        <h1>Plans</h1>
+      </div>
+      <span class="spacer"></span>
+      <% if (plans.length) { %>
+      <a class="btn primary" href="/f/<%= p.id %>/plans/new" ko-target="modal?"><span class="icon icon-add" aria-hidden="true"></span>New plan…</a>
+      <% } %>
+    </div>
+
+    <% if (!plans.length) { %>
+    <div class="empty page">
+      <span class="icon icon-document" aria-hidden="true"></span>
+      <div class="stack gap-2">
+        <h2>Plan a change that spans several designs</h2>
+        <p class="secondary">Say what you want changed. The agent drafts the steps (the architecture, each design, each build), what each waits for, and each one’s prompt. Then every step starts by itself once what it needs is in main.</p>
+      </div>
+      <div class="cluster actions">
+        <a class="btn primary large" href="/f/<%= p.id %>/plans/new" ko-target="modal?"><span class="icon icon-add" aria-hidden="true"></span>Plan the first change…</a>
+      </div>
+    </div>
+    <% } else { %>
+    <section class="card" aria-labelledby="plans-title">
+      <h2 id="plans-title">Plans <span class="muted"><%= plans.length %></span></h2>
+      <p class="secondary">Each carries one change through the designs and builds it needs, in order.</p>
+      <ul class="list">
+        <% for (const plan of plans) { const steps = plan.steps ?? [], merged = steps.filter(step => step.state === 'merged').length, waiting = steps.filter(step => step.state === 'open' || (plan.me && step.owner === plan.me && needsYou.includes(step.state))).length, s = status[plan.status] ?? status.planning; %>
+        <li>
+          <a class="item" href="/f/<%= p.id %>/plans/<%= plan.id %>">
+            <span class="icon icon-document" aria-hidden="true"></span>
+            <span class="item-text">
+              <span class="item-title"><%= plan.title || 'A new plan' %><span class="pill <%= s.tone %>"><%= s.label %></span><% if (waiting) { %><span class="pill accent"><%= waiting === 1 ? '1 needs you' : `${waiting} need you` %></span><% } %></span>
+              <span class="secondary"><%= !steps.length ? 'The agent is drafting its steps.' : plan.status === 'planning' ? `${steps.length} steps drafted, not started yet.` : `${merged} of ${steps.length} steps merged.` %></span>
+              <span class="muted"><%= plan.status === 'done' ? `Finished ${plan.finished}` : plan.status === 'planning' ? `Asked for ${plan.created}` : `Started ${plan.created}` %></span>
+            </span>
+          </a>
+        </li>
+        <% } %>
+      </ul>
+    </section>
+    <% } %>
+  </div>
+</div>

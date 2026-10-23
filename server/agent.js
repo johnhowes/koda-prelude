@@ -652,6 +652,43 @@ Images the person attaches are kept with this conversation, outside the project;
 }
 
 /**
+ * The instructions for a plan's session (prelude/coordinator): the person and
+ * the agent shape one change carried through several designs, builds and the
+ * architecture, in order. The agent writes only the plan's file; Prelude
+ * starts each step, names what it asks for from earlier steps (R-f8d), and
+ * says in the session what happens as it runs (R-d6m). It draws as any
+ * session does (R-w5c). `people` are the git identities who have committed
+ * to the project, `designs` its designs.
+ */
+export function planPrompt({ title, planPath, branch = null, designs = [], people = [], references = [], architecture = null }) {
+  const list = designs.map(design => `  - ${design.title} (prelude/${design.id}, branch prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : design.kind === 'architecture' ? ', the architecture' : ''})`).join('\n') || '  (none yet)';
+  return `You are planning a change with the person, in Prelude: "${title}". A plan carries one change through several designs, builds and the architecture, in the right order. Its file is ${planPath}/plan.json${branch ? `, on the branch ${branch}` : ''}; the person sees the plan beside this chat, as you save it. Write only that file: never another design, the app, or the plan's sessions/.
+
+The project:
+- Its designs, in prelude/: each has views, routes.json, states/, RULES.md and NOTES.md.
+${list}
+- People who have committed to it (owners are written exactly so, as git identities): ${people.length ? people.join('; ') : 'nobody yet'}.
+
+plan.json, as JSON with two-space indents. Keep what's there; change what the person asks:
+- "title": a few words, from what they asked for, once you know it. "goal": what they asked for, in their words; never change it.
+- "brief": what every step's first message starts with, written once: what the change is and why, the constraints every step shares. A few short paragraphs.
+- "status", "mergeAlone", "createdAt", "startedAt", "finishedAt": Prelude's. Never change them: nothing in a plan starts until the person starts it from the page (R-h9w).
+- "steps": in the order they can start, each { "id" (short, lower-case, hyphens), "title", "kind": "discussion" | "design" | "build" | "fix", "branch": "prelude/<design id>", "owner": "Name <email>" (or leave it out: open to anyone, who claims it once it's ready), "waitsFor": [{ "id", "title", "until"?: "approved" }], "doneWhen": a sentence, "finish": "push" when the project has a remote, else "merge", "prompt", "refs": [{ "asks", "from" }] }.
+
+How a plan is drafted:
+1. **Read first**: the designs' NOTES.md and RULES.md, the architecture, and the app, before drafting. Ask the person what you can't tell, such as who does what.
+2. **A step is one discussion, design, build or fix on one branch.** A discussion about the architecture is a step on the architecture's design. A design that doesn't exist yet is named as the person would title it; its branch is prelude/<its title in lower-case words joined by hyphens>.
+3. **Each build covers one design, on that design's branch** (R-n7b). A build that uses code another build makes waits for that build, merged.
+4. **A design and its build** (R-k4d): when one person has both and no other step needs the design before it's built, the build is on the design's branch and waits for the design with "until": "approved"; the two go into main together. Otherwise the design is finished first (through a pull request when its build is someone else's), and the build waits for it merged, on a new branch of that design.
+5. **A step waits only for what it really needs**: a step that stops holds back only the steps that wait for it.
+6. **Prompts describe what earlier steps make in words** ("the architecture's decision on visuals"), each listed in "refs" with the step it's from. Never guess a file or a decision's id: Prelude names each as it was actually made when the step starts, after the plan's brief.
+7. **A step that has started** (it has "started") keeps its prompt and owner: change neither; what's left is said in its own session.
+8. Each turn, say in a few lines what you drafted or changed. Notes from Prelude about what happened as the plan ran come with the person's message: answer from them.
+
+Draw as in any session: when you draft or change the plan, a map of the parts it reaches; when you explain why one step waits for another, a flow through the parts; and a few lines of text when that's enough.${architecture ? `\n\nThis project's architecture is written down in ${architecture.path}/: read overview.md and the parts the change reaches before drafting. Never change it from here: a decision is a discussion step's.\n\n${vocabulary()}` : ''}${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+}
+
+/**
  * The instructions for writing a page's story (prelude/build), when someone
  * asks for one (R-w3n): for people first, and only what the design changes in
  * the app as it is now (R-7qd), never what's built or another page's (R-c9r).

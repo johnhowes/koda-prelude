@@ -1,0 +1,84 @@
+{
+  "projects": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "remote": { "name": "origin", "host": "GitHub" },
+      "plans": [
+        {
+          "id": "visuals-in-the-chat",
+          "title": "Visuals in the chat",
+          "project": { "id": "prelude", "name": "Prelude" },
+          "me": "John Howes <john.howes@lendwithspark.com>",
+          "status": "done",
+          "remote": { "name": "origin", "host": "GitHub" },
+          "mergeAlone": false,
+          "created": "23 Oct 12:31",
+          "finished": "today 16:20",
+          "session": "/f/prelude/plans/visuals-in-the-chat/session",
+          "branch": "prelude/plan-visuals-in-the-chat",
+          "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system.",
+          "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks and renders with a design-system partial.",
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system." },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right. Change any prompt there, or tell me here. Nothing starts until you start the plan.</p>" },
+              { "type": "note", "says": "You started the plan.", "when": "23 Oct 12:51" },
+              { "type": "parts", "says": "Pull request #63 was merged: Build Design Workspace is in main, and changed 4 parts of the app. The Build page’s build and Build Fix Something started.", "when": "11:30", "map": {
+                "label": "Prelude’s parts", "mark": "touched", "count": 4,
+                "layers": [
+                  { "title": "Windows", "parts": [{ "id": "desktop", "title": "Desktop shell", "url": "/f/prelude/architecture/parts/desktop", "summary": "Tauri window on the server" }] },
+                  { "title": "Entry points", "parts": [
+                    { "id": "server", "title": "Server", "url": "/f/prelude/architecture/parts/server", "summary": "HTTP routes, one URL two shapes" },
+                    { "id": "tools", "title": "Command-line tools", "url": "/f/prelude/architecture/parts/tools", "summary": "npm run check, skills, reference host" }] },
+                  { "title": "Pages", "parts": [
+                    { "id": "pages", "title": "Page models", "url": "/f/prelude/architecture/parts/pages", "summary": "Home, project, design, build pages" },
+                    { "id": "turns", "title": "Turns", "url": "/f/prelude/architecture/parts/turns", "summary": "One agent turn per design at a time", "marked": true },
+                    { "id": "views", "title": "Views", "url": "/f/prelude/architecture/parts/views", "summary": "Eta views, CSS, design system", "marked": true },
+                    { "id": "architecture", "title": "Architecture", "url": "/f/prelude/architecture/parts/architecture", "summary": "Reads these files, checks the code" }] },
+                  { "title": "Agent and live state", "parts": [
+                    { "id": "agent", "title": "Agent", "url": "/f/prelude/architecture/parts/agent", "summary": "Prompts and the Claude CLI", "marked": true },
+                    { "id": "live", "title": "Live state", "url": "/f/prelude/architecture/parts/live", "summary": "SSE channels, current screen" },
+                    { "id": "media", "title": "Pictures and dictation", "url": "/f/prelude/architecture/parts/media", "summary": "Page captures, speech to text" }] },
+                  { "title": "Designs and hosting", "parts": [
+                    { "id": "branches", "title": "Branches", "url": "/f/prelude/architecture/parts/branches", "summary": "A branch and worktree per design" },
+                    { "id": "host", "title": "Design host", "url": "/f/prelude/architecture/parts/host", "summary": "Serves designs on their own origin" },
+                    { "id": "renderer", "title": "Renderer", "url": "/f/prelude/architecture/parts/renderer", "summary": "Sandboxed Eta for agent views" },
+                    { "id": "runs", "title": "App runs", "url": "/f/prelude/architecture/parts/runs", "summary": "Starts the built app" },
+                    { "id": "stories", "title": "Backlog and increment", "url": "/f/prelude/architecture/parts/stories", "summary": "What’s left to build, what changed" },
+                    { "id": "installs", "title": "Installs", "url": "/f/prelude/architecture/parts/installs", "summary": "Installs the app’s Koda" }] },
+                  { "title": "Project files", "parts": [
+                    { "id": "designs", "title": "Designs", "url": "/f/prelude/architecture/parts/designs", "summary": "Designs, fixes, app settings, snapshots" },
+                    { "id": "sessions", "title": "Sessions", "url": "/f/prelude/architecture/parts/sessions", "summary": "Transcripts, drafts, questions" },
+                    { "id": "folders", "title": "Projects", "url": "/f/prelude/architecture/parts/folders", "summary": "Recent projects, reference folders" },
+                    { "id": "preview", "title": "Preview files", "url": "/f/prelude/architecture/parts/preview", "summary": "Serves and watches prelude/ files" }] },
+                  { "title": "Shared helpers", "parts": [
+                    { "id": "visuals", "title": "Visuals", "url": "/f/prelude/architecture/parts/visuals", "summary": "Visual blocks: parse, check, describe", "marked": true },
+                    { "id": "words", "title": "Words", "url": "/f/prelude/architecture/parts/words", "summary": "Times and text as words" }] },
+                  { "title": "Outside", "parts": [
+                    { "id": "claude", "title": "Claude Code CLI", "url": "/f/prelude/architecture/parts/claude", "summary": "The agent", "outside": true },
+                    { "id": "git", "title": "Git and hosting CLIs", "url": "/f/prelude/architecture/parts/git", "summary": "git, gh, az", "outside": true },
+                    { "id": "koda", "title": "Koda and Eta", "url": "/f/prelude/architecture/parts/koda", "summary": "Page runtime, templates", "outside": true },
+                    { "id": "local", "title": "Local programs", "url": "/f/prelude/architecture/parts/local", "summary": "Edge or Chrome, whisper.cpp, ffmpeg", "outside": true }] }
+                ]
+              } },
+              { "type": "note", "says": "Pull request #65 was merged. Every step is in main: the plan is finished.", "when": "16:20" }
+            ]
+          },
+          "steps": [
+            { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture", "branch": "prelude/prelude-architecture", "session": "/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq", "waitsFor": [], "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #58, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.", "refs": [] },
+            { "id": "design-system", "title": "Prelude Design System", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system", "branch": "prelude/prelude-design-system", "session": "/f/prelude/d/prelude-design-system/s/20261023-1251-zw1z", "waitsFor": [], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #59, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Support rich visuals in agent chats: series colours, a flow component, map markers, and a guideline for rich components.", "refs": [] },
+            { "id": "design-workspace", "title": "Design Workspace", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-workspace", "branch": "prelude/design-workspace", "session": "/f/prelude/d/design-workspace/s/20261023-1631-v8mm", "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }, { "id": "design-system", "title": "Prelude Design System" }], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #60, yesterday.", "started": "23 Oct 16:31", "prompt": "The chat should show visuals the agent asks for, drawn with components/flow.html and components/map.html, following D-v3x.", "refs": [{ "asks": "the architecture’s decision on visuals in the chat", "from": "Prelude Architecture", "named": "D-v3x" }] },
+            { "id": "fix-something", "title": "Fix Something", "kind": "design", "owner": "Priya Raman <priya.raman@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/fix-something", "branch": "prelude/fix-something", "session": "/f/prelude/d/fix-something/s/20261024-1105-q3re", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #61, yesterday.", "started": "Yesterday 11:05", "prompt": "Asks and fixes should use the chat’s new visuals, as Design Workspace shows them.", "refs": [] },
+            { "id": "build-design", "title": "Build", "kind": "design", "owner": "John Howes <john.howes@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-design", "branch": "prelude/build", "session": "/f/prelude/d/build/s/20261024-1105-b7cn", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Its screens are approved and it’s merged into main, through a pull request: its build is someone else’s.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #62, yesterday. You claimed it.", "started": "Yesterday 11:05", "prompt": "Build sessions should help the developer see what’s being built and where it fits.", "refs": [] },
+            { "id": "build-workspace", "title": "Build Design Workspace", "kind": "build", "owner": "Marcus Bell <marcus.bell@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace", "branch": "prelude/design-workspace", "session": "/f/prelude/d/design-workspace/s/20261024-1106-n1ux", "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #63, today.", "started": "Yesterday 11:06", "prompt": "Build Design Workspace’s visuals in the chat, following D-v3x.", "refs": [] },
+            { "id": "build-build", "title": "Build the Build page", "kind": "build", "owner": "Marcus Bell <marcus.bell@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-build", "branch": "prelude/build", "session": "/f/prelude/d/build/s/20261025-1130-r4tz", "waitsFor": [{ "id": "build-design", "title": "Build" }, { "id": "build-workspace", "title": "Build Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #64, today.", "started": "Today 11:30", "prompt": "Build the Build page’s visuals on the parser and partials the build of Design Workspace made.", "refs": [] },
+            { "id": "build-fix-something", "title": "Build Fix Something", "kind": "build", "owner": "Marcus Bell <marcus.bell@lendwithspark.com>", "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something", "branch": "prelude/fix-something", "session": "/f/prelude/d/fix-something/s/20261025-1130-h5dp", "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace" }], "doneWhen": "Every story is built, the check passes, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #65, today.", "started": "Today 11:30", "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made.", "refs": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}

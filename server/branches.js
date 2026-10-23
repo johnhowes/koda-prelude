@@ -257,6 +257,109 @@ export function gitUser(folderPath) {
   try { return git(folderPath, 'config', 'user.name'); } catch { return ''; }
 }
 
+/** Who's at this computer, as git signs a commit where a folder is: "Name <email>", the name alone, or '' with none. */
+export function gitIdentity(folderPath) {
+  const name = gitUser(folderPath);
+  let email = '';
+  try { email = git(folderPath, 'config', 'user.email'); } catch { /* none */ }
+  return name && email ? `${name} <${email}>` : name;
+}
+
+/**
+ * The people who have committed to a repository, as git signs them ("Name
+ * <email>"), most commits first: who a plan's steps may be given to
+ * (prelude/coordinator, R-b8y). The latest 5000 commits are read.
+ */
+export function committers(repo) {
+  let lines;
+  try { lines = git(repo, 'log', '-n', '5000', '--format=%aN <%aE>').split('\n').filter(Boolean); } catch { return []; }
+  const counts = new Map();
+  for (const line of lines) counts.set(line, (counts.get(line) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([identity]) => identity);
+}
+
+/**
+ * Where a branch is, made here or pushed to the remote by someone else
+ * (prelude/coordinator, R-r3z): { sha, at (ms), local } or null when
+ * neither has it.
+ */
+export function branchTip(repo, branch) {
+  for (const [ref, local] of [[`refs/heads/${branch}`, true], [`refs/remotes/origin/${branch}`, false]]) {
+    try {
+      const [sha, at] = git(repo, 'log', '-1', '--format=%H %ct', ref).split(' ');
+      return { sha, at: Number(at) * 1000, local };
+    } catch { /* not there */ }
+  }
+  return null;
+}
+
+/** The main line work is merged into: the remote's main once fetched, else this one's. */
+export function mainTip(repo) {
+  const into = mainBranch(repo);
+  for (const ref of [`refs/remotes/origin/${into}`, `refs/heads/${into}`]) {
+    try { return git(repo, 'rev-parse', ref); } catch { /* not there */ }
+  }
+  return null;
+}
+
+/**
+ * When the main line first changed a path after a time (ms): that commit's
+ * time, or null. A branch merged and deleted, here or on the remote, is
+ * found by what it brought into main.
+ */
+export function landedAfter(repo, path, after) {
+  const main = mainTip(repo);
+  if (!main) return null;
+  try {
+    const times = git(repo, 'log', '--format=%ct', `--since=@${Math.floor(after / 1000)}`, main, '--', path)
+      .split('\n').filter(Boolean).map(line => Number(line) * 1000).filter(at => at > after);
+    return times.length ? Math.min(...times) : null;
+  } catch { return null; }
+}
+
+/**
+ * The files the main line added under a path after a time (ms), still
+ * there, repository-relative: what a step merged since it could start made
+ * (prelude/coordinator, R-f8d).
+ */
+export function addedAfter(repo, path, after) {
+  const main = mainTip(repo);
+  if (!main) return [];
+  try {
+    const added = git(repo, 'log', '--diff-filter=A', '--name-only', '--format=', `--since=@${Math.floor(after / 1000)}`, main, '--', path)
+      .split('\n').map(line => line.trim()).filter(Boolean);
+    const now = new Set(git(repo, 'ls-tree', '-r', '--name-only', main, '--', path).split('\n').filter(Boolean));
+    return [...new Set(added)].filter(file => now.has(file));
+  } catch { return []; }
+}
+
+/**
+ * The files a branch's own commits changed since it was made from `base`:
+ * its first-parent line, so what an update from main brought in isn't
+ * counted (prelude/coordinator, R-u3t). Repository-relative.
+ */
+export function branchFiles(repo, branch, base) {
+  try {
+    return [...new Set(git(repo, 'log', '--first-parent', '--no-merges', '--name-only', '--format=', `${base}..refs/heads/${branch}`)
+      .split('\n').map(line => line.trim()).filter(Boolean))];
+  } catch { return []; }
+}
+
+/**
+ * The files a branch brought into the main line, found by the merge commit
+ * that names it (a pull request merged on the Git server, or here) since a
+ * time (ms): for a branch made on someone else's computer (R-u3t). A
+ * squashed one names no branch, and is [].
+ */
+export function mergedFiles(repo, branch, after) {
+  const main = mainTip(repo);
+  if (!main) return [];
+  try {
+    const merge = git(repo, 'log', main, '--merges', '-1', '--format=%H', `--since=@${Math.floor(after / 1000)}`, '--fixed-strings', `--grep=${branch}`);
+    return merge ? git(repo, 'diff', '--name-only', `${merge}^1`, merge).split('\n').filter(Boolean) : [];
+  } catch { return []; }
+}
+
 /** The repository's remote, for pushing and pull requests: { url, host: 'github' | 'azure' | 'other' } or null. */
 export function remoteOf(folderPath) {
   let url;
@@ -424,8 +527,11 @@ export function createBranches({ home }) {
       const ready = prepare(folder.path, [`prelude/${designId}`, 'prelude/prelude.json'], `${title}, as designed so far (committed by Prelude)`);
       if (ready.error) return ready;
       const main = mainBranch(folder.path);
-      // A fix's branch is prelude/fix-<slug> (step 11); a design's, prelude/<design>.
-      const base = designId.startsWith('fixes/') ? `prelude/fix-${slug(designId.slice(6))}` : `prelude/${slug(designId)}`;
+      // A fix's branch is prelude/fix-<slug> (step 11); a plan's, prelude/plan-<id>
+      // (prelude/coordinator, R-q2x); a design's, prelude/<design>.
+      const base = designId.startsWith('fixes/') ? `prelude/fix-${slug(designId.slice(6))}`
+        : designId.startsWith('plans/') ? `prelude/plan-${slug(designId.slice(6))}`
+        : `prelude/${slug(designId)}`;
       let branch = base;
       for (let n = 2; gitOk(folder.path, 'rev-parse', '--verify', '--quiet', `refs/heads/${branch}`); n++) branch = `${base}-${n}`;
       const path = join(home, 'worktrees', folder.id, branch.replace(/\//g, '-'));
@@ -851,8 +957,10 @@ export function createBranches({ home }) {
      * in the main branch now - merged here or on the server - and keep a note
      * of each. Returns the notes it made. With `fetch: false`, the remote's
      * branches are as last fetched (fetchRemote fetches without blocking).
+     * `keep(entry)` keeps a branch merged or not: a plan's, which goes into
+     * main as soon as it starts and carries on (prelude/coordinator, R-q2x).
      */
-    tidy(folder, { beforeRemove = () => {}, fetch = true } = {}) {
+    tidy(folder, { beforeRemove = () => {}, fetch = true, keep = () => false } = {}) {
       const notes = [];
       // Folders of tidied branches that were still in use last time.
       const leftovers = read().$leftovers ?? [];
@@ -865,6 +973,7 @@ export function createBranches({ home }) {
       if (fetch && remoteOf(folder.path)) gitOk(folder.path, 'fetch', '--quiet', 'origin');
       for (const entry of this.of(folder.id)) {
         let state;
+        if (keep(entry)) continue;
         if (!entry.repo) update(entry.id, { repo: canonical(folder.path) });
         try { state = this.status(entry, canonical(folder.path)); } catch { continue; }
         if (!state.merged) continue;

@@ -1,0 +1,26 @@
+<%/* What the plan does by itself, and what it leaves to the person. It
+     starts each of this person's steps once what it waits for is merged
+     (another's start on their computer), and sends a design
+     or discussion session its first message (R-s6t). Merging waits for the
+     person unless they let the plan do it, which only a project with no
+     remote can: with a remote, each step is pushed for a pull request, and
+     a push always asks (R-p4h). The card is a region; ticking saves it and
+     answers with the card. */%>
+<% const p = it, base = `/f/${p.project.id}/plans/${p.id}`, alone = p.mergeAlone === true || p.mergeAlone === 'true'; %>
+<h2 id="settings-title">By itself</h2>
+<ul class="stack gap-2">
+  <li class="secondary">Starts each of your steps on this computer once the steps it waits for are merged into main, bringing its branch up to date first. Other people’s start on theirs.</li>
+  <li class="secondary">Sends a design or discussion its first message. The rest of that session is its owner’s.</li>
+  <li class="secondary">Leaves a step nobody owns for someone to claim.</li>
+</ul>
+<% if (p.remote) { %>
+<p class="secondary">Never pushes. When a step is ready to finish, you push it to <code><%= p.remote.name %></code> for a pull request, and the plan carries on once it’s merged on <%= p.remote.host %>.</p>
+<% } else if (p.status !== 'done') { %>
+<form class="stack gap-2" action="<%= base %>/settings" method="post" ko-target="planSettings" ko-invoke="change">
+  <input type="hidden" name="mergeAlone" value="false">
+  <label class="choice"><input type="checkbox" name="mergeAlone" value="true"<% if (alone) { %> checked<% } %>> <span>Merge each step into main when it’s done <span class="muted">· screens approved, or every story built with the check passing. Otherwise it asks you.</span></span></label>
+  <noscript><button class="btn small" type="submit">Save</button></noscript>
+</form>
+<% } else { %>
+<p class="secondary"><%= alone ? 'Merged each step into main when it was done.' : 'Asked you before merging each step.' %></p>
+<% } %>

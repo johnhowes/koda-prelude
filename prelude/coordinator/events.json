@@ -1,0 +1,19 @@
+{
+  "design-system-merged": {
+    "title": "Priya’s pull request for Prelude Design System is merged",
+    "update": "projects/prelude/plans/visuals-in-the-chat/steps/design-system",
+    "with": { "state": "merged", "says": "Merged into main by pull request #59, just now." },
+    "send": "plans-changed"
+  },
+  "design-workspace-started": {
+    "title": "Design Workspace starts on Priya’s computer",
+    "update": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace",
+    "with": {
+      "state": "elsewhere",
+      "started": "Just now",
+      "says": "Priya is working on it on her computer: its first message named D-v3x and the flow and map components."
+    },
+    "send": "plans-changed",
+    "push": [{ "into": "notice?", "view": "@app/server/views/plans/_started", "data": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace" }]
+  }
+}
