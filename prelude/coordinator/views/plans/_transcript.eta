@@ -1,0 +1,19 @@
+<%/* The planning session's transcript, oldest first, as the app's transcript
+     draws it: the person's messages, the agent's words and what it read, and
+     Prelude's notes. As the plan runs, Prelude says what happened in it (a
+     step started, a pull request merged, a build stopped), so the person
+     sees it where they talk to the agent, and the agent is told it with the
+     next message (R-d6m). A plan just asked for starts with what the person
+     asked, and the agent drafting. */%>
+<% const p = it, steps = p.steps ?? [];
+   const entries = p.chat?.entries ?? (p.goal ? [{ type: 'user', message: p.goal }] : []);
+   const working = p.chat?.state === 'working' || !steps.length; %>
+<% for (const entry of entries) { %>
+<% if (entry.type === 'user') { %><li class="entry user"><div class="bubble"><%= entry.message %></div></li>
+<% } else if (entry.type === 'text') { %><li class="entry agent"><div class="prose"><%~ entry.html %></div></li>
+<% } else if (entry.type === 'tool') { %><li class="entry tool"><span class="tool-name"><%= entry.name %></span> <%= entry.summary %></li>
+<% } else if (entry.type === 'note') { %><li class="entry note<%= entry.failed ? ' failed' : '' %>"><%= entry.says %><% if (entry.when) { %> <span class="muted">· <%= entry.when %></span><% } %></li>
+<% } %>
+<% } %>
+<% if (working) { %><li class="entry note"><span class="cluster gap-2"><span class="pulse" aria-hidden="true"></span><%= steps.length ? 'The agent is working…' : 'The agent is reading the project and its architecture, and drafting the steps…' %></span></li><% } %>
+<% if (!entries.length && !working) { %><li class="empty">Tell the agent what the plan should change.</li><% } %>

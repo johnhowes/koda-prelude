@@ -18,9 +18,18 @@
           "branch": "prelude/plan-visuals-in-the-chat",
           "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.",
           "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.\n\nAsk and fix conversations use the same transcript, so whatever a design session shows, they show too.",
-          "activity": [
-            { "when": "Today 12:40", "says": "The agent drafted 8 steps from your goal. It added Fix Something’s build, which no other step covered." }
-          ],
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built." },
+              { "type": "tool", "name": "Read", "summary": "prelude/prelude-architecture/architecture/overview.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/prelude-architecture/architecture/parts/views.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/design-workspace/NOTES.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/fix-something/NOTES.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/build/NOTES.md" },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right.</p><ul><li><strong>Prelude Architecture</strong> and <strong>Prelude Design System</strong> wait for nothing, so they start together.</li><li><strong>Design Workspace</strong> waits for both. Fix Something and Build reuse its transcript, so its design is finished first and built on a branch of its own.</li><li><strong>Fix Something</strong> and <strong>Build</strong> are each approved, then built on their own branch, one merge each.</li></ul><p>Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.</p><p>This project has no remote, so each step is merged here when it’s done. I’ll ask you first unless you let the plan merge by itself.</p><p>Change any prompt on the right, or tell me here. Nothing starts until you start the plan.</p>" }
+            ]
+          },
           "steps": [
             {
               "id": "architecture",

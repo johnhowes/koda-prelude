@@ -1,0 +1,15 @@
+<%/* The plan's chat: a stand-in for the app's own (server/views/_chat.eta),
+     which the build puts here, as design, build and fix sessions have it:
+     its session menu, Tools, questions, the waiting messages, dictation and
+     images. What the stand-in shows is what's particular to a plan: the
+     transcript, the agent working, and the message box. */%>
+<% const p = it, base = `/f/${p.project.id}/plans/${p.id}`; %>
+<section class="panel side chat" aria-label="Planning session">
+  <div class="toolbar">
+    <span class="icon icon-session" aria-hidden="true"></span><span class="muted">Planning session</span>
+  </div>
+  <div class="transcript-scroll">
+    <ol id="planTranscript" class="transcript" aria-live="polite" ko-source="<%= base %>/transcript" ko-invoke="event:plans-changed"><%~ include('./_transcript', p) %></ol>
+  </div>
+  <div id="planComposer" ko-region><%~ include('./_composer', p) %></div>
+</section>

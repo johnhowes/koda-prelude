@@ -58,7 +58,7 @@
     <span class="pulse" aria-hidden="true"></span>
     <span>The agent is reading the project and its architecture, and drafting the steps…</span>
   </div>
-  <p class="secondary">They appear here as it writes them. You can talk it over with the agent while it works.</p>
+  <p class="secondary">They appear here as it writes them. Tell it in the chat if there’s more it should know.</p>
 </section>
 <% } else { %>
 <% if (needs.length) { %>

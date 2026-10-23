@@ -18,14 +18,26 @@
           "branch": "prelude/plan-visuals-in-the-chat",
           "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.",
           "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.\n\nAsk and fix conversations use the same transcript, so whatever a design session shows, they show too.",
-          "activity": [
-            { "when": "Today 12:40", "says": "The agent drafted 8 steps from your goal. It added Fix Something’s build, which no other step covered." },
-            { "when": "Today 12:51", "says": "You started the plan." },
-            { "when": "Today 12:51", "says": "Prelude Architecture and Prelude Design System started at once: they wait for nothing." },
-            { "when": "Today 14:20", "says": "You pushed Prelude Architecture for a pull request (#58)." },
-            { "when": "Today 14:58", "says": "Pull request #58 was merged on GitHub. Prelude Architecture is in main." },
-            { "when": "Today 15:12", "says": "Prelude Design System is your turn: the agent drew the series colours, the flow and the map markers." }
-          ],
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built." },
+              { "type": "tool", "name": "Read", "summary": "prelude/prelude-architecture/architecture/overview.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/prelude-architecture/architecture/parts/views.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/prelude-architecture/architecture/parts/agent.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/design-workspace/NOTES.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/fix-something/NOTES.md" },
+              { "type": "tool", "name": "Read", "summary": "prelude/build/NOTES.md" },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right.</p><ul><li><strong>Prelude Architecture</strong> and <strong>Prelude Design System</strong> wait for nothing, so they start together: the decision on how visuals fit, and the series colours, flow and map markers.</li><li><strong>Design Workspace</strong> waits for both, since it draws with those components and follows that decision. Fix Something and Build reuse its transcript, so its design is finished first and built on a branch of its own.</li><li><strong>Fix Something</strong> and <strong>Build</strong> are each approved, then built on their own branch, one pull request each.</li></ul><p>Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.</p><p>Change any prompt on the right, or tell me here. Nothing starts until you start the plan.</p>" },
+              { "type": "user", "message": "Looks right. The design system’s prompt should say the series colours can be named by role if a better name fits." },
+              { "type": "tool", "name": "Edit", "summary": "prelude/plans/visuals-in-the-chat/plan.json" },
+              { "type": "text", "html": "<p>Done: its prompt now says to name them by role if a better name fits.</p>" },
+              { "type": "note", "says": "You started the plan. Prelude Architecture and Prelude Design System started: they wait for nothing.", "when": "12:51" },
+              { "type": "note", "says": "You pushed Prelude Architecture for a pull request (#58).", "when": "14:20" },
+              { "type": "note", "says": "Pull request #58 was merged on GitHub: Prelude Architecture is in main. Design Workspace now waits only for Prelude Design System.", "when": "14:58" },
+              { "type": "note", "says": "Prelude Design System is your turn: the agent drew the series colours, the flow and the map markers.", "when": "15:12" }
+            ]
+          },
           "steps": [
             {
               "id": "architecture",
@@ -160,10 +172,14 @@
           "branch": "prelude/plan-run-the-app",
           "goal": "Start the built app from a project’s page, from main, with a command and address of its own.",
           "brief": "A project’s page can start the built app from main, apart from the design host.",
-          "activity": [
-            { "when": "20 Oct 09:12", "says": "The agent drafted 3 steps from your goal." },
-            { "when": "20 Oct 16:44", "says": "Every step is in main. The plan is finished." }
-          ],
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Start the built app from a project’s page, from main, with a command and address of its own." },
+              { "type": "text", "html": "<p>I’ve drafted 3 steps: a part for running the app in the architecture, the project’s page, and its build.</p>" },
+              { "type": "note", "says": "Every step is in main. The plan is finished.", "when": "20 Oct 16:44" }
+            ]
+          },
           "steps": [
             { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "url": "/f/prelude/plans/run-the-app/steps/architecture", "branch": "prelude/prelude-architecture", "waitsFor": [], "doneWhen": "Its part is written and merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Add a part for running the built app, apart from the design host.", "refs": [] },
             { "id": "project-page", "title": "Project Landing Page", "kind": "design", "url": "/f/prelude/plans/run-the-app/steps/project-page", "branch": "prelude/project-landing-page", "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main, 20 Oct.", "prompt": "Launch the app from main on the project’s page.", "refs": [] },

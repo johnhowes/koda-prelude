@@ -1,3 +1,20 @@
 /* A prompt or a brief is plain text the agent wrote: its paragraphs keep
    their line breaks (a list of "- " lines), which .prose can't know. */
 .prose.prompt p { white-space: pre-line; }
+
+/* A plan's page fills the window, as a design's page does (the shell reads
+   .fills): the chat and the plan fill what the header leaves, and each
+   scrolls inside itself. Side by side, the chat keeps its width and the plan
+   takes the rest; in a narrow window they stack, sharing the height. These
+   are the app's .design-page rules (workspace.css), for a plan. */
+@scope (.plan) {
+  :scope { min-block-size: 0; }
+  .plan-workspace { flex: 1; min-block-size: 0; flex-wrap: nowrap; }
+  .plan-workspace > .chat { flex: 0 1 var(--side); }
+  .plan-workspace > .plan-surface { flex: 1 1 0; min-inline-size: 0; }
+  @container (width < 52rem) {
+    .plan-workspace { flex-direction: column; }
+    .plan-workspace > .chat { flex: 2 1 0; }
+    .plan-workspace > .plan-surface { flex: 3 1 0; }
+  }
+}

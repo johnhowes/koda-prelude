@@ -19,12 +19,16 @@
           "branch": "prelude/plan-visuals-in-the-chat",
           "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system.",
           "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks and renders with a design-system partial.",
-          "activity": [
-            { "when": "23 Oct 12:51", "says": "You started the plan." },
-            { "when": "Yesterday 11:06", "says": "Build Design Workspace started." },
-            { "when": "Today 11:30", "says": "Pull request #63 was merged. Build Design Workspace is in main. The Build page’s build and Build Fix Something started." },
-            { "when": "Today 16:20", "says": "Pull request #65 was merged. Every step is in main: the plan is finished." }
-          ],
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system." },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right. Change any prompt there, or tell me here. Nothing starts until you start the plan.</p>" },
+              { "type": "note", "says": "You started the plan.", "when": "23 Oct 12:51" },
+              { "type": "note", "says": "Pull request #63 was merged: Build Design Workspace is in main. The Build page’s build and Build Fix Something started.", "when": "11:30" },
+              { "type": "note", "says": "Pull request #65 was merged. Every step is in main: the plan is finished.", "when": "16:20" }
+            ]
+          },
           "steps": [
             { "id": "architecture", "title": "Prelude Architecture", "kind": "discussion", "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture", "branch": "prelude/prelude-architecture", "session": "/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq", "waitsFor": [], "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #58, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.", "refs": [] },
             { "id": "design-system", "title": "Prelude Design System", "kind": "design", "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system", "branch": "prelude/prelude-design-system", "session": "/f/prelude/d/prelude-design-system/s/20261023-1251-zw1z", "waitsFor": [], "doneWhen": "Its screens are approved and it’s merged into main.", "finish": "push", "state": "merged", "says": "Merged into main by pull request #59, 23 Oct.", "started": "23 Oct 12:51", "prompt": "Support rich visuals in agent chats: series colours, a flow component, map markers, and a guideline for rich components.", "refs": [] },

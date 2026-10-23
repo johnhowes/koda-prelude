@@ -9,10 +9,11 @@ the person kept by hand. That plan is the typical state.
 Pages: `/f/:project/plans` (Plans), `/f/:project/plans/new` (New plan,
 modal), `/f/:project/plans/:plan` (Plan), a step in the drawer
 (`…/steps/:step`), Push a step (modal, `…/steps/:step/push`). Fragments:
-`…/work` (needs you and the steps), `…/activity`. States: typical (half way:
-architecture merged, the design system the person’s turn, the rest waiting),
-planning (drafted, not started, no remote), build-stopped (a build stopped, a
-design ready to push), done.
+`…/work` (needs you and the steps), `…/transcript`. States: typical (half
+way: architecture merged, the design system the person’s turn, the rest
+waiting), planning (drafted, not started, no remote), build-stopped (a build
+stopped, two designs approved waiting on it, the person asking why in the
+chat), done.
 
 ## What the person’s prompts showed
 
@@ -47,8 +48,15 @@ design ready to push), done.
 6. **The prompt is the draft until it starts, then what was sent** (R-m3k,
    R-f8d), with a list of what each description asked for and what it
    became. The brief is shown once, in the side column.
-7. **The agent that drafts is talked to in the plan’s own session** (Talk it
-   over), so adding or reordering steps is a conversation, not a form.
+7. **The plan’s page is its session** (the person, 2026-10-23): the app’s
+   chat beside the plan, filling the window, as a design’s page has the chat
+   beside the design. Adding or reordering steps is a conversation, and the
+   person sees the plan change beside it. Prelude says in the chat what
+   happened as the plan runs (R-d6m), which replaced a separate history
+   card. The chat here (`plans/_chat`, `_transcript`, `_composer`) is a
+   stand-in: the build uses the app’s `_chat` with its session menu, Tools,
+   queue, dictation and images. Layout rules are the app’s `.design-page`
+   ones, copied for `.plan` in styles.css.
 8. New plan answers with the list, the new plan at the top while its steps
    are drafted (the plan’s page needed fields a bare post doesn’t carry).
 9. **One build per design** (the person, 2026-10-23: no build covers two
@@ -81,9 +89,5 @@ design ready to push), done.
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
   planning prompt in agent. Propose the decision when it’s built.
-- **The planning session uses the app’s chat** (the person, 2026-10-23), as
-  design, build and fix sessions do. Recommended, waiting on the person: the
-  plan’s page becomes a session page, the chat beside the plan as its
-  surface (as a design page has the design), so the steps appear as the
-  agent drafts them; Talk it over goes. The other way: a chat-only page, as
-  a fix’s, linked from the plan.
+- New plan answers with the list; now that the plan’s page is where the
+  agent drafts, the app should go straight to it.

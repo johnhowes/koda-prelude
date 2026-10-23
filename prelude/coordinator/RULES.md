@@ -31,6 +31,9 @@
 - **R-q2x.** A plan is kept in the project on a branch of its own while it runs, and goes into main, as any branch does, once it’s finished.
   *shown-on: /f/:project/plans/:plan @ done*
   *proposed*
+- **R-d6m.** What happens as a plan runs (a step starting, a pull request merged, a build stopping) is said in the plan’s session, and the agent is told it with the next message.
+  *shown-on: /f/:project/plans/:plan @ build-stopped*
+  *proposed*
 - **R-e2q.** A plan is finished when every one of its steps is merged into main.
   *shown-on: /f/:project/plans/:plan @ done*
   *proposed*

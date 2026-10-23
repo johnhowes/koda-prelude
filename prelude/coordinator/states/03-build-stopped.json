@@ -18,17 +18,24 @@
           "branch": "prelude/plan-visuals-in-the-chat",
           "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.",
           "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.\n\nAsk and fix conversations use the same transcript, so whatever a design session shows, they show too.",
-          "activity": [
-            { "when": "23 Oct 12:51", "says": "You started the plan. Prelude Architecture and Prelude Design System started at once." },
-            { "when": "23 Oct 14:58", "says": "Pull request #58 was merged. Prelude Architecture is in main." },
-            { "when": "23 Oct 16:30", "says": "Pull request #59 was merged. Prelude Design System is in main." },
-            { "when": "23 Oct 16:31", "says": "Design Workspace started, with D-v3x and the flow and map components named in its prompt." },
-            { "when": "Yesterday 11:05", "says": "Pull request #60 was merged. Design Workspace is in main. Fix Something and Build started." },
-            { "when": "Yesterday 11:06", "says": "Build Design Workspace started." },
-            { "when": "Yesterday 15:40", "says": "You approved Build’s screens. Its build waits for Build Design Workspace." },
-            { "when": "Today 09:12", "says": "You approved Fix Something’s screens. Its build waits for Build Design Workspace." },
-            { "when": "Today 10:03", "says": "Build Design Workspace stopped on its third story." }
-          ],
+          "chat": {
+            "state": "idle",
+            "entries": [
+              { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system." },
+              { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right. Change any prompt there, or tell me here. Nothing starts until you start the plan.</p>" },
+              { "type": "note", "says": "You started the plan. Prelude Architecture and Prelude Design System started.", "when": "23 Oct 12:51" },
+              { "type": "note", "says": "Pull request #58 was merged: Prelude Architecture is in main.", "when": "23 Oct 14:58" },
+              { "type": "note", "says": "Pull request #59 was merged: Prelude Design System is in main. Design Workspace started, with D-v3x and the flow and map components named in its prompt.", "when": "23 Oct 16:31" },
+              { "type": "note", "says": "Pull request #60 was merged: Design Workspace is in main. Fix Something, Build and Build Design Workspace started.", "when": "Yesterday 11:06" },
+              { "type": "note", "says": "You approved Build’s screens. Its build waits for Build Design Workspace.", "when": "Yesterday 15:40" },
+              { "type": "note", "says": "You approved Fix Something’s screens. Its build waits for Build Design Workspace.", "when": "09:12" },
+              { "type": "note", "says": "Build Design Workspace stopped on its third story: 1 page doesn’t render. The steps waiting for it stay waiting.", "when": "10:03", "failed": true },
+              { "type": "user", "message": "Can Fix Something’s build go ahead without it? Its screens are approved." },
+              { "type": "tool", "name": "Read", "summary": "prelude/fix-something/routes.json" },
+              { "type": "tool", "name": "Grep", "summary": "_visual- in prelude/fix-something/" },
+              { "type": "text", "html": "<p>Not yet. Fix Something’s conversation pages include <code>_visual-flow</code> and <code>_visual-map</code>, the partials Design Workspace’s build is making, and the parser that checks a block’s parts comes with them. Built before them, its pages wouldn’t render.</p><p>Design Workspace’s build stopped on a page, not a design question: send it a message in <a href=\"/f/prelude/d/design-workspace/s/20261024-1106-n1ux\">its build</a> and it carries on. Fix Something’s and the Build page’s builds start by themselves once it’s merged.</p>" }
+            ]
+          },
           "steps": [
             {
               "id": "architecture",

@@ -1,0 +1,14 @@
+<%/* The message box under the planning session: the app's composer, standing
+     in. What's sent goes into the transcript; the agent changes the plan and
+     says what it changed. A finished plan can still be asked about. */%>
+<% const p = it, base = `/f/${p.project.id}/plans/${p.id}`, errors = it.$errors ?? {}; %>
+<form class="composer" action="<%= base %>/messages" method="post" ko-target="planComposer">
+  <input type="hidden" name="type" value="user">
+  <label class="sr-only" for="planMessage">Message</label>
+  <textarea id="planMessage" name="message" rows="3" placeholder="<%= p.status === 'done' ? 'Ask about the plan. Enter to send, Shift+Enter for a new line.' : 'Change the plan: add a step, change what one waits for, rewrite a prompt. Enter to send, Shift+Enter for a new line.' %>"<% if (errors.message) { %> aria-describedby="planMessageError" ko-invalid-server="<%= errors.message %>"<% } %>></textarea>
+  <div class="composer-foot">
+    <div class="composer-tools"></div>
+    <% if (errors.message) { %><span class="error" id="planMessageError"><%= errors.message %></span><% } %>
+    <button class="btn small primary" type="submit">Send</button>
+  </div>
+</form>
