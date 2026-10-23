@@ -11,7 +11,7 @@
     "add": "projects/:project/plans",
     "require": ["goal"],
     "form": "plans/_new",
-    "answer": { "into": "modal?", "also": [{ "into": "workspace", "view": "plans/page", "data": "projects/:project/plans/:new" }] }
+    "answer": { "into": "modal?", "also": [{ "into": "workspace", "view": "plans/list", "data": "projects/:project" }] }
   },
   "POST /f/:project/plans/:plan/start": {
     "update": "projects/:project/plans/:plan",

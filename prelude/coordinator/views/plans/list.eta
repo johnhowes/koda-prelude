@@ -40,12 +40,12 @@
       <h2 id="plans-title">Plans <span class="muted"><%= plans.length %></span></h2>
       <p class="secondary">Each carries one change through the designs and builds it needs, in order.</p>
       <ul class="list">
-        <% for (const plan of plans) { const steps = plan.steps ?? [], merged = steps.filter(step => step.state === 'merged').length, waiting = steps.filter(step => needsYou.includes(step.state)).length, s = status[plan.status]; %>
+        <% for (const plan of plans) { const steps = plan.steps ?? [], merged = steps.filter(step => step.state === 'merged').length, waiting = steps.filter(step => needsYou.includes(step.state)).length, s = status[plan.status] ?? status.planning; %>
         <li>
           <a class="item" href="/f/<%= p.id %>/plans/<%= plan.id %>">
             <span class="icon icon-document" aria-hidden="true"></span>
             <span class="item-text">
-              <span class="item-title"><%= plan.title %><span class="pill <%= s.tone %>"><%= s.label %></span><% if (waiting) { %><span class="pill accent"><%= waiting === 1 ? '1 needs you' : `${waiting} need you` %></span><% } %></span>
+              <span class="item-title"><%= plan.title || 'A new plan' %><span class="pill <%= s.tone %>"><%= s.label %></span><% if (waiting) { %><span class="pill accent"><%= waiting === 1 ? '1 needs you' : `${waiting} need you` %></span><% } %></span>
               <span class="secondary"><%= !steps.length ? 'The agent is drafting its steps.' : plan.status === 'planning' ? `${steps.length} steps drafted, not started yet.` : `${merged} of ${steps.length} steps merged.` %></span>
               <span class="muted"><%= plan.status === 'done' ? `Finished ${plan.finished}` : plan.status === 'planning' ? `Asked for ${plan.created}` : `Started ${plan.created}` %></span>
             </span>

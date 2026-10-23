@@ -2,7 +2,7 @@
      words. The agent reads the project and its architecture and drafts the
      steps on the plan's page; nothing starts until the person starts it.
      A goal left empty comes back here with why. Made, the modal closes and
-     the plan's page is shown (in the app, the page's own URL). */%>
+     the list shows the new plan at the top, its steps being drafted. */%>
 <% const p = it, f = it, errors = it.$errors ?? {}; %>
 <div class="stack gap-4">
   <h2>New plan</h2>

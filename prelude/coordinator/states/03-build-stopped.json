@@ -23,9 +23,10 @@
             { "when": "23 Oct 16:30", "says": "Pull request #59 was merged. Prelude Design System is in main." },
             { "when": "23 Oct 16:31", "says": "Design Workspace started, with D-v3x and the flow and map components named in its prompt." },
             { "when": "Yesterday 11:05", "says": "Pull request #60 was merged. Design Workspace is in main. Fix Something and Build started." },
-            { "when": "Yesterday 15:40", "says": "Pull request #62 was merged. Build is in main. Build Design Workspace and Build started." },
+            { "when": "Yesterday 11:06", "says": "Build Design Workspace started." },
+            { "when": "Yesterday 15:40", "says": "Pull request #62 was merged. Build is in main; the Build page’s build waits for Design Workspace’s." },
             { "when": "Today 09:12", "says": "Fix Something is ready to finish: its screens are approved." },
-            { "when": "Today 10:03", "says": "Build Design Workspace and Build stopped on its third story." }
+            { "when": "Today 10:03", "says": "Build Design Workspace stopped on its third story." }
           ],
           "steps": [
             {
@@ -117,22 +118,38 @@
             },
             {
               "id": "build-workspace",
-              "title": "Build Design Workspace and Build",
+              "title": "Build Design Workspace",
               "kind": "build",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace",
               "branch": "prelude/design-workspace",
-              "session": "/f/prelude/d/design-workspace/s/20261024-1540-n1ux",
-              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }, { "id": "build-design", "title": "Build" }],
+              "session": "/f/prelude/d/design-workspace/s/20261024-1106-n1ux",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
               "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
               "finish": "push",
               "state": "stopped",
               "says": "Stopped on story 3 of 5, “A block Prelude couldn’t read”: the agent’s turn ended with an error, and 1 page doesn’t render. Send it a message in the build to carry on.",
-              "started": "Yesterday 15:40",
-              "prompt": "Build the visuals in the chat, following D-v3x:\n\n- the parser and checker in visuals (server/visuals.js);\n- one Eta partial per visual under server/views/, rendering components/flow.html and components/map.html unchanged;\n- the vocabulary in the agent’s prompts in server/agent.js, for every kind whose rules say it may draw (R-4hd, R-k8s);\n- --series-1 to --series-5, .flow and the map markers ported to ds/v1.\n\nUnreadable blocks fall back as R-t2w says. Add tests for the parser: a good flow, an unknown part, a bad format, an unfinished block mid-stream.",
+              "started": "Yesterday 11:06",
+              "prompt": "Build Design Workspace’s visuals in the chat, following D-v3x:\n\n- the parser and checker in visuals (server/visuals.js);\n- one Eta partial per visual under server/views/, rendering components/flow.html and components/map.html unchanged;\n- the vocabulary in the agent’s prompts in server/agent.js, for every kind whose rules say it may draw (R-4hd);\n- --series-1 to --series-5, .flow and the map markers ported to ds/v1.\n\nUnreadable blocks fall back as R-t2w says. Add tests for the parser: a good flow, an unknown part, a bad format, an unfinished block mid-stream.",
               "refs": [
                 { "asks": "the architecture’s decision", "from": "Prelude Architecture", "named": "D-v3x, and its new part visuals (server/visuals.js)" },
                 { "asks": "the series tokens and new components", "from": "Prelude Design System", "named": "--series-1 to --series-5, .flow and the map markers" },
-                { "asks": "the rules", "from": "Design Workspace and Build", "named": "R-4hd, R-k8s and R-t2w" }
+                { "asks": "the rules", "from": "Design Workspace", "named": "R-4hd and R-t2w" }
+              ]
+            },
+            {
+              "id": "build-build",
+              "title": "Build the Build page",
+              "kind": "build",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-build",
+              "branch": "prelude/build",
+              "waitsFor": [{ "id": "build-design", "title": "Build" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
+              "finish": "push",
+              "state": "waiting",
+              "prompt": "Build the Build page’s visuals on the parser and partials the build of Design Workspace made: the map of the parts each build turn touched, beside the check’s findings, shown without the agent asking; the rules for when the build agent draws a flow, in its prompt; and the stand-in transcript kept in step with the app’s.",
+              "refs": [
+                { "asks": "the parser and partials the build of Design Workspace made", "from": "Build Design Workspace" },
+                { "asks": "the rules for when the build agent draws a flow", "from": "Build" }
               ]
             },
             {
@@ -141,13 +158,13 @@
               "kind": "build",
               "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something",
               "branch": "prelude/fix-something",
-              "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace and Build" }],
+              "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace" }],
               "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
               "finish": "push",
               "state": "waiting",
               "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made: the architecture brief and the vocabulary in askPrompt and fixPrompt, the map of what an ask would change above its files, and the parts a fix touched beside its check.",
               "refs": [
-                { "asks": "the parser and partials the build of Design Workspace made", "from": "Build Design Workspace and Build" }
+                { "asks": "the parser and partials the build of Design Workspace made", "from": "Build Design Workspace" }
               ]
             }
           ]

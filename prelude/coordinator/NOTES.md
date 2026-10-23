@@ -49,19 +49,33 @@ design ready to push), done.
    became. The brief is shown once, in the side column.
 7. **The agent that drafts is talked to in the plan’s own session** (Talk it
    over), so adding or reordering steps is a conversation, not a form.
-8. New plan answers with the plan’s page in the main region; the app goes to
-   its URL.
+8. New plan answers with the list, the new plan at the top while its steps
+   are drafted (the plan’s page needed fields a bare post doesn’t carry).
+9. **One build per design** (the person, 2026-10-23: no build covers two
+   today), on that design’s branch. A build that uses code another build
+   makes waits for that build (R-n7b): the Build page’s and Fix Something’s
+   builds wait for Design Workspace’s, which makes the parser and partials.
+10. **A build starts only from approved screens** (R-a5r): a design step is
+   done when approved, and a design changed since stops its build starting,
+   as Prelude already refuses a build checked against old screens.
+11. **The way in is Project Landing Page’s** (the person, 2026-10-23): a
+   prompt for it was given in the chat (a Plans link, In progress grouped by
+   plan, plans needing the person in Needs you).
 
 ## Open questions
 
-- **Where the plan’s file lives.** It names steps on many branches, so it
-  can’t be committed on each; on main (`prelude/plans/<id>/plan.json`), written
-  only by the plan’s own session, is the likely answer.
+- **Where the plan’s file lives** (recommended, waiting on the person): in
+  the repository, on a branch of its own (`prelude/plans/<id>/plan.json`),
+  written only by the plan’s session. Prelude reads it from that worktree
+  while it runs, so no step waits for it; when the plan finishes, its branch
+  is finished the project’s usual way (a pull request here), so main keeps
+  the record beside what it built.
+- **A design and its build on one branch?** Prelude finishes a design and
+  its build together. A plan could do the same (one pull request per design)
+  whenever no other step needs the design before it’s built; Design
+  Workspace’s design is needed first, the others aren’t.
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
   planning prompt in agent. Propose the decision when it’s built.
-- **The way in**: a Plans link on the project’s page, and In progress grouped
-  by plan, belong to Project Landing Page’s design.
-- A build covering two designs: which branch does it run on?
 - The plan’s session page (Talk it over) isn’t designed here: is it a design
   page’s chat without a surface?
