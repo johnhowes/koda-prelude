@@ -54,7 +54,17 @@ includes resolve from there. Chrome CSS is `layouts/shell.css`, all in the
 - **Bar: brand, what the agent is working on, and a Projects menu** (recent
   projects, then "Open a project…"). Where you are stays the page's crumbs,
   since the bar isn't swapped on navigation and can't follow the page.
-  Following a link in a bar menu closes it (`ko-set="….open = false"`).
+  Following a link in a bar menu closes it (`_regions`, below).
+- **A menu is the design system's popover** (2026-10-23, the fix
+  prelude/fixes/the-design-system-s-menu-component-was-changed-to-use-an;
+  was `details`): the bar's Projects and agents menus are a button with
+  `popovertarget ko-for` and a `.menu-list` with `ko-as` and `popover`, so a
+  click outside or Escape closes them. A popover doesn't close when a row in
+  it is pressed, and here a row never leaves the page (Koda swaps the main
+  region in, or sends a form), so `_regions` closes the menu a row was
+  pressed in, for every menu on the page (a form's own `.btn` isn't a row).
+  It replaces the `ko-set="….open = false"` each menu had, which a popover
+  hasn't got. The app's `_bar`, `_agents` and `_regions` changed the same way.
 - **What the agent is working on** (`it.layout.agents`: design, project, url):
   the turns running anywhere, as one link, or a menu when several. Nothing when
   the agent is idle. It's the `#agents` region, so the app can push it afresh
@@ -188,8 +198,6 @@ own live channel. Giving them is a feature's work, not the layout's.
 
 ## Open questions
 
-- A bar menu doesn't close on a click outside it (it's a `details`); a
-  `popover` would, but isn't the system's menu.
 - Should the agent's status also show a turn that finished while the person
   was elsewhere (or one waiting on an approval)? Waiting to see how it feels.
 - The state `02-first-folder.json` should be renamed `02-first-project.json`

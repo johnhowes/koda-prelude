@@ -129,9 +129,8 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   ds/v1 + prelude.css? The renames above would need a pass over the views.
 - A dedicated pop-out glyph, and a copy glyph (Copy all stories), aren't in the set.
 - Menus: arrow keys between rows (the person chose to wait; likely Koda's
-  job, as script). The app's 13 `<details class="menu">` views in
-  `server/views/` (and `desktop.js`'s `closest('details')` for Capture) still
-  need to move to the popover, with `ko-for`/`ko-as` for the ids. A row that
-  submits without leaving the page leaves the menu open unless the response
-  replaces it.
+  job, as script). The app's menus moved to the popover on 2026-10-23 (the
+  fix prelude/fixes/the-design-system-s-menu-component-was-changed-to-use-an),
+  with `ko-for`/`ko-as` for the ids; the shell's `_regions` closes a menu
+  when a row in it is pressed, which a popover alone doesn't.
 - Is the dialog needed at all? Prelude confirms in-page with a notice today.

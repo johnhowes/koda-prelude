@@ -6,9 +6,9 @@
 
      `it` has screens, cur (the screen on show), current (its path), base,
      keep, url and origin. */%>
-<details class="menu start">
-  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span><span class="clip"><%= it.cur.title %></span></summary>
-  <div class="menu-list">
+<div class="menu start">
+  <button class="btn small ghost" type="button" popovertarget ko-for="pageMenu"><span class="icon icon-screen" aria-hidden="true"></span><span class="clip"><%= it.cur.title %></span></button>
+  <div class="menu-list" ko-as="pageMenu" popover>
     <form action="<%= it.base %>/screen" method="post" ko-target="design">
       <%~ it.keep %>
       <% for (const screen of it.screens) { %>
@@ -22,4 +22,4 @@
     <a href="<%= it.url %>" ko-target="design"><span class="item-title">Refresh</span><span class="muted">Load this page again</span></a>
     <a href="<%= it.origin %><%= it.current %>" target="_blank"><span class="item-title">Open in browser</span><span class="muted"><%= it.origin %><%= it.current %></span></a>
   </div>
-</details>
+</div>

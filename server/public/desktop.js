@@ -66,8 +66,9 @@ async function captureShown(button) {
   const form = button.form;
   const input = form.querySelector('[data-capture-picture]');
   const frame = button.closest('.design')?.querySelector('.design-frame iframe');
-  const menu = button.closest('details');
-  if (menu) menu.open = false;
+  // The click stops here (above), so the layout's own closing never hears it.
+  const menu = button.closest('[popover]');
+  if (menu?.matches(':popover-open')) menu.hidePopover();
   if (input) input.value = '';
   if (input && frame) {
     try {

@@ -109,7 +109,7 @@ test('Send event: the change goes to the working copy, and the messages to every
   assert.equal(one.type, 'text/event-stream');
 
   const surface = await (await fetch(`${base}/f/${fid}/d/home/preview`, { headers: { 'x-koda-fragment': '1' } })).text();
-  assert.match(surface, /<summary class="btn small ghost">Send event<\/summary>[\s\S]*ko-target="event-status"[\s\S]*value="needs-changed"[\s\S]*A pull request needs review/);
+  assert.match(surface, /<button class="btn small ghost" type="button" popovertarget ko-for="eventMenu">Send event<\/button>\s*<form class="menu-list" ko-as="eventMenu" popover [^>]*ko-target="event-status"[\s\S]*value="needs-changed"[\s\S]*A pull request needs review/);
   assert.match(surface, /<span id="event-status" ko-region role="status"><\/span>/);
 
   const sent = await fetch(`${base}/f/${fid}/d/home/events`, { method: 'POST', headers: { 'x-koda-fragment': '1' }, body: new URLSearchParams({ event: 'needs-changed' }) });

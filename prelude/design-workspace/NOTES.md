@@ -480,6 +480,16 @@ Where the app differs from the screens, on purpose:
   "Nothing written yet…". The page menu lists the one page; Capture opens it
   with `?framed=1`; there's nothing to approve. `_surface.eta` changed; this
   design's views and states don't show an architecture design.
+- (fix, 2026-10-23, prelude/fixes/the-design-system-s-menu-component-was-changed-to-use-an)
+  The page's menus are the design system's popover now, not `details`: the
+  page, review, state, Send event, Capture, size and client menus
+  (`_design-bar`, `_page-menu`, `_review-menu`), the sessions menu (`_chat`)
+  and the speech model's (`_dictation`). Why: the system's menu changed, and
+  the app serves the system's CSS as it is, so a `details` menu had lost its
+  placing and opened in the bar's flow. Each now floats above the panels,
+  closes on a click outside or Escape, and closes when a row is pressed (the
+  shell's `_regions`; `desktop.js` for What's in view). Views and states
+  unchanged: this design's pages are the app's.
 
 ## Open questions
 
