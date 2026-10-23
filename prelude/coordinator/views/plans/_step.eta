@@ -1,0 +1,107 @@
+<%/* One step of a plan, in the drawer: where it stands, what it waits for,
+     what counts as done, and its prompt.
+
+     Before it starts, the prompt is the agent's draft, and the person can
+     change it. It asks for what earlier steps make by describing it ("the
+     architecture's decision"); when the step starts, the agent names each
+     as it was actually made (D-v3x), from those steps' notes and changes,
+     and the step's session opens with the plan's brief, then this prompt
+     (R-f8d). Started, the prompt is what was sent, and can't change: the
+     rest is said in the step's session (R-m3k). `finish` is how a step
+     ready to finish is finished: "push" when the project has a remote,
+     otherwise "merge". */%>
+<% const s = it, errors = it.$errors ?? {}, started = !['planned', 'waiting'].includes(s.state);
+   const kinds = { discussion: 'Discussion', design: 'Design', build: 'Build', fix: 'Fix' };
+   const states = {
+     planned: { label: 'Not started', tone: '' },
+     waiting: { label: 'Waiting', tone: '' },
+     working: { label: 'Working', tone: 'accent', pulse: true },
+     asking: { label: 'Your turn', tone: 'accent' },
+     ready: { label: 'Ready to finish', tone: 'accent' },
+     pushed: { label: 'Pull request open', tone: '' },
+     stopped: { label: 'Build stopped', tone: 'warn' },
+     merged: { label: 'Merged', tone: '' },
+   };
+   const state = states[s.state];
+   const paragraphs = (s.prompt ?? '').split(/\n\s*\n/); %>
+<div class="stack gap-6 plan-step">
+  <div class="stack gap-2">
+    <h2><%= s.title %></h2>
+    <div class="cluster gap-2">
+      <span class="pill"><%= kinds[s.kind] %></span>
+      <span class="pill <%= state.tone %>"><% if (state.pulse) { %><span class="pulse" aria-hidden="true"></span><% } %><%= state.label %></span>
+      <span class="muted"><code><%= s.branch %></code></span>
+    </div>
+    <% if (s.says && started) { %><p class="secondary"><%= s.says %></p><% } %>
+  </div>
+
+  <% if (started && (s.session || s.state === 'ready')) { %>
+  <div class="cluster actions">
+    <% if (s.session) { %><a class="btn small" href="<%= s.session %>"><span class="icon icon-session" aria-hidden="true"></span><%= s.kind === 'build' ? 'Open the build' : 'Open its session' %></a><% } %>
+    <% if (s.state === 'ready' && s.finish === 'push') { %>
+    <a class="btn small" href="<%= s.url %>/push" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
+    <% } else if (s.state === 'ready') { %>
+    <form action="<%= s.url %>/merge" method="post" ko-target="planWork">
+      <input type="hidden" name="state" value="merged">
+      <input type="hidden" name="says" value="Merged into main just now.">
+      <button class="btn small" type="submit" title="Merge <%= s.branch %> into main. The steps waiting for it start once it’s in.">Merge into main</button>
+    </form>
+    <% } %>
+  </div>
+  <% } %>
+
+  <section class="stack gap-2" aria-labelledby="step-waits">
+    <h3 class="group-label" id="step-waits">Waits for</h3>
+    <% if (s.waitsFor.length) { %>
+    <ul class="stack gap-1">
+      <% for (const w of s.waitsFor) { %><li><%= w.title %></li><% } %>
+    </ul>
+    <p class="muted">It starts once <%= s.waitsFor.length === 1 ? 'that is' : 'all of them are' %> merged into main.</p>
+    <% } else { %>
+    <p class="secondary">Nothing: it starts as soon as the plan does.</p>
+    <% } %>
+  </section>
+
+  <section class="stack gap-2" aria-labelledby="step-done">
+    <h3 class="group-label" id="step-done">Done when</h3>
+    <p class="secondary"><%= s.doneWhen %></p>
+  </section>
+
+  <section class="stack gap-3" aria-labelledby="step-prompt">
+    <div class="stack gap-1">
+      <h3 class="group-label" id="step-prompt">Prompt</h3>
+      <p class="muted"><%= started ? `Sent ${s.started}, after the plan’s brief, as the session’s first message.` : 'The agent’s draft. It’s sent after the plan’s brief when the step starts.' %></p>
+    </div>
+    <div class="prose prompt">
+      <% for (const paragraph of paragraphs) { %><p><%= paragraph %></p><% } %>
+    </div>
+
+    <% if (s.refs?.length) { %>
+    <div class="stack gap-2">
+      <h4 class="label"><%= started ? 'Named for it when it started' : 'Filled in when it starts' %></h4>
+      <ul class="stack gap-2">
+        <% for (const ref of s.refs) { %>
+        <li class="stack gap-1">
+          <span>“<%= ref.asks %>”</span>
+          <span class="muted"><%= ref.named ? `became ${ref.named}` : `from ${ref.from}, as it’s made` %></span>
+        </li>
+        <% } %>
+      </ul>
+    </div>
+    <% } %>
+
+    <% if (!started) { %>
+    <details class="disclosure"<% if (errors.prompt) { %> open<% } %>>
+      <summary>Change the prompt</summary>
+      <form class="stack" action="<%= s.url %>" method="post" ko-target="drawer?">
+        <label class="field">
+          <span class="label">Prompt</span>
+          <textarea name="prompt" rows="12"<% if (errors.prompt) { %> aria-describedby="prompt-error" ko-invalid-server="<%= errors.prompt %>"<% } %>><%= s.prompt %></textarea>
+          <% if (errors.prompt) { %><span class="error" id="prompt-error"><%= errors.prompt %></span><% } else { %><span class="hint">Describe what earlier steps make in words; the agent names it when the step starts.</span><% } %>
+        </label>
+        <div class="cluster actions"><button class="btn small" type="submit">Save the prompt</button></div>
+      </form>
+    </details>
+    <% } %>
+  </section>
+</div>

@@ -1,0 +1,158 @@
+{
+  "projects": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "remote": { "name": "origin", "host": "GitHub" },
+      "plans": [
+        {
+          "id": "visuals-in-the-chat",
+          "title": "Visuals in the chat",
+          "project": { "id": "prelude", "name": "Prelude" },
+          "status": "running",
+          "remote": { "name": "origin", "host": "GitHub" },
+          "mergeAlone": false,
+          "created": "23 Oct 12:31",
+          "session": "/f/prelude/plans/visuals-in-the-chat/session",
+          "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.",
+          "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.\n\nAsk and fix conversations use the same transcript, so whatever a design session shows, they show too.",
+          "activity": [
+            { "when": "23 Oct 12:51", "says": "You started the plan. Prelude Architecture and Prelude Design System started at once." },
+            { "when": "23 Oct 14:58", "says": "Pull request #58 was merged. Prelude Architecture is in main." },
+            { "when": "23 Oct 16:30", "says": "Pull request #59 was merged. Prelude Design System is in main." },
+            { "when": "23 Oct 16:31", "says": "Design Workspace started, with D-v3x and the flow and map components named in its prompt." },
+            { "when": "Yesterday 11:05", "says": "Pull request #60 was merged. Design Workspace is in main. Fix Something and Build started." },
+            { "when": "Yesterday 15:40", "says": "Pull request #62 was merged. Build is in main. Build Design Workspace and Build started." },
+            { "when": "Today 09:12", "says": "Fix Something is ready to finish: its screens are approved." },
+            { "when": "Today 10:03", "says": "Build Design Workspace and Build stopped on its third story." }
+          ],
+          "steps": [
+            {
+              "id": "architecture",
+              "title": "Prelude Architecture",
+              "kind": "discussion",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+              "branch": "prelude/prelude-architecture",
+              "session": "/f/prelude/d/prelude-architecture/s/20261023-1251-k2wq",
+              "waitsFor": [],
+              "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.",
+              "finish": "push",
+              "state": "merged",
+              "says": "Merged into main by pull request #58, 23 Oct. It proposed D-v3x.",
+              "started": "23 Oct 12:51",
+              "prompt": "Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.\n\nDecide with me which part parses and renders visuals, how the vocabulary is versioned and how agents are told it, and where it happens in the turn flow. Then write the proposed decision, any new or changed part, and a flow “A visual in a message”.",
+              "refs": []
+            },
+            {
+              "id": "design-system",
+              "title": "Prelude Design System",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system",
+              "branch": "prelude/prelude-design-system",
+              "session": "/f/prelude/d/prelude-design-system/s/20261023-1251-zw1z",
+              "waitsFor": [],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "finish": "push",
+              "state": "merged",
+              "says": "Merged into main by pull request #59, 23 Oct.",
+              "started": "23 Oct 12:51",
+              "prompt": "Support rich visuals in agent chats: bring the series colours back in both themes, add a flow component and two markers on the map (touched, would change), and a guideline for rich components so every stack builds them the same way. Update the gallery in the same turn.",
+              "refs": []
+            },
+            {
+              "id": "design-workspace",
+              "title": "Design Workspace",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-workspace",
+              "branch": "prelude/design-workspace",
+              "session": "/f/prelude/d/design-workspace/s/20261023-1631-v8mm",
+              "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }, { "id": "design-system", "title": "Prelude Design System" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "finish": "push",
+              "state": "merged",
+              "says": "Merged into main by pull request #60, yesterday.",
+              "started": "23 Oct 16:31",
+              "prompt": "The chat should show visuals the agent asks for, drawn with the design system’s flow and map components (components/flow.html, and components/map.html with its .touched, .proposed and .named markers), following D-v3x, “Agents draw visuals as fenced blocks in a small versioned vocabulary”. Design how they look in the transcript:\n\n- a flow in the agent’s message, and a map with the parts a change touched;\n- several visuals in one message, mixed with text;\n- a block Prelude couldn’t read, shown as the agent wrote it, with a quiet note saying why;\n- a narrow chat column and the pop-out window;\n- while the agent is still writing the block.",
+              "refs": [
+                { "asks": "the design system’s new flow and map components", "from": "Prelude Design System", "named": "components/flow.html, and components/map.html with its .touched, .proposed and .named markers" },
+                { "asks": "the architecture’s decision on visuals in the chat", "from": "Prelude Architecture", "named": "D-v3x, “Agents draw visuals as fenced blocks in a small versioned vocabulary”" }
+              ]
+            },
+            {
+              "id": "fix-something",
+              "title": "Fix Something",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/fix-something",
+              "branch": "prelude/fix-something",
+              "session": "/f/prelude/d/fix-something/s/20261024-1105-q3re",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "finish": "push",
+              "state": "ready",
+              "says": "Its screens are approved and every page renders. Push it for a pull request to finish it.",
+              "started": "Yesterday 11:05",
+              "prompt": "Asks and fixes should use the chat’s new visuals, as Design Workspace shows them (views/sessions/_visual-flow.eta and _visual-map.eta, rules R-4hd to R-t2w). Design an ask answered with a flow, an ask that ends with a map of what it would change, a fix on its branch, and the visuals staying as they were when an ask is fixed on a branch.",
+              "refs": [
+                { "asks": "the chat’s new visuals, as Design Workspace shows them", "from": "Design Workspace", "named": "views/sessions/_visual-flow.eta and _visual-map.eta, rules R-4hd to R-t2w" }
+              ]
+            },
+            {
+              "id": "build-design",
+              "title": "Build",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-design",
+              "branch": "prelude/build",
+              "session": "/f/prelude/d/build/s/20261024-1105-b7cn",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "finish": "push",
+              "state": "merged",
+              "says": "Merged into main by pull request #62, yesterday.",
+              "started": "Yesterday 11:05",
+              "prompt": "Build sessions should help the developer see what’s being built and where it fits, using the transcript visuals from Design Workspace (views/sessions/_visual-flow.eta and _visual-map.eta). Design the map Prelude shows after each build turn, when the build agent draws a flow itself, and how a visual ties to the story being built.",
+              "refs": [
+                { "asks": "the transcript visuals from Design Workspace", "from": "Design Workspace", "named": "views/sessions/_visual-flow.eta and _visual-map.eta" }
+              ]
+            },
+            {
+              "id": "build-workspace",
+              "title": "Build Design Workspace and Build",
+              "kind": "build",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace",
+              "branch": "prelude/design-workspace",
+              "session": "/f/prelude/d/design-workspace/s/20261024-1540-n1ux",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }, { "id": "build-design", "title": "Build" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
+              "finish": "push",
+              "state": "stopped",
+              "says": "Stopped on story 3 of 5, “A block Prelude couldn’t read”: the agent’s turn ended with an error, and 1 page doesn’t render. Send it a message in the build to carry on.",
+              "started": "Yesterday 15:40",
+              "prompt": "Build the visuals in the chat, following D-v3x:\n\n- the parser and checker in visuals (server/visuals.js);\n- one Eta partial per visual under server/views/, rendering components/flow.html and components/map.html unchanged;\n- the vocabulary in the agent’s prompts in server/agent.js, for every kind whose rules say it may draw (R-4hd, R-k8s);\n- --series-1 to --series-5, .flow and the map markers ported to ds/v1.\n\nUnreadable blocks fall back as R-t2w says. Add tests for the parser: a good flow, an unknown part, a bad format, an unfinished block mid-stream.",
+              "refs": [
+                { "asks": "the architecture’s decision", "from": "Prelude Architecture", "named": "D-v3x, and its new part visuals (server/visuals.js)" },
+                { "asks": "the series tokens and new components", "from": "Prelude Design System", "named": "--series-1 to --series-5, .flow and the map markers" },
+                { "asks": "the rules", "from": "Design Workspace and Build", "named": "R-4hd, R-k8s and R-t2w" }
+              ]
+            },
+            {
+              "id": "build-fix-something",
+              "title": "Build Fix Something",
+              "kind": "build",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something",
+              "branch": "prelude/fix-something",
+              "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace and Build" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
+              "finish": "push",
+              "state": "waiting",
+              "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made: the architecture brief and the vocabulary in askPrompt and fixPrompt, the map of what an ask would change above its files, and the parts a fix touched beside its check.",
+              "refs": [
+                { "asks": "the parser and partials the build of Design Workspace made", "from": "Build Design Workspace and Build" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

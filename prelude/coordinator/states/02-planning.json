@@ -1,0 +1,133 @@
+{
+  "projects": [
+    {
+      "id": "prelude",
+      "name": "Prelude",
+      "path": "C:\\Projects\\Prelude",
+      "remote": null,
+      "plans": [
+        {
+          "id": "visuals-in-the-chat",
+          "title": "Visuals in the chat",
+          "project": { "id": "prelude", "name": "Prelude" },
+          "status": "planning",
+          "remote": null,
+          "mergeAlone": false,
+          "created": "Today 12:31",
+          "session": "/f/prelude/plans/visuals-in-the-chat/session",
+          "goal": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.",
+          "brief": "Agent sessions, build sessions especially, show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with the design system’s own components.\n\nThe agent never writes HTML into the chat. A visual is a fenced block in a small, versioned vocabulary that Prelude parses, checks (part ids must exist) and renders with a design-system partial. Anything it can’t read stays a plain code block, as the agent wrote it.\n\nAsk and fix conversations use the same transcript, so whatever a design session shows, they show too.",
+          "activity": [
+            { "when": "Today 12:40", "says": "The agent drafted 7 steps from your goal. It added Fix Something’s build, which no other step covered." }
+          ],
+          "steps": [
+            {
+              "id": "architecture",
+              "title": "Prelude Architecture",
+              "kind": "discussion",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/architecture",
+              "branch": "prelude/prelude-architecture",
+              "waitsFor": [],
+              "doneWhen": "Its decision is proposed, you’ve agreed it, and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.\n\nDecide with me which part parses and renders visuals (views, or a new part); how the vocabulary is versioned, and how agents are told it (agent.js); and where it happens in the turn flow (flows/turn.md): at save time or at render time.\n\nBefore proposing, check how Koda’s renderMarkdown handles a fenced block’s language tag, since that decides whether blocks are pulled out before rendering or after. Then write the proposed decision, any new or changed part, and a flow “A visual in a message”.\n\nAsk and fix conversations use the same transcript. askPrompt gets no architecture brief today: decide whether it should. The vocabulary goes into askPrompt and fixPrompt too.",
+              "refs": []
+            },
+            {
+              "id": "design-system",
+              "title": "Prelude Design System",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-system",
+              "branch": "prelude/prelude-design-system",
+              "waitsFor": [],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Support rich visuals in agent chats, starting with flow diagrams and maps of the parts a change touches.\n\n1. Series colours. Bring --series-* back in tokens.css (ds/v1 had five), named by role if a better name fits, in both themes, and show them on the tokens screen. Add to guideline 3: series colours tell things apart, never mean good, warn or danger, and always have a label.\n\n2. A flow component: a flow’s steps through the parts that do them, a column per part and a row per step, with what passes between them. No script; it has to fit a chat column, so use container queries. And two markers on the map: touched in this change, and would change. Each says which in words.\n\n3. A guideline for rich components, so every stack builds them the same way: the component’s HTML file is the contract, each stack renders it from a model with one partial, script only for what’s truly imperative, no custom elements except a host’s renderers. Update the gallery in the same turn.",
+              "refs": []
+            },
+            {
+              "id": "design-workspace",
+              "title": "Design Workspace",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/design-workspace",
+              "branch": "prelude/design-workspace",
+              "waitsFor": [{ "id": "architecture", "title": "Prelude Architecture" }, { "id": "design-system", "title": "Prelude Design System" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "The chat should show visuals the agent asks for, drawn with the design system’s new flow and map components, following the architecture’s decision on visuals in the chat. Design how they look in the transcript:\n\n- a flow in the agent’s message, and a map with the parts a change touched;\n- several visuals in one message, mixed with text;\n- a block Prelude couldn’t read (unknown part id, wrong format): shown as the agent wrote it, with a quiet note saying why;\n- a narrow chat column and the pop-out window;\n- while the agent is still writing the block.\n\nAdd transcript states for each, and rules for what’s checked and what happens when it fails. Each part on a visual links to its page in the architecture. These transcript views are also the ask and fix conversation’s: cover its width too.",
+              "refs": [
+                { "asks": "the design system’s new flow and map components", "from": "Prelude Design System" },
+                { "asks": "the architecture’s decision on visuals in the chat", "from": "Prelude Architecture" }
+              ]
+            },
+            {
+              "id": "fix-something",
+              "title": "Fix Something",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/fix-something",
+              "branch": "prelude/fix-something",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Asks and fixes should use the chat’s new visuals, as Design Workspace shows them. Design:\n\n- an ask about how something works, answered with a flow through the real parts, each linking to its architecture page;\n- an ask that ends with what it would change: a map with the parts it would reach, marked “would change”, above the list of files;\n- a fix on its branch: the cause explained with a flow before changing anything, and after each turn the map of the parts it touched, beside the check’s findings, as in Build;\n- fixing it on a branch: the visuals from the ask stay in the conversation as they were.\n\nAdd states for each, and rules for when the agent should draw (and when a few lines of text are enough). Keep the chat at its readable width.",
+              "refs": [
+                { "asks": "the chat’s new visuals, as Design Workspace shows them", "from": "Design Workspace" }
+              ]
+            },
+            {
+              "id": "build-design",
+              "title": "Build",
+              "kind": "design",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-design",
+              "branch": "prelude/build",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }],
+              "doneWhen": "Its screens are approved and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Build sessions should help the developer see what’s being built and where it fits. Using the transcript visuals from Design Workspace, design:\n\n- after each build turn, a map of the parts the turn touched, shown by Prelude without the agent asking, beside the check’s findings;\n- when the agent should draw a flow itself: when it starts a story, when a change crosses parts, when it proposes a decision, written as rules the build agent is told;\n- how a visual ties to the story or page being built.\n\nKeep the stand-in transcript in step with the app’s. Add states: a turn touching one part, one touching several layers, and one with a drift finding.",
+              "refs": [
+                { "asks": "the transcript visuals from Design Workspace", "from": "Design Workspace" }
+              ]
+            },
+            {
+              "id": "build-workspace",
+              "title": "Build Design Workspace and Build",
+              "kind": "build",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-workspace",
+              "branch": "prelude/design-workspace",
+              "waitsFor": [{ "id": "design-workspace", "title": "Design Workspace" }, { "id": "build-design", "title": "Build" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Build the visuals in the chat, following the architecture’s decision:\n\n- the parser and checker in the part the decision names;\n- one Eta partial per visual under server/views/, rendering the design system’s markup unchanged;\n- the vocabulary in the agent’s prompts in server/agent.js, for every kind whose rules say it may draw;\n- the series tokens and new components ported to the system Prelude’s pages use.\n\nUnreadable blocks fall back as the rules say. Add tests for the parser: a good flow, an unknown part, a bad format, an unfinished block mid-stream.",
+              "refs": [
+                { "asks": "the architecture’s decision", "from": "Prelude Architecture" },
+                { "asks": "the series tokens and new components", "from": "Prelude Design System" },
+                { "asks": "the rules", "from": "Design Workspace and Build" }
+              ]
+            },
+            {
+              "id": "build-fix-something",
+              "title": "Build Fix Something",
+              "kind": "build",
+              "url": "/f/prelude/plans/visuals-in-the-chat/steps/build-fix-something",
+              "branch": "prelude/fix-something",
+              "waitsFor": [{ "id": "fix-something", "title": "Fix Something" }, { "id": "build-workspace", "title": "Build Design Workspace and Build" }],
+              "doneWhen": "Every story is built, the check passes, and it’s merged into main.",
+              "state": "planned",
+              "finish": "merge",
+              "prompt": "Build Fix Something’s visuals on the parser and partials the build of Design Workspace made: the architecture brief and the vocabulary in askPrompt and fixPrompt, the map of what an ask would change above its files, and the parts a fix touched beside its check.",
+              "refs": [
+                { "asks": "the parser and partials the build of Design Workspace made", "from": "Build Design Workspace and Build" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

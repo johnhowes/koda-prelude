@@ -1,0 +1,26 @@
+{
+  "design-system-approved": {
+    "title": "Prelude Design System’s screens are approved",
+    "update": "projects/prelude/plans/visuals-in-the-chat/steps/design-system",
+    "with": { "state": "ready", "says": "Its screens are approved and every page renders. Push it for a pull request to finish it." },
+    "send": "plans-changed"
+  },
+  "design-system-merged": {
+    "title": "Prelude Design System’s pull request is merged",
+    "update": "projects/prelude/plans/visuals-in-the-chat/steps/design-system",
+    "with": { "state": "merged", "says": "Merged into main by pull request #59, just now." },
+    "send": "plans-changed"
+  },
+  "design-workspace-started": {
+    "title": "Design Workspace starts",
+    "update": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace",
+    "with": {
+      "state": "working",
+      "session": "/f/prelude/d/design-workspace/s/20261023-1631-v8mm",
+      "started": "Just now",
+      "says": "The agent is reading its first message: the brief, then this prompt with D-v3x and the flow and map components named."
+    },
+    "send": "plans-changed",
+    "push": [{ "into": "notice?", "view": "plans/_started", "data": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace" }]
+  }
+}

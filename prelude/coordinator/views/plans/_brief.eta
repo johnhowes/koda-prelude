@@ -1,0 +1,34 @@
+<%/* The plan's brief: what every step's prompt starts with, written once
+     (R-f8d). The agent drafts it from what the person asked for, kept here
+     below it. It can be changed while the plan runs; a step already started
+     keeps the brief it was sent. The card is a region: a change answers
+     with the card. */%>
+<% const p = it, errors = it.$errors ?? {}, base = `/f/${p.project.id}/plans/${p.id}`; %>
+<h2 id="brief-title">Brief</h2>
+<p class="secondary">Every step’s prompt starts with this.</p>
+<% if (p.brief) { %>
+<div class="prose prompt">
+  <% for (const paragraph of p.brief.split(/\n\s*\n/)) { %><p><%= paragraph %></p><% } %>
+</div>
+<% } else { %>
+<p class="empty">The agent writes the brief as it drafts the steps.</p>
+<% } %>
+<% if (p.goal) { %>
+<details class="disclosure">
+  <summary>What you asked for</summary>
+  <div class="prose prompt"><p><%= p.goal %></p></div>
+</details>
+<% } %>
+<% if (p.brief && p.status !== 'done') { %>
+<details class="disclosure"<% if (errors.brief) { %> open<% } %>>
+  <summary>Change the brief</summary>
+  <form class="stack" action="<%= base %>/brief" method="post" ko-target="planBrief">
+    <label class="field">
+      <span class="label">Brief</span>
+      <textarea name="brief" rows="10"<% if (errors.brief) { %> aria-describedby="brief-error" ko-invalid-server="<%= errors.brief %>"<% } %>><%= p.brief %></textarea>
+      <% if (errors.brief) { %><span class="error" id="brief-error"><%= errors.brief %></span><% } else { %><span class="hint">Steps that haven’t started get the new brief. Those already started keep what they were sent.</span><% } %>
+    </label>
+    <div class="cluster actions"><button class="btn small" type="submit">Save the brief</button></div>
+  </form>
+</details>
+<% } %>

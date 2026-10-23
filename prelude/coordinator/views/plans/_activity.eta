@@ -1,0 +1,18 @@
+<%/* What's happened in the plan, newest first: what the agent drafted, the
+     steps that started, what the person did, what merged. A region of its
+     own, reloaded when a step moves. Times are said as Prelude says them
+     elsewhere ("Today 14:58"). */%>
+<% const p = it, activity = [...(p.activity ?? [])].reverse(); %>
+<h2 id="activity-title">What’s happened</h2>
+<% if (activity.length) { %>
+<ul class="stack gap-3">
+  <% for (const event of activity) { %>
+  <li class="stack gap-1">
+    <span class="secondary"><%= event.says %></span>
+    <span class="muted"><%= event.when %></span>
+  </li>
+  <% } %>
+</ul>
+<% } else { %>
+<p class="empty">Nothing yet. The agent is drafting the steps.</p>
+<% } %>

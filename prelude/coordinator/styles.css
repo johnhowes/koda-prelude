@@ -1,0 +1,3 @@
+/* A prompt or a brief is plain text the agent wrote: its paragraphs keep
+   their line breaks (a list of "- " lines), which .prose can't know. */
+.prose.prompt p { white-space: pre-line; }

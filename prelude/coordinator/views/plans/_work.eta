@@ -1,0 +1,109 @@
+<%/* A plan's steps: what needs the person, then every step in the order they
+     can start, as layers of a map read from top to bottom. A step sits one
+     layer below the last step it waits for, so steps side by side run at the
+     same time. Each opens in the drawer, with its prompt.
+
+     Where a step stands is worked out from its branch, its session and its
+     stories, never kept by hand: waiting (on steps not yet merged), working,
+     the person's turn (a discussion or design session, after the first
+     message the plan sent), ready to finish, a pull request open, a build
+     stopped, merged. A waiting step names only what it still waits for.
+
+     Ready to finish is merged here, or pushed for a pull request when the
+     project has a remote (asked first in the modal). Neither happens without
+     the person, unless they let the plan merge by itself (R-p4h); a push
+     always asks. A stopped build holds back only what waits for it (R-v2j). */%>
+<% const p = it, steps = p.steps ?? [], base = `/f/${p.project.id}/plans/${p.id}`;
+   const byId = Object.fromEntries(steps.map(step => [step.id, step]));
+   const layerOf = (step, seen = new Set()) => {
+     if (seen.has(step.id)) return 0;
+     seen.add(step.id);
+     return Math.max(0, ...step.waitsFor.map(w => byId[w.id] ? layerOf(byId[w.id], seen) + 1 : 0));
+   };
+   const layers = [];
+   for (const step of steps) (layers[layerOf(step)] ??= []).push(step);
+   const names = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth'];
+   const kinds = { discussion: 'Discussion', design: 'Design', build: 'Build', fix: 'Fix' };
+   const states = {
+     planned: { label: 'Not started', tone: '' },
+     waiting: { label: 'Waiting', tone: '' },
+     working: { label: 'Working', tone: 'accent', pulse: true },
+     asking: { label: 'Your turn', tone: 'accent' },
+     ready: { label: 'Ready to finish', tone: 'accent' },
+     pushed: { label: 'Pull request open', tone: '' },
+     stopped: { label: 'Build stopped', tone: 'warn' },
+     merged: { label: 'Merged', tone: '' },
+   };
+   const list = titles => titles.length > 1 ? `${titles.slice(0, -1).join(', ')} and ${titles.at(-1)}` : titles[0];
+   const saysOf = step => {
+     if (step.state === 'waiting') {
+       const left = step.waitsFor.filter(w => byId[w.id]?.state !== 'merged').map(w => w.title);
+       return left.length ? `Starts once ${list(left)} ${left.length === 1 ? 'is' : 'are'} merged.` : 'Starts in a moment: what it waits for is merged.';
+     }
+     if (step.state === 'planned') return step.waitsFor.length ? `Starts once ${list(step.waitsFor.map(w => w.title))} ${step.waitsFor.length === 1 ? 'is' : 'are'} merged.` : 'Starts as soon as the plan does.';
+     return step.says;
+   };
+   const needs = steps.filter(step => ['asking', 'ready', 'stopped'].includes(step.state)); %>
+<% if (!steps.length) { %>
+<section class="card" aria-labelledby="steps-title">
+  <h2 id="steps-title">Steps</h2>
+  <div class="status" role="status">
+    <span class="pulse" aria-hidden="true"></span>
+    <span>The agent is reading the project and its architecture, and drafting the steps…</span>
+  </div>
+  <p class="secondary">They appear here as it writes them. You can talk it over with the agent while it works.</p>
+</section>
+<% } else { %>
+<% if (needs.length) { %>
+<section class="card" aria-labelledby="needs-title">
+  <h2 id="needs-title">Needs you</h2>
+  <ul class="list">
+    <% for (const step of needs) { %>
+    <li>
+      <span class="item">
+        <span class="icon icon-<%= step.kind === 'build' ? 'code' : step.kind === 'discussion' ? 'document' : 'screen' %>" aria-hidden="true"></span>
+        <span class="item-text">
+          <span class="item-title"><a href="<%= step.url %>" ko-target="drawer?"><%= step.title %></a><span class="pill <%= states[step.state].tone %>"><%= states[step.state].label %></span></span>
+          <span class="secondary"><%= step.says %></span>
+        </span>
+        <span class="spacer"></span>
+        <% if (step.state === 'ready' && step.finish === 'push') { %>
+        <a class="btn small" href="<%= step.url %>/push" ko-target="modal?"><span class="icon icon-push" aria-hidden="true"></span>Push and open a pull request…</a>
+        <% } else if (step.state === 'ready') { %>
+        <form action="<%= step.url %>/merge" method="post" ko-target="planWork">
+          <input type="hidden" name="state" value="merged">
+          <input type="hidden" name="says" value="Merged into main just now.">
+          <button class="btn small" type="submit" title="Merge <%= step.branch %> into main. The steps waiting for it start once it’s in.">Merge into main</button>
+        </form>
+        <% } else if (step.session) { %>
+        <a class="btn small" href="<%= step.session %>"><%= step.state === 'stopped' ? 'Open the build' : 'Open its session' %></a>
+        <% } %>
+      </span>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %>
+
+<section class="card" aria-labelledby="steps-title">
+  <h2 id="steps-title">Steps <span class="muted"><%= steps.filter(step => step.state === 'merged').length %> of <%= steps.length %> merged</span></h2>
+  <figure class="stack gap-2">
+    <div class="map" aria-label="The plan’s steps, in the order they start">
+      <% for (const [i, layer] of layers.entries()) { if (!layer) continue; %>
+      <section class="map-layer" aria-label="<%= names[i] ?? `Step ${i + 1}` %>">
+        <h3 class="map-label"><%= names[i] ?? `Step ${i + 1}` %></h3>
+        <ul class="map-nodes">
+          <% for (const step of layer) { const s = states[step.state]; %>
+          <li><a class="map-node<%= step.state === 'stopped' ? ' warn' : '' %>" href="<%= step.url %>" ko-target="drawer?">
+            <span class="map-node-title"><%= step.title %><span class="pill"><%= kinds[step.kind] %></span><span class="pill <%= s.tone %>"><% if (s.pulse) { %><span class="pulse" aria-hidden="true"></span><% } %><%= s.label %></span></span>
+            <span class="muted"><%= saysOf(step) %></span>
+          </a></li>
+          <% } %>
+        </ul>
+      </section>
+      <% } %>
+    </div>
+    <figcaption class="muted">Read from the top. Each step starts by itself once the steps it waits for are merged into main, with its branch brought up to date first; steps side by side run at the same time.</figcaption>
+  </figure>
+</section>
+<% } %>
