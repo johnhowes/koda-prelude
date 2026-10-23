@@ -13,7 +13,13 @@
        and --to, the grid lines it spans (from the smaller lane to the larger
        + 1), .back when the next step's part is to the left, .down when it is
        the same part. The last step hands on nothing.
-     .flow-parts is aria-hidden: each step names its part itself. -->
+     .flow-parts is aria-hidden: each step names its part itself.
+     A part with a page (an architecture's part) links to it: a link inside
+     each column head, with tabindex="-1" (the heads are aria-hidden), and
+     each step's .flow-part an <a> itself, which shows in its box while it
+     has focus. A span when there's nowhere to go. -->
+<!-- Linked: <li class="flow-part" style="--series: var(--series-1)"><a href="/f/p/architecture/parts/claude" tabindex="-1">claude</a></li>
+             <div class="flow-box"><a class="flow-part" href="/f/p/architecture/parts/claude">claude</a><span class="flow-text">…</span></div> -->
 <figure class="flow" style="--lanes: 4">
   <figcaption class="flow-title">A visual in a message</figcaption>
   <ul class="flow-parts" aria-hidden="true">

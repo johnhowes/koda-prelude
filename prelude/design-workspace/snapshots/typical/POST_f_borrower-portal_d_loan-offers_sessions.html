@@ -36,7 +36,7 @@ Here’s how I sketched the compare page, and the offer card from Figma. Use the
 </textarea>
 </div>
 <div hidden ko-debounce="800" ko-form="/f/borrower-portal/d/loan-offers/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
-<input calc-value="message.value" name="message" type="hidden">
+<input calc-value="message.value" ko-as="draftMessage" name="message" type="hidden">
 </div>
 <div class="composer-foot">
 <div class="composer-tools">
@@ -80,19 +80,19 @@ Dictate
 </span>
 </button>
 </div>
-<details class="menu start up" ko-as="modelMenu">
-<summary class="icon-btn small" title="The speech model dictation uses">
+<div class="menu start up">
+<button class="icon-btn small" ko-for="modelMenu" popovertarget title="The speech model dictation uses" type="button">
 <span aria-hidden="true" class="icon icon-expand">
 </span>
 <span class="sr-only">
 Speech model
 </span>
-</summary>
-<div class="menu-list">
+</button>
+<div class="menu-list" ko-as="modelMenu" popover>
 <p class="menu-note muted">
 Speech model: Balanced, 466 MB, kept on this computer.
 </p>
-<a href="/f/borrower-portal/d/loan-offers/dictation" ko-set="modelMenu.open = false" ko-target="modal?">
+<a href="/f/borrower-portal/d/loan-offers/dictation" ko-target="modal?">
 <span class="item-title">
 Change model…
 </span>
@@ -112,7 +112,7 @@ Frees 466 MB. Dictation is off until you set it up again.
 </button>
 </div>
 </div>
-</details>
+</div>
 <span class="muted" hidden ko-as="heard" role="status">
 </span>
 <script type="koda">

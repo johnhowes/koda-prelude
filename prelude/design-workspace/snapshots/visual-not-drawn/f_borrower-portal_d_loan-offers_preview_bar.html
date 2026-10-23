@@ -1,0 +1,186 @@
+<div class="toolbar">
+<div class="menu start">
+<button class="btn small ghost" ko-for="pageMenu" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="clip">
+Offer
+</span>
+</button>
+<div class="menu-list" ko-as="pageMenu" popover>
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button name="surface.current" type="submit" value="/offers">
+<span class="item-title">
+Offers
+</span>
+<span class="muted">
+/offers · the app’s own view
+</span>
+</button>
+<button aria-current="true" name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer
+</span>
+<span class="muted">
+/offers/off-2291
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/compare">
+<span class="item-title">
+Compare offers
+</span>
+<span class="muted">
+/offers/compare
+</span>
+</button>
+</form>
+<hr>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Refresh
+</span>
+<span class="muted">
+Load this page again
+</span>
+</a>
+<a href="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291" target="_blank">
+<span class="item-title">
+Open in browser
+</span>
+<span class="muted">
+http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291
+</span>
+</a>
+</div>
+</div>
+<div class="menu start">
+<button class="btn small ghost" ko-for="stateMenu" popovertarget type="button">
+<span class="clip">
+State: Typical
+</span>
+</button>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-as="stateMenu" ko-target="design" method="post" popover>
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button aria-current="true" name="surface.state" type="submit" value="01-typical">
+<span class="item-title">
+Typical
+</span>
+<span class="muted">
+01-typical.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="03-expired">
+<span class="item-title">
+An offer expired
+</span>
+<span class="muted">
+03-expired.json
+</span>
+</button>
+</form>
+</div>
+<div class="menu start">
+<button class="btn small ghost" ko-for="captureMenu" popovertarget title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up." type="button">
+<span aria-hidden="true" class="icon icon-capture">
+</span>
+Capture
+</button>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-as="captureMenu" ko-target="capture-status" method="post" popover>
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<input name="name" type="hidden" value="Offer – Typical.png">
+<input name="page" type="hidden" value="/offers/off-2291">
+<input name="state" type="hidden" value="01-typical">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown name="whole" type="submit" value="false">
+<span class="item-title">
+What’s in view
+</span>
+<span class="muted" data-browser-only>
+As much as fits the frame, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+As much as fits the frame, exactly as it is now, with what you’ve typed
+</span>
+</button>
+<button name="whole" type="submit" value="true">
+<span class="item-title">
+The whole page
+</span>
+<span class="muted">
+Scrolled to its end, as wide as the frame, opened afresh
+</span>
+</button>
+</form>
+</div>
+<span id="capture-status" ko-region role="status">
+</span>
+<span class="spacer">
+</span>
+<div class="menu">
+<button class="btn small ghost" ko-for="sizeMenu" popovertarget title="The size this window lays the page out at." type="button">
+<span aria-hidden="true" class="icon icon-fit">
+</span>
+Fit the panel
+</button>
+<ul class="menu-list" ko-as="sizeMenu" popover>
+<li>
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Fit the panel
+</span>
+<span class="muted">
+As wide and tall as the panel
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=phone&amp;client=browser" ko-target="design">
+<span class="item-title">
+Phone
+</span>
+<span class="muted">
+390 × 844
+</span>
+</a>
+</li>
+<li>
+<form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="custom">
+<input name="surface.client" type="hidden" value="browser">
+<span class="item-title">
+Custom size
+</span>
+<div class="inline">
+<label class="sr-only" for="size-width-inline">
+Width in pixels
+</label>
+<input id="size-width-inline" max="4000" min="200" name="surface.custom.width" placeholder="Width" required type="number" value="">
+<span aria-hidden="true" class="muted">
+×
+</span>
+<label class="sr-only" for="size-height-inline">
+Height in pixels
+</label>
+<input id="size-height-inline" max="4000" min="200" name="surface.custom.height" placeholder="Height" required type="number" value="">
+<button class="btn small" type="submit">
+Use this size
+</button>
+</div>
+</form>
+</li>
+</ul>
+</div>
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
+<span aria-hidden="true" class="icon icon-external">
+</span>
+Pop out
+</a>
+</div>

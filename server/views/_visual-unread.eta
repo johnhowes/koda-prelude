@@ -1,0 +1,14 @@
+<%/* A block tagged as a visual (prelude-…) that Prelude couldn't read: shown
+     as the agent wrote it, a code block, with a quiet line saying why, so
+     the person knows it was meant as a picture and what stopped it. The
+     agent isn't told (D-v3x). It's checked each time the entry is shown,
+     against the architecture as it stands, so a part renamed later turns an
+     old block back into this.
+
+     `it` has tag (as written), code (the block's lines) and why (a
+     sentence, its names in <code>, ready to print). The fences are shown
+     too, so the tag that made it a visual is there to read. */%>
+<figure class="stack gap-1">
+  <div class="prose"><pre><code><%= '```' + it.tag + '\n' + it.code + '\n```' %></code></pre></div>
+  <figcaption class="muted">Not drawn: <%~ it.why %></figcaption>
+</figure>

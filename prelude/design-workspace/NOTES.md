@@ -11,7 +11,9 @@ questions) and modals (an image, Mark up, Turn on dictation); Pop-out
 window. The fake project is a lender's borrower portal, so sizes (phone,
 tablet) and a second client (its mobile app) mean something. States:
 typical, pages differ, doesn't render, agent working, new design, update
-clashed, popped out, new session.
+clashed, popped out, new session; and for visuals in the chat: a flow and
+a map, several visuals, a visual not drawn, visuals popped out, drawing a
+visual (streaming), ask and fix (a fix's conversation, its own design).
 
 All seven items of the first review are now designed or settled (item 4,
 the record picker, was dropped).
@@ -270,6 +272,50 @@ the record picker, was dropped).
   of them rendered afresh, not appended text, so the saved entry that
   takes its place looks the same. A reload finds it in the transcript
   (`it.streaming`). State `04-agent-working` shows one mid-sentence.
+- **Visuals in the chat** (the person, 2026-10-23; D-v3x, the design
+  system's flow and map). The page's route came back into the design
+  (`"from"`) with every partial it includes; `_entry.eta` and
+  `_live-entry.eta` changed, and `_message`, `_visual-flow`, `_visual-map`,
+  `_visual-drawing` and `_visual-unread` are new. An agent's message is
+  `pieces` (text, flow, map, drawing, unread) in the order written, each
+  ready to print; a message with none is one text piece (`html` still
+  reads). Each part links to `/f/<project>/architecture/parts/<id>`.
+  - **A part opens its page in the drawer** (the person, 2026-10-23): the
+    link is the part's own URL with `ko-target="drawer?"`, and the part's
+    page is laid out to fit there (its `.split` and grids wrap), so no
+    drawer view of its own. The chat passes `target` to the visual
+    partials; the Architecture page passes none, so its map still opens
+    pages. In the app, the part's route (`server/main.js`,
+    `/architecture/parts/<part>`) answers alone only for a request from
+    the app layout (`askedFromLayout(req, 'app')`); from the design page
+    (workspace layout) it would send the whole page into the drawer. It
+    should answer alone for any fragment request aimed at a drawer, as a
+    decision's route does. Not in the preview: the design has no route for
+    a part, so the drawer can't show one here.
+  - **The agent's map says nothing about change** (the person, 2026-10-23):
+    its parts are outlined (`.named`, added to the design system) with its
+    notes, no pill, since a `prelude-map-1` block can't say whether it
+    proposes or explains; the agent's words say which. Only Prelude's own
+    map after a turn that changed code says "Changed" (`.touched`), as an
+    entry of its own (`type: 'parts'`, open, folds away). A marked map's
+    other parts show only their names, so it fits a chat column; with no
+    mark it's the plain map, which the Architecture page can share.
+  - **A block Prelude couldn't read** shows with its fences and tag as
+    written, and "Not drawn: …" under it, naming the parts that aren't in
+    the architecture, the line that's wrong, or the kinds Prelude draws
+    (R-x2a, R-f7c, R-m4v). Quiet (muted), not a warning: the message still
+    reads, and only the person is told (R-b8s).
+  - **Streaming**: a finished visual is drawn at once; one still being
+    written is a skeleton with "Drawing a flow…" / "Drawing a map of the
+    parts…" (R-w5g). The push re-renders the message's pieces into
+    `#<id>-text`, now the `_message` stack rather than a `.prose`.
+  - **Widths need nothing of their own**: flow and map answer to their
+    container. Beside the design (26rem) a flow is a list and a map's
+    labels sit above; popped out or in a fix's conversation (`--measure`)
+    a flow of up to four parts gets columns, five or more stay a list
+    (R-9tz). States 09–14 show each.
+  - Added to the design system: linked flow parts, `.entry :where(ul)`, and
+    the map's `.named`.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -491,11 +537,58 @@ Where the app differs from the screens, on purpose:
   shell's `_regions`; `desktop.js` for What's in view). Views and states
   unchanged: this design's pages are the app's.
 
+## Built: visuals in the chat (2026-10-23)
+
+- The page's route renders the app's `_session.eta` again. `_entry.eta` and
+  `_live-entry.eta` changed; `_message`, `_visual-flow`, `_visual-map`,
+  `_visual-drawing` and `_visual-unread` are the app's now. The design's
+  styles needed nothing new: flow and map are the design system's.
+- **Reading a block** is `server/visuals.js` (D-v3x): the registry of kinds
+  (`prelude-flow-1`, `prelude-map-1`), splitting a message on its top-level
+  fences by Koda's own fence rule, and reading and checking each block into
+  its partial's model, or saying why not (R-x2a, R-f7c, R-m4v). The
+  architecture's flow files are read with the same step parser.
+- **Pieces** come from `messagePieces` (`server/views.js`), with the
+  architecture of the folder the page is for (the session's branch's
+  worktree, or the project), read as it stands each time the entry is shown
+  (`visualsArchitecture`, `server/architecture.js`; at most once a second),
+  so a renamed part turns an old visual back into its block (R-0hq). The
+  transcript keeps the agent's words as written; nothing is told to the
+  agent (R-b8s).
+- **Streaming**: the live entry's pushes (`push-delta.eta`) now re-render
+  the whole `_message` into the live entry (`#live-n`), not its words into
+  `#live-n-text`, since the message is a stack of pieces. A block not yet
+  closed is a placeholder (R-w5g); `DesignPage.streaming` has `pieces`.
+- **The parts a turn changed** (R-c1y): after a build or fix turn,
+  `partsChanged` (`server/architecture.js`) maps the code files changed
+  since HEAD to their parts by the parts' `files`, and the turn records
+  `{ type: 'parts', files, parts: [{ id, files }] }`. It's drawn as a map
+  when shown, each part's files as its note; with no architecture, or none
+  of its parts left, it says only how many files changed.
+- **The agent is told the vocabulary** with the architecture brief (design,
+  build and fix prompts) and, in a conversation about the project, with a
+  read-only brief (`askPrompt`), once the project has an architecture.
+- **A part opens in the drawer** with no change to its route: the design
+  page is in the app layout, so a fragment request from it already gets the
+  part alone (`askedFromLayout(req, 'app')`).
+- Not done: the Architecture page still draws its own map
+  (`architecture/overview.eta`), not `_visual-map.eta` with no mark.
+- The pop-out window (2026-10-23) needed nothing more: its route already
+  renders the app's `_window.eta`, and its partials (`_surface`, `_frame`,
+  `_design-bar`, `_page-menu`, `_review-menu`, `_keep`) and the window
+  layout are the ones its approved screens were taken from. The check after
+  the Design page's build found every window screen matching, in every state.
+- The Design page's screens approved again for states 01–08 (the page, the
+  surface, the bar, the microphone, a refused message) needed nothing more
+  (2026-10-23): they show the design system's popover menus (page, review,
+  state, Send event, Capture, size, client, sessions, the speech model's),
+  which the app's views have had since the menu fix (above), and match what
+  states 09–14, approved later, already showed.
+
 ## Open questions
 
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
-
 ## Limits of the preview
 
 What the fake routes can't do; the app does each.

@@ -28,6 +28,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import { eventLine } from './backlog.js';
+import { vocabulary } from './visuals.js';
 
 const TOOLS = ['Read', 'Glob', 'Grep', 'Write', 'Edit'];
 
@@ -255,7 +256,20 @@ export function architectureBrief(architecture) {
 - Before you change anything, read ${at}/overview.md, and the parts/ file of every part your change reaches: the parts whose files you'll change (each part's header lists its files), and those they use. Keep to the principles.
 - A part may use only the parts its file says it may, in its own layer or below it. Every file belongs to a part.
 - If your change would go against the architecture (a use a part doesn't say it may make, a new part, a principle bent), don't make it without saying so. Propose a decision on this branch: write ${at}/decisions/D-<three random lower-case letters or digits>.md, as the others are written, with "status: proposed", today's date, the parts it binds, and its Context, Decision and Consequences; change the parts' files to match (a new use, a new part, its files). It's reviewed with this branch, and accepted when the branch is merged. Say in the chat that you proposed it, and why.
-- A decision that came from main is accepted, even if it still says "status: proposed" (a pull request merged it): only those this branch proposed are still proposed.`;
+- A decision that came from main is accepted, even if it still says "status: proposed" (a pull request merged it): only those this branch proposed are still proposed.
+
+${vocabulary()}`;
+}
+
+/**
+ * What an agent that only reads is told about the architecture (the ask
+ * prompt): where it is, to answer from, and the vocabulary to draw with.
+ */
+function readingBrief(architecture) {
+  const at = architecture.path;
+  return `This project's architecture is written down in ${at}/: overview.md (its layers, top to bottom, and its principles), parts/<id>.md (each part: its job, what isn't, the parts it may use, and its files), decisions/ (why it's built the way it is) and flows/. Read it to answer how the app works, and name the parts you mean.
+
+${vocabulary()}`;
 }
 
 /** How the architecture design's agent writes it: the files architecture.js reads. */
@@ -620,7 +634,7 @@ After each turn Prelude renders every page of each design whose files you've cha
  * a question, or a problem not fixed yet, with no branch. The agent only reads
  * (R-h7w), and ends with what it would change, for Fix it on a branch.
  */
-export function askPrompt({ designs = [], app = null, references = [], stack = null, kodaPath = null }) {
+export function askPrompt({ designs = [], app = null, references = [], stack = null, kodaPath = null, architecture = null }) {
   const list = designs.map(design => `  - ${design.title} (prelude/${design.id}${design.kind === 'system' ? ', the design system' : design.kind === 'shell' ? ', the app shell' : design.kind === 'architecture' ? ', the architecture' : ''})`).join('\n') || '  (none yet)';
   return `You are answering questions about this project, in Prelude. The person asks how something works, or says what's wrong. You only read: you can't change anything in the project, and nothing is committed. If something needs fixing, the person fixes it on a branch, and this conversation carries on there, where you can change the project.
 
@@ -634,7 +648,7 @@ How to answer:
 2. **When something is wrong**, find the cause, and say what it is.
 3. **End with what you'd change**, if anything needs changing: which files, and what in them, in a few lines. Don't write the change out in full: it's made on a branch, once the person fixes it there.
 
-Images the person attaches are kept with this conversation, outside the project; their paths are given with the message.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}`;
+Images the person attaches are kept with this conversation, outside the project; their paths are given with the message.${references.length ? `\n\nYou may also read: ${references.map(reference => reference.path).join(', ')}.` : ''}${architecture ? `\n\n${readingBrief(architecture)}` : ''}`;
 }
 
 /**

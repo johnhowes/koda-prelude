@@ -22,7 +22,7 @@ Message
 </textarea>
 </div>
 <div hidden ko-debounce="800" ko-form="/f/borrower-portal/d/loan-offers/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
-<input calc-value="message.value" name="message" type="hidden">
+<input calc-value="message.value" ko-as="draftMessage" name="message" type="hidden">
 </div>
 <div class="composer-foot">
 <div class="composer-tools">

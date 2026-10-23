@@ -2,15 +2,15 @@
 <input id="lookingSize" type="hidden" value="">
 <div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="pageMenu" popovertarget type="button">
 <span aria-hidden="true" class="icon icon-screen">
 </span>
 <span class="clip">
 Offers
 </span>
-</summary>
-<div class="menu-list">
+</button>
+<div class="menu-list" ko-as="pageMenu" popover>
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="fit">
@@ -66,7 +66,7 @@ http://loan-offers.borrower-portal.preview.localhost:4200/offers
 </span>
 </a>
 </div>
-</details>
+</div>
 <a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 1 is shown on this page.">
 <span aria-hidden="true" class="icon icon-rule">
 </span>
@@ -75,13 +75,13 @@ Rules
 1
 </span>
 </a>
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="stateMenu" popovertarget type="button">
 <span class="clip">
 State: Typical
 </span>
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-as="stateMenu" ko-target="design" method="post" popover>
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
@@ -118,14 +118,14 @@ Long names
 </span>
 </button>
 </form>
-</details>
-<details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
+</div>
+<div class="menu start">
+<button class="btn small ghost" ko-for="captureMenu" popovertarget title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up." type="button">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-as="captureMenu" ko-target="capture-status" method="post" popover>
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
@@ -133,7 +133,7 @@ Capture
 <input name="page" type="hidden" value="/offers">
 <input name="state" type="hidden" value="01-typical">
 <input accept="image/png" data-capture-picture hidden name="picture" type="file">
-<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<button data-capture-shown name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
@@ -144,7 +144,7 @@ As much as fits the frame, opened afresh: what you’ve typed isn’t in it
 As much as fits the frame, exactly as it is now, with what you’ve typed
 </span>
 </button>
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
+<button name="whole" type="submit" value="true">
 <span class="item-title">
 The whole page
 </span>
@@ -153,18 +153,18 @@ Scrolled to its end, as wide as the frame, opened afresh
 </span>
 </button>
 </form>
-</details>
+</div>
 <span id="capture-status" ko-region role="status">
 </span>
 <span class="spacer">
 </span>
-<details class="menu">
-<summary class="btn small ghost" title="The size this window lays the page out at.">
+<div class="menu">
+<button class="btn small ghost" ko-for="sizeMenu" popovertarget title="The size this window lays the page out at." type="button">
 <span aria-hidden="true" class="icon icon-fit">
 </span>
 Fit the panel
-</summary>
-<ul class="menu-list">
+</button>
+<ul class="menu-list" ko-as="sizeMenu" popover>
 <li>
 <a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
@@ -232,7 +232,7 @@ Use this size
 </form>
 </li>
 </ul>
-</details>
+</div>
 <a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
 <span aria-hidden="true" class="icon icon-external">
 </span>
@@ -249,11 +249,11 @@ The agent is told with your next message.
 </p>
 <span class="spacer">
 </span>
-<details class="menu">
-<summary class="btn small">
+<div class="menu" ko-item>
+<button class="btn small" ko-for="pages" popovertarget type="button">
 Show it
-</summary>
-<div class="menu-list">
+</button>
+<div class="menu-list" ko-as="pages" popover>
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="fit">
@@ -269,7 +269,7 @@ Offer · Long names
 </button>
 </form>
 </div>
-</details>
+</div>
 </div>
 </div>
 </div>
@@ -286,6 +286,8 @@ Offer · Long names
 // At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
 </script>
 <script type="koda">
-// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. // Koda's warnings in the page (0.1.4) arrive the same way, and join // Prelude's own in the shell's list (_regions.eta), said to be the // design's. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; if (event.data?.type === 'prelude:warning' && typeof event.data.message === 'string') { const list = document.querySelector('[ko-warnings]'); if (!list) return console.warn(event.data.message); const item = document.createElement('li'); item.setAttribute('ko-warning', event.data.code); item.textContent = `In the design’s page: ${event.data.message}`; list.append(item); const kept = list.querySelectorAll(':scope > [ko-warning]'); for (let index = 0; index
+<
+kept.length - 100; index += 1) kept[index].remove(); } }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
 </script>
 </section>

@@ -1,0 +1,168 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [
+            { "name": "spark-ui", "path": "C:\\Projects\\spark-ui" }
+          ],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": { "running": true, "approved": true, "url": "http://localhost:5173", "open": "/host/open?folder=borrower-portal&branch=loan-offers", "start": "/f/borrower-portal/host/start" },
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261023-1010-h4tc", "title": "How compare works", "started": "Today, 10:10" },
+            { "id": "20261017-0912-k2pd", "title": "Monthly payment and compare", "started": "17 Oct, 09:12" },
+            { "id": "20261016-1530-a8vn", "title": "Accepting an offer", "started": "16 Oct, 15:30" }
+          ],
+          "session": { "id": "20261023-1010-h4tc", "title": "How compare works" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Before we change the compare page: how does it get each offer’s total cost? And what would building this design change in the app?", "lookingAt": "Compare offers · Typical" },
+            { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/borrower-architecture/architecture/flows/compare.md" },
+            { "id": 3, "type": "tool", "name": "Read", "summary": "prelude/borrower-architecture/architecture/parts/pricing.md" },
+            { "id": 4, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/views/offers/compare.eta" },
+            {
+              "id": 5,
+              "type": "text",
+              "pieces": [
+                { "kind": "text", "html": "<p>Here’s how the compare page gets each offer’s total cost today, as the architecture has it:</p>" },
+                {
+                  "kind": "flow",
+                  "flow": {
+                    "title": "Comparing two offers",
+                    "lanes": 4,
+                    "many": false,
+                    "parts": [
+                      { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "series": 1 },
+                      { "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "series": 2 },
+                      { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "series": 3 },
+                      { "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "series": 4 }
+                    ],
+                    "steps": [
+                      { "lane": 1, "series": 1, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Takes the two offers picked on Offers" },
+                      { "lane": 2, "series": 2, "part": { "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers" }, "html": "Loads both for the signed-in borrower" },
+                      { "lane": 3, "series": 3, "part": { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store" }, "html": "Reads each offer’s rate, term and fees" },
+                      { "lane": 4, "series": 4, "part": { "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing" }, "html": "Works out the monthly payment and the total over the term" },
+                      { "lane": 2, "series": 2, "part": { "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers" }, "html": "Marks the one that costs less in total" },
+                      { "lane": 1, "series": 1, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Shows them side by side" }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Two things the design asks for aren’t there yet: <strong>Pricing</strong> leaves out fees other than interest (R-c9h), and <strong>Offers</strong> marks the first of two equal totals (R-k3f). So building this design would change three parts:</p>" },
+                {
+                  "kind": "map",
+                  "map": {
+                    "label": "borrower-portal’s parts",
+                    "mark": "named",
+                    "count": 3,
+                    "layers": [
+                      { "title": "Pages", "parts": [
+                        { "id": "offer-pages", "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "summary": "Offers, an offer, compare, accept", "marked": true, "note": "The total over the term, and the pill on the cheaper offer" },
+                        { "id": "account-pages", "title": "Account pages", "url": "/f/borrower-portal/architecture/parts/account-pages", "summary": "Profile, documents, sign-in" }
+                      ] },
+                      { "title": "Services", "parts": [
+                        { "id": "offers", "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "summary": "Lists, prices and compares a borrower’s offers", "marked": true, "note": "Equal totals mark neither offer" },
+                        { "id": "acceptance", "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance", "summary": "Accepting an offer, and its paperwork" },
+                        { "id": "notifications", "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications", "summary": "Emails and texts to borrowers" }
+                      ] },
+                      { "title": "Data", "parts": [
+                        { "id": "offer-store", "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "summary": "Offers and their terms, in Postgres" },
+                        { "id": "pricing", "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "summary": "APR, monthly payment and total cost", "marked": true, "note": "Every fee in the total, not only interest" }
+                      ] },
+                      { "title": "Shared helpers", "parts": [
+                        { "id": "money", "title": "Money", "url": "/f/borrower-portal/architecture/parts/money", "summary": "Amounts, rounding and formatting" }
+                      ] },
+                      { "title": "Outside", "parts": [
+                        { "id": "lender-api", "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "summary": "Offers from partner lenders", "outside": true },
+                        { "id": "sendgrid", "title": "SendGrid", "url": "/f/borrower-portal/architecture/parts/sendgrid", "summary": "Sends the emails", "outside": true }
+                      ] }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Nothing outside the app changes. Shall I add a state where the two offers cost the same, so R-k3f shows on a page?</p>" }
+              ]
+            },
+            { "id": 6, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] }
+          ],
+          "rules": [
+            { "id": "R-v4p", "text": "Offers are listed lowest APR first; offers with the same APR, shorter term first.", "status": "built", "shownOn": { "page": "/offers", "title": "Offers", "state": "01-typical", "stateTitle": "Typical" } },
+            { "id": "R-k3f", "text": "Of two offers compared, the one that costs less over its whole term is marked “Lower total cost”; when they cost the same, neither is.", "status": "proposed", "shownOn": { "page": "/offers/compare", "title": "Compare offers", "state": "01-typical", "stateTitle": "Typical" } },
+            { "id": "R-c9h", "text": "An offer’s total cost includes every fee the lender charges, not only interest.", "status": "proposed", "shownOn": { "page": "/offers/compare", "title": "Compare offers", "state": "04-long-names", "stateTitle": "Long names" } }
+          ],
+          "questions": [],
+          "decisions": [],
+          "dictation": { "status": "ready", "model": "small" },
+          "speechModels": [
+            { "id": "base.en", "title": "Quick", "size": "142 MB", "says": "English only. Fast on any computer, but misses more." },
+            { "id": "small", "title": "Balanced", "size": "466 MB", "says": "Many languages. A second or two per sentence on most laptops." },
+            { "id": "large-v3-turbo", "title": "Most accurate", "size": "1.6 GB", "says": "Many languages, and best with technical words. Slow without a graphics card." }
+          ],
+          "queued": [],
+          "images": [],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
+          "surface": {
+            "view": "inline",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers", "ported": true },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/compare",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" },
+              { "id": "04-long-names", "title": "Long names", "file": "04-long-names.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [
+              { "name": "offer-expired", "title": "An offer expires" }
+            ],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 },
+              { "id": "tablet", "title": "Tablet", "width": 820, "height": 1180 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" },
+              { "id": "mobile-app", "title": "Spark mobile app", "says": "Inside the iOS and Android app: no site header, and Back is the app’s own" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
