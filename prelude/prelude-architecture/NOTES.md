@@ -12,6 +12,11 @@ Prelude's own architecture, as markdown in `architecture/`, read by every design
 
 - **Word helpers move to `server/words.js`** (D-w4n, proposed; the person agreed 2026-10-22): `ago`, `plain`, `sentences`, `clip` from home.js and `whenWords`, `startedWords`, `sinceWords` from workspace.js, in a new lowest layer, Shared helpers. The `words` part and the `uses` are written as the target. The code moves in a fix or build session, so until then the check reports `server/words.js` missing and architecture's import of home.js.
 
+- **The agent follows the app's own Koda; Prelude installs only in a fix's worktree** (D-k7v, proposed 2026-10-23). `designs` finds the app's Koda (worktree, then checkout, then Prelude's, since a fresh worktree has no `node_modules`). `pages` compares versions, and a new `installs` part (`server/installs.js`) runs the package manager, fenced to worktrees, with a fixed command and `--ignore-scripts`. Flow: `koda-upgrade`. Until it's built, the check reports `server/installs.js` missing.
+
 ## Open questions
 
-- None right now.
+- Should installs handle only `@kodalang/core`, or any package? D-k7v says only Koda.
+- Is `--ignore-scripts` acceptable, or should install scripts run after the person approves, as hosts do?
+- Should the design host serve the app's Koda runtime to designs instead of Prelude's (`/koda/` in main.js)?
+- After merging an upgrade, should Prelude offer to install in the person's checkout, or leave that to them?
