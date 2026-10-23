@@ -1,5 +1,6 @@
 // The Koda skills in .claude/skills/ must match the installed @kodalang/core.
-// If this fails after an upgrade, run `npm run skills` and read what changed.
+// npm install copies them (postinstall); if this fails anyway, run
+// `npm run skills` and read what changed.
 
 import { strict as assert } from 'node:assert';
 import { readFileSync, readdirSync } from 'node:fs';

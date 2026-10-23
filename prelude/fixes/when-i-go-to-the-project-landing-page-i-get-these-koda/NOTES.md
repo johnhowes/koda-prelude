@@ -14,9 +14,10 @@ The browser console showed Koda warnings:
 - Upgraded `@kodalang/core` from 0.1.4 to 0.1.5 (`package.json`, `package-lock.json`). The lockfile has no `integrity` for 0.1.5 yet; `npm install` adds it.
 - `server/views/_composer.eta`: the draft's hidden input now has `ko-as="draftMessage"`. It still posts as `message`, and `message` now names only the textarea. There's no visible change.
 - `test/chat.test.js`: a test that the composer's draft copy has its own name.
+- Upgrading Koda now brings its skills: `package.json` runs `tools/copy-skills.js` as `postinstall`, so every `npm install` copies the installed Koda's skills into `.claude/skills/`. Upgrading is changing the version and installing. `npm run skills` still works by hand, and `test/skills.test.js` is still the backstop. The tools part (`architecture/parts/tools.md`) says so.
 
 ## What to check
-- Run `npm install`, then `npm run skills` (it copies Koda's skills into `.claude/skills/`), then commit the lockfile with its new `integrity` line, and the skills if they changed.
+- Run `npm install`. It should end with a "copied" line for each Koda skill. Then commit the lockfile with its new `integrity` line, and `.claude/skills/` if it changed.
 - Run `npm test` (the new test is in `test/chat.test.js`).
 - Open a project page and the Ask or fix page with the console open: the `q`, `stageReady`, `stageDesigning` and `message` warnings should be gone. Search and filter the designs, then type in the message box, reload, and check that the draft is kept.
 - Approved screens of Design Workspace and Fix Something will differ by the one new `ko-as` attribute on the hidden draft input. That's on purpose.
