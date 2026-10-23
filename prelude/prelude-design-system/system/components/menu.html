@@ -1,13 +1,19 @@
 <!-- Menu: a button that opens a short list to pick from (sessions, screens, states).
-     details/summary, so it needs no script. The summary shows the current choice;
-     each row is a link or a submit button, with a title and a .muted line; the
-     current one has aria-current. Opens to the right edge; .start opens from the left.
-     .up opens it above its button, for a menu at the foot of a panel. A .menu-note
-     is a line that says something rather than offering it. An <hr> separates groups; a small form (a field and its .btn) may end the
-     list, and its .btn stays a button. -->
-<details class="menu">
-  <summary class="btn small ghost"><span class="icon icon-fit" aria-hidden="true"></span>Phone</summary>
-  <div class="menu-list">
+     A popover, so it needs no script: the button's popovertarget names the list,
+     and the browser closes it on a click outside or Escape (focus goes back to the
+     button), keeps one menu open at a time, and tells screen readers whether it's
+     open. Tab and Shift+Tab move through its rows; arrow keys aren't there yet.
+     In a view, write ko-for="…" on the button and ko-as="…" on the list instead of
+     an id. The button shows the current choice; each row is a link or a submit
+     button, with a title and a .muted line; the current one has aria-current.
+     It opens below, out to the left of the button's right edge; .start opens from
+     its left edge; .up opens above first, for a menu at the foot of a panel. Either
+     way it flips to where there's room. A .menu-note is a line that says something
+     rather than offering it. An <hr> separates groups; a small form (a field and its
+     .btn) may end the list, and its .btn stays a button. -->
+<div class="menu">
+  <button class="btn small ghost" type="button" popovertarget="size-menu"><span class="icon icon-fit" aria-hidden="true"></span>Phone</button>
+  <div class="menu-list" id="size-menu" popover>
     <a href="#"><span class="item-title">Fit the panel</span><span class="muted">As wide and tall as the panel</span></a>
     <a href="#" aria-current="true"><span class="item-title">Phone</span><span class="muted">390 × 844</span></a>
     <hr>
@@ -16,11 +22,11 @@
       <div class="inline"><input id="custom-width" name="width" type="number" placeholder="Width"><button class="btn small" type="submit">Use this size</button></div>
     </form>
   </div>
-</details>
+</div>
 
-<details class="menu start">
-  <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</summary>
-  <form class="menu-list" action="#" method="post">
+<div class="menu start">
+  <button class="btn small ghost" type="button" popovertarget="screen-menu"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</button>
+  <form class="menu-list" id="screen-menu" popover action="#" method="post">
     <button type="submit" name="screen" value="01-sign-in" aria-current="true">
       <span class="item-title">Sign in</span>
       <span class="muted">01-sign-in.html</span>
@@ -30,12 +36,19 @@
       <span class="muted">02-sign-up.html</span>
     </button>
   </form>
-</details>
+</div>
 
-<details class="menu">
-  <summary class="btn small ghost"><span class="icon icon-session" aria-hidden="true"></span>Sessions (3)</summary>
-  <ul class="menu-list">
+<div class="menu">
+  <button class="btn small ghost" type="button" popovertarget="session-menu"><span class="icon icon-session" aria-hidden="true"></span>Sessions (3)</button>
+  <ul class="menu-list" id="session-menu" popover>
     <li><a href="#" aria-current="page"><span class="item-title">The sign-up form</span><span class="muted">16/10/2026, 14:11</span></a></li>
     <li><a href="#"><span class="item-title">Error states</span><span class="muted">15/10/2026, 09:40</span></a></li>
   </ul>
-</details>
+</div>
+
+<div class="menu start up">
+  <button class="icon-btn" type="button" popovertarget="model-menu" aria-label="Speech model" title="Speech model"><span class="icon icon-dictate" aria-hidden="true"></span></button>
+  <div class="menu-list" id="model-menu" popover>
+    <p class="menu-note muted">Speech model: Base, 140 MB, kept on this computer.</p>
+  </div>
+</div>

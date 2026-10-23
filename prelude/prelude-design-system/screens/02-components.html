@@ -154,11 +154,11 @@
 
     <section class="stack gap-3 specimen">
       <h3>Menu</h3>
-      <p class="secondary">Pick one of a short list. No script: it’s a <code>details</code>.</p>
-      <div class="stage cluster menu-room">
-        <details class="menu start" open>
-          <summary class="btn small ghost"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</summary>
-          <form class="menu-list" action="#" method="post">
+      <p class="secondary">Pick one of a short list. No script: the list is a <code>popover</code>, so a click outside or Escape closes it, and it flips to where there’s room. Try them; Tab moves through the rows.</p>
+      <div class="stage cluster">
+        <div class="menu start">
+          <button class="btn small ghost" type="button" popovertarget="gallery-screen-menu"><span class="icon icon-screen" aria-hidden="true"></span>Sign in</button>
+          <form class="menu-list" id="gallery-screen-menu" popover action="#" method="post">
             <button type="submit" name="screen" value="01-sign-in" aria-current="true">
               <span class="item-title">Sign in</span>
               <span class="muted">01-sign-in.html</span>
@@ -168,7 +168,32 @@
               <span class="muted">02-sign-up.html</span>
             </button>
           </form>
-        </details>
+        </div>
+        <div class="menu">
+          <button class="btn small ghost" type="button" popovertarget="gallery-size-menu"><span class="icon icon-fit" aria-hidden="true"></span>Phone</button>
+          <div class="menu-list" id="gallery-size-menu" popover>
+            <a href="#"><span class="item-title">Fit the panel</span><span class="muted">As wide and tall as the panel</span></a>
+            <a href="#" aria-current="true"><span class="item-title">Phone</span><span class="muted">390 × 844</span></a>
+            <hr>
+            <form class="stack gap-2" action="#" method="post">
+              <label class="label" for="gallery-custom-width">Custom size</label>
+              <div class="inline"><input id="gallery-custom-width" name="width" type="number" placeholder="Width"><button class="btn small" type="submit">Use this size</button></div>
+            </form>
+          </div>
+        </div>
+        <div class="menu start up">
+          <button class="icon-btn" type="button" popovertarget="gallery-model-menu" aria-label="Speech model" title="Speech model"><span class="icon icon-dictate" aria-hidden="true"></span></button>
+          <div class="menu-list" id="gallery-model-menu" popover>
+            <p class="menu-note muted">Speech model: Base, 140 MB, kept on this computer. (<code>.up</code>: opens above.)</p>
+          </div>
+        </div>
+      </div>
+      <p class="secondary">Open, as it looks:</p>
+      <div class="stage">
+        <ul class="menu-list">
+          <li><a href="#" aria-current="page"><span class="item-title">The sign-up form</span><span class="muted">16/10/2026, 14:11</span></a></li>
+          <li><a href="#"><span class="item-title">Error states</span><span class="muted">15/10/2026, 09:40</span></a></li>
+        </ul>
       </div>
     </section>
   </div>
