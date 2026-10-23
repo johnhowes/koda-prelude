@@ -1,0 +1,13 @@
+# Agents draw visuals as fenced blocks in a small versioned vocabulary, which Prelude checks and renders with the design system
+status: proposed
+date: 2026-10-23
+parts: visuals, views, agent, architecture, turns, server
+
+## Context
+Sessions should show flows and maps of the parts a change touches, drawn with Prelude's own design system. The agent's words go through Koda's `renderMarkdown`, which escapes raw HTML, so the agent can't write markup into the chat and shouldn't. `renderMarkdown` turns every fence into `<pre><code class="language-x">` with its body escaped, and offers no hook. Its fence tag must be `[A-Za-z0-9_-]*` with nothing after it: anything else isn't a fence, and its closing line then opens a code block that swallows the rest of the message. Koda's custom-element renderers are for host-owned media types, too heavy for a transcript entry.
+
+## Decision
+A visual is a fenced block tagged `prelude-<kind>-<version>`. Version 1 has `prelude-flow-1` (an optional `# title`, then `1. <part id>: <text>` steps, as in `flows/*.md`) and `prelude-map-1` (one `<part id>` per line, optionally followed by `: <note>`, drawn on the whole map with those parts highlighted). A new part, `visuals`, holds a registry of kinds: for each, a parser per version, the check, and its lines for the prompt. Adding a visual takes a registry entry and a `_visual-<kind>.eta` partial. `views` splits a message on top-level fences using Koda's own fence rule, before rendering, and renders the text between with `renderMarkdown`. A block `visuals` parses and checks becomes its partial. Anything else stays a code block, and the agent isn't told. A part id is checked against the architecture of the session's branch as it stands when the entry is shown. The transcript keeps the agent's text as written. After a build or fix turn, the parts the changed files belong to are recorded as an entry and drawn as a map, with no agent involved. Every prompt (design, build, fix, ask) gets the current vocabulary when the project has an architecture. The ask prompt also gets a read-only architecture brief.
+
+## Consequences
+Agents never produce HTML. `views` stays the one place agent words become markup, and an old or wrong block degrades to the code it was. Transcripts stay plain text that merges and reads well on GitHub. Prelude must keep every version it ever shipped, because transcripts are committed. A breaking change takes a new tag, and an optional addition doesn't. A renamed part turns old blocks that name it back into code. The flow parser is shared, so a flow file and a flow block are read alike.
