@@ -1,0 +1,91 @@
+<div class="stack gap-6 plan-step">
+<div class="stack gap-2">
+<h2>
+Prelude Architecture
+</h2>
+<div class="cluster gap-2">
+<span class="pill">
+Discussion
+</span>
+<span class="pill ">
+Not started
+</span>
+<span class="muted">
+<code>
+prelude/prelude-architecture
+</code>
+</span>
+</div>
+</div>
+<section aria-labelledby="step-owner" class="stack gap-2">
+<h3 class="group-label" id="step-owner">
+Whose
+</h3>
+<p class="secondary">
+Anyone on the project. Once it’s ready, whoever claims it from Needs you has it, and it starts on their computer.
+</p>
+</section>
+<section aria-labelledby="step-waits" class="stack gap-2">
+<h3 class="group-label" id="step-waits">
+Waits for
+</h3>
+<p class="secondary">
+Nothing: it starts as soon as the plan does.
+</p>
+</section>
+<section aria-labelledby="step-done" class="stack gap-2">
+<h3 class="group-label" id="step-done">
+Done when
+</h3>
+<p class="secondary">
+Its decision is proposed, you’ve agreed it, and it’s merged into main.
+</p>
+</section>
+<section aria-labelledby="step-prompt" class="stack gap-3">
+<div class="stack gap-1">
+<h3 class="group-label" id="step-prompt">
+Prompt
+</h3>
+<p class="muted">
+The agent’s draft. It’s sent after the plan’s brief when the step starts.
+</p>
+</div>
+<div class="prose prompt">
+<p>
+Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything.
+</p>
+<p>
+Decide with me which part parses and renders visuals (views, or a new part); how the vocabulary is versioned, and how agents are told it (agent.js); and where it happens in the turn flow (flows/turn.md): at save time or at render time.
+</p>
+<p>
+Before proposing, check how Koda’s renderMarkdown handles a fenced block’s language tag, since that decides whether blocks are pulled out before rendering or after. Then write the proposed decision, any new or changed part, and a flow “A visual in a message”.
+</p>
+<p>
+Ask and fix conversations use the same transcript. askPrompt gets no architecture brief today: decide whether it should. The vocabulary goes into askPrompt and fixPrompt too.
+</p>
+</div>
+<details class="disclosure" open>
+<summary>
+Change the prompt
+</summary>
+<form action="/f/prelude/plans/visuals-in-the-chat/steps/architecture" class="stack" ko-target="drawer?" method="post">
+<label class="field">
+<span class="label">
+Prompt
+</span>
+<textarea aria-describedby="prompt-error" ko-invalid-server="This is required." name="prompt" rows="12">
+Propose a decision for how rich visuals in agent sessions fit the architecture. Discuss it with me before writing anything. Decide with me which part parses and renders visuals (views, or a new part); how the vocabulary is versioned, and how agents are told it (agent.js); and where it happens in the turn flow (flows/turn.md): at save time or at render time. Before proposing, check how Koda’s renderMarkdown handles a fenced block’s language tag, since that decides whether blocks are pulled out before rendering or after. Then write the proposed decision, any new or changed part, and a flow “A visual in a message”. Ask and fix conversations use the same transcript. askPrompt gets no architecture brief today: decide whether it should. The vocabulary goes into askPrompt and fixPrompt too.
+</textarea>
+<span class="error" id="prompt-error">
+This is required.
+</span>
+</label>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Save the prompt
+</button>
+</div>
+</form>
+</details>
+</section>
+</div>

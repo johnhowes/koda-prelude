@@ -1,0 +1,34 @@
+<%/* New plan, in the modal (prelude/coordinator): what the person wants
+     changed, in their own words. The agent reads the project and its
+     architecture and drafts the steps on the plan's page; nothing starts
+     until the person starts it. A goal left empty comes back here with why.
+     Made, the modal closes and the list shows the new plan at the top, its
+     steps being drafted. `it` is the project's plans, with the fields as
+     refused (NewPlan, plans-page.js). */%>
+<% const p = it, f = it, errors = it.$errors ?? {}; %>
+<div class="stack gap-4">
+  <h2>New plan</h2>
+  <p class="secondary">Say what you want changed, and why. The agent reads the project and its architecture, then drafts the steps: which designs and builds it takes, what each waits for, and each one’s prompt. Nothing starts until you start the plan.</p>
+  <form class="stack" action="/f/<%= p.id %>/plans" method="post" ko-target="modal?">
+    <input type="hidden" name="project.id" value="<%= p.id %>">
+    <input type="hidden" name="project.name" value="<%= p.name %>">
+    <input type="hidden" name="status" value="planning">
+    <input type="hidden" name="mergeAlone" value="false">
+    <div class="fields">
+      <label class="field wide">
+        <span class="label">Title <span class="muted">(optional)</span></span>
+        <input name="title" value="<%= f.title ?? '' %>" placeholder="Visuals in the chat" autocomplete="off">
+        <span class="hint">The agent names it from the goal if you don’t.</span>
+      </label>
+      <label class="field wide">
+        <span class="label">What should change</span>
+        <textarea name="goal" rows="8" placeholder="Agent sessions should show flow diagrams and maps of the parts a change touches, drawn with our design system…"<% if (errors.goal) { %> aria-describedby="goal-error" ko-invalid-server="<%= errors.goal %>"<% } %>><%= f.goal ?? '' %></textarea>
+        <% if (errors.goal) { %><span class="error" id="goal-error"><%= errors.goal %></span><% } else { %><span class="hint">Name the designs you know it touches, if you like; the agent finds the rest.</span><% } %>
+      </label>
+    </div>
+    <div class="cluster actions">
+      <button class="btn primary" type="submit"><span class="icon icon-agent" aria-hidden="true"></span>Draft the plan</button>
+      <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
+    </div>
+  </form>
+</div>

@@ -16,12 +16,10 @@
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*
 - **R-c7n.** Pausing a plan stops steps that haven’t started from starting; steps already working carry on.
-  *proposed*
 - **R-h9w.** Nothing in a plan starts until the person starts it, after the agent has drafted its steps.
   *shown-on: /f/:project/plans/:plan @ planning*
   *proposed*
 - **R-a5r.** A build starts only from approved screens: a design changed after it was approved holds back its build until it’s approved again.
-  *proposed*
 - **R-n7b.** Each build covers one design, on that design’s branch; a build that uses code another build makes waits for that build to be merged.
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*

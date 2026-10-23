@@ -14,6 +14,6 @@
       "says": "Priya is working on it on her computer: its first message named D-v3x and the flow and map components."
     },
     "send": "plans-changed",
-    "push": [{ "into": "notice?", "view": "plans/_started", "data": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace" }]
+    "push": [{ "into": "notice?", "view": "@app/server/views/plans/_started", "data": "projects/prelude/plans/visuals-in-the-chat/steps/design-workspace" }]
   }
 }

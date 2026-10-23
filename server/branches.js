@@ -257,6 +257,53 @@ export function gitUser(folderPath) {
   try { return git(folderPath, 'config', 'user.name'); } catch { return ''; }
 }
 
+/** Who's at this computer, as git signs a commit where a folder is: "Name <email>", the name alone, or '' with none. */
+export function gitIdentity(folderPath) {
+  const name = gitUser(folderPath);
+  let email = '';
+  try { email = git(folderPath, 'config', 'user.email'); } catch { /* none */ }
+  return name && email ? `${name} <${email}>` : name;
+}
+
+/**
+ * Where a branch is, made here or pushed to the remote by someone else
+ * (prelude/coordinator, R-r3z): { sha, at (ms), local } or null when
+ * neither has it.
+ */
+export function branchTip(repo, branch) {
+  for (const [ref, local] of [[`refs/heads/${branch}`, true], [`refs/remotes/origin/${branch}`, false]]) {
+    try {
+      const [sha, at] = git(repo, 'log', '-1', '--format=%H %ct', ref).split(' ');
+      return { sha, at: Number(at) * 1000, local };
+    } catch { /* not there */ }
+  }
+  return null;
+}
+
+/** The main line work is merged into: the remote's main once fetched, else this one's. */
+export function mainTip(repo) {
+  const into = mainBranch(repo);
+  for (const ref of [`refs/remotes/origin/${into}`, `refs/heads/${into}`]) {
+    try { return git(repo, 'rev-parse', ref); } catch { /* not there */ }
+  }
+  return null;
+}
+
+/**
+ * When the main line first changed a path after a time (ms): that commit's
+ * time, or null. A branch merged and deleted, here or on the remote, is
+ * found by what it brought into main.
+ */
+export function landedAfter(repo, path, after) {
+  const main = mainTip(repo);
+  if (!main) return null;
+  try {
+    const times = git(repo, 'log', '--format=%ct', `--since=@${Math.floor(after / 1000)}`, main, '--', path)
+      .split('\n').filter(Boolean).map(line => Number(line) * 1000).filter(at => at > after);
+    return times.length ? Math.min(...times) : null;
+  } catch { return null; }
+}
+
 /** The repository's remote, for pushing and pull requests: { url, host: 'github' | 'azure' | 'other' } or null. */
 export function remoteOf(folderPath) {
   let url;
@@ -424,8 +471,11 @@ export function createBranches({ home }) {
       const ready = prepare(folder.path, [`prelude/${designId}`, 'prelude/prelude.json'], `${title}, as designed so far (committed by Prelude)`);
       if (ready.error) return ready;
       const main = mainBranch(folder.path);
-      // A fix's branch is prelude/fix-<slug> (step 11); a design's, prelude/<design>.
-      const base = designId.startsWith('fixes/') ? `prelude/fix-${slug(designId.slice(6))}` : `prelude/${slug(designId)}`;
+      // A fix's branch is prelude/fix-<slug> (step 11); a plan's, prelude/plan-<id>
+      // (prelude/coordinator, R-q2x); a design's, prelude/<design>.
+      const base = designId.startsWith('fixes/') ? `prelude/fix-${slug(designId.slice(6))}`
+        : designId.startsWith('plans/') ? `prelude/plan-${slug(designId.slice(6))}`
+        : `prelude/${slug(designId)}`;
       let branch = base;
       for (let n = 2; gitOk(folder.path, 'rev-parse', '--verify', '--quiet', `refs/heads/${branch}`); n++) branch = `${base}-${n}`;
       const path = join(home, 'worktrees', folder.id, branch.replace(/\//g, '-'));

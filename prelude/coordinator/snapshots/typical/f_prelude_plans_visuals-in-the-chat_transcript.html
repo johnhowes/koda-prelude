@@ -1,0 +1,396 @@
+<li class="entry user">
+<div class="bubble">
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system. That needs an architecture decision, the design system’s components, the transcript designed in Design Workspace, Fix Something and Build, and then built.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/overview.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/parts/views.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/prelude-architecture/architecture/parts/agent.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/design-workspace/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/fix-something/NOTES.md
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/build/NOTES.md
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+I’ve drafted 8 steps, on the right. This is what the change reaches in the app, as the architecture stands:
+</p>
+</div>
+<figure class="stack gap-2">
+<div aria-label="Prelude’s parts" class="map">
+<section aria-label="Windows" class="map-layer">
+<h3 class="map-label">
+Windows
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/desktop" ko-target="drawer?">
+<span class="map-node-title">
+Desktop shell
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Entry points" class="map-layer">
+<h3 class="map-label">
+Entry points
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/server" ko-target="drawer?">
+<span class="map-node-title">
+Server
+</span>
+<span class="muted">
+Gives the chat the parts of the session’s branch
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/tools" ko-target="drawer?">
+<span class="map-node-title">
+Command-line tools
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Pages" class="map-layer">
+<h3 class="map-label">
+Pages
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/pages" ko-target="drawer?">
+<span class="map-node-title">
+Page models
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/turns" ko-target="drawer?">
+<span class="map-node-title">
+Turns
+</span>
+<span class="muted">
+Records the parts a build or fix turn changed
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/views" ko-target="drawer?">
+<span class="map-node-title">
+Views
+</span>
+<span class="muted">
+Splits a message on its fences and draws each visual
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/architecture" ko-target="drawer?">
+<span class="map-node-title">
+Architecture
+</span>
+<span class="muted">
+Maps a turn’s changed files to their parts
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Agent and live state" class="map-layer">
+<h3 class="map-label">
+Agent and live state
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/agent" ko-target="drawer?">
+<span class="map-node-title">
+Agent
+</span>
+<span class="muted">
+Tells every prompt the vocabulary; ask gets the architecture brief
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/live" ko-target="drawer?">
+<span class="map-node-title">
+Live state
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/media" ko-target="drawer?">
+<span class="map-node-title">
+Pictures and dictation
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Designs and hosting" class="map-layer">
+<h3 class="map-label">
+Designs and hosting
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/branches" ko-target="drawer?">
+<span class="map-node-title">
+Branches
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/host" ko-target="drawer?">
+<span class="map-node-title">
+Design host
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/renderer" ko-target="drawer?">
+<span class="map-node-title">
+Renderer
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/runs" ko-target="drawer?">
+<span class="map-node-title">
+App runs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/stories" ko-target="drawer?">
+<span class="map-node-title">
+Backlog and increment
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/installs" ko-target="drawer?">
+<span class="map-node-title">
+Installs
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Project files" class="map-layer">
+<h3 class="map-label">
+Project files
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/designs" ko-target="drawer?">
+<span class="map-node-title">
+Designs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/sessions" ko-target="drawer?">
+<span class="map-node-title">
+Sessions
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/folders" ko-target="drawer?">
+<span class="map-node-title">
+Projects
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/preview" ko-target="drawer?">
+<span class="map-node-title">
+Preview files
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Shared helpers" class="map-layer">
+<h3 class="map-label">
+Shared helpers
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/prelude/architecture/parts/visuals" ko-target="drawer?">
+<span class="map-node-title">
+Visuals
+</span>
+<span class="muted">
+New: reads, checks and describes each kind of block
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/prelude/architecture/parts/words" ko-target="drawer?">
+<span class="map-node-title">
+Words
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside" class="map-layer">
+<h3 class="map-label">
+Outside
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/claude" ko-target="drawer?">
+<span class="map-node-title">
+Claude Code CLI
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/git" ko-target="drawer?">
+<span class="map-node-title">
+Git and hosting CLIs
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/koda" ko-target="drawer?">
+<span class="map-node-title">
+Koda and Eta
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/prelude/architecture/parts/local" ko-target="drawer?">
+<span class="map-node-title">
+Local programs
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Read from the top: each part uses parts in its own layer or below it.
+</figcaption>
+</figure>
+<div class="prose">
+<ul>
+<li>
+<strong>
+Prelude Architecture
+</strong>
+and
+<strong>
+Prelude Design System
+</strong>
+wait for nothing, so they start together: the decision on how visuals fit, and the series colours, flow and map markers.
+</li>
+<li>
+<strong>
+Design Workspace
+</strong>
+waits for both, since it draws with those components and follows that decision. Fix Something and Build reuse its transcript.
+</li>
+<li>
+<strong>
+Fix Something
+</strong>
+and
+<strong>
+Build
+</strong>
+follow it, then each build.
+</li>
+</ul>
+<p>
+Two things you didn’t mention: nothing built Fix Something’s visuals, so I added its build; and the Build page’s build needs the parser that Design Workspace’s build makes, so it waits for that.
+</p>
+<p>
+Who should have each step? I can see John Howes, Priya Raman and Marcus Bell in the history.
+</p>
+</div>
+</div>
+</li>
+<li class="entry user">
+<div class="bubble">
+I’ll take the architecture. Priya has the design system and Design Workspace and Fix Something; Marcus has Design Workspace’s build and the Build page’s. Leave Build’s design and Fix Something’s build open for whoever gets there first.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+prelude/plans/visuals-in-the-chat/plan.json
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+Done, on the right. Since Fix Something’s design and its build now have different people, the design goes into main through its own pull request, and the build starts once that’s merged: the pull request is where it changes hands. Build’s design and the Build page’s build the same.
+</p>
+<p>
+Nothing starts until you start the plan. Starting it puts the plan into main, so Priya’s and Marcus’s Prelude see it.
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+You started the plan, and pushed it for a pull request (#57), merged. Prelude Architecture started here; Prelude Design System is Priya’s.
+<span class="muted">
+· 12:51
+</span>
+</li>
+<li class="entry note">
+You pushed Prelude Architecture for a pull request (#58).
+<span class="muted">
+· 14:20
+</span>
+</li>
+<li class="entry note">
+Pull request #58 was merged on GitHub: Prelude Architecture is in main. Design Workspace now waits only for Prelude Design System.
+<span class="muted">
+· 14:58
+</span>
+</li>
+<li class="entry note">
+Priya pushed Prelude Design System for a pull request (#59).
+<span class="muted">
+· 15:40
+</span>
+</li>

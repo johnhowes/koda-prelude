@@ -1,0 +1,48 @@
+<div class="stack gap-4">
+<h2>
+New plan
+</h2>
+<p class="secondary">
+Say what you want changed, and why. The agent reads the project and its architecture, then drafts the steps: which designs and builds it takes, what each waits for, and each one’s prompt. Nothing starts until you start the plan.
+</p>
+<form action="/f/undefined/plans" class="stack" ko-target="modal?" method="post">
+<input name="project.id" type="hidden" value="undefined">
+<input name="project.name" type="hidden" value="undefined">
+<input name="status" type="hidden" value="planning">
+<input name="mergeAlone" type="hidden" value="false">
+<div class="fields">
+<label class="field wide">
+<span class="label">
+Title
+<span class="muted">
+(optional)
+</span>
+</span>
+<input autocomplete="off" name="title" placeholder="Visuals in the chat" value="">
+<span class="hint">
+The agent names it from the goal if you don’t.
+</span>
+</label>
+<label class="field wide">
+<span class="label">
+What should change
+</span>
+<textarea aria-describedby="goal-error" ko-invalid-server="This is required." name="goal" placeholder="Agent sessions should show flow diagrams and maps of the parts a change touches, drawn with our design system…" rows="8">
+</textarea>
+<span class="error" id="goal-error">
+This is required.
+</span>
+</label>
+</div>
+<div class="cluster actions">
+<button class="btn primary" type="submit">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Draft the plan
+</button>
+<button class="btn ghost" command="--koda-empty" commandfor="modal" type="button">
+Not now
+</button>
+</div>
+</form>
+</div>

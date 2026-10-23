@@ -22,7 +22,7 @@ import { findFix } from './fixes.js';
 export const PRELUDE_DIR = 'prelude';
 
 // Names inside prelude/ that are never areas or designs.
-const RESERVED = new Set(['sessions', 'screens', 'node_modules', 'fixes']);   // fixes: a project's fixes (fixes.js), never a design
+const RESERVED = new Set(['sessions', 'screens', 'node_modules', 'fixes', 'plans']);   // fixes: a project's fixes (fixes.js), plans its plans (plans.js), never a design
 
 export function slugify(text) {
   return String(text ?? '')

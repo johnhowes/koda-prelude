@@ -1,0 +1,19 @@
+<form action="" class="composer" ko-target="planComposer" method="post">
+<input name="type" type="hidden" value="user">
+<input name="to" type="hidden" value="">
+<label class="sr-only" for="planMessage">
+Message
+</label>
+<textarea aria-describedby="planMessageError" id="planMessage" ko-invalid-server="This is required." name="message" placeholder="Change the plan: add a step, change what one waits for, rewrite a prompt. Enter to send, Shift+Enter for a new line." rows="3">
+</textarea>
+<div class="composer-foot">
+<div class="composer-tools">
+</div>
+<span class="error" id="planMessageError">
+This is required.
+</span>
+<button class="btn small primary" type="submit">
+Send
+</button>
+</div>
+</form>

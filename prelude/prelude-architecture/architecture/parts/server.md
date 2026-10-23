@@ -3,7 +3,7 @@ layer: Entry points
 kind: process
 short: HTTP routes, one URL two shapes
 files: start.js, server/main.js
-uses: pages, architecture, turns, views, agent, live, media, host, runs, installs, stories, branches, designs, sessions, folders, preview
+uses: pages, architecture, turns, views, agent, live, media, host, runs, installs, stories, branches, designs, sessions, folders, preview, plans
 
 Prelude's server: plain `node:http` with every route in `server/main.js`, started by `start.js`. It follows Koda's contract, answering each URL as a whole page or as a fragment, and wires the other parts together for each request and each turn.
 

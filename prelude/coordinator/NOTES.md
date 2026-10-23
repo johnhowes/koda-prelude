@@ -123,6 +123,30 @@ progress on Priya’s computer, one ready to claim).
    that order of need. “Plan, step, claim” were added to the design system’s
    Words table here.
 
+## Built (2026-10-23)
+
+Plans, New plan and its post are built (`server/views/plans/`), with the
+plan's file in a new part, `plans` (`server/plans.js`, proposed in D-j6p),
+and where each step stands worked out in `server/plans-page.js`.
+
+- A new plan is `prelude/plans/<id>/plan.json` on `prelude/plan-<id>`, its
+  id from the title, or the goal's first words. The form's hidden
+  `project.*` and `status` fields are ignored: the project is the URL's, and
+  a new plan is always planning.
+- R-c7n and R-a5r hold where a step's state is worked out: a step that
+  hasn't started stays “Waiting”, saying why, while the plan is paused or
+  its build's design isn't approved as it is now.
+- The two server events come from the fetch the pages already make
+  (`tidyFolder`): a step whose worked-out state moved sends
+  `plans-changed`, and one that started (Priya's branch pushed) pushes
+  `_started` into the notice.
+- Not yet, with the plan's page: starting a step on its owner's computer
+  (R-s6t). Until then a step of yours that's ready shows “Waiting”, saying
+  “Ready: it starts here”: the states have no state for it, because it
+  starts at once. Merged is found by what landed in main since the step
+  could start, so starting a plan has to record `startedAt` in its file.
+  The plan's chat isn't read yet (its entries are empty).
+
 ## Open questions
 
 - **The architecture**: building this needs a new part in Designs and hosting

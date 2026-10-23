@@ -1,6 +1,6 @@
 {
-  "/f/:project/plans": { "view": "plans/list", "title": "Plans", "data": "projects/:project" },
-  "/f/:project/plans/new": { "view": "plans/_new", "title": "New plan", "data": "projects/:project", "over": "/f/:project/plans", "in": "modal" },
+  "/f/:project/plans": { "view": "@app/server/views/plans/list", "title": "Plans", "data": "projects/:project" },
+  "/f/:project/plans/new": { "view": "@app/server/views/plans/_new", "title": "New plan", "data": "projects/:project", "over": "/f/:project/plans", "in": "modal" },
   "/f/:project/plans/:plan": { "view": "plans/page", "title": "Plan", "data": "projects/:project/plans/:plan" },
   "/f/:project/plans/:plan/work": { "view": "plans/_work", "data": "projects/:project/plans/:plan" },
   "/f/:project/plans/:plan/transcript": { "view": "plans/_transcript", "data": "projects/:project/plans/:plan" },
@@ -10,8 +10,8 @@
   "POST /f/:project/plans": {
     "add": "projects/:project/plans",
     "require": ["goal"],
-    "form": "plans/_new",
-    "answer": { "into": "modal?", "also": [{ "into": "workspace", "view": "plans/list", "data": "projects/:project" }] }
+    "form": "@app/server/views/plans/_new",
+    "answer": { "into": "modal?", "also": [{ "into": "workspace", "view": "@app/server/views/plans/list", "data": "projects/:project" }] }
   },
   "POST /f/:project/plans/:plan/start": {
     "update": "projects/:project/plans/:plan",

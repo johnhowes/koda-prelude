@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { appBuildPrompt, architectureBrief, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, SPECIAL_KINDS, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
 import { createFix, fixSlug, listFixes } from './fixes.js';
+import { PLANS_DIR, createPlan, planIdOf } from './plans.js';
+import { hasStarted, plansOf } from './plans-page.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
@@ -148,6 +150,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     dictation: createDictation({ home, live }),   // the speech model, on this machine
     stories: createStoryWriter({ runner }),       // the agent writing pages' stories, when asked (build.js)
     architectureChecks: createArchitectureChecks(),   // each project's last check against its architecture (architecture.js)
+    planStates: new Map(),    // folder id -> Map("<plan>/<step>" -> state), as last worked out (announcePlans)
   };
 
   const server = createHttpServer(async (req, res) => {
@@ -762,6 +765,54 @@ async function handle(req, res, app) {
       return send(res, 200, [envelope('modal?'), envelope('workspace', render('./projects/page', model)), envelope('notice?', notice)].join('\n'));
     }
 
+    // A project's plans (prelude/coordinator), on the design system:
+    //   GET  /f/<id>/plans        Plans, newest first, each where it stands (plans-page.js)
+    //   GET  /f/<id>/plans/new    New plan, in the modal over Plans
+    //   POST /f/<id>/plans        make one, on its own branch (R-q2x): Plans with it at
+    //                             the top, the modal closed; or New plan, refused
+    // Reading Plans fetches, as the project's page does: what came in is said
+    // down the channel (announcePlans).
+    const plansPage = (status, { model = plansOf(app, folder), regions = {} } = {}) => {
+      const alone = fragment && askedFromLayout(req, 'app') && !Object.keys(regions).length;
+      return send(res, status, shaped('plans/list', model, { fragment: alone, path: `${here}/plans`, title: `Plans · ${folder.name}`, layout: alone ? {} : layout(), regions, system: true }));
+    };
+    if (rest === '/plans' && req.method === 'GET' && !folder.branch) {
+      tidy();
+      return plansPage(200);
+    }
+    if (rest === '/plans/new' && req.method === 'GET' && !folder.branch) {
+      const model = plansOf(app, folder);
+      const html = render('./plans/_new', model);
+      return fragment ? send(res, 200, html) : plansPage(200, { model, regions: { modal: { html, location: path } } });
+    }
+    if (rest === '/plans' && req.method === 'POST' && !folder.branch) {
+      const form = await readForm(req);
+      const input = { title: String(form.get('title') ?? ''), goal: String(form.get('goal') ?? ''), mergeAlone: form.get('mergeAlone') === 'true' };
+      // Refused, New plan comes back with what was typed and why; on a cold
+      // load, in the modal over Plans.
+      const refused = (status, errors) => {
+        const model = plansOf(app, folder);
+        const html = render('./plans/_new', { ...model, title: input.title, goal: input.goal, $errors: errors });
+        return fragment ? send(res, status, html) : plansPage(status, { model, regions: { modal: { html, location: `${here}/plans/new` } } });
+      };
+      if (!input.goal.trim()) return refused(422, { goal: 'Say what should change, so the agent can draft the steps.' });
+      const taken = new Set(plansOf(app, folder).plans.map(plan => plan.id));
+      const base = planIdOf(input);
+      let id = base;
+      for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+      // In a repository, a plan is drafted on its own branch, prelude/plan-<id>.
+      let made = null;
+      if (repository) {
+        made = branchFor(`${PLANS_DIR}/${id}`, input.title.trim() || 'A new plan');
+        if (made.error) return refused(409, { goal: made.error });
+      }
+      const result = createPlan(made ? made.entry.path : folder.path, { id, ...input });
+      if (result.errors) return refused(422, { goal: result.errors.goal ?? result.errors.title });
+      if (made) app.branches.commit(made.entry, `${result.plan.title || 'A new plan'}: a new plan (committed by Prelude)`);
+      if (!fragment) return redirect(res, `${here}/plans`);
+      return send(res, 200, [envelope('modal?'), envelope('workspace', render('./plans/list', plansOf(app, folder)))].join('\n'));
+    }
+
     // New design, in the modal; ?kind= picks the design system or the shell.
     if (rest === '/designs/new' && req.method === 'GET' && !folder.branch) {
       return overlay(200, render('./projects/_new-design', projectModel()));
@@ -1069,7 +1120,7 @@ function troublesOf(app, project) {
  */
 function layoutOfPath(pathname) {
   if (pathname === '/' || pathname === '/open') return 'app';
-  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*))?\/?$/.test(pathname)) return 'app';
+  if (/^\/f\/[0-9a-f]+(\/(work|app|designs|designs\/new|cleanup|branches\/[0-9a-f]+\/(publish|discard)|system|architecture(\/[^/]+)*|plans|plans\/new))?\/?$/.test(pathname)) return 'app';
   if (!/^\/f\/[0-9a-f]+\/d\//.test(pathname)) return 'ds-v1';
   return pathname.endsWith('/window') ? 'window' : 'app';
 }
@@ -1111,6 +1162,9 @@ function tidyFolder(app, folder, { fetch = true } = {}) {
       const notes = app.branches.tidy(folder, { fetch: false, beforeRemove: entry => app.hosts.stop({ path: entry.path }) });
       if (notes.length || (before !== null && pulls() !== before)) tell(app, { needs: true, projects: true });
     } catch { /* git couldn't say: try again next time */ }
+    // What came in may have moved a plan's steps: a pull request merged, a
+    // teammate's step started on their computer (R-r3z).
+    announcePlans(app, folder);
   };
   if (!fetch || !remoteOf(folder.path)) return tidyNow();
   // One fetch at a time per project.
@@ -1122,6 +1176,30 @@ function tidyFolder(app, folder, { fetch = true } = {}) {
     app.fetching.delete(folder.id);
     if (existsSync(folder.path)) tidyNow(before);
   });
+}
+
+/**
+ * Say down the app's channel what moved in a project's plans since their
+ * steps were last worked out (prelude/coordinator's events): plans-changed
+ * when any step's state changed, which a plan's page reloads on, and each
+ * step that started, in the notice. The first time a project is read only
+ * sets where things stood.
+ */
+function announcePlans(app, folder) {
+  let plans;
+  try { plans = plansOf(app, folder).plans; } catch { return; }
+  const steps = plans.flatMap(plan => plan.steps.map(step => [`${plan.id}/${step.id}`, step]));
+  const before = app.planStates.get(folder.id);
+  app.planStates.set(folder.id, new Map(steps.map(([key, step]) => [key, step.state])));
+  if (!before) return;
+  const moved = steps.filter(([key, step]) => before.has(key) && before.get(key) !== step.state);
+  if (!moved.length || !app.live.listening(APP_CHANNEL)) return;
+  app.live.publish(APP_CHANNEL, 'plans-changed');
+  for (const [key, step] of moved) {
+    if (hasStarted(step.state) && !hasStarted(before.get(key))) {
+      app.live.publish(APP_CHANNEL, `<div ko-into="notice?">${render('./plans/_started', step).trim()}</div>`);
+    }
+  }
 }
 
 /** Whether a design has pages to build: a feature, or the shell's own (its Settings, say). */

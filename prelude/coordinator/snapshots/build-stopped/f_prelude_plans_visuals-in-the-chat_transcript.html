@@ -1,0 +1,191 @@
+<li class="entry user">
+<div class="bubble">
+Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system.
+</div>
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+I’ve drafted 8 steps, on the right. Change any prompt there, or tell me here. Nothing starts until you start the plan.
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+You started the plan. Prelude Architecture and Prelude Design System started.
+<span class="muted">
+· 23 Oct 12:51
+</span>
+</li>
+<li class="entry note">
+Pull request #58 was merged: Prelude Architecture is in main.
+<span class="muted">
+· 23 Oct 14:58
+</span>
+</li>
+<li class="entry note">
+Pull request #59 was merged: Prelude Design System is in main. Design Workspace started, with D-v3x and the flow and map components named in its prompt.
+<span class="muted">
+· 23 Oct 16:31
+</span>
+</li>
+<li class="entry note">
+Pull request #60 was merged: Design Workspace is in main. Fix Something, Build and Build Design Workspace started.
+<span class="muted">
+· Yesterday 11:06
+</span>
+</li>
+<li class="entry note">
+You approved Build’s screens. Its build waits for Build Design Workspace.
+<span class="muted">
+· Yesterday 15:40
+</span>
+</li>
+<li class="entry note">
+You approved Fix Something’s screens. Its build waits for Build Design Workspace.
+<span class="muted">
+· 09:12
+</span>
+</li>
+<li class="entry note failed">
+Build Design Workspace stopped on its third story: 1 page doesn’t render. The steps waiting for it stay waiting.
+<span class="muted">
+· 10:03
+</span>
+</li>
+<li class="entry user">
+<div class="bubble">
+Can Fix Something’s build go ahead without it? Its screens are approved.
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+prelude/fix-something/routes.json
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Grep
+</span>
+_visual- in prelude/fix-something/
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="visuals-in-the-chat-text" ko-region>
+<div class="prose">
+<p>
+Not yet. Fix Something’s conversation pages draw visuals the way every chat will, and Design Workspace’s build makes the pieces they need:
+</p>
+</div>
+<figure class="flow" style="--lanes: 4">
+<figcaption class="flow-title">
+A visual in a message
+</figcaption>
+<ul aria-hidden="true" class="flow-parts">
+<li class="flow-part" style="--series: var(--series-1)">
+<a href="/f/prelude/architecture/parts/claude" ko-target="drawer?" tabindex="-1">
+Claude Code CLI
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-2)">
+<a href="/f/prelude/architecture/parts/turns" ko-target="drawer?" tabindex="-1">
+Turns
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-3)">
+<a href="/f/prelude/architecture/parts/views" ko-target="drawer?" tabindex="-1">
+Views
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-4)">
+<a href="/f/prelude/architecture/parts/visuals" ko-target="drawer?" tabindex="-1">
+Visuals
+</a>
+</li>
+</ul>
+<ol class="flow-steps">
+<li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+<div class="flow-box">
+<a class="flow-part" href="/f/prelude/architecture/parts/claude" ko-target="drawer?">
+Claude Code CLI
+</a>
+<span class="flow-text">
+Writes a fenced
+<code>
+prelude-flow-1
+</code>
+block in its message
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+<div class="flow-box">
+<a class="flow-part" href="/f/prelude/architecture/parts/turns" ko-target="drawer?">
+Turns
+</a>
+<span class="flow-text">
+Saves it to the transcript as written
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+<div class="flow-box">
+<a class="flow-part" href="/f/prelude/architecture/parts/views" ko-target="drawer?">
+Views
+</a>
+<span class="flow-text">
+Splits the message on its fences:
+<em>
+being built
+</em>
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+<div class="flow-box">
+<a class="flow-part" href="/f/prelude/architecture/parts/visuals" ko-target="drawer?">
+Visuals
+</a>
+<span class="flow-text">
+Parses the block and checks its parts:
+<em>
+being built
+</em>
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+<div class="flow-box">
+<a class="flow-part" href="/f/prelude/architecture/parts/views" ko-target="drawer?">
+Views
+</a>
+<span class="flow-text">
+Draws it with
+<code>
+_visual-flow
+</code>
+or
+<code>
+_visual-map
+</code>
+:
+<em>
+being built
+</em>
+</span>
+</div>
+</li>
+</ol>
+</figure>
+<div class="prose">
+<p>
+Built before those, Fix Something’s pages wouldn’t render. Design Workspace’s build stopped on a page, not a design question: send it a message in
+<a href="/f/prelude/d/design-workspace/s/20261024-1106-n1ux">
+its build
+</a>
+and it carries on. Fix Something’s and the Build page’s builds start by themselves once it’s merged.
+</p>
+</div>
+</div>
+</li>
