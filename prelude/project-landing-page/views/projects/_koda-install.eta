@@ -6,9 +6,9 @@
      Install approves the command it shows (R-n6t). Started, the modal closes
      and the card says it's installing. Reached with nothing to install, it
      says so. `it` is the project. */%>
-<% const p = it, koda = p.app?.koda, checkout = koda?.checkout; %>
+<% const p = it, koda = p.app?.koda, state = koda?.checkout?.state, checkout = koda?.checkout; %>
 <div class="stack gap-4">
-<% if (checkout && checkout.state !== 'installing') { %>
+<% if (state === 'ready' || state === 'failed') { %>
   <h2>Install Koda <%= koda.wanted %> in your folder?</h2>
   <p class="secondary">The app asks for Koda <%= koda.wanted %>, but <%= p.name %>’s own folder has <%= koda.version %> installed, so the app you run from here still uses <%= koda.version %>.</p>
   <div class="notice warn">
@@ -21,8 +21,8 @@
     <button class="btn ghost" type="button" command="--koda-empty" commandfor="modal">Not now</button>
   </form>
 <% } else { %>
-  <h2><%= checkout ? `Koda ${koda.wanted} is being installed` : 'Nothing to install' %></h2>
-  <p class="secondary"><%= checkout ? 'The app card says when it’s done.' : koda ? `Your folder already has Koda ${koda.version}, the version the app asks for.` : 'This app doesn’t use Koda.' %></p>
+  <h2><%= state === 'installing' ? `Koda ${koda.wanted} is being installed` : 'Nothing to install' %></h2>
+  <p class="secondary"><%= state === 'installing' ? 'The app card says when it’s done.' : koda?.version ?`Your folder already has Koda ${koda.version}, the version the app asks for.` : 'This app doesn’t use Koda.' %></p>
   <div class="cluster actions">
     <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
   </div>

@@ -26,7 +26,7 @@
   "koda-installed": {
     "title": "Koda 0.1.5 finishes installing in the folder (to install, after clicking Install)",
     "update": "projects/spark-lending/app/koda",
-    "with": { "version": "0.1.5", "checkout": null },
+    "with": { "version": "0.1.5", "checkout": { "state": null, "command": null, "log": null } },
     "send": "app-changed"
   },
   "koda-install-failed": {

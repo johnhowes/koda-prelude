@@ -13,14 +13,14 @@
 
      Its Koda (D-k7v): `app.koda` is the version installed in the app
      (`version`) and the one Prelude knows (`latest`), with `behind` when the
-     app's is older; null when the app has no Koda. Only a behind app says
+     app's is older; `version` null when the app has no Koda. Only a behind app says
      anything: Upgrade Koda… asks first in the modal, and once a fix is
      upgrading it (`upgradeBranch`, `upgradeUrl`), the line links to that
      fix instead (R-k2d). Once an upgrade is merged, the project's own folder
      still has the old Koda installed: `version` is what's installed there,
-     `wanted` what the app's package.json asks for, and `checkout` (null when
-     they agree) the install that would bring it in: its fixed `command`,
-     and its `state`, ready, installing or failed (with the last of its
+     `wanted` what the app's package.json asks for, and `checkout` the install
+     that would bring it in: its fixed `command`, and its `state`, null when
+     they agree, else ready, installing or failed (with the last of its
      output in `log`). That comes before any upgrade (R-n6t). */%>
 <% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}, koda = app.koda; %>
 <h2 id="app-title">The app</h2>
@@ -85,7 +85,7 @@
   <pre><%= koda.checkout.log %></pre>
   <div class="cluster actions"><a class="btn small" href="/f/<%= p.id %>/app/koda/install" ko-target="modal?">Try again…</a></div>
 </div>
-<% } else if (koda?.checkout) { %>
+<% } else if (koda?.checkout?.state === 'ready') { %>
 <div class="cluster gap-2">
   <span class="muted">The app now asks for Koda <%= koda.wanted %>, but your folder still has <%= koda.version %> installed.</span>
   <a class="btn small ghost" href="/f/<%= p.id %>/app/koda/install" ko-target="modal?">Install Koda <%= koda.wanted %>…</a>

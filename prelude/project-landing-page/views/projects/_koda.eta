@@ -31,7 +31,7 @@
   </form>
 <% } else { %>
   <h2>Nothing to upgrade</h2>
-  <p class="secondary"><%= koda ? `This app already uses Koda ${koda.version}, the version Prelude knows.` : 'This app doesn’t use Koda.' %></p>
+  <p class="secondary"><%= koda?.version ? `This app already uses Koda ${koda.version}, the version Prelude knows.` : 'This app doesn’t use Koda.' %></p>
   <div class="cluster actions">
     <button class="btn" type="button" command="--koda-empty" commandfor="modal">Back to the project</button>
   </div>

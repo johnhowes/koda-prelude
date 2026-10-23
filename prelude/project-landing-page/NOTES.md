@@ -541,12 +541,13 @@ app's installed `node_modules/@kodalang/core/package.json`, Prelude's own as
   `.notice.danger` with the last of its output and Try again…. This comes
   before any further upgrade.
 - Model: `app.koda` = `{ version, wanted, latest, behind, install,
-  upgradeBranch, upgradeUrl, checkout }` or null. `version` is what's
-  installed in the folder, `wanted` what the app's `package.json` asks for;
-  `behind` is the app's comparison (semver) of `wanted` with `latest`;
-  `install` the upgrade's fixed command for the project's package manager.
-  `checkout` is null while `version` is `wanted`, else `{ state: ready /
-  installing / failed, command, log }`.
+  upgradeBranch, upgradeUrl, checkout }`, always there (every app, built or
+  not), so its forms always have something to change. `version` is what's
+  installed in the folder (null: no Koda), `wanted` what the app's
+  `package.json` asks for; `behind` is the app's comparison (semver) of
+  `wanted` with `latest`; `install` the upgrade's fixed command for the
+  project's package manager. `checkout` is `{ state, command, log }`, its
+  `state` null while `version` is `wanted`, else ready / installing / failed.
 - States: typical (up to date), large project (no Koda), `koda-behind`,
   `koda-upgrading` (the fix working, under In progress), `koda-to-install`
   (the fix merged). Events `koda-installed` and `koda-install-failed` (for
