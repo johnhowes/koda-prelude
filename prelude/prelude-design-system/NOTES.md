@@ -44,11 +44,13 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   `--control-sm/md/lg`, `--measure`, `--measure-narrow`, `--border-width`,
   weights, leadings, `--duration-*` (zeroed under reduced motion). Dropped
   `--text-4xl` (Prelude sets no display type).
-- **Series colours back** (2026-10-23, the person's decision): `--series-1…5`,
-  ds/v1's five values in both themes. They'd been dropped only because nothing
-  used them; flows and charts in agent chats need things told apart.
-  Guideline 3: they tell things apart, never mean good, warn or danger, and
-  always have a label.
+- **Series colours back** (2026-10-23, the person's decision): `--series-1…5`
+  in both themes. They'd been dropped only because nothing used them; flows
+  and charts in agent chats need things told apart. Guideline 3: they tell
+  things apart, never mean good, warn or danger, and always have a label.
+  Hues moved off ds/v1's (blue 255, magenta 335, teal 195, olive 115, violet
+  295): ds/v1's first was the accent's sienna and two sat by good and warn,
+  so a flow's first part read as "this". ds/v1 should take the new values.
 - **Icons**: 32 of ds/v1's Material Symbols, the ones Prelude's domain needs;
   `conversation`→`session`, `activity`→`history`. Pop out should use `external`,
   not `expand` (expand means "show more below").
@@ -157,9 +159,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   with `ko-for`/`ko-as` for the ids; the shell's `_regions` closes a menu
   when a row in it is pressed, which a popover alone doesn't.
 - Is the dialog needed at all? Prelude confirms in-page with a notice today.
-- `--series-1` is the accent's hue, and `-3`/`-5` sit near good and warn: kept
-  as ds/v1 had them, but a flow's first part reads as accent. Shift them?
-- `prelude-flow-1` has no "what's handed on"; `.flow-pass` is optional until
-  the vocabulary carries it (an optional addition, so no new tag).
-- The app draws from `server/public/ds/v1`; the flow and the markers need
-  copying there when they're built.
+- "What's handed on" in `prelude-flow-1` (the person wants it): an optional
+  addition, so no new tag (D-v3x). Suggested: a step may end ` -> <what>`
+  (`2. turns: saves it to the transcript -> the entry`), the last ` -> ` on
+  the line; the shared flow parser reads it in `flows/*.md` too. It's code
+  (visuals, views), so a build or fix makes it; `.flow-pass` stays optional.
+- The app draws from `server/public/ds/v1`; the flow, the markers and the
+  series values are copied there when they're built (agreed).
