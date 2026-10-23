@@ -116,15 +116,18 @@ progress on Priya’s computer, one ready to claim).
    - Steps show their owner (“You”, a name, “Anyone”), and Everyone’s / Mine
      filters the map with `:has()`. The drawer has Whose.
 
-## Open questions
+16. **Claim stays in Needs you** (the person, 2026-10-23), not the drawer.
+17. **What else it takes** (2026-10-23): prompts were given in the chat for
+   Prelude Architecture (the decision and the new part), Project Landing
+   Page, Landing Page (Home), Design Workspace, Build and Fix Something, in
+   that order of need. “Plan, step, claim” were added to the design system’s
+   Words table here.
 
-- Claim is in Needs you, not the drawer: the drawer’s model is the step
-  alone, without who’s at the computer. The app can give it `me`.
-- The project page’s Needs you (Project Landing Page) should list plan steps
-  waiting on this person from every plan: add it to the prompt given there.
+## Open questions
 
 - **The architecture**: building this needs a new part in Designs and hosting
   (reading plans, working out where steps stand, starting them) and a
-  planning prompt in agent. Propose the decision when it’s built.
+  planning prompt in agent: the Prelude Architecture prompt asks for the
+  decision, before the build.
 - New plan answers with the list; now that the plan’s page is where the
   agent drafts, the app should go straight to it.

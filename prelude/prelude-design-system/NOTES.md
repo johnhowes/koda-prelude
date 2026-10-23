@@ -157,6 +157,9 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   an agent's map shouldn't speak of change when there's none. Added for
   "Design Workspace" (prelude/design-workspace): the agent's
   `prelude-map-1` blocks.
+- **Plan, step, claim** in the Words table (2026-10-23). Added for
+  "Coordinator" (prelude/coordinator): plans that carry a change through
+  several designs, whose open steps someone claims.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).
