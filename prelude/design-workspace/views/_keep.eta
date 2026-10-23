@@ -1,0 +1,5 @@
+<%/* What a form in the design bar carries so its answer comes back as this
+     window had it: which window, its size and its client. */%>
+<input type="hidden" name="surface.view" value="<%= it.view %>">
+<input type="hidden" name="surface.size" value="<%= it.size %>">
+<input type="hidden" name="surface.client" value="<%= it.client %>">

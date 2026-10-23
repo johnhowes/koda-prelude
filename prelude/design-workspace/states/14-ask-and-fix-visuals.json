@@ -1,0 +1,183 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "fix-total-cost",
+          "title": "Total cost leaves out the origination fee",
+          "area": null,
+          "kind": "fix",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": null,
+          "shell": null,
+          "references": [],
+          "buildUrl": null,
+          "merged": null,
+          "changes": [
+            { "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" }
+          ],
+          "branch": {
+            "id": "fix-total-cost",
+            "branch": "prelude/fix-total-cost",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": false,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261023-1418-x2kq", "title": "Total cost leaves out the origination fee", "started": "Today, 14:18" }
+          ],
+          "session": { "id": "20261023-1418-x2kq", "title": "Total cost leaves out the origination fee" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "The compare page says Northfield’s offer costs $11,482 over five years. That looks low. Is the $995 origination fee in it?" },
+            { "id": 2, "type": "tool", "name": "Read", "summary": "src/pricing/total.ts" },
+            { "id": 3, "type": "tool", "name": "Read", "summary": "src/offers/compare.ts" },
+            { "id": 4, "type": "tool", "name": "Read", "summary": "src/lenders/northfield.ts" },
+            {
+              "id": 5,
+              "type": "text",
+              "pieces": [
+                { "kind": "text", "html": "<p>No, it isn’t. The fee arrives from the lender and is kept with the offer, but Pricing adds up interest only:</p>" },
+                {
+                  "kind": "flow",
+                  "flow": {
+                    "title": "How an offer’s total is worked out now",
+                    "lanes": 4,
+                    "many": false,
+                    "parts": [
+                      { "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "series": 1 },
+                      { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "series": 2 },
+                      { "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "series": 3 },
+                      { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "series": 4 }
+                    ],
+                    "steps": [
+                      { "lane": 1, "series": 1, "part": { "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api" }, "html": "Sends the offer with <code>origination_fee: 995</code>" },
+                      { "lane": 2, "series": 2, "part": { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store" }, "html": "Keeps the rate, the term and the fee" },
+                      { "lane": 3, "series": 3, "part": { "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing" }, "html": "Adds up the payments, and leaves the fee out" },
+                      { "lane": 4, "series": 4, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Shows $11,482 where it should be $12,477" }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Fixing it would change one part, and the page only shows a different number:</p>" },
+                {
+                  "kind": "map",
+                  "map": {
+                    "label": "borrower-portal’s parts",
+                    "mark": "proposed",
+                    "count": 1,
+                    "layers": [
+                      { "title": "Pages", "parts": [
+                        { "id": "offer-pages", "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "summary": "Offers, an offer, compare, accept" },
+                        { "id": "account-pages", "title": "Account pages", "url": "/f/borrower-portal/architecture/parts/account-pages", "summary": "Profile, documents, sign-in" }
+                      ] },
+                      { "title": "Services", "parts": [
+                        { "id": "offers", "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "summary": "Lists, prices and compares a borrower’s offers" },
+                        { "id": "acceptance", "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance", "summary": "Accepting an offer, and its paperwork" },
+                        { "id": "notifications", "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications", "summary": "Emails and texts to borrowers" }
+                      ] },
+                      { "title": "Data", "parts": [
+                        { "id": "offer-store", "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "summary": "Offers and their terms, in Postgres" },
+                        { "id": "pricing", "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "summary": "APR, monthly payment and total cost", "marked": true, "note": "Add every fee the offer carries to its total" }
+                      ] },
+                      { "title": "Shared helpers", "parts": [
+                        { "id": "money", "title": "Money", "url": "/f/borrower-portal/architecture/parts/money", "summary": "Amounts, rounding and formatting" }
+                      ] },
+                      { "title": "Outside", "parts": [
+                        { "id": "lender-api", "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "summary": "Offers from partner lenders", "outside": true },
+                        { "id": "sendgrid", "title": "SendGrid", "url": "/f/borrower-portal/architecture/parts/sendgrid", "summary": "Sends the emails", "outside": true }
+                      ] }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Fix it on a branch and I’ll make the change, with a test for Northfield’s offer.</p>" }
+              ]
+            },
+            { "id": 6, "type": "note", "text": "Made the branch prelude/fix-total-cost. The agent can change the project now." },
+            { "id": 7, "type": "user", "message": "Go ahead." },
+            { "id": 8, "type": "tool", "name": "Edit", "summary": "src/pricing/total.ts" },
+            { "id": 9, "type": "tool", "name": "Edit", "summary": "src/pricing/total.test.ts" },
+            { "id": 10, "type": "tool", "name": "Edit", "summary": "src/offers/compare.ts" },
+            { "id": 11, "type": "tool", "name": "Bash", "summary": "npm test -- pricing offers" },
+            { "id": 12, "type": "text", "html": "<p>Pricing now adds every fee the offer carries, so Northfield’s total is <strong>$12,477</strong>. I also had to touch Offers: it compared totals it had rounded itself, so two offers a cent apart could both be marked. The tests pass.</p>" },
+            {
+              "id": 13,
+              "type": "parts",
+              "files": 3,
+              "map": {
+                "label": "borrower-portal’s parts",
+                "mark": "touched",
+                "count": 2,
+                "layers": [
+                  { "title": "Pages", "parts": [
+                    { "id": "offer-pages", "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "summary": "Offers, an offer, compare, accept" },
+                    { "id": "account-pages", "title": "Account pages", "url": "/f/borrower-portal/architecture/parts/account-pages", "summary": "Profile, documents, sign-in" }
+                  ] },
+                  { "title": "Services", "parts": [
+                    { "id": "offers", "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "summary": "Lists, prices and compares a borrower’s offers", "marked": true, "note": "src/offers/compare.ts" },
+                    { "id": "acceptance", "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance", "summary": "Accepting an offer, and its paperwork" },
+                    { "id": "notifications", "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications", "summary": "Emails and texts to borrowers" }
+                  ] },
+                  { "title": "Data", "parts": [
+                    { "id": "offer-store", "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "summary": "Offers and their terms, in Postgres" },
+                    { "id": "pricing", "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "summary": "APR, monthly payment and total cost", "marked": true, "note": "src/pricing/total.ts, total.test.ts" }
+                  ] },
+                  { "title": "Shared helpers", "parts": [
+                    { "id": "money", "title": "Money", "url": "/f/borrower-portal/architecture/parts/money", "summary": "Amounts, rounding and formatting" }
+                  ] },
+                  { "title": "Outside", "parts": [
+                    { "id": "lender-api", "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "summary": "Offers from partner lenders", "outside": true },
+                    { "id": "sendgrid", "title": "SendGrid", "url": "/f/borrower-portal/architecture/parts/sendgrid", "summary": "Sends the emails", "outside": true }
+                  ] }
+                ]
+              }
+            },
+            { "id": 14, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [], "designs": [{ "title": "Loan offers", "url": "/f/borrower-portal/d/loan-offers" }] },
+            { "id": 15, "type": "note", "text": "Committed to prelude/fix-total-cost (9c03e7a)." }
+          ],
+          "rules": [],
+          "questions": [],
+          "decisions": [],
+          "dictation": { "status": "none" },
+          "speechModels": [],
+          "queued": [],
+          "images": [],
+          "draft": { "base": "/f/borrower-portal/d/fix-total-cost", "attachments": [] },
+          "surface": {
+            "view": "inline",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://fix-total-cost.borrower-portal.preview.localhost:4200",
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [],
+            "current": null,
+            "states": [],
+            "state": null,
+            "changed": false,
+            "events": [],
+            "approved": 0,
+            "screensOnly": true,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261023-1124-p9wd", "title": "Accepting, and expiry", "started": "Today, 11:24" },
+            { "id": "20261023-1010-h4tc", "title": "How compare works", "started": "Today, 10:10" }
+          ],
+          "session": { "id": "20261023-1124-p9wd", "title": "Accepting, and expiry" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Walk me through accepting an offer, and what happens when one expires while the borrower has it open.", "lookingAt": "Offer › Accept the offer · An offer expired" },
+            { "id": 2, "type": "tool", "name": "Read", "summary": "prelude/borrower-architecture/architecture/flows/accept.md" },
+            { "id": 3, "type": "tool", "name": "Read", "summary": "prelude/borrower-architecture/architecture/flows/expiry.md" },
+            { "id": 4, "type": "tool", "name": "Read", "summary": "prelude/loan-offers/events.json" },
+            {
+              "id": 5,
+              "type": "text",
+              "pieces": [
+                { "kind": "text", "html": "<p>Two flows. First, accepting: five parts take part, so here it’s a list.</p>" },
+                {
+                  "kind": "flow",
+                  "flow": {
+                    "title": "Accepting an offer",
+                    "lanes": 5,
+                    "many": true,
+                    "parts": [
+                      { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "series": 1 },
+                      { "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance", "series": 2 },
+                      { "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "series": 3 },
+                      { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "series": 4 },
+                      { "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications", "series": 5 }
+                    ],
+                    "steps": [
+                      { "lane": 1, "series": 1, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Takes Accept, with the borrower’s consent ticked" },
+                      { "lane": 2, "series": 2, "part": { "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance" }, "html": "Refuses it if the offer has expired (R-q8m)" },
+                      { "lane": 3, "series": 3, "part": { "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api" }, "html": "Locks the rate with Northfield Lending" },
+                      { "lane": 4, "series": 4, "part": { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store" }, "html": "Marks the offer accepted, and the borrower’s other offers withdrawn" },
+                      { "lane": 5, "series": 5, "part": { "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications" }, "html": "Emails the borrower a copy of the terms (R-7dn)" },
+                      { "lane": 1, "series": 1, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Shows the confirmation, with the lender’s reference" }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Expiry starts on the server, not on the page:</p>" },
+                {
+                  "kind": "flow",
+                  "flow": {
+                    "title": "An offer expires",
+                    "lanes": 3,
+                    "many": false,
+                    "parts": [
+                      { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "series": 1 },
+                      { "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "series": 2 },
+                      { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "series": 3 }
+                    ],
+                    "steps": [
+                      { "lane": 1, "series": 1, "part": { "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store" }, "html": "Reaches the offer’s <code>expires_at</code>" },
+                      { "lane": 2, "series": 2, "part": { "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers" }, "html": "Sends <code>offer-expired</code> to the borrower’s open pages" },
+                      { "lane": 3, "series": 3, "part": { "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages" }, "html": "Puts when it expired in place of Accept, without a reload" }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>So the design already covers both: <em>An offer expired</em> shows the page after the event, and Send event shows it arriving. If an offer expires <strong>while</strong> the borrower is pressing Accept, Acceptance refuses it and the page says so. That last part isn’t designed yet. It would change:</p>" },
+                {
+                  "kind": "map",
+                  "map": {
+                    "label": "borrower-portal’s parts",
+                    "mark": "proposed",
+                    "count": 2,
+                    "layers": [
+                      { "title": "Pages", "parts": [
+                        { "id": "offer-pages", "title": "Offer pages", "url": "/f/borrower-portal/architecture/parts/offer-pages", "summary": "Offers, an offer, compare, accept", "marked": true, "note": "Accept the offer says it expired as you pressed it" },
+                        { "id": "account-pages", "title": "Account pages", "url": "/f/borrower-portal/architecture/parts/account-pages", "summary": "Profile, documents, sign-in" }
+                      ] },
+                      { "title": "Services", "parts": [
+                        { "id": "offers", "title": "Offers", "url": "/f/borrower-portal/architecture/parts/offers", "summary": "Lists, prices and compares a borrower’s offers" },
+                        { "id": "acceptance", "title": "Acceptance", "url": "/f/borrower-portal/architecture/parts/acceptance", "summary": "Accepting an offer, and its paperwork", "marked": true, "note": "A 409 with when it expired, not a 500" },
+                        { "id": "notifications", "title": "Notifications", "url": "/f/borrower-portal/architecture/parts/notifications", "summary": "Emails and texts to borrowers" }
+                      ] },
+                      { "title": "Data", "parts": [
+                        { "id": "offer-store", "title": "Offer store", "url": "/f/borrower-portal/architecture/parts/offer-store", "summary": "Offers and their terms, in Postgres" },
+                        { "id": "pricing", "title": "Pricing", "url": "/f/borrower-portal/architecture/parts/pricing", "summary": "APR, monthly payment and total cost" }
+                      ] },
+                      { "title": "Shared helpers", "parts": [
+                        { "id": "money", "title": "Money", "url": "/f/borrower-portal/architecture/parts/money", "summary": "Amounts, rounding and formatting" }
+                      ] },
+                      { "title": "Outside", "parts": [
+                        { "id": "lender-api", "title": "Lender API", "url": "/f/borrower-portal/architecture/parts/lender-api", "summary": "Offers from partner lenders", "outside": true },
+                        { "id": "sendgrid", "title": "SendGrid", "url": "/f/borrower-portal/architecture/parts/sendgrid", "summary": "Sends the emails", "outside": true }
+                      ] }
+                    ]
+                  }
+                },
+                { "kind": "text", "html": "<p>Want me to design that refusal on <em>Accept the offer</em>?</p>" }
+              ]
+            },
+            { "id": 6, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] }
+          ],
+          "rules": [
+            { "id": "R-q8m", "text": "An expired offer can’t be accepted: in place of Accept, it says when it expired.", "status": "built", "shownOn": { "page": "/offers/off-2291", "title": "Offer", "state": "03-expired", "stateTitle": "An offer expired" } },
+            { "id": "R-7dn", "text": "Accepting an offer emails the borrower a copy of its terms.", "status": "proposed", "shownOn": null }
+          ],
+          "questions": [],
+          "decisions": [],
+          "dictation": { "status": "none" },
+          "speechModels": [],
+          "queued": [],
+          "images": [],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
+          "surface": {
+            "view": "inline",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers", "ported": true },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/off-2291/accept", "title": "Offer › Accept the offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/off-2291/accept",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "02-no-offers", "title": "No offers yet", "file": "02-no-offers.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" }
+            ],
+            "state": "03-expired",
+            "changed": false,
+            "events": [
+              { "name": "offer-expired", "title": "An offer expires" }
+            ],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

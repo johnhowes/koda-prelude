@@ -50,3 +50,33 @@
 - **R-s4n.** A message shows in the conversation the moment it's sent, before the agent has it; if it's refused, it leaves the conversation and stays in the message box.
 - **R-t7w.** The agent's tool calls are hidden in the chat until the person turns Tools on; that choice is remembered on their computer, for every design and session.
   *shown-on: /f/:folder/d/:design @ typical*
+- **R-6jw.** A flow or a map the agent writes shows as a picture exactly where it wrote it, between its words, however many a message has.
+  *shown-on: /f/:folder/d/:design @ several-visuals*
+  *proposed*
+- **R-p3e.** Every part on a flow or a map opens that part's page in the project's architecture.
+  *shown-on: /f/:folder/d/:design @ a-flow-and-a-map*
+  *proposed*
+- **R-k9u.** A map shows every part of the project, layer by layer; the parts it marks stand out with what would change or what changed, and the rest show only their names.
+  *shown-on: /f/:folder/d/:design @ a-flow-and-a-map*
+  *proposed*
+- **R-x2a.** A visual is drawn only if every part it names is in the project's architecture as it stands on the session's branch when the conversation is shown; otherwise it shows as the agent wrote it, with a line naming the parts that aren't.
+  *shown-on: /f/:folder/d/:design @ visual-not-drawn*
+  *proposed*
+- **R-f7c.** A visual whose lines aren't in its kind's format, or whose kind or version Prelude doesn't draw, shows as the agent wrote it, with a line saying which line is wrong or which kinds Prelude draws.
+  *shown-on: /f/:folder/d/:design @ visual-not-drawn*
+  *proposed*
+- **R-0hq.** A visual that was drawn shows as the agent wrote it once a part it names is renamed or removed from the architecture, saying so; one that wasn't is drawn once its parts exist.
+  *proposed*
+- **R-m4v.** In a project with no architecture yet, every visual shows as the agent wrote it, with a line saying there are no parts to draw it with.
+  *proposed*
+- **R-b8s.** The agent isn't told when a visual of its couldn't be drawn; only the person sees why.
+  *proposed*
+- **R-w5g.** While the agent is still writing a visual, a placeholder says what it's drawing, and the visual takes its place as soon as its block is complete, while the words after it keep coming.
+  *shown-on: /f/:folder/d/:design @ drawing-a-visual*
+  *proposed*
+- **R-c1y.** After a turn that changed the app's code, the conversation shows a map of the parts whose files changed, worked out by Prelude from the files, not by the agent.
+  *shown-on: /f/:folder/d/:design @ ask-and-fix-visuals*
+  *proposed*
+- **R-9tz.** A flow is a numbered list, each step naming its part, when the chat is narrow, and columns, one per part, when there's room for them: popped out, or in a conversation about the project when it has four parts or fewer.
+  *shown-on: /f/:folder/d/:design @ visuals-popped-out*
+  *proposed*

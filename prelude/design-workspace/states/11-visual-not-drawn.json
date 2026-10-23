@@ -1,0 +1,117 @@
+{
+  "folders": [
+    {
+      "id": "borrower-portal",
+      "name": "borrower-portal",
+      "designs": [
+        {
+          "id": "loan-offers",
+          "title": "Loan offers",
+          "area": "Borrowing",
+          "kind": "design",
+          "folder": { "id": "borrower-portal", "name": "borrower-portal" },
+          "system": { "id": "spark-design-system", "title": "Spark Design System" },
+          "shell": { "id": "borrower-shell", "title": "Borrower Portal Shell" },
+          "references": [],
+          "buildUrl": "/f/borrower-portal/d/loan-offers/build",
+          "merged": null,
+          "branch": {
+            "id": "loan-offers",
+            "branch": "prelude/loan-offers",
+            "into": "main",
+            "check": "passing",
+            "failures": 0,
+            "behind": 0,
+            "worked": true,
+            "remote": true,
+            "building": null,
+            "alsoChanges": [],
+            "running": null,
+            "merging": null,
+            "error": null
+          },
+          "sessions": [
+            { "id": "20261023-1302-r5mb", "title": "Where rates come from", "started": "Today, 13:02" },
+            { "id": "20261023-1124-p9wd", "title": "Accepting, and expiry", "started": "Today, 11:24" }
+          ],
+          "session": { "id": "20261023-1302-r5mb", "title": "Where rates come from" },
+          "state": { "kind": "idle" },
+          "entries": [
+            { "id": 1, "type": "user", "message": "Where does an offer’s rate come from, and what would a rate-history chart on the offer page touch?", "lookingAt": "Offer · Typical" },
+            { "id": 2, "type": "tool", "name": "Grep", "summary": "rate in prelude/borrower-architecture" },
+            {
+              "id": 3,
+              "type": "text",
+              "pieces": [
+                { "kind": "text", "html": "<p>Rates come from the lender, and are kept with the offer:</p>" },
+                {
+                  "kind": "unread",
+                  "tag": "prelude-flow-1",
+                  "code": "# Where a rate comes from\n1. lender-api: Sends the offer with its rate\n2. offers-api: Validates it\n3. rates: Stores it beside the offer",
+                  "why": "<code>offers-api</code> and <code>rates</code> aren’t parts in borrower-portal’s architecture."
+                },
+                { "kind": "text", "html": "<p>A rate-history chart would need these:</p>" },
+                {
+                  "kind": "unread",
+                  "tag": "prelude-map-1",
+                  "code": "offer-pages, pricing\noffer-store: keeps each rate it was sent",
+                  "why": "line 1, <code>offer-pages, pricing</code>, isn’t one part. A map takes one part per line, each with an optional “: ” and a note."
+                },
+                { "kind": "text", "html": "<p>And roughly how the last six months would look for Northfield’s offer:</p>" },
+                {
+                  "kind": "unread",
+                  "tag": "prelude-chart-1",
+                  "code": "May 6.1\nJun 6.0\nJul 5.8\nAug 5.9\nSep 5.7\nOct 5.6",
+                  "why": "Prelude doesn’t know <code>prelude-chart-1</code>. It draws <code>prelude-flow-1</code> and <code>prelude-map-1</code>."
+                },
+                { "kind": "text", "html": "<p>The offer store only keeps the latest rate today, so the history would have to start being kept before the chart has anything to show.</p>" }
+              ]
+            },
+            { "id": 4, "type": "check", "rendered": 18, "failures": [], "differ": [], "warnings": [] }
+          ],
+          "rules": [],
+          "questions": [
+            { "id": "q-history", "text": "Should the offer page show how its rate has moved since it was made?", "asked": "today at 13:06" }
+          ],
+          "decisions": [],
+          "dictation": { "status": "none" },
+          "speechModels": [],
+          "queued": [],
+          "images": [],
+          "draft": { "base": "/f/borrower-portal/d/loan-offers", "attachments": [] },
+          "surface": {
+            "view": "inline",
+            "size": "fit",
+            "client": "browser",
+            "origin": "http://loan-offers.borrower-portal.preview.localhost:4200",
+            "host": null,
+            "popped": false,
+            "notice": null,
+            "screens": [
+              { "id": "/offers", "title": "Offers", "ported": true },
+              { "id": "/offers/off-2291", "title": "Offer" },
+              { "id": "/offers/compare", "title": "Compare offers" }
+            ],
+            "current": "/offers/off-2291",
+            "states": [
+              { "id": "01-typical", "title": "Typical", "file": "01-typical.json" },
+              { "id": "03-expired", "title": "An offer expired", "file": "03-expired.json" }
+            ],
+            "state": "01-typical",
+            "changed": false,
+            "events": [],
+            "approved": 16,
+            "review": { "failures": [], "differ": [] },
+            "sizes": [
+              { "id": "fit", "title": "Fit the panel", "says": "As wide and tall as the panel" },
+              { "id": "phone", "title": "Phone", "width": 390, "height": 844 }
+            ],
+            "clients": [
+              { "id": "browser", "title": "Browser", "says": "As a browser shows it" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

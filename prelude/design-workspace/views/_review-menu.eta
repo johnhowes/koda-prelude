@@ -1,0 +1,21 @@
+<%/* The pages the check named, as a menu: each puts its page, in its state,
+     in the frame (R-pk8). The one on show is current, so going through them
+     shows where you are. `it.pages` have path, title, state, stateTitle
+     and, for one that doesn't render, error. The bar can hold two (pages
+     that don't render, pages that differ), so each is a ko-item: its button
+     finds its own list. */%>
+<div class="menu" ko-item>
+  <button class="btn small" type="button" popovertarget ko-for="pages"><%= it.label %></button>
+  <div class="menu-list" ko-as="pages" popover>
+    <% for (const page of it.pages) { %>
+    <form action="<%= it.base %>/screen" method="post" ko-target="design">
+      <%~ it.keep %>
+      <input type="hidden" name="surface.state" value="<%= page.state %>">
+      <button type="submit" name="surface.current" value="<%= page.path %>" <% if (page.path === it.current && page.state === it.state?.id) { %>aria-current="true"<% } %>>
+        <span class="item-title"><%= page.title %> · <%= page.stateTitle %></span>
+        <span class="muted"><%= page.path %><% if (page.error) { %>: <%= page.error %><% } %></span>
+      </button>
+    </form>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,261 @@
+<%/* The design bar and the notices under it: the head of the design surface,
+     a region of its own (#design-bar, at …/preview/bar). It reloads when the
+     agent changes the design's files (files-changed), so the page list, the
+     states, the rules and the review strip stay current, while the page in
+     the frame stays as the person left it: their scroll, a drawer they
+     opened, what they typed. "Load changes" says the frame is behind, and
+     loads it again (R-v2q). What the person does themselves (a page, a
+     state, a size) reloads the whole surface at once, in every window.
+
+     The bar reads left to right as "what am I looking at", then "how am I
+     looking at it":
+       - the page (with Refresh and Open in browser, which act on it), the
+         state, and what can be done to the state's data (Send event, Reset
+         data);
+       - then this window's size and client, and Pop out.
+     The page and the state are the design's, shared by every window (R-c2m).
+     The size and the client are this window's own, in its URL. The real app
+     isn't shown here: it opens in a window of its own, from a build session
+     (prelude/build).
+
+     Under the bar, the review strip says what the check found, only when
+     there is something to do: a page that doesn't render, pages that differ
+     from their approved screens, or pages not approved yet. It lists the
+     pages, and showing one puts it in the frame in its state. A build's own
+     check is its session's (prelude/build), so the strip is the design's
+     alone, built or not.
+
+     `it` is the design. How this window looks (view, size, client) is
+     `it.here` when the surface includes it, or the surface's own when it
+     reloads alone; `shown` is the design's version the frame loaded. */%>
+<% const s = it.surface; const q = it.$query ?? {}; const h = it.here ?? q;
+   const base = `/f/${it.folder.id}/d/${it.id}`;
+   const view = h.view ?? s.view ?? 'inline';
+   const pixels = value => { const n = Math.round(Number(value)); return n >= 200 && n <= 4000 ? n : null; };
+   /* The custom size is the design's, remembered: every window offers it
+      once it's set. Which size a window shows is still its own. */
+   const custom = pixels(s.custom?.width) && pixels(s.custom?.height)
+     ? { id: 'custom', title: 'Custom', width: pixels(s.custom.width), height: pixels(s.custom.height) } : null;
+   const sizes = custom ? [...s.sizes, custom] : s.sizes;
+   const size = sizes.find(x => x.id === (h.size ?? s.size)) ?? sizes[0];
+   const client = s.clients.find(x => x.id === (h.client ?? s.client)) ?? s.clients[0];
+   const here = { view, size: size.id, client: client.id };
+   const surfaceUrl = change => `${base}/preview?${new URLSearchParams(Object.entries({ ...here, ...change }).filter(([, value]) => value !== ''))}`;
+   const url = surfaceUrl({});
+   const cur = s.screens.find(x => x.id === s.current) ?? s.screens[0] ?? null;
+   const current = cur?.id ?? null;
+   const state = s.states.find(x => x.id === s.state) ?? s.states[0] ?? null;
+   const popped = view === 'inline' && s.popped;
+   const review = s.review ?? { failures: [], differ: [] };
+   const origin = s.origin;
+   /* The frame is behind when the design has changed since it loaded. */
+   const shown = Number(it.shown ?? q.shown ?? s.version ?? 0);
+   const behind = !popped && cur && Number(s.version ?? 0) > shown;
+   const keep = include('./_keep', here);
+   const windowName = `prelude-${it.folder.id}-${it.id}`; %>
+<div class="toolbar">
+  <% if (cur) { %>
+  <%~ include('./_page-menu', { screens: s.screens, cur, current, base, keep, url, origin, view }) %>
+  <%/* The agent changed the design since the frame loaded: the person loads
+       it when they're ready, and changes in a row add up to one load. */%>
+  <% if (behind) { %>
+  <a class="btn small" href="<%= url %>" ko-target="design" title="The agent has changed the design since this page loaded. Load it again to see the changes."><span class="pill accent">Updated</span>Load changes</a>
+  <% } %>
+  <%/* The design's rules, those for the page on show counted: they say
+       what the page can't (what's meant to hold, what happens unseen). */%>
+  <% const pageRules = (it.rules ?? []).filter(rule => rule.status !== 'retired' && rule.shownOn?.page === current).length; %>
+  <% if (it.rules?.length) { %>
+  <a class="btn small ghost" href="<%= base %>/rules" ko-target="drawer?" title="The design’s rules: <%= pageRules === 1 ? '1 is' : `${pageRules} are` %> shown on this page."><span class="icon icon-rule" aria-hidden="true"></span>Rules<% if (pageRules) { %> <span class="pill"><%= pageRules %></span><% } %></a>
+  <% } %>
+  <% } %>
+
+  <% if (s.states.length > 1) { %>
+  <div class="menu start">
+    <button class="btn small ghost" type="button" popovertarget ko-for="stateMenu"><span class="clip">State: <%= state.title %></span></button>
+    <form class="menu-list" ko-as="stateMenu" popover action="<%= base %>/state" method="post" ko-target="design">
+      <%~ keep %>
+      <% for (const option of s.states) { %>
+      <button type="submit" name="surface.state" value="<%= option.id %>" <% if (option.id === state.id) { %>aria-current="true"<% } %>>
+        <span class="item-title"><%= option.title %></span>
+        <span class="muted"><%= option.file %></span>
+      </button>
+      <% } %>
+    </form>
+  </div>
+  <% } %>
+  <%/* The server speaks first, down the design's live channel. The answer
+       lands in the status beside it, never on the frame, so the page shows
+       the event arrive. */%>
+  <% if (s.events?.length) { %>
+  <div class="menu start">
+    <button class="btn small ghost" type="button" popovertarget ko-for="eventMenu">Send event</button>
+    <form class="menu-list" ko-as="eventMenu" popover action="<%= base %>/events" method="post" ko-target="event-status">
+      <% for (const event of s.events) { %>
+      <button type="submit" name="event" value="<%= event.name %>">
+        <span class="item-title"><%= event.title %></span>
+        <span class="muted"><%= event.name %></span>
+      </button>
+      <% } %>
+    </form>
+  </div>
+  <span id="event-status" ko-region role="status"></span>
+  <% } %>
+  <% if (s.changed) { %>
+  <form action="<%= base %>/reset" method="post" ko-target="design">
+    <%~ keep %>
+    <input type="hidden" name="surface.changed" value="false">
+    <button class="btn small ghost" type="submit" title="Forms have changed this state’s data. Start again from its file.">Reset data</button>
+  </form>
+  <% } %>
+
+  <%/* Capture the page, where the frame is now (R-w8p): a page reached by
+       following links in it, with a drawer or modal open over it, as this
+       window shows it (state, size, client). The picture goes in the message
+       box, to send or mark up.
+
+       In a browser the server opens that address afresh and pictures it, so
+       what's typed or drawn and not yet saved isn't in it. In the desktop
+       app, What's in view is the frame exactly as it is on screen, taken by
+       the app itself (desktop.js puts it in `picture` before the form goes);
+       the whole page, scrolled to its end, is still opened afresh, since the
+       screen never held it (R-3qz). The hints say which, by client.
+
+       At Fit, "in view" is the frame's own size, and frame.at where it is:
+       inputs beside the frame, outside this region, so they outlast its
+       reloads. The line beside it says where the picture went; the tray in
+       the chat reloads on draft-changed, so a capture from the pop-out lands
+       there too. */%>
+  <% if (cur && !popped) { %>
+  <% const shot = `${cur.title} – ${state?.title}${size.width ? ` – ${size.width}×${size.height}` : ''}.png`;
+     const inView = size.width ? `${size.width} × ${size.height}` : 'As much as fits the frame'; %>
+  <div class="menu start">
+    <button class="btn small ghost" type="button" popovertarget ko-for="captureMenu" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up."><span class="icon icon-capture" aria-hidden="true"></span>Capture</button>
+    <form class="menu-list" id="capture-form" ko-as="captureMenu" popover action="<%= base %>/capture" method="post" enctype="multipart/form-data" ko-target="capture-status">
+      <%~ keep %>
+      <input type="hidden" name="name" value="<%= shot %>">
+      <input type="hidden" name="page" value="<%= current %>">
+      <input type="hidden" name="state" value="<%= state?.id ?? '' %>">
+      <input type="file" name="picture" accept="image/png" hidden data-capture-picture>
+      <button type="submit" name="whole" value="false" data-capture-shown>
+        <span class="item-title">What’s in view</span>
+        <span class="muted" data-browser-only><%= inView %>, opened afresh: what you’ve typed isn’t in it</span>
+        <span class="muted" data-desktop-only><%= inView %>, exactly as it is now, with what you’ve typed</span>
+      </button>
+      <button type="submit" name="whole" value="true">
+        <span class="item-title">The whole page</span>
+        <span class="muted">Scrolled to its end, <%= size.width ? `${size.width} wide` : 'as wide as the frame' %>, opened afresh</span>
+      </button>
+    </form>
+  </div>
+  <span id="capture-status" ko-region role="status"></span>
+  <% } %>
+
+  <span class="spacer"></span>
+
+  <% if (popped) { %>
+  <span class="muted">Showing in its own window</span>
+  <a class="btn small ghost" href="<%= base %>/window" target="<%= windowName %>" data-pop-out>Show window</a>
+  <% } else { %>
+  <% if (cur) { %>
+  <div class="menu">
+    <button class="btn small ghost" type="button" popovertarget ko-for="sizeMenu" title="The size this window lays the page out at."><span class="icon icon-fit" aria-hidden="true"></span><%= size.width ? `${size.width} × ${size.height}` : size.title %></button>
+    <ul class="menu-list" ko-as="sizeMenu" popover>
+      <% for (const option of sizes) { %>
+      <li><a href="<%= surfaceUrl({ size: option.id }) %>" ko-target="design" <% if (option.id === size.id) { %>aria-current="true"<% } %>>
+        <span class="item-title"><%= option.title %></span>
+        <span class="muted"><%= option.width ? `${option.width} × ${option.height}` : option.says %></span>
+      </a></li>
+      <% } %>
+      <%/* Any other size: width and height in pixels. It's remembered for
+           the design, replacing the last one, and this window shows it. */%>
+      <li>
+        <form class="stack gap-2 custom-size" action="<%= base %>/size" method="post" ko-target="design">
+          <%~ include('./_keep', { ...here, size: 'custom' }) %>
+          <span class="item-title"><%= custom ? 'Another size' : 'Custom size' %></span>
+          <div class="inline">
+            <label class="sr-only" for="size-width-<%= view %>">Width in pixels</label>
+            <input id="size-width-<%= view %>" name="surface.custom.width" type="number" min="200" max="4000" required placeholder="Width" value="<%= custom?.width ?? '' %>">
+            <span class="muted" aria-hidden="true">×</span>
+            <label class="sr-only" for="size-height-<%= view %>">Height in pixels</label>
+            <input id="size-height-<%= view %>" name="surface.custom.height" type="number" min="200" max="4000" required placeholder="Height" value="<%= custom?.height ?? '' %>">
+            <button class="btn small" type="submit">Use this size</button>
+          </div>
+        </form>
+      </li>
+    </ul>
+  </div>
+  <% if (s.clients.length > 1) { %>
+  <div class="menu">
+    <button class="btn small ghost" type="button" popovertarget ko-for="clientMenu" title="What this window shows the page as running in."><span class="icon icon-screen" aria-hidden="true"></span><%= client.title %></button>
+    <ul class="menu-list" ko-as="clientMenu" popover>
+      <% for (const option of s.clients) { %>
+      <li><a href="<%= surfaceUrl({ client: option.id }) %>" ko-target="design" <% if (option.id === client.id) { %>aria-current="true"<% } %>>
+        <span class="item-title"><%= option.title %></span>
+        <span class="muted"><%= option.says %></span>
+      </a></li>
+      <% } %>
+    </ul>
+  </div>
+  <% } %>
+  <% } %>
+  <% if (view === 'inline') { %>
+  <%/* A named target: the browser opens one window for this design and
+       reuses it. In the desktop app, data-pop-out makes it a real window. */%>
+  <a class="btn small ghost" href="<%= base %>/window" target="<%= windowName %>" data-pop-out><span class="icon icon-external" aria-hidden="true"></span>Pop out</a>
+  <% } %>
+  <% } %>
+</div>
+
+<% if (s.host && !s.host.approved) { %>
+<form class="notice warn" action="<%= s.host.approve %>" method="post">
+  <input type="hidden" name="back" value="<%= base %>">
+  <strong>This repository has its own design host.</strong>
+  <p>It renders the design’s views with the app’s real components, by running <code><%= s.host.start %></code> here. The views are written by the agent and run as code on this machine, with your permissions, outside Prelude’s sandbox.</p>
+  <div class="cluster actions"><button class="btn small primary" type="submit">Approve and start it</button></div>
+</form>
+<% } else if (s.host?.log) { %>
+<details class="disclosure host-log"><summary class="muted">Design host log<%= s.host.running ? '' : ' (stopped)' %></summary><pre><%= s.host.log %></pre></details>
+<% } %>
+
+<%/* A state's file changed while forms had changed its data: Prelude threw
+     the changes away, so the pages read the file as it is now. Said once,
+     in the window that shows it next. */%>
+<% if (s.reset) { %>
+<div class="notice" role="status"><p><%= s.reset %></p></div>
+<% } %>
+<% if (s.notice) { %>
+<div class="notice good" role="status"><p><%= s.notice %></p></div>
+<% } else if (review.failures.length) { %>
+<div class="notice danger review" role="alert">
+  <div class="cluster">
+    <p><strong><%= review.failures.length === 1 ? '1 page doesn’t render.' : `${review.failures.length} pages don’t render.` %></strong> The agent is told with your next message.</p>
+    <span class="spacer"></span>
+    <%~ include('./_review-menu', { base, keep, pages: review.failures, current, state, label: review.failures.length === 1 ? 'Show it' : 'Show one' }) %>
+  </div>
+</div>
+<% } else if (review.differ.length) { %>
+<div class="notice warn review" role="status">
+  <div class="cluster">
+    <p><strong>The design changed since you approved it:</strong> <%= review.differ.length === 1 ? '1 page differs' : `${review.differ.length} pages differ` %>. Look at <%= review.differ.length === 1 ? 'it' : 'each' %>, and approve again when it’s what you want built.</p>
+    <span class="spacer"></span>
+    <div class="cluster actions">
+      <%~ include('./_review-menu', { base, keep, pages: review.differ, current, state, label: review.differ.length === 1 ? 'Show it' : 'Show one' }) %>
+      <form action="<%= base %>/approve" method="post" ko-target="design">
+        <%~ keep %>
+        <button class="btn small" type="submit" title="Save every page in every state as it renders now. The check then says when one renders differently.">Approve again</button>
+      </form>
+    </div>
+  </div>
+</div>
+<% } else if (cur && !s.approved && !s.screensOnly) { %>
+<div class="notice review" role="status">
+  <div class="cluster">
+    <p>When the design is what you want built, approve it: that saves how every page looks, and builds are checked against those screens.</p>
+    <span class="spacer"></span>
+    <form action="<%= base %>/approve" method="post" ko-target="design">
+      <%~ keep %>
+      <button class="btn small" type="submit" title="Save every page in every state as it renders now.">Approve these screens</button>
+    </form>
+  </div>
+</div>
+<% } %>

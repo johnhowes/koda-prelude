@@ -351,35 +351,35 @@
 
     <section class="stack gap-3 specimen">
       <h3>Flow</h3>
-      <p class="secondary">A flow’s steps through the parts that do them: a column per part, a row per step, and what each step hands on as an arrow to the next one’s part. Each part has a series colour, always beside its name. Narrow the stage: under 34rem (58rem for five parts or more) it becomes a numbered list, each step naming its part.</p>
+      <p class="secondary">A flow’s steps through the parts that do them: a column per part, a row per step, and what each step hands on as an arrow to the next one’s part. Each part has a series colour, always beside its name. Narrow the stage: under 34rem (58rem for five parts or more) it becomes a numbered list, each step naming its part. Here each part links to its page: the column heads for the pointer, each step’s name for everyone (Tab to a step to see it).</p>
       <div class="stage resizable">
         <figure class="flow" style="--lanes: 4">
           <figcaption class="flow-title">A visual in a message</figcaption>
           <ul class="flow-parts" aria-hidden="true">
-            <li class="flow-part" style="--series: var(--series-1)">claude</li>
-            <li class="flow-part" style="--series: var(--series-2)">turns</li>
-            <li class="flow-part" style="--series: var(--series-3)">views</li>
-            <li class="flow-part" style="--series: var(--series-4)">visuals</li>
+            <li class="flow-part" style="--series: var(--series-1)"><a href="#" tabindex="-1">claude</a></li>
+            <li class="flow-part" style="--series: var(--series-2)"><a href="#" tabindex="-1">turns</a></li>
+            <li class="flow-part" style="--series: var(--series-3)"><a href="#" tabindex="-1">views</a></li>
+            <li class="flow-part" style="--series: var(--series-4)"><a href="#" tabindex="-1">visuals</a></li>
           </ul>
           <ol class="flow-steps">
             <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
-              <div class="flow-box"><span class="flow-part">claude</span><span class="flow-text">Writes a fenced <code>prelude-flow-1</code> block in its message</span></div>
+              <div class="flow-box"><a class="flow-part" href="#">claude</a><span class="flow-text">Writes a fenced <code>prelude-flow-1</code> block in its message</span></div>
               <p class="flow-pass" style="--from: 1; --to: 3">the message</p>
             </li>
             <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
-              <div class="flow-box"><span class="flow-part">turns</span><span class="flow-text">Saves it to the transcript as written, and streams it</span></div>
+              <div class="flow-box"><a class="flow-part" href="#">turns</a><span class="flow-text">Saves it to the transcript as written, and streams it</span></div>
               <p class="flow-pass" style="--from: 2; --to: 4">the entry</p>
             </li>
             <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
-              <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Splits the message on its top-level fences</span></div>
+              <div class="flow-box"><a class="flow-part" href="#">views</a><span class="flow-text">Splits the message on its top-level fences</span></div>
               <p class="flow-pass" style="--from: 3; --to: 5">each block</p>
             </li>
             <li class="flow-step" style="--lane: 4; --series: var(--series-4)">
-              <div class="flow-box"><span class="flow-part">visuals</span><span class="flow-text">Parses it and checks its part ids</span></div>
+              <div class="flow-box"><a class="flow-part" href="#">visuals</a><span class="flow-text">Parses it and checks its part ids</span></div>
               <p class="flow-pass back" style="--from: 3; --to: 5">a model</p>
             </li>
             <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
-              <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Renders it with its partial and the design system</span></div>
+              <div class="flow-box"><a class="flow-part" href="#">views</a><span class="flow-text">Renders it with its partial and the design system</span></div>
             </li>
           </ol>
         </figure>

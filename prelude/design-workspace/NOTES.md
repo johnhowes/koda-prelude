@@ -11,7 +11,9 @@ questions) and modals (an image, Mark up, Turn on dictation); Pop-out
 window. The fake project is a lender's borrower portal, so sizes (phone,
 tablet) and a second client (its mobile app) mean something. States:
 typical, pages differ, doesn't render, agent working, new design, update
-clashed, popped out, new session.
+clashed, popped out, new session; and for visuals in the chat: a flow and
+a map, several visuals, a visual not drawn, visuals popped out, drawing a
+visual (streaming), ask and fix (a fix's conversation, its own design).
 
 All seven items of the first review are now designed or settled (item 4,
 the record picker, was dropped).
@@ -270,6 +272,34 @@ the record picker, was dropped).
   of them rendered afresh, not appended text, so the saved entry that
   takes its place looks the same. A reload finds it in the transcript
   (`it.streaming`). State `04-agent-working` shows one mid-sentence.
+- **Visuals in the chat** (the person, 2026-10-23; D-v3x, the design
+  system's flow and map). The page's route came back into the design
+  (`"from"`) with every partial it includes; `_entry.eta` and
+  `_live-entry.eta` changed, and `_message`, `_visual-flow`, `_visual-map`,
+  `_visual-drawing` and `_visual-unread` are new. An agent's message is
+  `pieces` (text, flow, map, drawing, unread) in the order written, each
+  ready to print; a message with none is one text piece (`html` still
+  reads). Each part links to `/f/<project>/architecture/parts/<id>`.
+  - **The agent's map marks "Would change"** (`.proposed`); Prelude's own
+    map after a turn that changed code marks "Changed" (`.touched`), as an
+    entry of its own (`type: 'parts'`, open, folds away). A marked map's
+    other parts show only their names, so it fits a chat column; with no
+    mark it's the plain map, which the Architecture page can share.
+  - **A block Prelude couldn't read** shows with its fences and tag as
+    written, and "Not drawn: …" under it, naming the parts that aren't in
+    the architecture, the line that's wrong, or the kinds Prelude draws
+    (R-x2a, R-f7c, R-m4v). Quiet (muted), not a warning: the message still
+    reads, and only the person is told (R-b8s).
+  - **Streaming**: a finished visual is drawn at once; one still being
+    written is a skeleton with "Drawing a flow…" / "Drawing a map of the
+    parts…" (R-w5g). The push re-renders the message's pieces into
+    `#<id>-text`, now the `_message` stack rather than a `.prose`.
+  - **Widths need nothing of their own**: flow and map answer to their
+    container. Beside the design (26rem) a flow is a list and a map's
+    labels sit above; popped out or in a fix's conversation (`--measure`)
+    a flow of up to four parts gets columns, five or more stay a list
+    (R-9tz). States 09–14 show each.
+  - Added to the design system: linked flow parts, and `.entry :where(ul)`.
 - In the design, a message refused while images are attached comes back
   with an empty tray (the fake route has only the posted fields), and the
   tray isn't emptied after sending (a route does one change). The app does
@@ -495,6 +525,12 @@ Where the app differs from the screens, on purpose:
 
 - Not taken on yet for the message box: @ mentions of pages, states,
   rules and files; up-arrow to edit the last message.
+- A part's link on a visual leaves the session for the Architecture page.
+  Should it open in the drawer over the chat instead? That needs a drawer
+  route for a part, which the app doesn't have.
+- "Would change" fits a map the agent draws to propose something, not one
+  that only explains which parts take part. Should `prelude-map-1` say
+  which, or is a proposal the only use?
 
 ## Limits of the preview
 

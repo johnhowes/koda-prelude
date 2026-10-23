@@ -1,0 +1,118 @@
+<%/* The design surface: one page of the design, framed, under the design bar.
+
+     Two kinds of change reach it, and they're treated differently:
+       - the person's own (a page, a state, a size, Reset data, Show, a
+         window popping out): the whole surface is a region that answers
+         with itself and reloads on design-changed, so every window moves
+         at once;
+       - the agent's (the design's files, its design system, its shell): only
+         the head reloads (#design-bar, on files-changed), and the frame keeps
+         the page as the person left it, until they load the changes
+         (_design-bar.eta, R-v2q).
+
+     The frame is the page itself: an iframe on the design's own origin. At a
+     size, the page is laid out at that width and height and scaled down to
+     fit the panel. The real app opens in a window of its own, from a build
+     session (prelude/build), not here. The architecture design has no pages
+     of its own: its frame is Prelude's Architecture page, read from its files
+     (`s.architecture`), as the design system's is its gallery.
+
+     `view` is 'inline' (beside the chat) or 'window' (the pop-out). While a
+     window is open, the inline surface shrinks to its bar. */%>
+<% const s = it.surface; const q = it.$query ?? {};
+   const base = `/f/${it.folder.id}/d/${it.id}`;
+   const view = it.view ?? q.view ?? s.view ?? 'inline';
+   const pixels = value => { const n = Math.round(Number(value)); return n >= 200 && n <= 4000 ? n : null; };
+   const custom = pixels(s.custom?.width) && pixels(s.custom?.height)
+     ? { id: 'custom', title: 'Custom', width: pixels(s.custom.width), height: pixels(s.custom.height) } : null;
+   const sizes = custom ? [...s.sizes, custom] : s.sizes;
+   const size = sizes.find(x => x.id === (q.size ?? s.size)) ?? sizes[0];
+   const client = s.clients.find(x => x.id === (q.client ?? s.client)) ?? s.clients[0];
+   const here = { view, size: size.id, client: client.id };
+   const url = `${base}/preview?${new URLSearchParams(here)}`;
+   /* The version of the design this frame loads; the bar compares it with
+      the design's own to say when the frame is behind. */
+   const shown = s.version ?? 0;
+   const barUrl = `${base}/preview/bar?${new URLSearchParams({ ...here, shown })}`;
+   const cur = s.screens.find(x => x.id === s.current) ?? s.screens[0] ?? null;
+   const current = cur?.id ?? null;
+   const state = s.states.find(x => x.id === s.state) ?? s.states[0] ?? null;
+   const popped = view === 'inline' && s.popped;
+   const origin = s.origin;
+   /* The frame's address: the page, and the design's version, so it loads
+      afresh when the person loads the changes. */
+   const src = cur && `${origin}${current}${s.version === undefined ? '' : `${String(current).includes('?') ? '&' : '?'}v=${s.version}`}`; %>
+<section id="design" class="panel design<%= popped ? ' popped' : '' %>" aria-label="Design" ko-item ko-source="<%= url %>" ko-location="<%= url %>" ko-attach="replace" ko-invoke="event:design-changed">
+  <%/* How the surface beside the chat is looking, for the message box's
+       "looking at" chip: its size and client, when they aren't the
+       defaults. Only this window's; a pop-out's are its own. */%>
+  <% if (view === 'inline') { %>
+  <% const looking = popped ? [] : [size.width ? (size.id === 'custom' ? `${size.width} × ${size.height}` : size.title) : null, client.id === s.clients[0].id ? null : client.title].filter(Boolean); %>
+  <input type="hidden" id="lookingSize" value="<%= looking.join(' · ') %>">
+  <% } %>
+  <div id="design-bar" class="panel-head" ko-source="<%= barUrl %>" ko-invoke="event:files-changed"><%~ include('./_design-bar', { ...it, here, shown }) %></div>
+
+  <% if (!popped) { %>
+  <%/* For Capture (the bar's form), beside the frame so they outlast the
+       bar's reloads: the frame's size at Fit, for "what's in view", and
+       where the frame is now (frame.at), for the server to open. Empty,
+       the server opens the page picked. */%>
+  <input type="hidden" form="capture-form" name="frame.width" ko-as="frameWidth" value="<%= size.width ?? '' %>">
+  <input type="hidden" form="capture-form" name="frame.height" ko-as="frameHeight" value="<%= size.height ?? '' %>">
+  <input type="hidden" form="capture-form" name="frame.at" ko-as="frameAt" value="">
+  <div class="design-frame<%= size.width ? ' sized' : '' %>" ko-as="frame">
+    <% if (cur) { %>
+    <%~ include('./_frame', { cur, state, size, client, src }) %>
+    <% } else if (s.architecture) { %>
+    <p class="empty">Nothing written yet. Ask the agent to draft the architecture from the code, and the Architecture page appears here once its overview is written.</p>
+    <% } else if (s.screensOnly) { %>
+    <p class="empty">No screens yet. Ask the agent to design one, and it appears here as it’s written.</p>
+    <% } else { %>
+    <p class="empty">No pages yet: give a route in routes.json a title, and it appears here.</p>
+    <% } %>
+  </div>
+  <% if (!size.width && cur) { %>
+  <script type="koda">
+    // At Fit, a capture of what's in view is the frame's own size, which
+    // only the page knows: geometry a ResizeObserver reports.
+    const { frame, frameWidth, frameHeight, onRemove } = koda.scope();
+    const observer = new ResizeObserver(([entry]) => {
+      frameWidth.element.value = Math.round(entry.contentRect.width);
+      frameHeight.element.value = Math.round(entry.contentRect.height);
+    });
+    observer.observe(frame.element);
+    onRemove(() => observer.disconnect());
+  </script>
+  <% } %>
+  <% if (cur) { %>
+  <script type="koda">
+    // Where the frame is now, for Capture (R-w8p): a page the person reached
+    // by following links, or a drawer or modal open over it, at its own
+    // address. The frame is another origin, so its page says so itself: the
+    // design's origin adds a script to the pages it serves into a frame,
+    // which posts the address on each arrival (koda:attached) and on Back.
+    // Only that frame's word is taken.
+    // Koda's warnings in the page (0.1.4) arrive the same way, and join
+    // Prelude's own in the shell's list (_regions.eta), said to be the
+    // design's.
+    const { device, frameAt, onRemove } = koda.scope();
+    const heard = event => {
+      if (event.source !== device.element.querySelector('iframe')?.contentWindow) return;
+      if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at;
+      if (event.data?.type === 'prelude:warning' && typeof event.data.message === 'string') {
+        const list = document.querySelector('[ko-warnings]');
+        if (!list) return console.warn(event.data.message);
+        const item = document.createElement('li');
+        item.setAttribute('ko-warning', event.data.code);
+        item.textContent = `In the design’s page: ${event.data.message}`;
+        list.append(item);
+        const kept = list.querySelectorAll(':scope > [ko-warning]');
+        for (let index = 0; index < kept.length - 100; index += 1) kept[index].remove();
+      }
+    };
+    window.addEventListener('message', heard);
+    onRemove(() => window.removeEventListener('message', heard));
+  </script>
+  <% } %>
+  <% } %>
+</section>
