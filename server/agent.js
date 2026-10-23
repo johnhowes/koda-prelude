@@ -2,7 +2,7 @@
 //
 //   runner.turn({ cwd, sessionId, resume, prompt, systemPrompt, designPath, references, mode, onEvent })
 //     -> { done: Promise<{ ok, stopped?, lost?, error?, costUsd? }>, stop() }
-//     lost: the conversation to resume isn't there
+//     lost: the conversation to resume isn't there, or is too long to go on
 //   runner.carry({ sessionId, from, to }) -> boolean   a conversation copied to another folder
 //
 // onEvent gets a few plain events:
@@ -214,10 +214,14 @@ export function createStreamReader(onEvent) {
     }
     if (message.type === 'result') {
       const ok = message.is_error !== true && message.subtype === 'success';
+      const error = ok ? null : String(message.result || message.subtype || 'The agent reported an error.');
       return {
         ok,
         costUsd: message.total_cost_usd ?? null,
-        error: ok ? null : String(message.result || message.subtype || 'The agent reported an error.'),
+        error,
+        // Too long to go on, and resumed it would be as long again: lost, so
+        // it starts afresh from what was said (turns.js).
+        ...(error && /prompt is too long/i.test(error) ? { lost: true } : {}),
       };
     }
     return null;

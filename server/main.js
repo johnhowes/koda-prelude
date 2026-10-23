@@ -2013,7 +2013,8 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
         : null,
       // What an update from main brought in, told once; or, while one clashed
       // and isn't resolved yet, the files to resolve, told with every message.
-      recap: carriedOver(session)?.recap ?? null,
+      // Any other that can't go on (grown too long for the agent, say) starts afresh too.
+      recap: carriedOver(session)?.recap ?? (session ? recapOf(session, 'this conversation couldn’t go on as it was (it grew too long, or can’t be resumed here), and you’re starting afresh on it.') : null),
       preface: [carriedOver(session)?.preface, entry ? (() => {
         const merging = (() => { try { return app.branches.merging(entry); } catch { return null; } })();
         if (merging?.unresolved.length) {
@@ -2047,15 +2048,15 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const carriedOver = session => {
     if (!session?.carried) return null;
     const now = `It's now fixed on ${entry?.branch ?? 'its branch'}, and you can change the project, as your instructions now say.`;
-    const recap = recapOf(session, now);
+    const recap = recapOf(session, `this conversation began before it had a branch, when you could only read, and you're starting afresh on it here. ${now}`);
     return session.started
       ? { preface: `(From Prelude, not the person: this conversation began before it had a branch, when you could only read. ${now})`, recap }
       : { preface: recap, recap: null };
   };
 
   // What was said so far in a session, for an agent starting afresh: the
-  // person's words and the agent's, newest kept when it's long.
-  const recapOf = (session, now) => {
+  // person's words and the agent's, newest kept when it's long, after `why`.
+  const recapOf = (session, why) => {
     const said = readEntries(dir, session.id)
       .filter(item => (item.type === 'user' || item.type === 'text') && String(item.text ?? '').trim())
       .map(item => `${item.type === 'user' ? 'The person' : 'You'}: ${clip(String(item.text).trim(), 2000)}`);
@@ -2067,7 +2068,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       length += line.length;
     }
     const cut = kept.length < said.length ? ` The start is left out here; the whole of it is in ${PRELUDE_DIR}/${design.id}/sessions/${session.id}/transcript.jsonl.` : '';
-    return `(From Prelude, not the person: this conversation began before it had a branch, when you could only read, and you're starting afresh on it here. ${now} What was said so far:${cut}\n\n${kept.join('\n\n')})`;
+    return `(From Prelude, not the person: ${why} What was said so far:${cut}\n\n${kept.join('\n\n')})`;
   };
 
   // A conversation with no branch yet (prelude/fix-something): the agent only
