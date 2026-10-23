@@ -80,6 +80,14 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   at the foot of a panel would open off the bottom), and a line in a menu
   that says something. Added for "Design Workspace" (prelude/design-workspace):
   the speech model's menu beside the microphone.
+- **Menu is a popover** (2026-10-23; was `details`): `.menu` holds a button
+  with `popovertarget` and its `.menu-list popover`, anchored with CSS anchor
+  positioning (`anchor-scope`, `position-area`, flipping to where there's
+  room, so `.up` is only where it tries first). Why: the person wanted the
+  usual menu behaviour, and the browser provides it with no script: a click
+  outside or Escape closes it (focus back on the button), one open at a time,
+  its state told to screen readers, drawn above panels that would cut it off.
+  Tab moves through rows; arrow keys wait (see open questions).
 - **Wide center** (`.center.wide`, `--measure-wide: 72rem`): a page with a
   side column, whose main column keeps a readable width beside it (46rem
   can't hold a `.split`). Added for "Project Landing Page"
@@ -120,4 +128,9 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - Should Prelude's own app (`server/public`) move onto this system, replacing
   ds/v1 + prelude.css? The renames above would need a pass over the views.
 - A dedicated pop-out glyph, and a copy glyph (Copy all stories), aren't in the set.
+- Menus: arrow keys between rows (the person chose to wait; likely Koda's
+  job, as script). The app's menus moved to the popover on 2026-10-23 (the
+  fix prelude/fixes/the-design-system-s-menu-component-was-changed-to-use-an),
+  with `ko-for`/`ko-as` for the ids; the shell's `_regions` closes a menu
+  when a row in it is pressed, which a popover alone doesn't.
 - Is the dialog needed at all? Prelude confirms in-page with a notice today.

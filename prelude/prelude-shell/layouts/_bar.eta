@@ -1,7 +1,7 @@
 <%/* The bar across the top: the way home, what the agent is working on, and a
      quick way to another project. Where the page sits (crumbs) is the page's
      own, under its region. Following a link in a menu closes the menu, since
-     the bar stays put while the page changes. */%>
+     the bar stays put while the page changes (_regions). */%>
 <header class="shell-bar" ko-item>
   <a class="shell-brand" href="/">Prelude</a>
   <span class="spacer"></span>
@@ -10,17 +10,17 @@
   <%/* A region too, pushed afresh as things start and stop waiting on the person. */%>
   <div id="waiting" class="shell-waiting" ko-region ko-focus="none"><%~ include('./_waiting', it) %></div>
   <% if (it.projects?.length) { %>
-  <details class="menu" ko-as="projects">
-    <summary class="btn small ghost"><span class="icon icon-folder" aria-hidden="true"></span>Projects</summary>
-    <ul class="menu-list">
+  <div class="menu">
+    <button class="btn small ghost" type="button" popovertarget ko-for="projects"><span class="icon icon-folder" aria-hidden="true"></span>Projects</button>
+    <ul class="menu-list" ko-as="projects" popover>
       <% for (const project of it.projects) { %>
-      <li><a href="/f/<%= project.id %>" ko-set="projects.open = false">
+      <li><a href="/f/<%= project.id %>">
         <span class="item-title"><%= project.name %></span>
         <span class="muted"><%= project.path %></span>
       </a></li>
       <% } %>
-      <li><a href="/" ko-set="projects.open = false"><span class="item-title">Open a project…</span></a></li>
+      <li><a href="/"><span class="item-title">Open a project…</span></a></li>
     </ul>
-  </details>
+  </div>
   <% } %>
 </header>

@@ -17,7 +17,7 @@
 .stage.tall { height: 22rem; display: flex; padding: 0; overflow: hidden; }
 .stage.tall > .panel { flex: 1; border: 0; border-radius: 0; }
 .stage.session { height: 34rem; }
-.stage.menu-room { min-height: 12rem; align-items: flex-start; }
+.stage > .menu-list { inline-size: fit-content; }
 .stage dialog { position: static; }
 
 /* A stand-in block, to show what a layout primitive does with its children */

@@ -369,6 +369,13 @@ build's, so it doesn't count as the design changing.
   were. No state shows a page built and then changed again, so R-p4w has no
   shown-on (see the design session of 2026-10-21).
 
+- (fix, 2026-10-23, prelude/fixes/the-design-system-s-menu-component-was-changed-to-use-an)
+  A build session's sessions menu (`server/views/_chat.eta`) is the design
+  system's popover now, not `details`, as every app menu is: the system's
+  menu changed, and a `details` one had lost its placing. It floats above the
+  panels and closes on a click outside, Escape, or a row pressed. Views and
+  states unchanged.
+
 ## Open questions
 
 - **How Differences marks what changed**: a pixel overlay on the built

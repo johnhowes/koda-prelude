@@ -33,17 +33,17 @@
        lives here rather than in any project. Opens upwards: the composer is
        at the foot of the window. */%>
   <% const model = (it.speechModels ?? []).find(m => m.id === d.model); %>
-  <details class="menu start up" ko-as="modelMenu">
-    <summary class="icon-btn small" title="The speech model dictation uses"><span class="icon icon-expand" aria-hidden="true"></span><span class="sr-only">Speech model</span></summary>
-    <div class="menu-list">
+  <div class="menu start up">
+    <button class="icon-btn small" type="button" popovertarget ko-for="modelMenu" title="The speech model dictation uses"><span class="icon icon-expand" aria-hidden="true"></span><span class="sr-only">Speech model</span></button>
+    <div class="menu-list" ko-as="modelMenu" popover>
       <p class="menu-note muted">Speech model: <%= model ? `${model.title}, ${model.size}` : d.model %>, kept on this computer.<% if (d.switchingTo && d.switchingTo !== d.model) { %> Getting <%= (it.speechModels ?? []).find(m => m.id === d.switchingTo)?.title ?? d.switchingTo %> to replace it.<% } %></p>
-      <a href="<%= base %>/dictation" ko-target="modal?" ko-set="modelMenu.open = false"><span class="item-title">Change model…</span><span class="muted">Downloads the one you choose, then removes this one</span></a>
+      <a href="<%= base %>/dictation" ko-target="modal?"><span class="item-title">Change model…</span><span class="muted">Downloads the one you choose, then removes this one</span></a>
       <div ko-form="<%= base %>/dictation/remove" ko-method="post" ko-target="dictation">
         <input type="hidden" name="status" value="none">
         <button type="submit"><span class="item-title">Remove the model</span><span class="muted">Frees <%= model?.size ?? 'its space' %>. Dictation is off until you set it up again.</span></button>
       </div>
     </div>
-  </details>
+  </div>
   <span class="muted" ko-as="heard" role="status"<% if (!d.error) { %> hidden<% } %>><%= d.error ?? '' %></span>
   <script type="koda">
     const { dictate, audio, typed, heard, onRemove } = koda.scope();
