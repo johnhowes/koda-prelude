@@ -21,9 +21,12 @@ literal colours, spaces or radii, and never write a colour outside tokens.css.
 **3. Quiet by default; colour means something.** Text steps back in two grades:
 `.secondary` explains, `.muted` annotates. `--good`, `--warn` and `--danger` appear
 only when there is something to act on, and never alone: the words say it too.
+Series colours (`--series-1` … `--series-5`) tell things apart, a flow's parts
+or a chart's lines; they never mean good, warn or danger, and always have a label.
 *Why:* if everything is loud, the one failing check isn't.
-- Do: `<span class="pill warn">Behind main</span>`.
-- Don't: a red dot with no words, or green for "nothing happened".
+- Do: `<span class="pill warn">Behind main</span>`; a flow's part named beside its series dot.
+- Don't: a red dot with no words, green for "nothing happened", or a series
+  colour standing in for a state.
 
 **4. Say what happened, then what to do.** Messages are plain sentences addressed
 to the person: the fact, then the next step. No blame, no jargon the person didn't
@@ -95,6 +98,28 @@ that's rare: a slow answer is first a thing to make fast.
 *Why:* a press with no answer reads as a press that didn't take, and gets pressed again.
 - Do: `<a class="btn" href="…/publish" ko-target="modal?">`, and nothing else.
 - Don't: a "Loading…" label swapped in by script, or a `ko-defer` around a whole page.
+
+**13. Rich components are built once, the same way in every stack.** A rich
+component is drawn from a model rather than written by hand: a flow, a map, a
+chart.
+- Its HTML file in `system/components/` is the contract: every stack produces
+  exactly that markup.
+- Each stack renders it from a model with one partial: an Eta partial here
+  (`_visual-flow.eta`), a tag helper in .NET. The model arrives ready to print
+  (lanes, series, what spans where); the partial only prints it.
+- Script only for what's truly imperative (measuring, drawing on a canvas),
+  inside the partial as `<script type="koda">`, with its parts named by
+  `ko-as`, `watch` for what depends on values and `onRemove` for anything it
+  attached outside itself (Koda's reference, "A whole view"). Rule 9 first:
+  the flow and the map need none.
+- No custom elements, except a host's renderers.
+- A change to one changes its HTML file, components.css and the gallery in the
+  same turn.
+*Why:* a component several stacks draw drifts unless one file says what it is,
+and a partial is where a person looks for markup.
+- Do: `<%~ include('./_visual-flow', flow) %>` printing `components/flow.html`'s markup.
+- Don't: a `<prelude-flow>` element, a flow assembled in a handler, or a
+  script that lays out what CSS can.
 
 ## Words
 

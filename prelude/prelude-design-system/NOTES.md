@@ -43,7 +43,14 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
 - **New tokens** to keep literals out of components: `--backdrop`, `--space-half`,
   `--control-sm/md/lg`, `--measure`, `--measure-narrow`, `--border-width`,
   weights, leadings, `--duration-*` (zeroed under reduced motion). Dropped
-  `--series-*` and `--text-4xl` (Prelude draws no charts or display type).
+  `--text-4xl` (Prelude sets no display type).
+- **Series colours back** (2026-10-23, the person's decision): `--series-1…5`
+  in both themes. They'd been dropped only because nothing used them; flows
+  and charts in agent chats need things told apart. Guideline 3: they tell
+  things apart, never mean good, warn or danger, and always have a label.
+  Hues moved off ds/v1's (blue 255, magenta 335, teal 195, olive 115, violet
+  295): ds/v1's first was the accent's sienna and two sat by good and warn,
+  so a flow's first part read as "this". ds/v1 should take the new values.
 - **Icons**: 32 of ds/v1's Material Symbols, the ones Prelude's domain needs;
   `conversation`→`session`, `activity`→`history`. Pop out should use `external`,
   not `expand` (expand means "show more below").
@@ -119,6 +126,24 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   label goes above its parts in a narrow map (container query). Added for
   "Architecture" (prelude/architecture): a project's parts. Its words
   (architecture, part, decision, flow) are in the Words table too.
+- **Rich visuals in agent chats** (2026-10-23), for D-v3x's `prelude-flow-1`
+  and `prelude-map-1`:
+  - **Flow** (`.flow`, `.many`, `.flow-title`, `.flow-parts`, `.flow-part`,
+    `.flow-steps`, `.flow-step`, `.flow-box`, `.flow-text`, `.flow-pass` with
+    `.back`/`.down`; `--lanes`, `--lane`, `--series`, `--from`, `--to`): a
+    column per part over its line, a row per step, what's handed on as an
+    arrow. Under 34rem (58rem with `.many`, 5+ parts) a numbered list where
+    each step names its part, so it fits a chat column; 4 parts get columns
+    on a page held to `--measure`. No script: the model gives every number,
+    CSS only places.
+  - **Map markers**: `.touched` (solid accent, inset stripe, "Changed") after
+    a build or fix turn; `.proposed` (dashed accent, "Would change") for an
+    ask's proposal; the other parts step back (`:has()`).
+  - **Guideline 13, rich components**: the HTML file is the contract, one
+    partial per stack renders it from a model, script only if truly
+    imperative (`type="koda"`, `ko-as`, `watch`, `onRemove`), no custom
+    elements but a host's renderers, gallery in the same turn. Why: the
+    person wants every stack to build them the same way.
 - **Words**: Prelude's vocabulary and the words to avoid are in guidelines.md.
   "Project", not "folder" (the person's decision, 2026-10-16); the table was
   changed for "Project Landing Page" (prelude/project-landing-page).
@@ -134,3 +159,10 @@ designs, sessions, the design surface), drafted from what Prelude already ships:
   with `ko-for`/`ko-as` for the ids; the shell's `_regions` closes a menu
   when a row in it is pressed, which a popover alone doesn't.
 - Is the dialog needed at all? Prelude confirms in-page with a notice today.
+- "What's handed on" in `prelude-flow-1` (the person wants it): an optional
+  addition, so no new tag (D-v3x). Suggested: a step may end ` -> <what>`
+  (`2. turns: saves it to the transcript -> the entry`), the last ` -> ` on
+  the line; the shared flow parser reads it in `flows/*.md` too. It's code
+  (visuals, views), so a build or fix makes it; `.flow-pass` stays optional.
+- The app draws from `server/public/ds/v1`; the flow, the markers and the
+  series values are copied there when they're built (agreed).

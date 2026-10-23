@@ -38,6 +38,16 @@
     --danger:      light-dark(oklch(0.55 0.18 27),  oklch(0.72 0.16 25));
     --danger-soft: light-dark(oklch(0.96 0.03 25),  oklch(0.3 0.06 25));
 
+    /* Series: tell things apart (a flow's parts, a chart's lines), distinct
+       in hue and legible on both surfaces. They mean nothing, so their hues
+       keep clear of the accent's (45) and good, warn and danger's (150, 75,
+       25); a label says which is which. Neighbours differ most. */
+    --series-1: light-dark(oklch(0.55 0.14 255), oklch(0.72 0.12 255)); /* blue */
+    --series-2: light-dark(oklch(0.55 0.15 335), oklch(0.73 0.13 335)); /* magenta */
+    --series-3: light-dark(oklch(0.56 0.09 195), oklch(0.76 0.1 195));  /* teal */
+    --series-4: light-dark(oklch(0.56 0.1 115),  oklch(0.78 0.11 115)); /* olive */
+    --series-5: light-dark(oklch(0.52 0.15 295), oklch(0.72 0.12 295)); /* violet */
+
     /* Type */
     --font-sans: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;

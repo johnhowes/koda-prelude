@@ -301,33 +301,6 @@
     </section>
 
     <section class="stack gap-3 specimen">
-      <h3>Map</h3>
-      <p class="secondary">The parts of something, in layers read from top to bottom; each part opens its page.</p>
-      <div class="stage">
-        <figure class="stack gap-2">
-          <div class="map" aria-label="Prelude’s parts">
-            <section class="map-layer" aria-label="Server">
-              <h3 class="map-label">Server</h3>
-              <ul class="map-nodes">
-                <li><a class="map-node" href="#"><span class="map-node-title">Routes</span><span class="muted">Every URL Prelude answers</span></a></li>
-                <li><a class="map-node" href="#" aria-current="true"><span class="map-node-title">Turns</span><span class="muted">One turn per design at a time</span></a></li>
-                <li><a class="map-node warn" href="#"><span class="map-node-title">Design host<span class="pill warn">1 to look at</span></span><span class="muted">Serves each design on its own origin</span></a></li>
-              </ul>
-            </section>
-            <section class="map-layer" aria-label="Outside Prelude">
-              <h3 class="map-label">Outside Prelude</h3>
-              <ul class="map-nodes">
-                <li><a class="map-node outside" href="#"><span class="map-node-title">Git</span><span class="muted">Branches, worktrees, merges</span></a></li>
-                <li><a class="map-node outside" href="#"><span class="map-node-title">Claude CLI</span><span class="muted">The agent</span></a></li>
-              </ul>
-            </section>
-          </div>
-          <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="stack gap-3 specimen">
       <h3>Panel, toolbar and empty</h3>
       <p class="secondary">A panel fills its share of a layout; its toolbar runs across the top. A <code>.panel-head</code> holds the toolbar and its notices as one part, when they refresh apart from the body.</p>
       <div class="stage tall">
@@ -368,6 +341,191 @@
             </div>
           </div>
         </section>
+      </div>
+    </section>
+  </div>
+
+  <div class="card gap-5">
+    <h2>Visuals</h2>
+    <p class="secondary">Rich components, drawn from a model by one partial in each stack (guideline 13). No script; they answer to their container, so they fit a chat column and a page held to <code>--measure</code>.</p>
+
+    <section class="stack gap-3 specimen">
+      <h3>Flow</h3>
+      <p class="secondary">A flow’s steps through the parts that do them: a column per part, a row per step, and what each step hands on as an arrow to the next one’s part. Each part has a series colour, always beside its name. Narrow the stage: under 34rem (58rem for five parts or more) it becomes a numbered list, each step naming its part.</p>
+      <div class="stage resizable">
+        <figure class="flow" style="--lanes: 4">
+          <figcaption class="flow-title">A visual in a message</figcaption>
+          <ul class="flow-parts" aria-hidden="true">
+            <li class="flow-part" style="--series: var(--series-1)">claude</li>
+            <li class="flow-part" style="--series: var(--series-2)">turns</li>
+            <li class="flow-part" style="--series: var(--series-3)">views</li>
+            <li class="flow-part" style="--series: var(--series-4)">visuals</li>
+          </ul>
+          <ol class="flow-steps">
+            <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+              <div class="flow-box"><span class="flow-part">claude</span><span class="flow-text">Writes a fenced <code>prelude-flow-1</code> block in its message</span></div>
+              <p class="flow-pass" style="--from: 1; --to: 3">the message</p>
+            </li>
+            <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+              <div class="flow-box"><span class="flow-part">turns</span><span class="flow-text">Saves it to the transcript as written, and streams it</span></div>
+              <p class="flow-pass" style="--from: 2; --to: 4">the entry</p>
+            </li>
+            <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+              <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Splits the message on its top-level fences</span></div>
+              <p class="flow-pass" style="--from: 3; --to: 5">each block</p>
+            </li>
+            <li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+              <div class="flow-box"><span class="flow-part">visuals</span><span class="flow-text">Parses it and checks its part ids</span></div>
+              <p class="flow-pass back" style="--from: 3; --to: 5">a model</p>
+            </li>
+            <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+              <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Renders it with its partial and the design system</span></div>
+            </li>
+          </ol>
+        </figure>
+      </div>
+      <p class="secondary">A step handing on to its own part (<code>.down</code>), and a hand-off back across a part (git to routes):</p>
+      <div class="stage">
+        <figure class="flow" style="--lanes: 3">
+          <figcaption class="flow-title">Approving a design</figcaption>
+          <ul class="flow-parts" aria-hidden="true">
+            <li class="flow-part" style="--series: var(--series-1)">routes</li>
+            <li class="flow-part" style="--series: var(--series-2)">check</li>
+            <li class="flow-part" style="--series: var(--series-3)">git</li>
+          </ul>
+          <ol class="flow-steps">
+            <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+              <div class="flow-box"><span class="flow-part">routes</span><span class="flow-text">Takes Approve for a design</span></div>
+              <p class="flow-pass" style="--from: 1; --to: 3">the design</p>
+            </li>
+            <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+              <div class="flow-box"><span class="flow-part">check</span><span class="flow-text">Renders every page in every state</span></div>
+              <p class="flow-pass down" style="--from: 2; --to: 3">the screens</p>
+            </li>
+            <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+              <div class="flow-box"><span class="flow-part">check</span><span class="flow-text">Saves them as approved</span></div>
+              <p class="flow-pass" style="--from: 2; --to: 4">the files</p>
+            </li>
+            <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+              <div class="flow-box"><span class="flow-part">git</span><span class="flow-text">Commits them on the design’s branch</span></div>
+              <p class="flow-pass back" style="--from: 1; --to: 4">the commit</p>
+            </li>
+            <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+              <div class="flow-box"><span class="flow-part">routes</span><span class="flow-text">Shows the design as approved</span></div>
+            </li>
+          </ol>
+        </figure>
+      </div>
+      <p class="secondary">In a chat column:</p>
+      <div class="stage chat-column">
+        <ol class="transcript">
+          <li class="entry agent">
+            <div class="stack gap-3">
+              <div class="prose"><p>Here’s how a visual gets from my message to the chat:</p></div>
+              <figure class="flow" style="--lanes: 4">
+                <ul class="flow-parts" aria-hidden="true">
+                  <li class="flow-part" style="--series: var(--series-1)">claude</li>
+                  <li class="flow-part" style="--series: var(--series-2)">turns</li>
+                  <li class="flow-part" style="--series: var(--series-3)">views</li>
+                  <li class="flow-part" style="--series: var(--series-4)">visuals</li>
+                </ul>
+                <ol class="flow-steps">
+                  <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+                    <div class="flow-box"><span class="flow-part">claude</span><span class="flow-text">Writes a fenced <code>prelude-flow-1</code> block in its message</span></div>
+                    <p class="flow-pass" style="--from: 1; --to: 3">the message</p>
+                  </li>
+                  <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+                    <div class="flow-box"><span class="flow-part">turns</span><span class="flow-text">Saves it to the transcript as written, and streams it</span></div>
+                    <p class="flow-pass" style="--from: 2; --to: 4">the entry</p>
+                  </li>
+                  <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+                    <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Splits the message on its top-level fences</span></div>
+                    <p class="flow-pass" style="--from: 3; --to: 5">each block</p>
+                  </li>
+                  <li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+                    <div class="flow-box"><span class="flow-part">visuals</span><span class="flow-text">Parses it and checks its part ids</span></div>
+                    <p class="flow-pass back" style="--from: 3; --to: 5">a model</p>
+                  </li>
+                  <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+                    <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Renders it with its partial and the design system</span></div>
+                  </li>
+                </ol>
+              </figure>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>Map</h3>
+      <p class="secondary">The parts of something, in layers read from top to bottom; each part opens its page.</p>
+      <div class="stage">
+        <figure class="stack gap-2">
+          <div class="map" aria-label="Prelude’s parts">
+            <section class="map-layer" aria-label="Server">
+              <h3 class="map-label">Server</h3>
+              <ul class="map-nodes">
+                <li><a class="map-node" href="#"><span class="map-node-title">Routes</span><span class="muted">Every URL Prelude answers</span></a></li>
+                <li><a class="map-node" href="#" aria-current="true"><span class="map-node-title">Turns</span><span class="muted">One turn per design at a time</span></a></li>
+                <li><a class="map-node warn" href="#"><span class="map-node-title">Design host<span class="pill warn">1 to look at</span></span><span class="muted">Serves each design on its own origin</span></a></li>
+              </ul>
+            </section>
+            <section class="map-layer" aria-label="Outside Prelude">
+              <h3 class="map-label">Outside Prelude</h3>
+              <ul class="map-nodes">
+                <li><a class="map-node outside" href="#"><span class="map-node-title">Git</span><span class="muted">Branches, worktrees, merges</span></a></li>
+                <li><a class="map-node outside" href="#"><span class="map-node-title">Claude CLI</span><span class="muted">The agent</span></a></li>
+              </ul>
+            </section>
+          </div>
+          <figcaption class="muted">Each part uses parts in its own layer or below it.</figcaption>
+        </figure>
+      </div>
+      <p class="secondary">A change on the map, in a chat column. After a build or fix turn, the parts it changed (<code>.touched</code>, “Changed”); for an ask’s proposal, the parts it would change (<code>.proposed</code>, dashed, “Would change”). The rest step back.</p>
+      <div class="grid gap-3" style="--min: 20rem">
+        <div class="stage">
+          <figure class="stack gap-2">
+            <div class="map" aria-label="The parts this build changed">
+              <section class="map-layer" aria-label="Pages">
+                <h3 class="map-label">Pages</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node touched" href="#"><span class="map-node-title">Views<span class="pill accent">Changed</span></span><span class="muted">2 files</span></a></li>
+                  <li><a class="map-node" href="#"><span class="map-node-title">Pages</span></a></li>
+                </ul>
+              </section>
+              <section class="map-layer" aria-label="Agent and live state">
+                <h3 class="map-label">Agent and live state</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node" href="#"><span class="map-node-title">Agent</span></a></li>
+                  <li><a class="map-node touched" href="#"><span class="map-node-title">Visuals<span class="pill accent">Changed</span></span><span class="muted">1 file</span></a></li>
+                </ul>
+              </section>
+            </div>
+            <figcaption class="muted">This build changed 2 parts.</figcaption>
+          </figure>
+        </div>
+        <div class="stage">
+          <figure class="stack gap-2">
+            <div class="map" aria-label="The parts this proposal would change">
+              <section class="map-layer" aria-label="Pages">
+                <h3 class="map-label">Pages</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node proposed" href="#"><span class="map-node-title">Views<span class="pill accent">Would change</span></span><span class="muted">A partial for charts</span></a></li>
+                  <li><a class="map-node" href="#"><span class="map-node-title">Pages</span></a></li>
+                </ul>
+              </section>
+              <section class="map-layer" aria-label="Agent and live state">
+                <h3 class="map-label">Agent and live state</h3>
+                <ul class="map-nodes">
+                  <li><a class="map-node" href="#"><span class="map-node-title">Agent</span></a></li>
+                  <li><a class="map-node proposed" href="#"><span class="map-node-title">Visuals<span class="pill accent">Would change</span></span><span class="muted">A new kind, chart</span></a></li>
+                </ul>
+              </section>
+            </div>
+            <figcaption class="muted">This proposal would change 2 parts.</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
   </div>

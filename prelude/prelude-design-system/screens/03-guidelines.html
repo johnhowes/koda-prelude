@@ -55,10 +55,10 @@
 
     <section class="stack gap-3 specimen">
       <h3>3. Quiet by default; colour means something</h3>
-      <p class="secondary">If everything is loud, the one failing check isn’t. Colour is never the only signal.</p>
+      <p class="secondary">If everything is loud, the one failing check isn’t. Colour is never the only signal. Series colours tell things apart (a flow’s parts, a chart’s lines); they never mean good, warn or danger, and always have a label.</p>
       <div class="grid gap-3 rule-pair" style="--min: 16rem">
-        <div class="stack gap-1 do"><strong>Do</strong><span><span class="pill warn">Behind main</span></span></div>
-        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A red dot with no words, or green for “nothing happened”.</span></div>
+        <div class="stack gap-1 do"><strong>Do</strong><span class="cluster gap-3"><span class="pill warn">Behind main</span><span class="flow-part" style="--series: var(--series-2)">turns</span></span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A red dot with no words, green for “nothing happened”, or a series colour standing in for a state.</span></div>
       </div>
     </section>
 
@@ -138,6 +138,22 @@
         <div class="stack gap-1 dont"><strong>Don’t</strong><span>A “Loading…” label swapped in by script, or <code>ko-defer</code> around a whole page.</span></div>
       </div>
     </section>
+
+    <section class="stack gap-3 specimen">
+      <h3>13. Rich components are built once, the same way in every stack</h3>
+      <p class="secondary">A rich component is drawn from a model: a flow, a map, a chart. A component several stacks draw drifts unless one file says what it is, and a partial is where a person looks for markup.</p>
+      <ul class="stack gap-1 secondary rule-list">
+        <li>Its HTML file in <code>system/components/</code> is the contract: every stack produces exactly that markup.</li>
+        <li>Each stack renders it from a model with one partial: an Eta partial here, a tag helper in .NET. The model arrives ready to print; the partial only prints it.</li>
+        <li>Script only for what’s truly imperative, inside the partial as <code>&lt;script type="koda"&gt;</code> with <code>ko-as</code>, <code>watch</code> and <code>onRemove</code> (Koda’s reference, “A whole view”). The flow and the map need none.</li>
+        <li>No custom elements, except a host’s renderers.</li>
+        <li>A change to one changes its HTML file, components.css and this gallery in the same turn.</li>
+      </ul>
+      <div class="grid gap-3 rule-pair" style="--min: 16rem">
+        <div class="stack gap-1 do"><strong>Do</strong><span><code>&lt;%~ include('./_visual-flow', flow) %&gt;</code>, printing <code>components/flow.html</code>’s markup.</span></div>
+        <div class="stack gap-1 dont"><strong>Don’t</strong><span>A <code>&lt;prelude-flow&gt;</code> element, a flow assembled in a handler, or a script that lays out what CSS can.</span></div>
+      </div>
+    </section>
   </div>
 
   <div class="card">
@@ -146,7 +162,7 @@
     <table class="table">
       <thead><tr><th scope="col">Say</th><th scope="col">Not</th><th scope="col">Because</th></tr></thead>
       <tbody>
-        <tr><td>folder</td><td class="muted">project, workspace, repo</td><td>It’s a folder on disk.</td></tr>
+        <tr><td>project</td><td class="muted">folder, workspace, repo</td><td>What the person opens: a folder, usually a repo.</td></tr>
         <tr><td>design</td><td class="muted">project, mockup, prototype</td><td>One feature, grown over sessions.</td></tr>
         <tr><td>session</td><td class="muted">chat, conversation, thread</td><td>One sitting with the agent on a design.</td></tr>
         <tr><td>screen, page</td><td class="muted">mockup, artboard, frame, view</td><td>What the person sees; a view is code.</td></tr>
@@ -154,6 +170,9 @@
         <tr><td>design system</td><td class="muted">theme, style guide, UI kit</td><td>The app’s vocabulary.</td></tr>
         <tr><td>app shell, layout</td><td class="muted">template, chrome, frame</td><td>Where every design renders.</td></tr>
         <tr><td>the agent</td><td class="muted">AI, assistant, bot, Claude</td><td>A role, not a brand.</td></tr>
+        <tr><td>architecture</td><td class="muted">system design, tech spec</td><td>The project’s parts, principles, decisions and flows.</td></tr>
+        <tr><td>part</td><td class="muted">module, component, service, box</td><td>One piece of the architecture; “component” is the design system’s.</td></tr>
+        <tr><td>flow</td><td class="muted">sequence, trace</td><td>A request or a job, step by step through the parts.</td></tr>
         <tr><td>build</td><td class="muted">generate, compile, deploy</td><td>Turning a design into the app’s code.</td></tr>
         <tr><td>story</td><td class="muted">ticket, task, issue</td><td>What’s left to build, as text.</td></tr>
         <tr><td>check, render</td><td class="muted">test, validate</td><td>Every page in every state is rendered.</td></tr>

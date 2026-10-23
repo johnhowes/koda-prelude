@@ -1,0 +1,46 @@
+<!-- Flow: a flow's steps through the parts that do them (a request, a job),
+     drawn from a model by one partial (guideline 13). Wide, a column per part
+     and a row per step; narrow (a chat column), a numbered list, each step
+     naming its part. No script.
+     The model gives, ready to print:
+     - --lanes on .flow: how many parts. Add .many for five or more, which
+       need a wider container (58rem) before they go into columns.
+     - each part, in order, once in .flow-parts with its --series
+       (var(--series-1) … var(--series-5), the sixth part again 1).
+     - each step: --lane (its part's column) and its part's --series; the
+       part's name (.flow-part) and what it does (.flow-text).
+     - what a step hands on to the next, if anything: .flow-pass with --from
+       and --to, the grid lines it spans (from the smaller lane to the larger
+       + 1), .back when the next step's part is to the left, .down when it is
+       the same part. The last step hands on nothing.
+     .flow-parts is aria-hidden: each step names its part itself. -->
+<figure class="flow" style="--lanes: 4">
+  <figcaption class="flow-title">A visual in a message</figcaption>
+  <ul class="flow-parts" aria-hidden="true">
+    <li class="flow-part" style="--series: var(--series-1)">claude</li>
+    <li class="flow-part" style="--series: var(--series-2)">turns</li>
+    <li class="flow-part" style="--series: var(--series-3)">views</li>
+    <li class="flow-part" style="--series: var(--series-4)">visuals</li>
+  </ul>
+  <ol class="flow-steps">
+    <li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+      <div class="flow-box"><span class="flow-part">claude</span><span class="flow-text">Writes a fenced <code>prelude-flow-1</code> block in its message</span></div>
+      <p class="flow-pass" style="--from: 1; --to: 3">the message</p>
+    </li>
+    <li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+      <div class="flow-box"><span class="flow-part">turns</span><span class="flow-text">Saves it to the transcript as written, and streams it</span></div>
+      <p class="flow-pass" style="--from: 2; --to: 4">the entry</p>
+    </li>
+    <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+      <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Splits the message on its top-level fences</span></div>
+      <p class="flow-pass" style="--from: 3; --to: 5">each block</p>
+    </li>
+    <li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+      <div class="flow-box"><span class="flow-part">visuals</span><span class="flow-text">Parses it and checks its part ids</span></div>
+      <p class="flow-pass back" style="--from: 3; --to: 5">a model</p>
+    </li>
+    <li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+      <div class="flow-box"><span class="flow-part">views</span><span class="flow-text">Renders it with its partial and the design system</span></div>
+    </li>
+  </ol>
+</figure>
