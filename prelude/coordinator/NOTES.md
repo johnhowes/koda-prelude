@@ -57,6 +57,13 @@ chat), done.
    stand-in: the build uses the app’s `_chat` with its session menu, Tools,
    queue, dictation and images. Layout rules are the app’s `.design-page`
    ones, copied for `.plan` in styles.css.
+14. **The planning chat draws visuals** (the person, 2026-10-23), as every
+   chat does (D-v3x): the planning prompt gets the vocabulary. The agent maps
+   the parts a plan reaches when it drafts (typical) and explains a wait
+   with a flow (build-stopped) (R-w5c); Prelude maps the parts a merged
+   build step changed (done, R-u3t). The app’s `_message` and `_visual-*`
+   partials are copied unchanged into `views/plans/`, so the transcript
+   stand-in draws exactly what the app draws.
 8. New plan answers with the list, the new plan at the top while its steps
    are drafted (the plan’s page needed fields a bare post doesn’t carry).
 9. **One build per design** (the person, 2026-10-23: no build covers two

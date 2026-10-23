@@ -33,7 +33,27 @@
               { "type": "user", "message": "Can Fix Something’s build go ahead without it? Its screens are approved." },
               { "type": "tool", "name": "Read", "summary": "prelude/fix-something/routes.json" },
               { "type": "tool", "name": "Grep", "summary": "_visual- in prelude/fix-something/" },
-              { "type": "text", "html": "<p>Not yet. Fix Something’s conversation pages include <code>_visual-flow</code> and <code>_visual-map</code>, the partials Design Workspace’s build is making, and the parser that checks a block’s parts comes with them. Built before them, its pages wouldn’t render.</p><p>Design Workspace’s build stopped on a page, not a design question: send it a message in <a href=\"/f/prelude/d/design-workspace/s/20261024-1106-n1ux\">its build</a> and it carries on. Fix Something’s and the Build page’s builds start by themselves once it’s merged.</p>" }
+              { "type": "text", "pieces": [
+                { "kind": "text", "html": "<p>Not yet. Fix Something’s conversation pages draw visuals the way every chat will, and Design Workspace’s build makes the pieces they need:</p>" },
+                { "kind": "flow", "flow": {
+                  "title": "A visual in a message",
+                  "lanes": 4, "many": false,
+                  "parts": [
+                    { "title": "Claude Code CLI", "url": "/f/prelude/architecture/parts/claude", "series": 1 },
+                    { "title": "Turns", "url": "/f/prelude/architecture/parts/turns", "series": 2 },
+                    { "title": "Views", "url": "/f/prelude/architecture/parts/views", "series": 3 },
+                    { "title": "Visuals", "url": "/f/prelude/architecture/parts/visuals", "series": 4 }
+                  ],
+                  "steps": [
+                    { "lane": 1, "series": 1, "part": { "title": "Claude Code CLI", "url": "/f/prelude/architecture/parts/claude" }, "html": "Writes a fenced <code>prelude-flow-1</code> block in its message" },
+                    { "lane": 2, "series": 2, "part": { "title": "Turns", "url": "/f/prelude/architecture/parts/turns" }, "html": "Saves it to the transcript as written" },
+                    { "lane": 3, "series": 3, "part": { "title": "Views", "url": "/f/prelude/architecture/parts/views" }, "html": "Splits the message on its fences: <em>being built</em>" },
+                    { "lane": 4, "series": 4, "part": { "title": "Visuals", "url": "/f/prelude/architecture/parts/visuals" }, "html": "Parses the block and checks its parts: <em>being built</em>" },
+                    { "lane": 3, "series": 3, "part": { "title": "Views", "url": "/f/prelude/architecture/parts/views" }, "html": "Draws it with <code>_visual-flow</code> or <code>_visual-map</code>: <em>being built</em>" }
+                  ]
+                } },
+                { "kind": "text", "html": "<p>Built before those, Fix Something’s pages wouldn’t render. Design Workspace’s build stopped on a page, not a design question: send it a message in <a href=\"/f/prelude/d/design-workspace/s/20261024-1106-n1ux\">its build</a> and it carries on. Fix Something’s and the Build page’s builds start by themselves once it’s merged.</p>" }
+              ] }
             ]
           },
           "steps": [

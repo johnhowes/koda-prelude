@@ -34,6 +34,12 @@
 - **R-d6m.** What happens as a plan runs (a step starting, a pull request merged, a build stopping) is said in the plan’s session, and the agent is told it with the next message.
   *shown-on: /f/:project/plans/:plan @ build-stopped*
   *proposed*
+- **R-w5c.** In a plan’s session the agent draws as in any session: a map of the parts the plan reaches when it drafts or changes the plan, and a flow when it explains why one step waits for another; a few lines of text when that’s enough.
+  *shown-on: /f/:project/plans/:plan @ typical*
+  *proposed*
+- **R-u3t.** When a step that changed the app’s code is merged, the plan’s session shows the parts it changed on the map, without the agent drawing it.
+  *shown-on: /f/:project/plans/:plan @ done*
+  *proposed*
 - **R-e2q.** A plan is finished when every one of its steps is merged into main.
   *shown-on: /f/:project/plans/:plan @ done*
   *proposed*

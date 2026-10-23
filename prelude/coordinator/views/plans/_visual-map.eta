@@ -1,0 +1,41 @@
+<%/* A map of the project's parts, with some marked: the design system's map
+     (components/map.html, guideline 13), printed from its model. Two things
+     draw one:
+       - a prelude-map-1 block the agent wrote: the parts it names are
+         outlined (.named), each with its note, and nothing is said about
+         change, since the block can't say whether it proposes one or only
+         explains (the person, 2026-10-23);
+       - Prelude itself, after a turn that changed the app's code: the parts
+         whose files changed (.touched, "Changed"), no agent involved.
+     It's the whole map, as the architecture of the session's branch has it
+     now. The parts it leaves alone step back to their names, so a chat
+     column holds it. Each part links to its page in the architecture.
+
+     With no mark it's the plain map, every part with its summary, as the
+     Architecture page draws it (views shares this partial).
+
+     The model, ready to print: label (the map's name), mark ('touched',
+     'named' or none), count (parts marked), and layers, each with title
+     and parts (id, title, url, summary, outside, marked, note); `target`,
+     if given, is the region a part's page opens in (the chat's drawer; the
+     Architecture page gives none, so its parts open as pages). */%>
+<% const parts = n => n === 1 ? '1 part' : `${n} parts`;
+   const said = it.mark === 'touched' ? `${parts(it.count)} changed. ` : ''; %>
+<figure class="stack gap-2">
+  <div class="map" aria-label="<%= it.label %>">
+    <% for (const layer of it.layers) { %>
+    <section class="map-layer" aria-label="<%= layer.title %>">
+      <h3 class="map-label"><%= layer.title %></h3>
+      <ul class="map-nodes">
+        <% for (const part of layer.parts) { %>
+        <li><a class="map-node<%= part.outside ? ' outside' : '' %><%= part.marked ? ` ${it.mark}` : '' %>" href="<%= part.url %>"<% if (it.target) { %> ko-target="<%= it.target %>"<% } %>>
+          <span class="map-node-title"><%= part.title %><% if (part.marked && it.mark === 'touched') { %><span class="pill accent">Changed</span><% } %></span>
+          <% if (part.marked || !it.mark) { %><span class="muted"><%= part.note ?? part.summary %></span><% } %>
+        </a></li>
+        <% } %>
+      </ul>
+    </section>
+    <% } %>
+  </div>
+  <figcaption class="muted"><%= said %>Read from the top: each part uses parts in its own layer or below it.</figcaption>
+</figure>

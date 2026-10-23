@@ -1,0 +1,30 @@
+<%/* A prelude-flow-1 block, drawn: the design system's flow
+     (components/flow.html, guideline 13), printed from its model. Each part
+     links to its page in the architecture. The column heads are for the eye
+     (aria-hidden, out of the tab order); each step names its part as a link,
+     shown when the flow is a list, and when it has focus.
+
+     The model, ready to print (visuals.js): title (if the block had one),
+     lanes, many (five parts or more); parts in order, each with title, url
+     and series (1 to 5); steps, each with lane, series, part (title, url),
+     html (its words, inline markdown rendered), and pass when it hands
+     something on (text, from, to, back, down). Version 1 has no hand-ons, so
+     no block draws arrows yet. `target`, if given, is the region the part's
+     page opens in (the chat's drawer). */%>
+<% const aim = it.target ? ` ko-target="${it.target}"` : ''; %>
+<figure class="flow<%= it.many ? ' many' : '' %>" style="--lanes: <%= it.lanes %>">
+  <% if (it.title) { %><figcaption class="flow-title"><%= it.title %></figcaption><% } %>
+  <ul class="flow-parts" aria-hidden="true">
+    <% for (const part of it.parts) { %>
+    <li class="flow-part" style="--series: var(--series-<%= part.series %>)"><a href="<%= part.url %>"<%~ aim %> tabindex="-1"><%= part.title %></a></li>
+    <% } %>
+  </ul>
+  <ol class="flow-steps">
+    <% for (const step of it.steps) { %>
+    <li class="flow-step" style="--lane: <%= step.lane %>; --series: var(--series-<%= step.series %>)">
+      <div class="flow-box"><a class="flow-part" href="<%= step.part.url %>"<%~ aim %>><%= step.part.title %></a><span class="flow-text"><%~ step.html %></span></div>
+      <% if (step.pass) { %><p class="flow-pass<%= step.pass.back ? ' back' : '' %><%= step.pass.down ? ' down' : '' %>" style="--from: <%= step.pass.from %>; --to: <%= step.pass.to %>"><%= step.pass.text %></p><% } %>
+    </li>
+    <% } %>
+  </ol>
+</figure>

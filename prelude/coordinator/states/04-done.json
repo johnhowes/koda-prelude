@@ -25,7 +25,44 @@
               { "type": "user", "message": "Agent sessions, build sessions especially, should show rich visuals in the chat: flow diagrams and maps of the parts a change touches, drawn with our own design system." },
               { "type": "text", "html": "<p>I’ve drafted 8 steps, on the right. Change any prompt there, or tell me here. Nothing starts until you start the plan.</p>" },
               { "type": "note", "says": "You started the plan.", "when": "23 Oct 12:51" },
-              { "type": "note", "says": "Pull request #63 was merged: Build Design Workspace is in main. The Build page’s build and Build Fix Something started.", "when": "11:30" },
+              { "type": "parts", "says": "Pull request #63 was merged: Build Design Workspace is in main, and changed 4 parts of the app. The Build page’s build and Build Fix Something started.", "when": "11:30", "map": {
+                "label": "Prelude’s parts", "mark": "touched", "count": 4,
+                "layers": [
+                  { "title": "Windows", "parts": [{ "id": "desktop", "title": "Desktop shell", "url": "/f/prelude/architecture/parts/desktop", "summary": "Tauri window on the server" }] },
+                  { "title": "Entry points", "parts": [
+                    { "id": "server", "title": "Server", "url": "/f/prelude/architecture/parts/server", "summary": "HTTP routes, one URL two shapes" },
+                    { "id": "tools", "title": "Command-line tools", "url": "/f/prelude/architecture/parts/tools", "summary": "npm run check, skills, reference host" }] },
+                  { "title": "Pages", "parts": [
+                    { "id": "pages", "title": "Page models", "url": "/f/prelude/architecture/parts/pages", "summary": "Home, project, design, build pages" },
+                    { "id": "turns", "title": "Turns", "url": "/f/prelude/architecture/parts/turns", "summary": "One agent turn per design at a time", "marked": true },
+                    { "id": "views", "title": "Views", "url": "/f/prelude/architecture/parts/views", "summary": "Eta views, CSS, design system", "marked": true },
+                    { "id": "architecture", "title": "Architecture", "url": "/f/prelude/architecture/parts/architecture", "summary": "Reads these files, checks the code" }] },
+                  { "title": "Agent and live state", "parts": [
+                    { "id": "agent", "title": "Agent", "url": "/f/prelude/architecture/parts/agent", "summary": "Prompts and the Claude CLI", "marked": true },
+                    { "id": "live", "title": "Live state", "url": "/f/prelude/architecture/parts/live", "summary": "SSE channels, current screen" },
+                    { "id": "media", "title": "Pictures and dictation", "url": "/f/prelude/architecture/parts/media", "summary": "Page captures, speech to text" }] },
+                  { "title": "Designs and hosting", "parts": [
+                    { "id": "branches", "title": "Branches", "url": "/f/prelude/architecture/parts/branches", "summary": "A branch and worktree per design" },
+                    { "id": "host", "title": "Design host", "url": "/f/prelude/architecture/parts/host", "summary": "Serves designs on their own origin" },
+                    { "id": "renderer", "title": "Renderer", "url": "/f/prelude/architecture/parts/renderer", "summary": "Sandboxed Eta for agent views" },
+                    { "id": "runs", "title": "App runs", "url": "/f/prelude/architecture/parts/runs", "summary": "Starts the built app" },
+                    { "id": "stories", "title": "Backlog and increment", "url": "/f/prelude/architecture/parts/stories", "summary": "What’s left to build, what changed" },
+                    { "id": "installs", "title": "Installs", "url": "/f/prelude/architecture/parts/installs", "summary": "Installs the app’s Koda" }] },
+                  { "title": "Project files", "parts": [
+                    { "id": "designs", "title": "Designs", "url": "/f/prelude/architecture/parts/designs", "summary": "Designs, fixes, app settings, snapshots" },
+                    { "id": "sessions", "title": "Sessions", "url": "/f/prelude/architecture/parts/sessions", "summary": "Transcripts, drafts, questions" },
+                    { "id": "folders", "title": "Projects", "url": "/f/prelude/architecture/parts/folders", "summary": "Recent projects, reference folders" },
+                    { "id": "preview", "title": "Preview files", "url": "/f/prelude/architecture/parts/preview", "summary": "Serves and watches prelude/ files" }] },
+                  { "title": "Shared helpers", "parts": [
+                    { "id": "visuals", "title": "Visuals", "url": "/f/prelude/architecture/parts/visuals", "summary": "Visual blocks: parse, check, describe", "marked": true },
+                    { "id": "words", "title": "Words", "url": "/f/prelude/architecture/parts/words", "summary": "Times and text as words" }] },
+                  { "title": "Outside", "parts": [
+                    { "id": "claude", "title": "Claude Code CLI", "url": "/f/prelude/architecture/parts/claude", "summary": "The agent", "outside": true },
+                    { "id": "git", "title": "Git and hosting CLIs", "url": "/f/prelude/architecture/parts/git", "summary": "git, gh, az", "outside": true },
+                    { "id": "koda", "title": "Koda and Eta", "url": "/f/prelude/architecture/parts/koda", "summary": "Page runtime, templates", "outside": true },
+                    { "id": "local", "title": "Local programs", "url": "/f/prelude/architecture/parts/local", "summary": "Edge or Chrome, whisper.cpp, ffmpeg", "outside": true }] }
+                ]
+              } },
               { "type": "note", "says": "Pull request #65 was merged. Every step is in main: the plan is finished.", "when": "16:20" }
             ]
           },
