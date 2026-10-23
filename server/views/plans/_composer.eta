@@ -1,8 +1,8 @@
-<%/* The message box under the planning session: the app's composer, standing
-     in. What's sent goes into the transcript; the agent changes the plan and
-     says what it changed. A finished plan can still be asked about. A refused
-     message (an empty one) comes back with only what was posted, so the box
-     carries its own address (`to`); with none, it posts where it was. */%>
+<%/* The message box under the planning session. What's sent goes into the
+     transcript; the agent changes the plan and says what it changed. A
+     finished plan can still be asked about. Refused (an empty message), it
+     comes back with why; it carries its own address (`to`), and with none
+     posts where it was. `it` is the plan (Plan, server/plans-page.js). */%>
 <% const p = it, to = it.to ?? (p.project ? `/f/${p.project.id}/plans/${p.id}/messages` : ''), errors = it.$errors ?? {}; %>
 <form class="composer" action="<%= to %>" method="post" ko-target="planComposer">
   <input type="hidden" name="type" value="user">

@@ -10,7 +10,8 @@
      holds back steps that haven't started (R-c7n). The plan is drafted on
      its own branch, named in the header, and starting it puts it into main
      so the whole project's Prelude sees it (R-q2x). Each person sees the
-     same plan from their own computer; `me` says who's here. */%>
+     same plan from their own computer; `me` says who's here. `it` is the
+     plan (Plan, server/plans-page.js). */%>
 <% const p = it, project = p.project, base = `/f/${project.id}/plans/${p.id}`, steps = p.steps ?? [];
    const merged = steps.filter(step => step.state === 'merged').length;
    const waiting = steps.filter(step => step.state === 'open' || (p.me && step.owner === p.me && ['asking', 'ready', 'stopped'].includes(step.state))).length;

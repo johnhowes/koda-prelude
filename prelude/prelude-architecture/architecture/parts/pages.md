@@ -11,6 +11,7 @@ The models behind Prelude's own pages, each shaped like the states of the design
 - What needs the person, and where each design stands
 - A design's sessions, rules and approved screens, as words for the page
 - The Build page's groups, stories and the after-turn check's results
+- Where a plan's steps stand, which of them start here, and its session as its chat
 - Comparing the app's Koda version with Prelude's and offering the upgrade, then offering to install it in the checkout once merged
 
 ## Not its job

@@ -1,11 +1,11 @@
 {
   "/f/:project/plans": { "view": "@app/server/views/plans/list", "title": "Plans", "data": "projects/:project" },
   "/f/:project/plans/new": { "view": "@app/server/views/plans/_new", "title": "New plan", "data": "projects/:project", "over": "/f/:project/plans", "in": "modal" },
-  "/f/:project/plans/:plan": { "view": "plans/page", "title": "Plan", "data": "projects/:project/plans/:plan" },
-  "/f/:project/plans/:plan/work": { "view": "plans/_work", "data": "projects/:project/plans/:plan" },
-  "/f/:project/plans/:plan/transcript": { "view": "plans/_transcript", "data": "projects/:project/plans/:plan" },
-  "/f/:project/plans/:plan/steps/:step": { "view": "plans/_step", "title": "A step", "data": "projects/:project/plans/:plan/steps/:step", "over": "/f/:project/plans/:plan", "in": "drawer" },
-  "/f/:project/plans/:plan/steps/:step/push": { "view": "plans/_push", "title": "Push a step", "data": "projects/:project/plans/:plan/steps/:step", "over": "/f/:project/plans/:plan", "in": "modal" },
+  "/f/:project/plans/:plan": { "view": "@app/server/views/plans/page", "title": "Plan", "data": "projects/:project/plans/:plan" },
+  "/f/:project/plans/:plan/work": { "view": "@app/server/views/plans/_work", "data": "projects/:project/plans/:plan" },
+  "/f/:project/plans/:plan/transcript": { "view": "@app/server/views/plans/_transcript", "data": "projects/:project/plans/:plan" },
+  "/f/:project/plans/:plan/steps/:step": { "view": "@app/server/views/plans/_step", "title": "A step", "data": "projects/:project/plans/:plan/steps/:step", "over": "/f/:project/plans/:plan", "in": "drawer" },
+  "/f/:project/plans/:plan/steps/:step/push": { "view": "@app/server/views/plans/_push", "title": "Push a step", "data": "projects/:project/plans/:plan/steps/:step", "over": "/f/:project/plans/:plan", "in": "modal" },
 
   "POST /f/:project/plans": {
     "add": "projects/:project/plans",
@@ -24,38 +24,38 @@
   "POST /f/:project/plans/:plan/messages": {
     "add": "projects/:project/plans/:plan/chat/entries",
     "require": ["message"],
-    "form": "plans/_composer",
+    "form": "@app/server/views/plans/_composer",
     "answer": {
-      "view": "plans/_composer", "data": "projects/:project/plans/:plan",
-      "also": [{ "into": "planTranscript", "view": "plans/_transcript", "data": "projects/:project/plans/:plan" }]
+      "view": "@app/server/views/plans/_composer", "data": "projects/:project/plans/:plan",
+      "also": [{ "into": "planTranscript", "view": "@app/server/views/plans/_transcript", "data": "projects/:project/plans/:plan" }]
     }
   },
   "POST /f/:project/plans/:plan/brief": {
     "update": "projects/:project/plans/:plan",
     "require": ["brief"],
-    "form": "plans/_brief",
-    "answer": { "view": "plans/_brief", "data": "projects/:project/plans/:plan" }
+    "form": "@app/server/views/plans/_brief",
+    "answer": { "view": "@app/server/views/plans/_brief", "data": "projects/:project/plans/:plan" }
   },
   "POST /f/:project/plans/:plan/settings": {
     "update": "projects/:project/plans/:plan",
-    "answer": { "view": "plans/_settings", "data": "projects/:project/plans/:plan" }
+    "answer": { "view": "@app/server/views/plans/_settings", "data": "projects/:project/plans/:plan" }
   },
   "POST /f/:project/plans/:plan/steps/:step": {
     "update": "projects/:project/plans/:plan/steps/:step",
     "require": ["prompt"],
-    "form": "plans/_step",
-    "answer": { "view": "plans/_step", "data": "projects/:project/plans/:plan/steps/:step" }
+    "form": "@app/server/views/plans/_step",
+    "answer": { "view": "@app/server/views/plans/_step", "data": "projects/:project/plans/:plan/steps/:step" }
   },
   "POST /f/:project/plans/:plan/steps/:step/claim": {
     "update": "projects/:project/plans/:plan/steps/:step",
-    "answer": { "view": "plans/_work", "data": "projects/:project/plans/:plan" }
+    "answer": { "view": "@app/server/views/plans/_work", "data": "projects/:project/plans/:plan" }
   },
   "POST /f/:project/plans/:plan/steps/:step/merge": {
     "update": "projects/:project/plans/:plan/steps/:step",
-    "answer": { "view": "plans/_work", "data": "projects/:project/plans/:plan", "also": [{ "into": "drawer?" }] }
+    "answer": { "view": "@app/server/views/plans/_work", "data": "projects/:project/plans/:plan", "also": [{ "into": "drawer?" }] }
   },
   "POST /f/:project/plans/:plan/steps/:step/push": {
     "update": "projects/:project/plans/:plan/steps/:step",
-    "answer": { "into": "modal?", "also": [{ "into": "drawer?" }, { "into": "planWork", "view": "plans/_work", "data": "projects/:project/plans/:plan" }] }
+    "answer": { "into": "modal?", "also": [{ "into": "drawer?" }, { "into": "planWork", "view": "@app/server/views/plans/_work", "data": "projects/:project/plans/:plan" }] }
   }
 }

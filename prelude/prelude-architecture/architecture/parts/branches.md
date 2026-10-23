@@ -8,9 +8,9 @@ uses: folders, sessions, git
 Gives every design, and every fix, its own branch `prelude/<design>` in a worktree under `~/.prelude/worktrees/`, and commits each turn there. Finishing merges into main without touching the person's checkout, or pushes for a pull request after asking.
 
 ## Responsible for
-- Making, updating and tidying worktrees
+- Making, updating and tidying worktrees; a plan's branch is kept while it runs (D-j6p)
 - Committing turns, merging, publishing (`gh`, `az`)
-- Git questions the pages ask: what changed, what's ahead, what's merged
+- Git questions the pages ask: what changed, what's ahead, what's merged, what a branch brought into main, who has committed
 
 ## Not its job
 - Writing to the person's own checkout

@@ -1,4 +1,5 @@
-/* A design's page and its pop-out window (prelude/design-workspace): what
+/* A design's page and its pop-out window (prelude/design-workspace), and a
+   plan's page, which is laid out as one (prelude/coordinator): what
    Prelude's design system and the shell's chrome can't say. Unlayered, so
    it wins over the system's components without a specificity contest
    (koda-styling). */
@@ -121,5 +122,35 @@
   .markup-stage canvas {
     display: block; max-inline-size: 100%; max-block-size: 60vh;
     color: var(--danger); cursor: crosshair; touch-action: none;
+  }
+}
+
+/* A plan's page (prelude/coordinator): its session beside the plan, as a
+   design's page has the chat beside the design. */
+
+/* A prompt or a brief is plain text the agent wrote: its paragraphs keep
+   their line breaks (a list of "- " lines), which .prose can't know. Also
+   in the drawer, which isn't inside the page. */
+.prose.prompt p { white-space: pre-line; }
+
+/* Mine: only the steps that are this person's, and only the layers that
+   hold one. A choice on the page, so it's :has(), not a request. */
+.plan-steps:has(.steps-mine:checked) .map-nodes > li:not(.mine),
+.plan-steps:has(.steps-mine:checked) .map-layer:not(.has-mine) { display: none; }
+
+/* The page fills the window, as a design's page does (the shell reads
+   .fills): the chat and the plan fill what the header leaves, and each
+   scrolls inside itself. Side by side, the chat keeps its width and the plan
+   takes the rest; in a narrow window they stack, sharing the height. The
+   .design-page rules above, for a plan. */
+@scope (.plan) {
+  :scope { min-block-size: 0; }
+  .plan-workspace { flex: 1; min-block-size: 0; flex-wrap: nowrap; }
+  .plan-workspace > .chat { flex: 0 1 var(--side); }
+  .plan-workspace > .plan-surface { flex: 1 1 0; min-inline-size: 0; }
+  @container (width < 52rem) {
+    .plan-workspace { flex-direction: column; }
+    .plan-workspace > .chat { flex: 2 1 0; }
+    .plan-workspace > .plan-surface { flex: 3 1 0; }
   }
 }

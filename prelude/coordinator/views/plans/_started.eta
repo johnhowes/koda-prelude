@@ -1,9 +1,0 @@
-<%/* Said in the notice when a step starts by itself: what started, and
-     where. Ours opens its session; another's started on their computer.
-     Losable: the step's own pill says it too. */%>
-<% const s = it, who = s.owner ? s.owner.split(' <')[0].split(' ')[0] : null; %>
-<% if (s.session) { %>
-<p><%= s.title %> started: what it waits for is merged. <a href="<%= s.session %>">Open its session</a></p>
-<% } else { %>
-<p><%= s.title %> started<%= who ? ` on ${who}’s computer` : '' %>: what it waits for is merged.</p>
-<% } %>

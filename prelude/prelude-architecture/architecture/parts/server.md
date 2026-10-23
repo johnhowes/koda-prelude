@@ -10,6 +10,7 @@ Prelude's server: plain `node:http` with every route in `server/main.js`, starte
 ## Responsible for
 - Routing, and refusing POSTs that don't come from Prelude's own origin
 - Starting turns with the right prompt, mode and permissions, and what follows a turn (review, commit, drift check)
+- Running plans on: starting this person's ready steps, saying in a plan's session what moved, and putting the plan into main (D-j6p)
 - Passing the agent the app's own Koda, not Prelude's, and starting an upgrade's install (D-k7v)
 - Sending requests for a design's origin to the host
 

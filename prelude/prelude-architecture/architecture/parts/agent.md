@@ -5,7 +5,7 @@ short: Prompts and the Claude CLI
 files: server/agent.js
 uses: stories, visuals, claude
 
-Runs the Claude Code CLI and holds every prompt Prelude gives it: design, build, app build, connect, story, fix and ask. It also holds the architecture briefs: one for changing code, and a read-only one for ask. Once the project has an architecture, every prompt gets the visual vocabulary, taken from `visuals`. It sets the permission flags that fence what the agent may read and write, and normalises the CLI's stream into transcript entries.
+Runs the Claude Code CLI and holds every prompt Prelude gives it: design, build, app build, connect, story, fix, ask and a plan's (D-j6p). It also holds the architecture briefs: one for changing code, and a read-only one for ask. Once the project has an architecture, every prompt gets the visual vocabulary, taken from `visuals`. It sets the permission flags that fence what the agent may read and write, and normalises the CLI's stream into transcript entries.
 
 ## Responsible for
 - The prompt for each kind of design and each mode

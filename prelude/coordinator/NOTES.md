@@ -137,15 +137,59 @@ and where each step stands worked out in `server/plans-page.js`.
   hasn't started stays “Waiting”, saying why, while the plan is paused or
   its build's design isn't approved as it is now.
 - The two server events come from the fetch the pages already make
-  (`tidyFolder`): a step whose worked-out state moved sends
-  `plans-changed`, and one that started (Priya's branch pushed) pushes
-  `_started` into the notice.
-- Not yet, with the plan's page: starting a step on its owner's computer
-  (R-s6t). Until then a step of yours that's ready shows “Waiting”, saying
-  “Ready: it starts here”: the states have no state for it, because it
-  starts at once. Merged is found by what landed in main since the step
-  could start, so starting a plan has to record `startedAt` in its file.
-  The plan's chat isn't read yet (its entries are empty).
+  (`tidyFolder`), and from turns starting and ending: a step whose
+  worked-out state moved sends `plans-changed`, and one that started on
+  someone else's computer (Priya's branch pushed) pushes `_started` into
+  the notice. One started here pushes it as it starts, with its session.
+
+Plan, its regions, the step drawer, Push a step and every form are built
+too (`server/views/plans/`, D-j6p updated):
+
+- **The plan's session** is a session of `prelude/plans/<id>`, run by the
+  turns as a design's is, with its own prompt (`planPrompt`): the agent
+  writes only `plan.json`, and gets the visual vocabulary (R-w5c). A new
+  plan's first turn is the goal, sent as it's made (R-h9w).
+- **The plan's branch stays** while it runs (tidying skips it): its file and
+  session live there on each computer. Start, pause, resume, the brief, the
+  settings, a prompt, a claim, and a turn that changed `plan.json` once
+  started go into main the project's way (R-q2x): pushed for a pull request
+  with a remote, merged here without. What Prelude does by itself (a step
+  started, the plan finished) is only committed, and goes with the next.
+- **A step starts here** (R-s6t) when the page model says it's ours and
+  ready: its branch made from main, or main brought in first (a clash
+  stops it, said once in the session); a design the plan names but the
+  project hasn't got is made on its branch. A design or discussion gets its
+  first message through the design's own sessions route; a build starts
+  its design's first page to build, and goes on to the next by itself.
+- **Naming what it asks for** (R-f8d) is Prelude's, when the step starts,
+  from what the earlier step brought into main since the plan started: a
+  decision by its id, a design's new files by their paths, a build by its
+  branch. The drawer's hint still says “the agent names it” (the design's
+  words).
+- **Notes** (R-d6m) are written when a step moves: in main (with the parts a
+  build or fix changed on the map, R-u3t), pushed by someone else, started
+  elsewhere, stopped, ready to claim, ready for someone, ready to finish,
+  approved. Those since the agent's last turn come before the next message.
+- **The form's hidden fields** (`status`, `state`, `says`, `owner`) are the
+  design's stand-ins and are ignored: the server works out what changes, and
+  a claim takes the identity of whoever is at this computer.
+
+## Built differently, or not yet
+
+- **The chat is the design's stand-in**, element for element, not the
+  app's `_chat` (decision 7): that one is a design session's (its session
+  menu, drafts, images, dictation, the live channel per session), and
+  fitting a plan into it is a change of its own. So the transcript reloads
+  on `plans-changed` when a turn starts and ends, not word by word, and
+  messages sent while the agent works wait unseen until it's done.
+- **R-u3t on another computer**: a step merged there shows its parts when
+  its merge commit names its branch (a pull request merged with a merge
+  commit); a squashed one shows a plain note.
+- **R-b8y's “everyone's Needs you”** is the plan's own Needs you. Home's and
+  the project page's are Project Landing Page's (decision 11).
+- A teammate's Prelude makes its own `prelude/plan-<id>` for its notes; if
+  it pushes a change while the first one's branch is still on the remote,
+  the push is refused.
 
 ## Open questions
 

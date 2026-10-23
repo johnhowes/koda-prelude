@@ -1,8 +1,8 @@
-<%/* The plan's chat: a stand-in for the app's own (server/views/_chat.eta),
-     which the build puts here, as design, build and fix sessions have it:
-     its session menu, Tools, questions, the waiting messages, dictation and
-     images. What the stand-in shows is what's particular to a plan: the
-     transcript, the agent working, and the message box. */%>
+<%/* The plan's chat: its session, as the design shows it (prelude/coordinator,
+     _chat): the transcript, the agent working, and the message box. Not yet
+     the app's own chat (server/views/_chat.eta) with its session menu, Tools,
+     queue, dictation and images: see the design's NOTES.md. The transcript
+     reloads when the plan moves (plans-changed). */%>
 <% const p = it, base = `/f/${p.project.id}/plans/${p.id}`; %>
 <section class="panel side chat" aria-label="Planning session">
   <div class="toolbar">

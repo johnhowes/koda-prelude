@@ -1,29 +1,29 @@
 <%/* The planning session's transcript, oldest first, as the app's transcript
      draws it (server/views/_entry.eta): the person's messages, the agent's
-     words with the visuals it drew among them (_message, copied from the
-     app's with its _visual-* partials, unchanged), what it read, and
-     Prelude's notes. The agent draws as in any session: a map of the parts
-     the plan reaches when it drafts or changes it, a flow when it explains
-     why one step waits for another (R-w5c).
+     words with the visuals it drew among them (the app's _message, with its
+     _visual-* partials), what it read, and Prelude's notes. The agent draws
+     as in any session: a map of the parts the plan reaches when it drafts or
+     changes it, a flow when it explains why one step waits for another
+     (R-w5c).
 
      As the plan runs, Prelude says what happened in it (a step started, a
      pull request merged, a build stopped), so the person sees it where they
      talk to the agent, and the agent is told it with the next message
      (R-d6m). When a step that changed the app's code is merged, Prelude
      draws the parts it changed on the map, as after a build turn, with no
-     agent involved. A plan just asked for starts with what the person asked,
-     and the agent drafting. */%>
+     agent involved (R-u3t). A plan just asked for starts with what the
+     person asked, and the agent drafting. */%>
 <% const p = it, steps = p.steps ?? [];
    const entries = p.chat?.entries ?? (p.goal ? [{ type: 'user', message: p.goal }] : []);
    const working = p.chat?.state === 'working' || !steps.length; %>
 <% for (const entry of entries) { %>
 <% if (entry.type === 'user') { %><li class="entry user"><div class="bubble"><%= entry.message %></div></li>
-<% } else if (entry.type === 'text') { %><li class="entry agent"><%~ include('./_message', { pieces: entry.pieces ?? [{ kind: 'text', html: entry.html }] }) %></li>
+<% } else if (entry.type === 'text') { %><li class="entry agent"><%~ include('../_message', { pieces: entry.pieces ?? [{ kind: 'text', html: entry.html }] }) %></li>
 <% } else if (entry.type === 'tool') { %><li class="entry tool"><span class="tool-name"><%= entry.name %></span> <%= entry.summary %></li>
 <% } else if (entry.type === 'parts') { %>
 <li class="entry note">
   <details class="disclosure" open><summary><%= entry.says %><% if (entry.when) { %> <span class="muted">· <%= entry.when %></span><% } %></summary>
-  <%~ include('./_visual-map', { ...entry.map, target: 'drawer?' }) %></details>
+  <%~ include('../_visual-map', { ...entry.map, target: 'drawer?' }) %></details>
 </li>
 <% } else if (entry.type === 'note') { %><li class="entry note<%= entry.failed ? ' failed' : '' %>"><%= entry.says %><% if (entry.when) { %> <span class="muted">· <%= entry.when %></span><% } %></li>
 <% } %>

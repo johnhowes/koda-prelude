@@ -66,8 +66,8 @@ export const planDir = (folderPath, id) => join(folderPath, 'prelude', PLANS_DIR
 
 /** A plan as its file has it, with what a file left out filled in; null when there's none, or it can't be read. */
 export function readPlan(folderPath, id) {
-  let raw;
-  try { raw = JSON.parse(readFileSync(join(planDir(folderPath, id), FILE), 'utf8')); } catch { return null; }
+  const raw = readRaw(folderPath, id);
+  if (!raw) return null;
   return {
     id,
     title: typeof raw.title === 'string' ? raw.title : '',
@@ -88,6 +88,41 @@ export function listPlans(folderPath) {
   try { entries = readdirSync(join(folderPath, 'prelude', PLANS_DIR), { withFileTypes: true }); } catch { return []; }
   return entries.filter(entry => entry.isDirectory()).map(entry => readPlan(folderPath, entry.name)).filter(Boolean)
     .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+}
+
+/** The file as written, or null. */
+function readRaw(folderPath, id) {
+  try { return JSON.parse(readFileSync(join(planDir(folderPath, id), FILE), 'utf8')); } catch { return null; }
+}
+
+const writeRaw = (folderPath, id, raw) => writeFileSync(join(planDir(folderPath, id), FILE), JSON.stringify(raw, null, 2) + '\n');
+
+/** What may change in a plan from its page or as it runs (the steps are the agent's). */
+const PLAN_FIELDS = ['status', 'brief', 'mergeAlone', 'startedAt', 'finishedAt'];
+/** ...and in a step: its prompt until it starts (R-m3k), its owner once claimed (R-b8y), and what starting it recorded (R-f8d). */
+const STEP_FIELDS = ['prompt', 'owner', 'started', 'session', 'refs'];
+
+/**
+ * Change a plan's file in a folder (its branch's worktree): only the fields
+ * above, the rest as the agent wrote it. The plan as read after, or null
+ * when there's no such plan.
+ */
+export function updatePlan(folderPath, id, change) {
+  const raw = readRaw(folderPath, id);
+  if (!raw) return null;
+  for (const field of PLAN_FIELDS) if (Object.hasOwn(change, field)) raw[field] = change[field];
+  writeRaw(folderPath, id, raw);
+  return readPlan(folderPath, id);
+}
+
+/** Change one of a plan's steps, as updatePlan does: the plan as read after, or null when there's no such step. */
+export function updateStep(folderPath, id, stepId, change) {
+  const raw = readRaw(folderPath, id);
+  const step = raw?.steps?.find?.(candidate => candidate.id === stepId);
+  if (!step) return null;
+  for (const field of STEP_FIELDS) if (Object.hasOwn(change, field)) step[field] = change[field];
+  writeRaw(folderPath, id, raw);
+  return readPlan(folderPath, id);
 }
 
 /**

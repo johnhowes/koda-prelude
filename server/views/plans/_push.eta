@@ -1,7 +1,8 @@
 <%/* Push a step that's ready to finish, asked first in the modal: pushing
      publishes it. It says exactly what goes where, and that the plan goes on
      once the pull request is merged on the Git server. Pushed, the modal and
-     the drawer close and the steps refresh. `it` is the step. */%>
+     the drawer close and the steps refresh. `it` is the step (PlanStep,
+     server/plans-page.js). */%>
 <% const s = it; %>
 <div class="stack gap-4">
   <h2>Push <%= s.title %>?</h2>

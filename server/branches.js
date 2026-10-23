@@ -266,6 +266,19 @@ export function gitIdentity(folderPath) {
 }
 
 /**
+ * The people who have committed to a repository, as git signs them ("Name
+ * <email>"), most commits first: who a plan's steps may be given to
+ * (prelude/coordinator, R-b8y). The latest 5000 commits are read.
+ */
+export function committers(repo) {
+  let lines;
+  try { lines = git(repo, 'log', '-n', '5000', '--format=%aN <%aE>').split('\n').filter(Boolean); } catch { return []; }
+  const counts = new Map();
+  for (const line of lines) counts.set(line, (counts.get(line) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([identity]) => identity);
+}
+
+/**
  * Where a branch is, made here or pushed to the remote by someone else
  * (prelude/coordinator, R-r3z): { sha, at (ms), local } or null when
  * neither has it.
@@ -302,6 +315,49 @@ export function landedAfter(repo, path, after) {
       .split('\n').filter(Boolean).map(line => Number(line) * 1000).filter(at => at > after);
     return times.length ? Math.min(...times) : null;
   } catch { return null; }
+}
+
+/**
+ * The files the main line added under a path after a time (ms), still
+ * there, repository-relative: what a step merged since it could start made
+ * (prelude/coordinator, R-f8d).
+ */
+export function addedAfter(repo, path, after) {
+  const main = mainTip(repo);
+  if (!main) return [];
+  try {
+    const added = git(repo, 'log', '--diff-filter=A', '--name-only', '--format=', `--since=@${Math.floor(after / 1000)}`, main, '--', path)
+      .split('\n').map(line => line.trim()).filter(Boolean);
+    const now = new Set(git(repo, 'ls-tree', '-r', '--name-only', main, '--', path).split('\n').filter(Boolean));
+    return [...new Set(added)].filter(file => now.has(file));
+  } catch { return []; }
+}
+
+/**
+ * The files a branch's own commits changed since it was made from `base`:
+ * its first-parent line, so what an update from main brought in isn't
+ * counted (prelude/coordinator, R-u3t). Repository-relative.
+ */
+export function branchFiles(repo, branch, base) {
+  try {
+    return [...new Set(git(repo, 'log', '--first-parent', '--no-merges', '--name-only', '--format=', `${base}..refs/heads/${branch}`)
+      .split('\n').map(line => line.trim()).filter(Boolean))];
+  } catch { return []; }
+}
+
+/**
+ * The files a branch brought into the main line, found by the merge commit
+ * that names it (a pull request merged on the Git server, or here) since a
+ * time (ms): for a branch made on someone else's computer (R-u3t). A
+ * squashed one names no branch, and is [].
+ */
+export function mergedFiles(repo, branch, after) {
+  const main = mainTip(repo);
+  if (!main) return [];
+  try {
+    const merge = git(repo, 'log', main, '--merges', '-1', '--format=%H', `--since=@${Math.floor(after / 1000)}`, '--fixed-strings', `--grep=${branch}`);
+    return merge ? git(repo, 'diff', '--name-only', `${merge}^1`, merge).split('\n').filter(Boolean) : [];
+  } catch { return []; }
 }
 
 /** The repository's remote, for pushing and pull requests: { url, host: 'github' | 'azure' | 'other' } or null. */
@@ -901,8 +957,10 @@ export function createBranches({ home }) {
      * in the main branch now - merged here or on the server - and keep a note
      * of each. Returns the notes it made. With `fetch: false`, the remote's
      * branches are as last fetched (fetchRemote fetches without blocking).
+     * `keep(entry)` keeps a branch merged or not: a plan's, which goes into
+     * main as soon as it starts and carries on (prelude/coordinator, R-q2x).
      */
-    tidy(folder, { beforeRemove = () => {}, fetch = true } = {}) {
+    tidy(folder, { beforeRemove = () => {}, fetch = true, keep = () => false } = {}) {
       const notes = [];
       // Folders of tidied branches that were still in use last time.
       const leftovers = read().$leftovers ?? [];
@@ -915,6 +973,7 @@ export function createBranches({ home }) {
       if (fetch && remoteOf(folder.path)) gitOk(folder.path, 'fetch', '--quiet', 'origin');
       for (const entry of this.of(folder.id)) {
         let state;
+        if (keep(entry)) continue;
         if (!entry.repo) update(entry.id, { repo: canonical(folder.path) });
         try { state = this.status(entry, canonical(folder.path)); } catch { continue; }
         if (!state.merged) continue;

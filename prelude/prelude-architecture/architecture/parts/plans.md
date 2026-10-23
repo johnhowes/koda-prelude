@@ -10,10 +10,11 @@ A project's plans (D-j6p): each carries one change through several designs, buil
 ## Responsible for
 - Listing, reading and creating plans
 - A new plan's id, from its title or its goal
+- Changing what the person and Prelude may change: its status, brief and settings, a step's prompt and owner, and what starting it recorded
 
 ## Not its job
 - Where a step stands: that's worked out from git, approvals and sessions, by the page models, never stored
-- Making the plan's branch, or starting a step
+- Making the plan's branch, its session, or starting a step (the server)
 
 ## Owns
 - `prelude/plans/`

@@ -9,19 +9,20 @@
      computer. A step starts by itself on its owner's computer, never on
      another's (R-s6t): someone else's ready step says "Ready for" them.
 
-     Where a step stands is worked out, never kept by hand. Ours, from its
-     branch, session and stories: waiting, working, our turn, approved (a
-     design whose build carries on on its branch, one owner, R-k4d), ready to
-     finish, a build stopped. Anyone's, from the remote: ready for its owner,
-     in progress (its branch pushed), a pull request open, merged (R-r3z). A
-     waiting step names only what it still waits for.
+     Where a step stands is worked out, never kept by hand (plans-page.js).
+     Ours, from its branch, session and stories: waiting, working, our turn,
+     approved (a design whose build carries on on its branch, one owner,
+     R-k4d), ready to finish, a build stopped. Anyone's, from the remote:
+     ready for its owner, in progress (its branch pushed), a pull request
+     open, merged (R-r3z). A waiting step names only what it still waits for.
 
      Needs you is ours alone: our turn, ready to finish, a stopped build, and
      open steps ready to claim. Ready to finish is merged here, or pushed for
      a pull request when the project has a remote (asked first in the modal);
      neither without the person, unless they let the plan merge by itself
      (R-p4h). A stopped build holds back only what waits for it (R-v2j).
-     Mine shows only our steps, by :has(), with no request. */%>
+     Mine shows only our steps, by :has(), with no request. The forms' hidden
+     fields are the design's; the server works out what changes. */%>
 <% const p = it, steps = p.steps ?? [], me = p.me;
    const byId = Object.fromEntries(steps.map(step => [step.id, step]));
    const layerOf = (step, seen = new Set()) => {
