@@ -28,15 +28,19 @@ import { randomUUID } from 'node:crypto';
 
 import { DELETING, designPrompt, toolSummary } from './agent.js';
 import { appendEntry, readEntries, readSession, updateSession } from './sessions.js';
-import { presentEntry as presentWords, render } from './views.js';
+import { messagePieces, render } from './views.js';
 import { presentEntry, sinceWords, stepOf } from './workspace.js';
 
 const MAX_RESULT = 2000;
 // Each push carries the whole message so far, so not too often.
 const FLUSH_MS = 150;
 
-/** The words so far, as the transcript will show them once saved. */
-const wordsHtml = text => presentWords({ type: 'text', text }).html;
+/**
+ * The words so far, as the transcript will show them once saved: its pieces,
+ * a visual still being written a placeholder (R-w5g), drawn as soon as its
+ * block closes, with what the view draws visuals with.
+ */
+const wordsOf = (view, text) => (view.words ?? (words => messagePieces(words, null, { streaming: true })))(text);
 
 export const designKey = (folder, design) => `${folder.id}/${design.id}`;
 export const sessionKey = (folder, design, sessionId) => `${folder.id}/${design.id}/${sessionId}`;
@@ -46,7 +50,8 @@ export const seenKey = (folder, design, sessionId) => `${folder.branch?.parentId
 
 /**
  * How entries are shown on the pages watching: `present` readies an entry
- * for _entry.eta, and `base` is the design's address, for its links.
+ * for _entry.eta, `words` the message being written for _live-entry.eta (its
+ * pieces), and `base` is the design's address, for its links.
  */
 const plainView = { present: entry => presentEntry(entry, { base: '', routes: [], states: [], datasetOf: () => ({}) }), base: '' };
 
@@ -106,15 +111,15 @@ export function createTurns({ runner, live, onChange = () => {} }) {
     clearTimeout(ctx.timer);
     ctx.timer = null;
     if (!block || block.sent === block.text.length) return;
-    live.publish(ctx.key, render('./push-delta', { id: block.id, html: wordsHtml(block.text) }));
+    live.publish(ctx.key, render('./push-delta', { id: block.id, pieces: wordsOf(ctx.view, block.text) }));
     block.sent = block.text.length;
   };
 
-  const liveEntry = block => render('./push-entry', { html: render('./_live-entry', { id: block.id, html: wordsHtml(block.text) }).trim() });
+  const liveEntry = (block, view) => render('./push-entry', { html: render('./_live-entry', { id: block.id, pieces: wordsOf(view, block.text) }).trim() });
 
   const startText = ctx => {
     ctx.block = { id: `live-${++liveCount}`, text: '', sent: 0 };
-    live.publish(ctx.key, liveEntry(ctx.block));
+    live.publish(ctx.key, liveEntry(ctx.block, ctx.view));
   };
 
   const endText = (ctx, text) => {
@@ -173,10 +178,12 @@ export function createTurns({ runner, live, onChange = () => {} }) {
      * design's agent reads and may propose a decision in; `drift()`, after a
      * turn of a build or a fix, checks the code it changed against it and
      * returns what doesn't match ([{ file, text, next }]), told to the agent
-     * with the next message (R-4vx).
+     * with the next message (R-4vx). `changedParts()`, after the same turns,
+     * says which parts its changed files belong to ({ files, parts }, or
+     * null), recorded for the chat's map (R-c1y).
      */
     start(options) {
-      const { folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], architecture = null, drift = null, preface = null, recap = null, view = plainView, onIdle = null } = options;
+      const { folder, design, designDir, sessionId, message, shown = null, stopUrl, references = [], system = null, shell = null, format = 'screens', kodaPath = null, stack = null, check = null, mode = 'design', systemPrompt = null, afterTurn = null, shared = [], architecture = null, drift = null, changedParts = null, preface = null, recap = null, view = plainView, onIdle = null } = options;
       const dKey = designKey(folder, design);
       if (running.has(dKey)) return { error: 'The agent is already working on this design. Wait for it to finish, or stop it.' };
       const session = readSession(designDir, sessionId);
@@ -277,6 +284,14 @@ ${DELETING}`,
           const inside = relative(folder.path, file);
           if (!inside || inside.startsWith('..') || isAbsolute(inside)) continue;
           try { if (existsSync(file) && statSync(file).isFile() && statSync(file).size === 0) rmSync(file); } catch { /* left for the person */ }
+        }
+        // The parts whose files it changed, worked out by Prelude from the
+        // files, not by the agent: the chat draws them on the map (R-c1y).
+        if (changedParts) {
+          try {
+            const changed = await changedParts();
+            if (changed) record(ctx, { type: 'parts', files: changed.files, parts: changed.parts });
+          } catch (error) { console.error(error); }
         }
         // The code it changed, checked against the architecture (R-4vx): what
         // doesn't match is said to the person now, and to the agent with the
@@ -393,10 +408,10 @@ ${DELETING}`,
      * What the agent is writing in a session now, for a page to render in
      * its transcript: { id, html } (the words so far, as markdown), or null.
      */
-    streaming(folder, design, sessionId) {
+    streaming(folder, design, sessionId, view = plainView) {
       const turn = running.get(designKey(folder, design));
       const block = turn?.sessionId === sessionId ? turn.ctx.block : null;
-      return block && { id: block.id, html: wordsHtml(block.text) };
+      return block && { id: block.id, pieces: wordsOf(view, block.text) };
     },
 
     /**
@@ -416,8 +431,8 @@ ${DELETING}`,
         .filter(Boolean));
       if (block) {
         messages.push(block.id === shown
-          ? render('./push-delta', { id: block.id, html: wordsHtml(block.text) })
-          : liveEntry(block));
+          ? render('./push-delta', { id: block.id, pieces: wordsOf(view, block.text) })
+          : liveEntry(block, view));
       }
       messages.push(statusMessage(this.state(folder, design, sessionId)));
       return messages;

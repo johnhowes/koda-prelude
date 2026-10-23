@@ -37,6 +37,7 @@ import { PRELUDE_DIR, findKind, listDesigns } from './designs.js';
 import { headOf } from './branches.js';
 import { ago } from './words.js';
 import { filterModel } from './host.js';
+import { flowStep } from './visuals.js';
 
 /**
  * @typedef {object} ProjectRef
@@ -268,7 +269,8 @@ export function readArchitecture(found, project) {
   }));
 
   const flows = readDocs(join(root, 'flows')).map(({ id, file, doc }) => {
-    const steps = doc.intro.split('\n').map(line => line.match(/^\s*\d+[.)]\s+([\w-]+):\s*(.*)$/)).filter(Boolean);
+    // A flow file's steps are read as a flow block's are (visuals.js).
+    const steps = doc.intro.split('\n').map(flowStep).filter(Boolean);
     const summary = doc.intro.split('\n').filter(line => !/^\s*\d+[.)]\s/.test(line)).join(' ').replace(/\s+/g, ' ').trim();
     return {
       id,
@@ -276,7 +278,7 @@ export function readArchitecture(found, project) {
       summary,
       project,
       source: source(`flows/${file}`),
-      steps: steps.map(step => ({ part: step[1], text: step[2].trim() })),
+      steps,
       decisions: idsIn(doc.header.decisions),
     };
   });
@@ -451,6 +453,57 @@ export function checkAfterTurn(app, folder, changed, { announce = () => {} } = {
   announce();
   const touched = new Set(changed);
   return check.findings.filter(finding => touched.has(finding.file));
+}
+
+// --- Visuals in the chat (D-v3x) -----------------------------------------
+
+/**
+ * What the chat's visuals are drawn with: the parts of a folder's
+ * architecture (the session's branch's worktree, or the project), as they
+ * stand now, layer by layer as the map has them, each linking to its page.
+ * { project, layers: [{ title, parts: [{ id, title, url, summary, outside? }] }] },
+ * with no layers when there's no architecture written yet (R-m4v).
+ */
+export function visualsArchitecture(app, folder) {
+  const project = folder.branch?.parentName ?? folder.name;
+  const found = findArchitecture(app, folder);
+  if (!isWritten(found)) return { project, layers: [] };
+  const written = readArchitecture(found, { id: folder.id, name: project });
+  const titles = [...written.layers, ...new Set(written.parts.map(part => part.layer).filter(layer => !written.layers.includes(layer)))];
+  const layers = titles.map(title => ({
+    title: title || 'Elsewhere',
+    parts: written.parts.filter(part => part.layer === title).map(part => ({
+      id: part.id,
+      title: part.title,
+      url: `/f/${folder.id}/architecture/parts/${part.id}`,
+      summary: part.short || part.summary,
+      ...(part.kind === 'outside' ? { outside: true } : {}),
+    })),
+  })).filter(layer => layer.parts.length);
+  return { project, layers };
+}
+
+/**
+ * Which parts a turn's changed files belong to (R-c1y), worked out from the
+ * parts' files, not by the agent: { files: how many code files changed,
+ * parts: [{ id, files }] }, or null when it changed no code or there's no
+ * architecture written.
+ */
+export function partsChanged(app, folder, changed) {
+  const code = changed.filter(path => !path.startsWith(`${PRELUDE_DIR}/`));
+  if (!code.length) return null;
+  const found = findArchitecture(app, folder);
+  if (!isWritten(found)) return null;
+  const written = readArchitecture(found, { id: folder.id, name: folder.name });
+  const matchers = written.parts.filter(part => part.kind !== 'outside').map(part => ({ part, globs: part.files.map(globRegex) }));
+  const parts = new Map();
+  for (const file of code) {
+    const part = matchers.find(({ globs }) => globs.some(glob => glob.test(file)))?.part;
+    if (!part) continue;
+    if (!parts.has(part.id)) parts.set(part.id, []);
+    parts.get(part.id).push(file);
+  }
+  return { files: code.length, parts: [...parts].map(([id, files]) => ({ id, files })) };
 }
 
 /**

@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Design page
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal/d/fix-total-cost" ko-scope="/">
+<link href="/static/workspace.css" rel="stylesheet">
+<div class="stack gap-3 design-page fills">
+<header class="cluster gap-3 design-head">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal">
+borrower-portal
+</a>
+</nav>
+<div class="cluster gap-2">
+<h1>
+Total cost leaves out the origination fee
+</h1>
+<a class="icon-btn small" href="/f/borrower-portal/d/fix-total-cost/rename" ko-target="modal?" title="Rename it">
+<span aria-hidden="true" class="icon icon-rename">
+</span>
+<span class="sr-only">
+Rename Total cost leaves out the origination fee
+</span>
+</a>
+</div>
+<p class="stage secondary">
+Changes
+<a href="/f/borrower-portal/d/loan-offers">
+Loan offers
+</a>
+</p>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+<a class="btn small ghost branch-summary" href="/f/borrower-portal/d/fix-total-cost/about" ko-target="drawer?" title="The branch, what this design uses, and what the agent can read.">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+<code>
+prelude/fix-total-cost
+</code>
+<span class="pill good">
+Check passes
+</span>
+</a>
+</div>
+</header>
+<div class="split gap-3 workspace" style="--side: 26rem">
+<section aria-label="Session" class="panel side chat">
+<div class="toolbar">
+<div class="menu start sessions-menu">
+<button class="btn small ghost" ko-for="sessionMenu" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+<span class="clip">
+Total cost leaves out the origination fee
+</span>
+</button>
+<ul class="menu-list" ko-as="sessionMenu" popover>
+<li>
+<a aria-current="page" href="/f/borrower-portal/d/fix-total-cost/sessions/20261023-1418-x2kq">
+<span class="item-title">
+Total cost leaves out the origination fee
+</span>
+<span class="muted">
+Today, 14:18
+</span>
+</a>
+</li>
+</ul>
+</div>
+<span class="spacer">
+</span>
+<label class="choice" title="Show each file the agent reads, searches or edits, between its messages.">
+<input class="show-tools" ko-persist-in="local" ko-persist="chat.showTools" type="checkbox">
+Tools
+</label>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="transcript" ko-region>
+<li class="entry user">
+<div class="stack gap-1 sent">
+<div class="bubble">
+The compare page says Northfield’s offer costs $11,482 over five years. That looks low. Is the $995 origination fee in it?
+</div>
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+src/pricing/total.ts
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+src/offers/compare.ts
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+src/lenders/northfield.ts
+</span>
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="fix-total-cost-text" ko-region>
+<div class="prose">
+<p>
+No, it isn’t. The fee arrives from the lender and is kept with the offer, but Pricing adds up interest only:
+</p>
+</div>
+<figure class="flow" style="--lanes: 4">
+<figcaption class="flow-title">
+How an offer’s total is worked out now
+</figcaption>
+<ul aria-hidden="true" class="flow-parts">
+<li class="flow-part" style="--series: var(--series-1)">
+<a href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?" tabindex="-1">
+Lender API
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-2)">
+<a href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?" tabindex="-1">
+Offer store
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-3)">
+<a href="/f/borrower-portal/architecture/parts/pricing" ko-target="drawer?" tabindex="-1">
+Pricing
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-4)">
+<a href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?" tabindex="-1">
+Offer pages
+</a>
+</li>
+</ul>
+<ol class="flow-steps">
+<li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?">
+Lender API
+</a>
+<span class="flow-text">
+Sends the offer with
+<code>
+origination_fee: 995
+</code>
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+Offer store
+</a>
+<span class="flow-text">
+Keeps the rate, the term and the fee
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/pricing" ko-target="drawer?">
+Pricing
+</a>
+<span class="flow-text">
+Adds up the payments, and leaves the fee out
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+Offer pages
+</a>
+<span class="flow-text">
+Shows $11,482 where it should be $12,477
+</span>
+</div>
+</li>
+</ol>
+</figure>
+<div class="prose">
+<p>
+Fixing it would change one part, and the page only shows a different number:
+</p>
+</div>
+<figure class="stack gap-2">
+<div aria-label="borrower-portal’s parts" class="map">
+<section aria-label="Pages" class="map-layer">
+<h3 class="map-label">
+Pages
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+<span class="map-node-title">
+Offer pages
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/account-pages" ko-target="drawer?">
+<span class="map-node-title">
+Account pages
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Services" class="map-layer">
+<h3 class="map-label">
+Services
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offers" ko-target="drawer?">
+<span class="map-node-title">
+Offers
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/acceptance" ko-target="drawer?">
+<span class="map-node-title">
+Acceptance
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/notifications" ko-target="drawer?">
+<span class="map-node-title">
+Notifications
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Data" class="map-layer">
+<h3 class="map-label">
+Data
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+<span class="map-node-title">
+Offer store
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/borrower-portal/architecture/parts/pricing" ko-target="drawer?">
+<span class="map-node-title">
+Pricing
+</span>
+<span class="muted">
+Add every fee the offer carries to its total
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Shared helpers" class="map-layer">
+<h3 class="map-label">
+Shared helpers
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/money" ko-target="drawer?">
+<span class="map-node-title">
+Money
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside" class="map-layer">
+<h3 class="map-label">
+Outside
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?">
+<span class="map-node-title">
+Lender API
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/sendgrid" ko-target="drawer?">
+<span class="map-node-title">
+SendGrid
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Read from the top: each part uses parts in its own layer or below it.
+</figcaption>
+</figure>
+<div class="prose">
+<p>
+Fix it on a branch and I’ll make the change, with a test for Northfield’s offer.
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+Made the branch prelude/fix-total-cost. The agent can change the project now.
+</li>
+<li class="entry user">
+<div class="stack gap-1 sent">
+<div class="bubble">
+Go ahead.
+</div>
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+<span class="tool-summary">
+src/pricing/total.ts
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+<span class="tool-summary">
+src/pricing/total.test.ts
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Edit
+</span>
+<span class="tool-summary">
+src/offers/compare.ts
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Bash
+</span>
+<span class="tool-summary">
+npm test -- pricing offers
+</span>
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="fix-total-cost-text" ko-region>
+<div class="prose">
+<p>
+Pricing now adds every fee the offer carries, so Northfield’s total is
+<strong>
+$12,477
+</strong>
+. I also had to touch Offers: it compared totals it had rounded itself, so two offers a cent apart could both be marked. The tests pass.
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+<details class="disclosure" open>
+<summary>
+This turn changed 2 parts of the app (3 files).
+</summary>
+<figure class="stack gap-2">
+<div aria-label="borrower-portal’s parts" class="map">
+<section aria-label="Pages" class="map-layer">
+<h3 class="map-label">
+Pages
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+<span class="map-node-title">
+Offer pages
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/account-pages" ko-target="drawer?">
+<span class="map-node-title">
+Account pages
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Services" class="map-layer">
+<h3 class="map-label">
+Services
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node touched" href="/f/borrower-portal/architecture/parts/offers" ko-target="drawer?">
+<span class="map-node-title">
+Offers
+<span class="pill accent">
+Changed
+</span>
+</span>
+<span class="muted">
+src/offers/compare.ts
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/acceptance" ko-target="drawer?">
+<span class="map-node-title">
+Acceptance
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/notifications" ko-target="drawer?">
+<span class="map-node-title">
+Notifications
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Data" class="map-layer">
+<h3 class="map-label">
+Data
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+<span class="map-node-title">
+Offer store
+</span>
+</a>
+</li>
+<li>
+<a class="map-node touched" href="/f/borrower-portal/architecture/parts/pricing" ko-target="drawer?">
+<span class="map-node-title">
+Pricing
+<span class="pill accent">
+Changed
+</span>
+</span>
+<span class="muted">
+src/pricing/total.ts, total.test.ts
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Shared helpers" class="map-layer">
+<h3 class="map-label">
+Shared helpers
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/money" ko-target="drawer?">
+<span class="map-node-title">
+Money
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside" class="map-layer">
+<h3 class="map-label">
+Outside
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?">
+<span class="map-node-title">
+Lender API
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/sendgrid" ko-target="drawer?">
+<span class="map-node-title">
+SendGrid
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+2 parts changed. Read from the top: each part uses parts in its own layer or below it.
+</figcaption>
+</figure>
+</details>
+</li>
+<li class="entry note">
+Prelude rendered every page of the designs this fix touches (
+<a href="/f/borrower-portal/d/loan-offers">
+Loan offers
+</a>
+), 18 in all, and they all render.
+</li>
+<li class="entry note">
+Committed to prelude/fix-total-cost (9c03e7a).
+</li>
+</ol>
+</div>
+<ol aria-label="Waiting to send" class="transcript queued" id="queued" ko-region>
+</ol>
+<div id="agent-status" ko-region>
+</div>
+<form action="/f/borrower-portal/d/fix-total-cost/sessions/20261023-1418-x2kq/messages" class="composer" id="composer" ko-attach="replace" ko-item ko-region ko-target="self" method="post">
+<ul aria-label="Images to send" class="attachments" id="attachments" ko-invoke="event:draft-changed" ko-source="/f/borrower-portal/d/fix-total-cost/draft">
+</ul>
+<div id="message-box" ko-region>
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" ko-as="message" name="message" placeholder="Ask about the project, or say what’s wrong and where; paste a screenshot of it. Enter to send, Shift+Enter for a new line." required rows="3">
+</textarea>
+</div>
+<div hidden ko-debounce="800" ko-form="/f/borrower-portal/d/fix-total-cost/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
+<input calc-value="message.value" ko-as="draftMessage" name="message" type="hidden">
+</div>
+<div class="composer-foot">
+<div class="composer-tools">
+<div ko-form="/f/borrower-portal/d/fix-total-cost/attachments" ko-invoke="change" ko-method="post" ko-target="attachments">
+<label class="icon-btn small" title="Attach an image. You can also paste one, or drop it on the box.">
+<span aria-hidden="true" class="icon icon-attach">
+</span>
+<span class="sr-only">
+Attach an image
+</span>
+<input accept="image/png, image/jpeg, image/gif, image/webp" class="sr-only" ko-as="upload" multiple name="image" type="file">
+</label>
+</div>
+<span id="dictation" ko-invoke="event:dictation-changed" ko-source="/f/borrower-portal/d/fix-total-cost/dictation/button">
+<span class="cluster gap-2 dictation" ko-item>
+<a class="icon-btn small" href="/f/borrower-portal/d/fix-total-cost/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</a>
+</span>
+</span>
+<span class="muted" ko-as="draftKept" ko-region role="status">
+</span>
+</div>
+<button class="btn small primary" ko-as="send" type="submit">
+Send
+</button>
+</div>
+<template ko-as="sending">
+<li class="entry user sending">
+<div class="stack gap-1 sent">
+<ul aria-label="Images" class="attachments">
+</ul>
+<div class="bubble">
+</div>
+<span class="muted looked-at">
+Sending…
+</span>
+</div>
+</li>
+</template>
+<script type="koda">
+// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { const item = document.createElement('li'); item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+</script>
+</form>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-region tabindex="-1">
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

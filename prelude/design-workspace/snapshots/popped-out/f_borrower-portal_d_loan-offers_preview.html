@@ -2,15 +2,15 @@
 <input id="lookingSize" type="hidden" value="">
 <div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;size=phone&amp;client=mobile-app&amp;shown=0">
 <div class="toolbar">
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="pageMenu" popovertarget type="button">
 <span aria-hidden="true" class="icon icon-screen">
 </span>
 <span class="clip">
 Compare offers
 </span>
-</summary>
-<div class="menu-list">
+</button>
+<div class="menu-list" ko-as="pageMenu" popover>
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="phone">
@@ -66,7 +66,7 @@ http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare
 </span>
 </a>
 </div>
-</details>
+</div>
 <a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 2 are shown on this page.">
 <span aria-hidden="true" class="icon icon-rule">
 </span>
@@ -75,13 +75,13 @@ Rules
 2
 </span>
 </a>
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="stateMenu" popovertarget type="button">
 <span class="clip">
 State: Typical
 </span>
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-as="stateMenu" ko-target="design" method="post" popover>
 <input name="surface.view" type="hidden" value="inline">
 <input name="surface.size" type="hidden" value="phone">
 <input name="surface.client" type="hidden" value="mobile-app">
@@ -118,7 +118,7 @@ Long names
 </span>
 </button>
 </form>
-</details>
+</div>
 <span class="spacer">
 </span>
 <span class="muted">

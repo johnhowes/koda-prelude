@@ -19,7 +19,7 @@ import { createFix, fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
-import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, findingsOf, isWritten } from './architecture.js';
+import { acceptProposed, architectureOf, checkAfterTurn, createArchitectureChecks, findArchitecture, findingsOf, isWritten, partsChanged, visualsArchitecture } from './architecture.js';
 import { systemOf } from './system.js';
 import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, hasStory, markStoriesBuilt, readStory, saveStory, storiesBrief, storyCount } from './build.js';
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
@@ -43,7 +43,7 @@ import { createWatches, listScreens, servePreludeFile } from './preview.js';
 import { branchesOf, cleanupOf, kodaModelOf, kodaUpgradeTitle, leftBehindOf, projectOf, referenceId } from './project.js';
 import { appendEntry, buildSessions, createSession, listSessions, readEntries, readSession, titleFrom, updateSession } from './sessions.js';
 import { createTurns, designKey, seenKey, sessionKey, statusMessage } from './turns.js';
-import { render, shaped } from './views.js';
+import { messagePieces, render, shaped } from './views.js';
 import { changedSinceApproved, lastLineOf, notesOf, pixels, presentEntry, reviewOf, rulesOf, sizesAndClients, startedWords, whenWords } from './workspace.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -1347,9 +1347,18 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
   const states = hosted ? listStates(dir) : [];
   const stateOn = () => states.find(s => s.id === designs.state(dKey)) ?? states[0] ?? null;
   const datasetFor = state => datasetOf(app, dKey, dir, state);
-  const context = { base, routes, states, datasetOf: datasetFor };
-  // How the pages show transcript entries, pushed or rendered.
-  const view = { present: item => presentEntry(item, context), base };
+  // What the chat's visuals are drawn with: this folder's architecture (the
+  // session's branch's), as it stands when they're shown (R-x2a). Read again
+  // at most every second, since a streaming message is rendered often.
+  let drawnWith = null;
+  const architectureNow = () => {
+    if (!drawnWith || Date.now() - drawnWith.at > 1000) drawnWith = { at: Date.now(), architecture: visualsArchitecture(app, folder) };
+    return drawnWith.architecture;
+  };
+  const context = { base, routes, states, datasetOf: datasetFor, architecture: architectureNow };
+  // How the pages show transcript entries, pushed or rendered, and the
+  // message being written (its pieces, R-w5g).
+  const view = { present: item => presentEntry(item, context), words: text => messagePieces(text, architectureNow(), { streaming: true }), base };
 
   // A window's way of looking at the design (its size and its client), from
   // a form's fields or a URL's query: the design's forms post surface.view
@@ -1538,7 +1547,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       state: turnOf(session),
       entries: session ? readEntries(dir, session.id).map(view.present) : [],
       // What the agent is writing now, so the transcript ends with it.
-      streaming: session ? turns.streaming(folder, design, session.id) : null,
+      streaming: session ? turns.streaming(folder, design, session.id, view) : null,
       rules: rulesOf(dir, context),
       questions: notes.questions,
       decisions: notes.decisions,
@@ -1764,7 +1773,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
     const body = render('./_window', {
       ...basics(),
       rules: rulesOf(dir, context),
-      streaming: session ? turns.streaming(folder, design, session.id) : null,
+      streaming: session ? turns.streaming(folder, design, session.id, view) : null,
       surface: surfaceOf({ ...fromQuery(), view: 'window', showing: true }),
     });
     if (fragment) return send(res, 200, body);
@@ -1971,6 +1980,10 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       drift: entry && (session?.build || design.kind === 'fix')
         ? () => checkAfterTurn(app, folder, changedSince(folder.path, 'HEAD'), { announce: () => tell(app, { architecture: true }) })
         : null,
+      // ...and the parts its changed files belong to, drawn on the map in the chat (R-c1y).
+      changedParts: entry && (session?.build || design.kind === 'fix')
+        ? () => partsChanged(app, folder, changedSince(folder.path, 'HEAD'))
+        : null,
       format: format(),
       kodaPath: views ? koda : null,
       stack: (() => { const config = readHostConfig(folder.path); return config && { ext: config.views, guide: config.guide }; })(),
@@ -2083,7 +2096,7 @@ async function handleDesign({ req, res, url, page, app, folder, design, dir, res
       shared: [],
       references: reading,
       check: null,
-      systemPrompt: askPrompt({ designs: listDesigns(folder.path), app: project, references: reading, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaFor(app, folder).path }),
+      systemPrompt: askPrompt({ designs: listDesigns(folder.path), app: project, references: reading, stack: config && { ext: config.views, guide: config.guide }, kodaPath: kodaFor(app, folder).path, architecture: architectureFor() }),
     };
   };
 

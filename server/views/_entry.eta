@@ -23,12 +23,21 @@
   </div>
 </li>
 <% } else if (e.type === 'text') { %>
-<li class="entry agent"><div class="prose"><%~ e.html %></div></li>
+<%/* The agent's words, and any visuals it drew among them (_message.eta). */%>
+<li class="entry agent"><%~ include('./_message', { pieces: e.pieces ?? [{ kind: 'text', html: e.html }] }) %></li>
 <% } else if (e.type === 'tool') { %>
 <li class="entry tool"><span class="tool-name"><%= e.name %></span> <span class="tool-summary"><%= e.summary %></span></li>
 <% } else if (e.type === 'tool-result' && e.error) { %>
 <li class="entry tool failed">
   <details><summary><%= e.name ?? 'Tool' %> was refused or failed</summary><pre><%= e.text %></pre></details>
+</li>
+<% } else if (e.type === 'parts') { %>
+<%/* After a turn that changed the app's code (a fix, a build): the parts its
+     files belong to, on the map, as Prelude reads them, not the agent
+     (D-v3x). Open, since it's the turn's outcome; it folds away. */%>
+<li class="entry note">
+  <details class="disclosure" open><summary><%= e.map.count === 1 ? 'This turn changed 1 part of the app' : `This turn changed ${e.map.count} parts of the app` %><% if (e.files) { %> (<%= e.files === 1 ? '1 file' : `${e.files} files` %>)<% } %>.</summary>
+  <%~ include('./_visual-map', { ...e.map, target: 'drawer?' }) %></details>
 </li>
 <% } else if (e.type === 'check' && e.failures.length) { %>
 <li class="entry note failed">

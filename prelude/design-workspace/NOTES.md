@@ -537,6 +537,43 @@ Where the app differs from the screens, on purpose:
   shell's `_regions`; `desktop.js` for What's in view). Views and states
   unchanged: this design's pages are the app's.
 
+## Built: visuals in the chat (2026-10-23)
+
+- The page's route renders the app's `_session.eta` again. `_entry.eta` and
+  `_live-entry.eta` changed; `_message`, `_visual-flow`, `_visual-map`,
+  `_visual-drawing` and `_visual-unread` are the app's now. The design's
+  styles needed nothing new: flow and map are the design system's.
+- **Reading a block** is `server/visuals.js` (D-v3x): the registry of kinds
+  (`prelude-flow-1`, `prelude-map-1`), splitting a message on its top-level
+  fences by Koda's own fence rule, and reading and checking each block into
+  its partial's model, or saying why not (R-x2a, R-f7c, R-m4v). The
+  architecture's flow files are read with the same step parser.
+- **Pieces** come from `messagePieces` (`server/views.js`), with the
+  architecture of the folder the page is for (the session's branch's
+  worktree, or the project), read as it stands each time the entry is shown
+  (`visualsArchitecture`, `server/architecture.js`; at most once a second),
+  so a renamed part turns an old visual back into its block (R-0hq). The
+  transcript keeps the agent's words as written; nothing is told to the
+  agent (R-b8s).
+- **Streaming**: the live entry's pushes (`push-delta.eta`) now re-render
+  the whole `_message` into the live entry (`#live-n`), not its words into
+  `#live-n-text`, since the message is a stack of pieces. A block not yet
+  closed is a placeholder (R-w5g); `DesignPage.streaming` has `pieces`.
+- **The parts a turn changed** (R-c1y): after a build or fix turn,
+  `partsChanged` (`server/architecture.js`) maps the code files changed
+  since HEAD to their parts by the parts' `files`, and the turn records
+  `{ type: 'parts', files, parts: [{ id, files }] }`. It's drawn as a map
+  when shown, each part's files as its note; with no architecture, or none
+  of its parts left, it says only how many files changed.
+- **The agent is told the vocabulary** with the architecture brief (design,
+  build and fix prompts) and, in a conversation about the project, with a
+  read-only brief (`askPrompt`), once the project has an architecture.
+- **A part opens in the drawer** with no change to its route: the design
+  page is in the app layout, so a fragment request from it already gets the
+  part alone (`askedFromLayout(req, 'app')`).
+- Not done: the Architecture page still draws its own map
+  (`architecture/overview.eta`), not `_visual-map.eta` with no mark.
+
 ## Open questions
 
 - Not taken on yet for the message box: @ mentions of pages, states,

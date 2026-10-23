@@ -36,8 +36,9 @@ import { presentEntry as presentWords } from './views.js';
  * @property {SessionItem[]} sessions  the design's sessions; on a build session's page, its build sessions
  * @property {{ id: string, title: string }|null} session
  * @property {TurnState} state
- * @property {object[]} entries      transcript entries, presented (presentEntry)
- * @property {{ id: string, html: string }|null} [streaming]  what the agent is writing now: its live entry's id, and the words so far as markdown
+ * @property {{ title: string, url: string }[]|null} [changes]  a fix's: the designs its branch changes
+ * @property {Entry[]} entries       transcript entries, presented (presentEntry)
+ * @property {{ id: string, pieces: Piece[], html?: string }|null} [streaming]  what the agent is writing now: its live entry's id, and the message so far
  * @property {Rule[]} rules
  * @property {{ id: string, text: string, asked: string|null }[]} questions
  * @property {{ title: string, why: string }[]} decisions
@@ -111,6 +112,54 @@ import { presentEntry as presentWords } from './views.js';
  * @property {boolean} [screensOnly] a design of plain screens/*.html, not views
  *
  * @typedef {{ path: string, title: string, state: string|null, stateTitle: string|null, error?: string }} PageNamed
+ *
+ * @typedef {object} Entry         one transcript entry, by its type, presented
+ * @property {number|string} [id]
+ * @property {'user'|'text'|'tool'|'tool-result'|'parts'|'check'|'note'|'turn'} type
+ * @property {string} [message]    the person's
+ * @property {string} [lookingAt]
+ * @property {{ id: string, name: string, url: string }[]} [images]
+ * @property {string} [html]       the agent's words, whole
+ * @property {Piece[]} [pieces]    the agent's words and visuals, in the order written (R-6jw)
+ * @property {string} [name]       a tool's
+ * @property {string} [summary]
+ * @property {string} [text]
+ * @property {boolean|string|null} [error]   a tool's failed; a turn's, why
+ * @property {number} [files]     parts: how many of the app's files the turn changed
+ * @property {VisualMap} [map]     parts: the map of them (R-c1y)
+ * @property {boolean} [failed]   a note's
+ * @property {number} [rendered]   a check's, with what it found
+ * @property {PageNamed[]} [failures]
+ * @property {PageNamed[]} [differ]
+ * @property {string[]} [warnings]
+ * @property {string[]} [ahead]
+ * @property {{ title: string, url: string }[]} [designs]   a fix's check: the designs it rendered
+ * @property {{ title: string, url: string, count: number }[]} [differDesigns]
+ * @property {boolean} [ok]        a turn's end
+ * @property {boolean} [stopped]
+ *
+ * @typedef {object} Piece         a piece of an agent's message (_message.eta)
+ * @property {'text'|'flow'|'map'|'drawing'|'unread'} kind
+ * @property {string} [html]       text
+ * @property {VisualFlow} [flow]
+ * @property {VisualMap} [map]
+ * @property {'flow'|'map'} [of]   drawing: what it's drawing (R-w5g)
+ * @property {string} [tag]        unread: the block as written, and why it wasn't drawn (R-x2a, R-f7c)
+ * @property {string} [code]
+ * @property {string} [why]
+ *
+ * @typedef {object} VisualFlow    a flow (_visual-flow.eta)
+ * @property {string} [title]
+ * @property {number} lanes
+ * @property {boolean} many
+ * @property {{ title: string, url: string, series: number }[]} parts
+ * @property {{ lane: number, series: number, part: { title: string, url: string }, html: string }[]} steps
+ *
+ * @typedef {object} VisualMap     a map of the parts (_visual-map.eta, R-k9u)
+ * @property {string} label
+ * @property {'named'|'touched'} [mark]
+ * @property {number} count
+ * @property {{ title: string, parts: { id: string, title: string, url: string, summary: string, marked?: boolean, note?: string, outside?: boolean }[] }[]} layers
  */
 
 // --- times, as the page says them -------------------------------------------
@@ -381,9 +430,12 @@ export function reviewOf(designDir, context) {
 // --- transcript entries -----------------------------------------------------
 
 /**
- * An entry ready for _entry.eta: the agent's words as HTML, the person's
- * message with its images' addresses, and a check's pages with their states.
- *   context: { base, routes, states, datasetOf }
+ * An entry ready for _entry.eta: the agent's words as their pieces (words
+ * and visuals), the person's message with its images' addresses, a check's
+ * pages with their states, and the parts a turn changed as a map.
+ *   context: { base, routes, states, datasetOf, architecture? }
+ * `architecture()`, if given, is what visuals are drawn with: the session's
+ * branch's parts as they stand now (visualsArchitecture, architecture.js).
  */
 export function presentEntry(entry, context) {
   if (entry.type === 'user') {
@@ -394,7 +446,7 @@ export function presentEntry(entry, context) {
     };
   }
   if (entry.type === 'check') return presentCheck(entry, context);
-  return presentWords(entry);
+  return presentWords(entry, { architecture: context.architecture?.() ?? null });
 }
 
 /** A session's last line from the agent, for "Carry on from…": plain words, one sentence or so. */

@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Turn on dictation
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/loan-offers" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Loan offers
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/borrower-portal/d/loan-offers" ko-scope="/">
+<link href="/static/workspace.css" rel="stylesheet">
+<div class="stack gap-3 design-page fills">
+<header class="cluster gap-3 design-head">
+<div class="stack gap-0">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+<span aria-hidden="true">
+›
+</span>
+<a href="/f/borrower-portal">
+borrower-portal
+</a>
+<span aria-hidden="true">
+›
+</span>
+<span>
+Borrowing
+</span>
+</nav>
+<div class="cluster gap-2">
+<h1>
+Loan offers
+</h1>
+</div>
+</div>
+<span class="spacer">
+</span>
+<div class="cluster">
+<a class="btn small ghost branch-summary" href="/f/borrower-portal/d/loan-offers/about" ko-target="drawer?" title="The branch, what this design uses, and what the agent can read.">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+<code>
+prelude/loan-offers
+</code>
+<span class="pill good">
+Check passes
+</span>
+</a>
+<a class="btn small" href="/f/borrower-portal/d/loan-offers/build">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+Build
+</a>
+</div>
+</header>
+<div class="split gap-3 workspace" style="--side: 26rem">
+<section aria-label="Session" class="panel side chat">
+<div class="toolbar">
+<div class="menu start sessions-menu">
+<button class="btn small ghost" ko-for="sessionMenu" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-session">
+</span>
+<span class="clip">
+Accepting, and expiry
+</span>
+</button>
+<ul class="menu-list" ko-as="sessionMenu" popover>
+<li>
+<a aria-current="page" href="/f/borrower-portal/d/loan-offers/sessions/20261023-1124-p9wd">
+<span class="item-title">
+Accepting, and expiry
+</span>
+<span class="muted">
+Today, 11:24
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/sessions/20261023-1010-h4tc">
+<span class="item-title">
+How compare works
+</span>
+<span class="muted">
+Today, 10:10
+</span>
+</a>
+</li>
+</ul>
+</div>
+<span class="spacer">
+</span>
+<label class="choice" title="Show each file the agent reads, searches or edits, between its messages.">
+<input class="show-tools" ko-persist-in="local" ko-persist="chat.showTools" type="checkbox">
+Tools
+</label>
+</div>
+<div class="transcript-scroll">
+<ol aria-live="polite" class="transcript" id="transcript" ko-region>
+<li class="entry user">
+<div class="stack gap-1 sent">
+<div class="bubble">
+Walk me through accepting an offer, and what happens when one expires while the borrower has it open.
+</div>
+<span class="muted looked-at">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+Offer › Accept the offer · An offer expired
+</span>
+</div>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+prelude/borrower-architecture/architecture/flows/accept.md
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+prelude/borrower-architecture/architecture/flows/expiry.md
+</span>
+</li>
+<li class="entry tool">
+<span class="tool-name">
+Read
+</span>
+<span class="tool-summary">
+prelude/loan-offers/events.json
+</span>
+</li>
+<li class="entry agent">
+<div class="stack gap-3 message" id="loan-offers-text" ko-region>
+<div class="prose">
+<p>
+Two flows. First, accepting: five parts take part, so here it’s a list.
+</p>
+</div>
+<figure class="flow many" style="--lanes: 5">
+<figcaption class="flow-title">
+Accepting an offer
+</figcaption>
+<ul aria-hidden="true" class="flow-parts">
+<li class="flow-part" style="--series: var(--series-1)">
+<a href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?" tabindex="-1">
+Offer pages
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-2)">
+<a href="/f/borrower-portal/architecture/parts/acceptance" ko-target="drawer?" tabindex="-1">
+Acceptance
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-3)">
+<a href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?" tabindex="-1">
+Lender API
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-4)">
+<a href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?" tabindex="-1">
+Offer store
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-5)">
+<a href="/f/borrower-portal/architecture/parts/notifications" ko-target="drawer?" tabindex="-1">
+Notifications
+</a>
+</li>
+</ul>
+<ol class="flow-steps">
+<li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+Offer pages
+</a>
+<span class="flow-text">
+Takes Accept, with the borrower’s consent ticked
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/acceptance" ko-target="drawer?">
+Acceptance
+</a>
+<span class="flow-text">
+Refuses it if the offer has expired (R-q8m)
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?">
+Lender API
+</a>
+<span class="flow-text">
+Locks the rate with Northfield Lending
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 4; --series: var(--series-4)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+Offer store
+</a>
+<span class="flow-text">
+Marks the offer accepted, and the borrower’s other offers withdrawn
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 5; --series: var(--series-5)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/notifications" ko-target="drawer?">
+Notifications
+</a>
+<span class="flow-text">
+Emails the borrower a copy of the terms (R-7dn)
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+Offer pages
+</a>
+<span class="flow-text">
+Shows the confirmation, with the lender’s reference
+</span>
+</div>
+</li>
+</ol>
+</figure>
+<div class="prose">
+<p>
+Expiry starts on the server, not on the page:
+</p>
+</div>
+<figure class="flow" style="--lanes: 3">
+<figcaption class="flow-title">
+An offer expires
+</figcaption>
+<ul aria-hidden="true" class="flow-parts">
+<li class="flow-part" style="--series: var(--series-1)">
+<a href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?" tabindex="-1">
+Offer store
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-2)">
+<a href="/f/borrower-portal/architecture/parts/offers" ko-target="drawer?" tabindex="-1">
+Offers
+</a>
+</li>
+<li class="flow-part" style="--series: var(--series-3)">
+<a href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?" tabindex="-1">
+Offer pages
+</a>
+</li>
+</ul>
+<ol class="flow-steps">
+<li class="flow-step" style="--lane: 1; --series: var(--series-1)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+Offer store
+</a>
+<span class="flow-text">
+Reaches the offer’s
+<code>
+expires_at
+</code>
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 2; --series: var(--series-2)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offers" ko-target="drawer?">
+Offers
+</a>
+<span class="flow-text">
+Sends
+<code>
+offer-expired
+</code>
+to the borrower’s open pages
+</span>
+</div>
+</li>
+<li class="flow-step" style="--lane: 3; --series: var(--series-3)">
+<div class="flow-box">
+<a class="flow-part" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+Offer pages
+</a>
+<span class="flow-text">
+Puts when it expired in place of Accept, without a reload
+</span>
+</div>
+</li>
+</ol>
+</figure>
+<div class="prose">
+<p>
+So the design already covers both:
+<em>
+An offer expired
+</em>
+shows the page after the event, and Send event shows it arriving. If an offer expires
+<strong>
+while
+</strong>
+the borrower is pressing Accept, Acceptance refuses it and the page says so. That last part isn’t designed yet. It would change:
+</p>
+</div>
+<figure class="stack gap-2">
+<div aria-label="borrower-portal’s parts" class="map">
+<section aria-label="Pages" class="map-layer">
+<h3 class="map-label">
+Pages
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node named" href="/f/borrower-portal/architecture/parts/offer-pages" ko-target="drawer?">
+<span class="map-node-title">
+Offer pages
+</span>
+<span class="muted">
+Accept the offer says it expired as you pressed it
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/account-pages" ko-target="drawer?">
+<span class="map-node-title">
+Account pages
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Services" class="map-layer">
+<h3 class="map-label">
+Services
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offers" ko-target="drawer?">
+<span class="map-node-title">
+Offers
+</span>
+</a>
+</li>
+<li>
+<a class="map-node named" href="/f/borrower-portal/architecture/parts/acceptance" ko-target="drawer?">
+<span class="map-node-title">
+Acceptance
+</span>
+<span class="muted">
+A 409 with when it expired, not a 500
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/notifications" ko-target="drawer?">
+<span class="map-node-title">
+Notifications
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Data" class="map-layer">
+<h3 class="map-label">
+Data
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/offer-store" ko-target="drawer?">
+<span class="map-node-title">
+Offer store
+</span>
+</a>
+</li>
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/pricing" ko-target="drawer?">
+<span class="map-node-title">
+Pricing
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Shared helpers" class="map-layer">
+<h3 class="map-label">
+Shared helpers
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node" href="/f/borrower-portal/architecture/parts/money" ko-target="drawer?">
+<span class="map-node-title">
+Money
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-label="Outside" class="map-layer">
+<h3 class="map-label">
+Outside
+</h3>
+<ul class="map-nodes">
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/lender-api" ko-target="drawer?">
+<span class="map-node-title">
+Lender API
+</span>
+</a>
+</li>
+<li>
+<a class="map-node outside" href="/f/borrower-portal/architecture/parts/sendgrid" ko-target="drawer?">
+<span class="map-node-title">
+SendGrid
+</span>
+</a>
+</li>
+</ul>
+</section>
+</div>
+<figcaption class="muted">
+Read from the top: each part uses parts in its own layer or below it.
+</figcaption>
+</figure>
+<div class="prose">
+<p>
+Want me to design that refusal on
+<em>
+Accept the offer
+</em>
+?
+</p>
+</div>
+</div>
+</li>
+<li class="entry note">
+Prelude rendered every page and form in every state (18), and they all render.
+</li>
+</ol>
+</div>
+<ol aria-label="Waiting to send" class="transcript queued" id="queued" ko-region>
+</ol>
+<div id="agent-status" ko-region>
+</div>
+<form action="/f/borrower-portal/d/loan-offers/sessions/20261023-1124-p9wd/messages" class="composer" id="composer" ko-attach="replace" ko-item ko-region ko-target="self" method="post">
+<ul aria-label="Images to send" class="attachments" id="attachments" ko-invoke="event:draft-changed" ko-source="/f/borrower-portal/d/loan-offers/draft">
+</ul>
+<div id="message-box" ko-region>
+<label class="sr-only" for="message">
+Message
+</label>
+<textarea id="message" ko-as="message" name="message" placeholder="Describe what to design, or paste a sketch or a screenshot. Enter to send, Shift+Enter for a new line." required rows="3">
+</textarea>
+</div>
+<div hidden ko-debounce="800" ko-form="/f/borrower-portal/d/loan-offers/draft" ko-invoke="input:message" ko-method="post" ko-target="draftKept">
+<input calc-value="message.value" ko-as="draftMessage" name="message" type="hidden">
+</div>
+<div class="composer-foot">
+<div class="composer-tools">
+<input name="lookingAt.include" type="hidden" value="false">
+<label class="chip" title="Tells the agent which page you mean. Turn it off for a message about something else.">
+<input checked name="lookingAt.include" type="checkbox" value="true">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="chip-text" ko-invoke="event:design-changed" ko-source="/f/borrower-portal/d/loan-offers/looking-at">
+<span class="sr-only">
+Looking at
+</span>
+Offer › Accept the offer · An offer expired
+<span calc-text="lookingSize.value ? ' · ' + lookingSize.value : ''">
+</span>
+<input name="lookingAt.page" type="hidden" value="/offers/off-2291/accept">
+<input name="lookingAt.state" type="hidden" value="03-expired">
+<input calc-value="lookingSize.value" name="lookingAt.size" type="hidden">
+</span>
+</label>
+<div ko-form="/f/borrower-portal/d/loan-offers/attachments" ko-invoke="change" ko-method="post" ko-target="attachments">
+<label class="icon-btn small" title="Attach an image. You can also paste one, or drop it on the box.">
+<span aria-hidden="true" class="icon icon-attach">
+</span>
+<span class="sr-only">
+Attach an image
+</span>
+<input accept="image/png, image/jpeg, image/gif, image/webp" class="sr-only" ko-as="upload" multiple name="image" type="file">
+</label>
+</div>
+<span id="dictation" ko-invoke="event:dictation-changed" ko-source="/f/borrower-portal/d/loan-offers/dictation/button">
+<span class="cluster gap-2 dictation" ko-item>
+<a class="icon-btn small" href="/f/borrower-portal/d/loan-offers/dictation" ko-target="modal?" title="Dictate: say your message instead of typing it">
+<span aria-hidden="true" class="icon icon-dictate">
+</span>
+<span class="sr-only">
+Dictate
+</span>
+</a>
+</span>
+</span>
+<span class="muted" ko-as="draftKept" ko-region role="status">
+</span>
+</div>
+<button class="btn small primary" ko-as="send" type="submit">
+Send
+</button>
+</div>
+<template ko-as="sending">
+<li class="entry user sending">
+<div class="stack gap-1 sent">
+<ul aria-label="Images" class="attachments">
+</ul>
+<div class="bubble">
+</div>
+<span class="muted looked-at">
+Sending…
+</span>
+</div>
+</li>
+</template>
+<script type="koda">
+// What no binding or trigger expresses: Enter to send; taking an image // the person pastes or drops, which means moving a File into the // upload's input (it then uploads as if chosen there); and showing the // message the moment it's sent. Listened for on the form, since // dictation replaces the box itself. const { message, upload, send, sending } = koda.scope(); const form = message.element.form; const inBox = event => event.target.name === 'message'; // A message shown as sending that the server hasn't taken: this box came // back with a refusal, or the transcript already has the real one. for (const left of document.querySelectorAll('.entry.sending')) left.remove(); form.addEventListener('submit', event => { if (event.submitter && event.submitter !== send.element) return; // Remove on a thumbnail const words = message.element.value.trim(); const images = [...form.querySelectorAll('#attachments img.thumb')]; if (!words && !images.length) return; const list = document.getElementById(form.action.endsWith('/queue') ? 'queued' : 'transcript'); if (!list) return; const entry = sending.element.content.firstElementChild.cloneNode(true); const bubble = entry.querySelector('.bubble'); if (words) bubble.textContent = words; else bubble.remove(); const tray = entry.querySelector('.attachments'); for (const image of images) { const item = document.createElement('li'); item.append(image.cloneNode()); tray.append(item); } if (!images.length) tray.remove(); list.querySelector('.entry.starters')?.remove(); list.append(entry); }); form.addEventListener('keydown', event => { if (inBox(event) && event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); } }); const take = files => { const images = [...files].filter(file => file.type.startsWith('image/')); if (!images.length) return false; const moved = new DataTransfer(); for (const image of images) moved.items.add(image); upload.element.files = moved.files; upload.element.dispatchEvent(new Event('change', { bubbles: true })); return true; }; const carriesFiles = event => [...(event.dataTransfer?.types ?? [])].includes('Files'); form.addEventListener('paste', event => { if (inBox(event) && take(event.clipboardData?.files ?? [])) event.preventDefault(); }); form.addEventListener('dragover', event => { if (!carriesFiles(event)) return; event.preventDefault(); form.dataset.dropping = ''; }); form.addEventListener('dragleave', event => { if (!form.contains(event.relatedTarget)) delete form.dataset.dropping; }); form.addEventListener('drop', event => { delete form.dataset.dropping; if (carriesFiles(event) && take(event.dataTransfer.files)) event.preventDefault(); });
+</script>
+</form>
+</section>
+<section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser">
+<input id="lookingSize" type="hidden" value="">
+<div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=inline&amp;size=fit&amp;client=browser&amp;shown=0">
+<div class="toolbar">
+<div class="menu start">
+<button class="btn small ghost" ko-for="pageMenu" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="clip">
+Offer › Accept the offer
+</span>
+</button>
+<div class="menu-list" ko-as="pageMenu" popover>
+<form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button name="surface.current" type="submit" value="/offers">
+<span class="item-title">
+Offers
+</span>
+<span class="muted">
+/offers · the app’s own view
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/off-2291">
+<span class="item-title">
+Offer
+</span>
+<span class="muted">
+/offers/off-2291
+</span>
+</button>
+<button aria-current="true" name="surface.current" type="submit" value="/offers/off-2291/accept">
+<span class="item-title">
+Offer › Accept the offer
+</span>
+<span class="muted">
+/offers/off-2291/accept
+</span>
+</button>
+<button name="surface.current" type="submit" value="/offers/compare">
+<span class="item-title">
+Compare offers
+</span>
+<span class="muted">
+/offers/compare
+</span>
+</button>
+</form>
+<hr>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Refresh
+</span>
+<span class="muted">
+Load this page again
+</span>
+</a>
+<a href="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291/accept" target="_blank">
+<span class="item-title">
+Open in browser
+</span>
+<span class="muted">
+http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291/accept
+</span>
+</a>
+</div>
+</div>
+<a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 0 are shown on this page.">
+<span aria-hidden="true" class="icon icon-rule">
+</span>
+Rules
+</a>
+<div class="menu start">
+<button class="btn small ghost" ko-for="stateMenu" popovertarget type="button">
+<span class="clip">
+State: An offer expired
+</span>
+</button>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-as="stateMenu" ko-target="design" method="post" popover>
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<button name="surface.state" type="submit" value="01-typical">
+<span class="item-title">
+Typical
+</span>
+<span class="muted">
+01-typical.json
+</span>
+</button>
+<button name="surface.state" type="submit" value="02-no-offers">
+<span class="item-title">
+No offers yet
+</span>
+<span class="muted">
+02-no-offers.json
+</span>
+</button>
+<button aria-current="true" name="surface.state" type="submit" value="03-expired">
+<span class="item-title">
+An offer expired
+</span>
+<span class="muted">
+03-expired.json
+</span>
+</button>
+</form>
+</div>
+<div class="menu start">
+<button class="btn small ghost" ko-for="eventMenu" popovertarget type="button">
+Send event
+</button>
+<form action="/f/borrower-portal/d/loan-offers/events" class="menu-list" ko-as="eventMenu" ko-target="event-status" method="post" popover>
+<button name="event" type="submit" value="offer-expired">
+<span class="item-title">
+An offer expires
+</span>
+<span class="muted">
+offer-expired
+</span>
+</button>
+</form>
+</div>
+<span id="event-status" ko-region role="status">
+</span>
+<div class="menu start">
+<button class="btn small ghost" ko-for="captureMenu" popovertarget title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up." type="button">
+<span aria-hidden="true" class="icon icon-capture">
+</span>
+Capture
+</button>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-as="captureMenu" ko-target="capture-status" method="post" popover>
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="fit">
+<input name="surface.client" type="hidden" value="browser">
+<input name="name" type="hidden" value="Offer › Accept the offer – An offer expired.png">
+<input name="page" type="hidden" value="/offers/off-2291/accept">
+<input name="state" type="hidden" value="03-expired">
+<input accept="image/png" data-capture-picture hidden name="picture" type="file">
+<button data-capture-shown name="whole" type="submit" value="false">
+<span class="item-title">
+What’s in view
+</span>
+<span class="muted" data-browser-only>
+As much as fits the frame, opened afresh: what you’ve typed isn’t in it
+</span>
+<span class="muted" data-desktop-only>
+As much as fits the frame, exactly as it is now, with what you’ve typed
+</span>
+</button>
+<button name="whole" type="submit" value="true">
+<span class="item-title">
+The whole page
+</span>
+<span class="muted">
+Scrolled to its end, as wide as the frame, opened afresh
+</span>
+</button>
+</form>
+</div>
+<span id="capture-status" ko-region role="status">
+</span>
+<span class="spacer">
+</span>
+<div class="menu">
+<button class="btn small ghost" ko-for="sizeMenu" popovertarget title="The size this window lays the page out at." type="button">
+<span aria-hidden="true" class="icon icon-fit">
+</span>
+Fit the panel
+</button>
+<ul class="menu-list" ko-as="sizeMenu" popover>
+<li>
+<a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=fit&amp;client=browser" ko-target="design">
+<span class="item-title">
+Fit the panel
+</span>
+<span class="muted">
+As wide and tall as the panel
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal/d/loan-offers/preview?view=inline&amp;size=phone&amp;client=browser" ko-target="design">
+<span class="item-title">
+Phone
+</span>
+<span class="muted">
+390 × 844
+</span>
+</a>
+</li>
+<li>
+<form action="/f/borrower-portal/d/loan-offers/size" class="stack gap-2 custom-size" ko-target="design" method="post">
+<input name="surface.view" type="hidden" value="inline">
+<input name="surface.size" type="hidden" value="custom">
+<input name="surface.client" type="hidden" value="browser">
+<span class="item-title">
+Custom size
+</span>
+<div class="inline">
+<label class="sr-only" for="size-width-inline">
+Width in pixels
+</label>
+<input id="size-width-inline" max="4000" min="200" name="surface.custom.width" placeholder="Width" required type="number" value="">
+<span aria-hidden="true" class="muted">
+×
+</span>
+<label class="sr-only" for="size-height-inline">
+Height in pixels
+</label>
+<input id="size-height-inline" max="4000" min="200" name="surface.custom.height" placeholder="Height" required type="number" value="">
+<button class="btn small" type="submit">
+Use this size
+</button>
+</div>
+</form>
+</li>
+</ul>
+</div>
+<a class="btn small ghost" data-pop-out href="/f/borrower-portal/d/loan-offers/window" target="prelude-borrower-portal-loan-offers">
+<span aria-hidden="true" class="icon icon-external">
+</span>
+Pop out
+</a>
+</div>
+</div>
+<input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="">
+<input form="capture-form" ko-as="frameHeight" name="frame.height" type="hidden" value="">
+<input form="capture-form" ko-as="frameAt" name="frame.at" type="hidden" value="">
+<div class="design-frame" ko-as="frame">
+<div class="device" ko-as="device">
+<iframe src="http://loan-offers.borrower-portal.preview.localhost:4200/offers/off-2291/accept" title="Offer › Accept the offer">
+</iframe>
+</div>
+</div>
+<script type="koda">
+// At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
+</script>
+<script type="koda">
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. // Koda's warnings in the page (0.1.4) arrive the same way, and join // Prelude's own in the shell's list (_regions.eta), said to be the // design's. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; if (event.data?.type === 'prelude:warning' && typeof event.data.message === 'string') { const list = document.querySelector('[ko-warnings]'); if (!list) return console.warn(event.data.message); const item = document.createElement('li'); item.setAttribute('ko-warning', event.data.code); item.textContent = `In the design’s page: ${event.data.message}`; list.append(item); const kept = list.querySelectorAll(':scope > [ko-warning]'); for (let index = 0; index
+<
+kept.length - 100; index += 1) kept[index].remove(); } }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
+</script>
+</section>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/f/borrower-portal/d/loan-offers/dictation" ko-region tabindex="-1">
+<div class="stack gap-4">
+<h2>
+Dictate your messages?
+</h2>
+<p class="secondary">
+Press the microphone and speak, then press it again: what you said is typed into the message box, for you to check and send. It’s turned into text here, on this computer. Nothing you say leaves it.
+</p>
+<form action="/f/borrower-portal/d/loan-offers/dictation" class="stack gap-4" ko-target="dictation" method="post">
+<input name="status" type="hidden" value="downloading">
+<input name="progress" type="hidden" value="0">
+<fieldset class="stack gap-2">
+<legend class="label">
+It needs a speech model, downloaded once
+</legend>
+<div class="choices">
+</div>
+</fieldset>
+<div class="notice warn">
+<p>
+This downloads the model from Hugging Face (
+<code>
+huggingface.co
+</code>
+) into Prelude’s folder on this computer. You can remove it later.
+</p>
+</div>
+<div class="cluster actions">
+<button class="btn primary" type="submit">
+Download and turn on dictation
+</button>
+<button class="btn ghost" command="--koda-empty" commandfor="modal" type="button">
+Not now
+</button>
+</div>
+</form>
+</div>
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

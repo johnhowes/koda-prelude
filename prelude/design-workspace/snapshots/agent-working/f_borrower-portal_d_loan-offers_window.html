@@ -22,15 +22,15 @@ Pop-out window
 <section aria-label="Design" class="panel design" id="design" ko-attach="replace" ko-invoke="event:design-changed" ko-item ko-location="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-source="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser">
 <div class="panel-head" id="design-bar" ko-invoke="event:files-changed" ko-source="/f/borrower-portal/d/loan-offers/preview/bar?view=window&amp;size=fit&amp;client=browser&amp;shown=0">
 <div class="toolbar">
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="pageMenu" popovertarget type="button">
 <span aria-hidden="true" class="icon icon-screen">
 </span>
 <span class="clip">
 Compare offers
 </span>
-</summary>
-<div class="menu-list">
+</button>
+<div class="menu-list" ko-as="pageMenu" popover>
 <form action="/f/borrower-portal/d/loan-offers/screen" ko-target="design" method="post">
 <input name="surface.view" type="hidden" value="window">
 <input name="surface.size" type="hidden" value="fit">
@@ -86,7 +86,7 @@ http://loan-offers.borrower-portal.preview.localhost:4200/offers/compare
 </span>
 </a>
 </div>
-</details>
+</div>
 <a class="btn small ghost" href="/f/borrower-portal/d/loan-offers/rules" ko-target="drawer?" title="The design’s rules: 1 is shown on this page.">
 <span aria-hidden="true" class="icon icon-rule">
 </span>
@@ -95,13 +95,13 @@ Rules
 1
 </span>
 </a>
-<details class="menu start">
-<summary class="btn small ghost">
+<div class="menu start">
+<button class="btn small ghost" ko-for="stateMenu" popovertarget type="button">
 <span class="clip">
 State: Typical
 </span>
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-target="design" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/state" class="menu-list" ko-as="stateMenu" ko-target="design" method="post" popover>
 <input name="surface.view" type="hidden" value="window">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
@@ -138,12 +138,12 @@ Long names
 </span>
 </button>
 </form>
-</details>
-<details class="menu start">
-<summary class="btn small ghost">
+</div>
+<div class="menu start">
+<button class="btn small ghost" ko-for="eventMenu" popovertarget type="button">
 Send event
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/events" class="menu-list" ko-target="event-status" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/events" class="menu-list" ko-as="eventMenu" ko-target="event-status" method="post" popover>
 <button name="event" type="submit" value="offer-expired">
 <span class="item-title">
 An offer expires
@@ -153,16 +153,16 @@ offer-expired
 </span>
 </button>
 </form>
-</details>
+</div>
 <span id="event-status" ko-region role="status">
 </span>
-<details class="menu start" ko-as="captureMenu">
-<summary class="btn small ghost" title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up.">
+<div class="menu start">
+<button class="btn small ghost" ko-for="captureMenu" popovertarget title="Put a picture of this page, as you have it now, in the message box, to send to the agent or mark up." type="button">
 <span aria-hidden="true" class="icon icon-capture">
 </span>
 Capture
-</summary>
-<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-target="capture-status" method="post">
+</button>
+<form action="/f/borrower-portal/d/loan-offers/capture" class="menu-list" enctype="multipart/form-data" id="capture-form" ko-as="captureMenu" ko-target="capture-status" method="post" popover>
 <input name="surface.view" type="hidden" value="window">
 <input name="surface.size" type="hidden" value="fit">
 <input name="surface.client" type="hidden" value="browser">
@@ -170,7 +170,7 @@ Capture
 <input name="page" type="hidden" value="/offers/compare">
 <input name="state" type="hidden" value="01-typical">
 <input accept="image/png" data-capture-picture hidden name="picture" type="file">
-<button data-capture-shown ko-set="captureMenu.open = false" name="whole" type="submit" value="false">
+<button data-capture-shown name="whole" type="submit" value="false">
 <span class="item-title">
 What’s in view
 </span>
@@ -181,7 +181,7 @@ As much as fits the frame, opened afresh: what you’ve typed isn’t in it
 As much as fits the frame, exactly as it is now, with what you’ve typed
 </span>
 </button>
-<button ko-set="captureMenu.open = false" name="whole" type="submit" value="true">
+<button name="whole" type="submit" value="true">
 <span class="item-title">
 The whole page
 </span>
@@ -190,18 +190,18 @@ Scrolled to its end, as wide as the frame, opened afresh
 </span>
 </button>
 </form>
-</details>
+</div>
 <span id="capture-status" ko-region role="status">
 </span>
 <span class="spacer">
 </span>
-<details class="menu">
-<summary class="btn small ghost" title="The size this window lays the page out at.">
+<div class="menu">
+<button class="btn small ghost" ko-for="sizeMenu" popovertarget title="The size this window lays the page out at." type="button">
 <span aria-hidden="true" class="icon icon-fit">
 </span>
 Fit the panel
-</summary>
-<ul class="menu-list">
+</button>
+<ul class="menu-list" ko-as="sizeMenu" popover>
 <li>
 <a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
@@ -279,14 +279,14 @@ Use this size
 </form>
 </li>
 </ul>
-</details>
-<details class="menu">
-<summary class="btn small ghost" title="What this window shows the page as running in.">
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="clientMenu" popovertarget title="What this window shows the page as running in." type="button">
 <span aria-hidden="true" class="icon icon-screen">
 </span>
 Browser
-</summary>
-<ul class="menu-list">
+</button>
+<ul class="menu-list" ko-as="clientMenu" popover>
 <li>
 <a aria-current="true" href="/f/borrower-portal/d/loan-offers/preview?view=window&amp;size=fit&amp;client=browser" ko-target="design">
 <span class="item-title">
@@ -308,7 +308,7 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 </a>
 </li>
 </ul>
-</details>
+</div>
 </div>
 </div>
 <input form="capture-form" ko-as="frameWidth" name="frame.width" type="hidden" value="">
@@ -324,7 +324,9 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 // At Fit, a capture of what's in view is the frame's own size, which // only the page knows: geometry a ResizeObserver reports. const { frame, frameWidth, frameHeight, onRemove } = koda.scope(); const observer = new ResizeObserver(([entry]) => { frameWidth.element.value = Math.round(entry.contentRect.width); frameHeight.element.value = Math.round(entry.contentRect.height); }); observer.observe(frame.element); onRemove(() => observer.disconnect());
 </script>
 <script type="koda">
-// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
+// Where the frame is now, for Capture (R-w8p): a page the person reached // by following links, or a drawer or modal open over it, at its own // address. The frame is another origin, so its page says so itself: the // design's origin adds a script to the pages it serves into a frame, // which posts the address on each arrival (koda:attached) and on Back. // Only that frame's word is taken. // Koda's warnings in the page (0.1.4) arrive the same way, and join // Prelude's own in the shell's list (_regions.eta), said to be the // design's. const { device, frameAt, onRemove } = koda.scope(); const heard = event => { if (event.source !== device.element.querySelector('iframe')?.contentWindow) return; if (event.data?.type === 'prelude:where' && typeof event.data.at === 'string') frameAt.element.value = event.data.at; if (event.data?.type === 'prelude:warning' && typeof event.data.message === 'string') { const list = document.querySelector('[ko-warnings]'); if (!list) return console.warn(event.data.message); const item = document.createElement('li'); item.setAttribute('ko-warning', event.data.code); item.textContent = `In the design’s page: ${event.data.message}`; list.append(item); const kept = list.querySelectorAll(':scope > [ko-warning]'); for (let index = 0; index
+<
+kept.length - 100; index += 1) kept[index].remove(); } }; window.addEventListener('message', heard); onRemove(() => window.removeEventListener('message', heard));
 </script>
 </section>
 </div>
@@ -353,10 +355,18 @@ Inside the iOS and Android app: no site header, and Back is the app’s own
 <div id="modal" ko-focus="region" ko-region tabindex="-1">
 </div>
 </dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
 <div hidden ko-connect="/_prelude/live">
 </div>
 <script type="module">
-// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
 </script>
 <script src="/static/desktop.js" type="module">
 </script>

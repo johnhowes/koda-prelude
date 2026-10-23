@@ -1,1 +1,1 @@
-<div ko-into="<%= it.id %>-text?"><%~ it.html %></div>
+<div ko-into="<%= it.id %>?"><%~ include('./_message', { id: it.id, pieces: it.pieces }) %></div>

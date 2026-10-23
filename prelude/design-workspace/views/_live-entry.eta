@@ -1,9 +1,0 @@
-<%/* The agent's words while it's still writing them, rendered as markdown as
-     they come, so they look as they will once saved: never raw markdown.
-     Each push replaces the message so far (#<id>-text) with all of it,
-     rendered afresh, since a list or a code block isn't markdown until it's
-     whole enough. A visual it has finished is drawn at once; one it's still
-     writing is a placeholder (_visual-drawing). When the words are done, the
-     saved entry takes this one's place, looking the same. `it` has id and
-     pieces (as a saved message's, _message.eta), or html for words alone. */%>
-<li class="entry agent live" id="<%= it.id %>" ko-region><%~ include('./_message', { id: it.id, pieces: it.pieces ?? [{ kind: 'text', html: it.html ?? '' }] }) %></li>
