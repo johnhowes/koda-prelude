@@ -573,6 +573,11 @@ Where the app differs from the screens, on purpose:
   part alone (`askedFromLayout(req, 'app')`).
 - Not done: the Architecture page still draws its own map
   (`architecture/overview.eta`), not `_visual-map.eta` with no mark.
+- The pop-out window (2026-10-23) needed nothing more: its route already
+  renders the app's `_window.eta`, and its partials (`_surface`, `_frame`,
+  `_design-bar`, `_page-menu`, `_review-menu`, `_keep`) and the window
+  layout are the ones its approved screens were taken from. The check after
+  the Design page's build found every window screen matching, in every state.
 
 ## Open questions
 
