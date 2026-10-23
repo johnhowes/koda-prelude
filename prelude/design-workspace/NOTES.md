@@ -578,6 +578,12 @@ Where the app differs from the screens, on purpose:
   `_design-bar`, `_page-menu`, `_review-menu`, `_keep`) and the window
   layout are the ones its approved screens were taken from. The check after
   the Design page's build found every window screen matching, in every state.
+- The Design page's screens approved again for states 01–08 (the page, the
+  surface, the bar, the microphone, a refused message) needed nothing more
+  (2026-10-23): they show the design system's popover menus (page, review,
+  state, Send event, Capture, size, client, sessions, the speech model's),
+  which the app's views have had since the menu fix (above), and match what
+  states 09–14, approved later, already showed.
 
 ## Open questions
 
