@@ -33,10 +33,7 @@
   *shown-on: /f/:project @ typical, /f/:project @ new-project, /f/:project @ long-names*
 - **R-k2d.** The app card says so only when the app's Koda is older than the version Prelude knows, and offers to upgrade it; while an upgrade is under way it links to that fix instead of offering another, and an app that's up to date or has no Koda says nothing about it.
   *shown-on: /f/:project @ koda-behind, /f/:project @ koda-upgrading, /f/:project @ typical, /f/:project @ large-project*
-  *proposed*
 - **R-q7w.** Upgrading Koda shows the install command before anything runs, runs it only in the upgrade's own branch, and leaves the person's own folder unchanged until that branch is merged.
   *shown-on: /f/:project/app/koda @ koda-behind*
-  *proposed*
 - **R-n6t.** Once an upgrade is merged, the app card offers to install the new Koda in the person's own folder, showing the command first, and nothing is installed there until they confirm; until it's installed, no further upgrade is offered.
   *shown-on: /f/:project @ koda-to-install, /f/:project/app/koda/install @ koda-to-install*
-  *proposed*

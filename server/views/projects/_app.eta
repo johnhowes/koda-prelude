@@ -9,8 +9,20 @@
      copy that renders designs. `app.run` is how it runs (command and url,
      kept on this computer, null until set) and its state: stopped,
      starting, running or failed (with the last of its output in `log`).
-     Clicking Run approves the command it shows (R-h2w). */%>
-<% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}; %>
+     Clicking Run approves the command it shows (R-h2w).
+
+     Its Koda (D-k7v): `app.koda` is the version installed in the app
+     (`version`) and the one Prelude knows (`latest`), with `behind` when the
+     app's is older; `version` null when the app has no Koda. Only a behind app says
+     anything: Upgrade Koda… asks first in the modal, and once a fix is
+     upgrading it (`upgradeBranch`, `upgradeUrl`), the line links to that
+     fix instead (R-k2d). Once an upgrade is merged, the project's own folder
+     still has the old Koda installed: `version` is what's installed there,
+     `wanted` what the app's package.json asks for, and `checkout` the install
+     that would bring it in: its fixed `command`, and its `state`, null when
+     they agree, else ready, installing or failed (with the last of its
+     output in `log`). That comes before any upgrade (R-n6t). */%>
+<% const p = it, app = p.app, stack = app.stack || p.defaultStack, run = app.run ?? {}, koda = app.koda; %>
 <h2 id="app-title">The app</h2>
 <% if (app.status === 'built') { %>
 <p class="secondary"><%= app.stack %><% if (app.path) { %>, in <code><%= app.path %>/</code><% } %>. Each design’s Build page builds its features into it.</p>
@@ -63,6 +75,26 @@
     <div class="cluster actions"><button class="btn small" type="submit">Save</button></div>
   </form>
 </details>
+<% } %>
+<% if (koda?.checkout?.state === 'installing') { %>
+<p class="cluster gap-2 secondary" role="status"><span class="pulse" aria-hidden="true"></span><span>Installing Koda <%= koda.wanted %> in <%= p.name %>’s own folder…</span></p>
+<% } else if (koda?.checkout?.state === 'failed') { %>
+<div class="notice danger" role="alert">
+  <strong>Koda <%= koda.wanted %> couldn’t be installed in your folder.</strong>
+  <p>It still has <%= koda.version %>. The last of what the install said:</p>
+  <pre><%= koda.checkout.log %></pre>
+  <div class="cluster actions"><a class="btn small" href="/f/<%= p.id %>/app/koda/install" ko-target="modal?">Try again…</a></div>
+</div>
+<% } else if (koda?.checkout?.state === 'ready') { %>
+<div class="cluster gap-2">
+  <span class="muted">The app now asks for Koda <%= koda.wanted %>, but your folder still has <%= koda.version %> installed.</span>
+  <a class="btn small ghost" href="/f/<%= p.id %>/app/koda/install" ko-target="modal?">Install Koda <%= koda.wanted %>…</a>
+</div>
+<% } else if (koda?.behind) { %>
+<div class="cluster gap-2">
+  <span class="muted">This app uses Koda <%= koda.version %>; Prelude knows <%= koda.latest %>.<% if (koda.upgradeUrl) { %> It’s being upgraded on <a href="<%= koda.upgradeUrl %>"><code><%= koda.upgradeBranch %></code></a>.<% } %></span>
+  <% if (!koda.upgradeUrl) { %><a class="btn small ghost" href="/f/<%= p.id %>/app/koda" ko-target="modal?">Upgrade Koda…</a><% } %>
+</div>
 <% } %>
 <% } else if (app.status === 'on-branch') { %>
 <p class="secondary">The app is built on the app shell’s branch, <code><%= app.branch %></code>. Once that branch is in your main branch, features can be built on top of it: check what the build made in <a href="<%= app.url %>">the app shell</a>, then finish its branch under In progress.</p>

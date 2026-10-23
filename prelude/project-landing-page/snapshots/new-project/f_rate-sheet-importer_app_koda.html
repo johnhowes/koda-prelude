@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Upgrade Koda
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+5
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/rate-sheet-importer">
+<span class="item-title">
+rate-sheet-importer
+</span>
+<span class="muted">
+C:\Projects\rate-sheet-importer
+</span>
+</a>
+</li>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/rate-sheet-importer" ko-scope="/">
+<div class="center wide project" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+</nav>
+<h1>
+rate-sheet-importer
+</h1>
+<span class="muted project-path">
+C:\Projects\rate-sheet-importer
+</span>
+</div>
+<span class="spacer">
+</span>
+<a class="btn" href="/f/rate-sheet-importer/d/fixes/new" title="Ask the agent about this project, or tell it what’s wrong. It changes nothing until you fix it on a branch.">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Ask or fix…
+</a>
+</div>
+<div class="split" style="--side: 20rem">
+<div class="stack gap-6">
+<div class="empty page">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<div class="stack gap-2">
+<h2>
+Design the first feature
+</h2>
+<p class="secondary">
+A design describes one feature, written as the app’s own views with real-looking data. It grows over sessions with the agent, then is built into the app on a branch of its own.
+</p>
+</div>
+<div class="cluster actions">
+<a class="btn primary large" href="/f/rate-sheet-importer/designs/new" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+Create the first design…
+</a>
+</div>
+<p class="muted">
+Or start with what every design uses:
+<a href="/f/rate-sheet-importer/designs/new?kind=system" ko-target="modal?">
+the design system
+</a>
+or
+<a href="/f/rate-sheet-importer/designs/new?kind=shell" ko-target="modal?">
+the app shell
+</a>
+.
+</p>
+<p class="muted">
+Not sure where to begin?
+<a href="/f/rate-sheet-importer/d/fixes/new">
+Ask the agent about this project
+</a>
+: it reads it first, and changes nothing.
+</p>
+</div>
+</div>
+<aside aria-label="The project’s setup" class="side stack gap-6">
+<section aria-labelledby="reference-title" class="card" id="reference">
+<h2 id="reference-title">
+Reference
+</h2>
+<p class="secondary">
+What every design and build here follows.
+</p>
+<ul class="list">
+<li>
+<a class="item" href="/f/rate-sheet-importer/designs/new?kind=system" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-design-system">
+</span>
+<span class="item-text">
+<span class="item-title">
+Design system
+</span>
+<span class="muted">
+Not made yet · its tokens and components, which every design uses
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/rate-sheet-importer/architecture">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span class="item-title">
+Architecture
+</span>
+<span class="muted">
+Nothing written yet · draft it from the code
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="reading-title" class="card" id="reading">
+<h2 id="reading-title">
+What the agent can read
+</h2>
+<p class="secondary">
+This project, and any folders you add here. Nothing else on this computer. The agent writes only inside the design it’s working on.
+</p>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+This project
+</span>
+<span class="muted project-path">
+C:\Projects\rate-sheet-importer
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div ko-as="references">
+</div>
+<form action="/f/rate-sheet-importer/references" class="stack gap-1" ko-target="referenceField" method="post">
+<div class="stack gap-1" ko-as="referenceField">
+<label class="label" for="reference-path">
+Add a folder
+</label>
+<div class="inline">
+<input autocomplete="off" id="reference-path" name="path" placeholder="C:\Projects\another-app" spellcheck="false" value="">
+<button class="btn small" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn small" type="submit">
+Add
+</button>
+</div>
+</div>
+</form>
+</section>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/f/rate-sheet-importer/app/koda" ko-region tabindex="-1">
+<div class="stack gap-4">
+<h2>
+Nothing to upgrade
+</h2>
+<p class="secondary">
+This app doesn’t use Koda.
+</p>
+<div class="cluster actions">
+<button class="btn" command="--koda-empty" commandfor="modal" type="button">
+Back to the project
+</button>
+</div>
+</div>
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

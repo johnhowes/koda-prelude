@@ -558,6 +558,56 @@ includes resolve here) and page's other partials, copied unchanged. New:
 `_koda`, `_koda-install`. The upgrade modal's hidden `upgradeBranch`/
 `upgradeUrl` are stand-ins; the app makes the fix and its branch name.
 
+## Built: Koda behind, upgrading and installing it (2026-10-23)
+
+`_app` is ported over the app's, and `_koda` and `_koda-install` are new
+beside it in `server/views/projects/`; `page` was already the app's as
+designed, so it's unchanged. Every route's view is `@app` again.
+
+- **Reading it** (`kodaOf()` in `server/app-config.js`): in the app's folder
+  (`prelude.json`'s path), then the project's root, `version` from
+  `node_modules/@kodalang/core/package.json` and `wanted` from the
+  `package.json` that depends on it (a range's lowest: `^0.1.5` is 0.1.5).
+  `latest` is Prelude's own installed Koda.
+- **The model** (`kodaModel()` in `server/project.js`): `behind` when what the
+  app asks for (or, with no `package.json` entry, what's installed) is older
+  than `latest`. `checkout` is ready when what's installed is older than
+  what's asked for, and then `behind` is false: no upgrade is offered until
+  it's installed (R-n6t). An upgrade is under way while a branch's fix id
+  starts `fixes/upgrade-koda-to-` (R-k2d).
+- **Installs** are `server/installs.js`, the part D-k7v named: npm, pnpm or
+  yarn by the lockfile (the app's folder, then the root), the command built
+  there and nowhere else, a five-minute limit, the last 1500 characters of
+  output kept when it fails. Its state ending says `app-changed`, so the card
+  follows it.
+- **Upgrade Koda** (POST `…/app/koda`) makes the fix "Upgrade Koda to
+  <latest>" on its own branch (`prelude/fix-upgrade-koda-to-0-1-5`, not the
+  design's `prelude/fixes/…`: fixes' branches are named so), then runs the
+  command the modal showed in the fix's worktree, and only there (R-q7w). If
+  the fix's copy would install with a different command (its lockfile isn't
+  committed), nothing runs. Once the install ends, the fix's first turn starts
+  with "Upgrade the app's Koda…"; one that failed tells the agent to say why
+  and change nothing. The modal closes and the card links to the fix, as
+  routes.json says, rather than opening the fix's page (the design's note):
+  the fix has nothing to show until its install ends. Refused (nothing behind,
+  one under way, an install pending here), the question comes back, saying why.
+- **Install Koda** (POST `…/app/koda/install`) runs in the project's own
+  folder only when its `checkout` is ready or failed. In your own folder the
+  command changes only `node_modules`, as the modal says: `npm install
+  --no-save @kodalang/core@<wanted>`, or `pnpm`/`yarn install
+  --frozen-lockfile` (they have no `--no-save`, and the merged lockfile
+  already says the version). The design's `npm install @kodalang/core@0.1.5`
+  would rewrite `package.json` and the lockfile there. The form's hidden
+  `state` and `log` are kept and not read.
+- The upgrade modal's hidden `upgradeBranch`/`upgradeUrl` stand-ins aren't in
+  the app's form: the app names the fix and its branch.
+- **The fix's turns commit with `git add -A`**, as every branch's do. An app
+  that doesn't ignore `node_modules` would commit it in the fix.
+- Not built here (the rest of D-k7v, not this design's): passing the agent
+  the app's own Koda rather than Prelude's, and the design host serving it.
+  An upgrade's turn already reads the new version's guidance, since the new
+  version is Prelude's own.
+
 ## Open questions
 
 - **Running it while the design host runs in the same folder**: two

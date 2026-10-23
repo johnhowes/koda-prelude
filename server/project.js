@@ -12,7 +12,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { appOf, DEFAULT_STACK } from './app-config.js';
+import { appOf, DEFAULT_STACK, kodaOf } from './app-config.js';
 import { ARCHITECTURE_DIR } from './architecture.js';
 import { backlogOf } from './backlog.js';
 import { buildable, gitState, mainBranch, remoteOf, uncommittedIn } from './branches.js';
@@ -131,8 +131,24 @@ import { changedSinceApproved } from './workspace.js';
  * @property {string | null} branch   the shell's, while the app is on it
  * @property {string | null} url      where to follow or check it
  * @property {Run} run
+ * @property {Koda} koda
  *
- * @typedef {object} Run           How the app runs from here, and whether it is (runs.js; R-h2w).
+ * @typedef {object} Koda          The app's Koda beside Prelude's (D-k7v; R-k2d, R-n6t).
+ * @property {string | null} version  installed in the project's own folder; null: no Koda
+ * @property {string | null} wanted   what the app's package.json asks for
+ * @property {string | null} latest   the version Prelude knows
+ * @property {boolean} behind         the app asks for an older Koda than Prelude knows
+ * @property {string | null} install  the upgrade's fixed command, while it's behind
+ * @property {string | null} upgradeBranch   the upgrade fix's branch, while one is under way
+ * @property {string | null} upgradeUrl      its page
+ * @property {KodaCheckout} checkout
+ *
+ * @typedef {object} KodaCheckout  Installing what the app asks for in the project's own folder (R-n6t).
+ * @property {'ready' | 'installing' | 'failed' | null} state   null while what's installed is what's asked for
+ * @property {string | null} command  the fixed command that installs it
+ * @property {string | null} log      the last of its output, once it failed
+ *
+ * @typedef {object} Run          How the app runs from here, and whether it is (runs.js; R-h2w).
  * @property {string | null} command  null until the app build, or the person, says
  * @property {string | null} url
  * @property {'stopped' | 'starting' | 'running' | 'failed'} state
@@ -184,6 +200,50 @@ const DESIGNS_FILTER = { list: 'designs', search: { q: ['title', 'area'] }, matc
 const latest = times => times.filter(Boolean).reduce((a, b) => (b > a ? b : a), '');
 const refOf = design => ({ id: design.id, title: design.title, kind: design.kind, area: design.area || null });
 const dirOf = (path, design) => join(path, PRELUDE_DIR, ...design.id.split('/'));
+
+/** An upgrade fix's slug starts so (main.js names it "Upgrade Koda to <version>"). */
+export const KODA_UPGRADE = 'fixes/upgrade-koda-to-';
+
+/** Whether version `a` is older than `b`: x.y.z compared as numbers, a prerelease before its release. */
+export function olderThan(a, b) {
+  const parts = version => { const [core, pre] = String(version).split('-'); return { nums: core.split('.').map(Number), pre: pre ?? null }; };
+  const x = parts(a), y = parts(b);
+  for (let i = 0; i < 3; i++) if ((x.nums[i] ?? 0) !== (y.nums[i] ?? 0)) return (x.nums[i] ?? 0) < (y.nums[i] ?? 0);
+  return Boolean(x.pre) && (!y.pre || x.pre < y.pre);
+}
+
+/**
+ * The app's Koda (D-k7v): what's installed in the project's own folder and
+ * what the app asks for, beside the version Prelude knows (`latest`). Behind
+ * when the app asks for an older one (R-k2d); an upgrade fix on a branch is
+ * under way. Once one is merged, the folder still has the old Koda installed:
+ * its `checkout` is ready to install until it's done, and no upgrade is
+ * offered before (R-n6t). A branch's worktree has none: it's run from the
+ * project's own folder.
+ * @returns {Koda}
+ */
+function kodaModel(app, folder, entries, latest) {
+  const found = folder.branch ? { version: null, wanted: null, dir: null } : kodaOf(folder.path);
+  const wanted = found.wanted ?? found.version;
+  const pending = Boolean(found.version && found.wanted && olderThan(found.version, found.wanted));
+  const behind = Boolean(wanted && latest && !pending && olderThan(wanted, latest));
+  const upgrade = entries.find(entry => entry.design.startsWith(KODA_UPGRADE)) ?? null;
+  const install = pending ? app.installs.of(found.dir) : null;
+  return {
+    version: found.version,
+    wanted,
+    latest: latest ?? null,
+    behind,
+    install: behind ? app.installs.command(found.dir, latest, { root: folder.path }) : null,
+    upgradeBranch: upgrade?.branch ?? null,
+    upgradeUrl: upgrade ? `/f/${folder.id}/d/${upgrade.design}` : null,
+    checkout: {
+      state: pending ? install?.state ?? 'ready' : null,
+      command: pending ? app.installs.command(found.dir, found.wanted, { root: folder.path, checkout: true }) : null,
+      log: install?.log ?? null,
+    },
+  };
+}
 
 /** A reference folder's id, for the URL that stops reading it: short, from its path. */
 export const referenceId = path => folderId(path);
@@ -379,10 +439,11 @@ export function cleanupOf(app, folder, { now = Date.now(), designs = [], removed
  * (reading a hundred designs' progress for the work region would be slow):
  * { work: false } has no needs or branches, { designs: false } no designs.
  * `query` is the request's: ?q= and ?stage= filter the designs (R-2hx: a
- * design on a branch is in progress, not among them).
+ * design on a branch is in progress, not among them). `kodaLatest` is the
+ * version of Koda Prelude knows (its own).
  * @returns {Project}
  */
-export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts = {}, finishError = null, updated = null, appError = null, now = Date.now() }) {
+export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts = {}, finishError = null, updated = null, appError = null, kodaLatest = null, now = Date.now() }) {
   const { work = true, designs: withDesigns = true } = parts;
   const entries = folder.branch ? [] : app.branches.of(folder.id);
   const onMain = listDesigns(folder.path);
@@ -414,6 +475,7 @@ export function projectOf(app, folder, { branchOf, storiesOf, query = {}, parts 
     url: status === 'building' ? `/f/${folder.id}/d/${shell.id}/build` : status === 'on-branch' ? `/f/${folder.id}/d/${shell.id}` : null,
     // Run from the project's own folder, so a branch's worktree has none.
     run: folder.branch ? { command: null, url: null, state: 'stopped', log: null } : app.runs.of(folder),
+    koda: kodaModel(app, folder, entries, kodaLatest),
   };
 
   const ext = readHostConfig(folder.path)?.views ?? '.eta';

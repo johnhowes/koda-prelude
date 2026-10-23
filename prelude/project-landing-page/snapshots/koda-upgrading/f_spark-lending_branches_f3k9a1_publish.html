@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<title>
+Push a branch
+</title>
+<link href="/static/icon.svg" rel="icon">
+<link href="/system/tokens.css" rel="stylesheet">
+<link href="/system/components.css" rel="stylesheet">
+<link href="/system/icons.css" rel="stylesheet">
+<link href="/static/shell.css" rel="stylesheet">
+<link href="/static/prelude.css" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "@kodalang/core": "/koda/koda.js" } }
+</script>
+<link href="/static/workspace.css" rel="stylesheet">
+</head>
+<body class="shell prelude">
+<header class="shell-bar" ko-item>
+<a class="shell-brand" href="/">
+Prelude
+</a>
+<span class="spacer">
+</span>
+<div class="shell-agents" id="agents" ko-focus="none" ko-region role="status">
+<a class="btn small ghost" href="/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5" title="spark-lending">
+<span aria-hidden="true" class="pulse">
+</span>
+<span class="shell-clip">
+The agent is working on Upgrade Koda to 0.1.5
+</span>
+</a>
+</div>
+<div class="shell-waiting" id="waiting" ko-focus="none" ko-region>
+<a class="btn small ghost" href="/">
+Needs you
+<span class="pill accent">
+1
+</span>
+</a>
+</div>
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+Projects
+</button>
+<ul class="menu-list" ko-as="projects" popover>
+<li>
+<a href="/f/spark-lending">
+<span class="item-title">
+spark-lending
+</span>
+<span class="muted">
+C:\Projects\spark-lending
+</span>
+</a>
+</li>
+<li>
+<a href="/f/borrower-portal">
+<span class="item-title">
+borrower-portal
+</span>
+<span class="muted">
+C:\Projects\borrower-portal
+</span>
+</a>
+</li>
+<li>
+<a href="/f/prelude">
+<span class="item-title">
+Prelude
+</span>
+<span class="muted">
+C:\Projects\Prelude
+</span>
+</a>
+</li>
+<li>
+<a href="/">
+<span class="item-title">
+Open a project…
+</span>
+</a>
+</li>
+</ul>
+</div>
+</header>
+<main class="shell-main" id="workspace" ko-history ko-location="/f/spark-lending" ko-scope="/">
+<div class="center wide project" ko-item>
+<div class="stack gap-8">
+<div class="cluster gap-4">
+<div class="stack gap-1">
+<nav aria-label="Where you are" class="crumbs">
+<a href="/">
+Projects
+</a>
+</nav>
+<h1>
+spark-lending
+</h1>
+<span class="muted project-path">
+C:\Projects\spark-lending
+</span>
+</div>
+<span class="spacer">
+</span>
+<a class="btn" href="/f/spark-lending/d/fixes/new" title="Ask the agent about this project, or tell it what’s wrong. It changes nothing until you fix it on a branch.">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+Ask or fix…
+</a>
+<a class="btn primary" href="/f/spark-lending/designs/new" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-add">
+</span>
+New design…
+</a>
+</div>
+<div class="split" style="--side: 20rem">
+<div class="stack gap-6">
+<div class="stack gap-6" ko-as="work" ko-invoke="event:needs-changed event:projects-changed every:300000" ko-source="/f/spark-lending/work">
+<section aria-labelledby="in-progress-title" class="card">
+<div class="cluster gap-2">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+2
+</span>
+</h2>
+</div>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5">
+<span aria-hidden="true" class="icon icon-agent">
+</span>
+<span class="item-text">
+<span class="item-title">
+Upgrade Koda to 0.1.5
+<span class="pill">
+Fix
+</span>
+</span>
+<span class="muted">
+prelude/fixes/upgrade-koda-to-0-1-5
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/fixes/upgrade-koda-to-0-1-5
+</code>
+</span>
+</div>
+<details class="disclosure">
+<summary>
+Changes 3 files
+</summary>
+<ul class="stack gap-1 also-changes">
+<li class="muted">
+<code>
+app/package.json
+</code>
+</li>
+<li class="muted">
+<code>
+app/package-lock.json
+</code>
+</li>
+<li class="muted">
+<code>
+app/views/loans/_rate-card.eta
+</code>
+</li>
+</ul>
+</details>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/f3k9a1/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/loan-offers">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Loan offers
+</span>
+<span class="muted">
+Applications · prelude/loan-offers
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/loan-offers
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/a41c07/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+<span class="spacer">
+</span>
+<a class="btn small ghost" href="/f/spark-lending/branches/a41c07/discard" ko-target="modal?" title="Discard prelude/loan-offers and its worktree without merging it or opening a pull request.">
+Discard…
+</a>
+</div>
+</div>
+</li>
+</ul>
+</section>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="work">
+<p>
+Prelude couldn’t read this project’s branches. What’s shown may be out of date; try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="work" type="button">
+Try again
+</button>
+</div>
+</div>
+<section aria-labelledby="designs-title" class="card">
+<h2 id="designs-title">
+Designs
+</h2>
+<form action="/f/spark-lending" aria-label="Designs" class="cluster gap-3" method="get" role="search">
+<input aria-label="Search designs" autocomplete="off" class="designs-search" id="q" name="q" placeholder="Search by title or area" type="search" value="">
+<span aria-label="Show" class="segmented" role="radiogroup">
+<label class="btn small">
+<input checked class="sr-only" id="stageAll" name="stage" type="radio" value="">
+All
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageReady" name="stage" type="radio" value="ready">
+Ready to build
+</label>
+<label class="btn small">
+<input class="sr-only" id="stageDesigning" name="stage" type="radio" value="designing">
+Still designing
+</label>
+</span>
+<noscript>
+<button class="btn small" type="submit">
+Show
+</button>
+</noscript>
+</form>
+<div aria-live="polite" calc-ko-source="'/f/spark-lending/designs?q=' + encode(q.value) + '&stage=' + (stageReady.selected ? 'ready' : stageDesigning.selected ? 'designing' : '')" class="stack gap-5" ko-as="designList" ko-debounce="250" ko-invoke="input:q change:stageAll change:stageReady change:stageDesigning event:projects-changed">
+<div class="stack gap-1">
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/spark-design-system">
+<span aria-hidden="true" class="icon icon-design-system">
+</span>
+<span class="item-text">
+<span class="item-title">
+Spark Design System
+<span class="pill">
+Design system
+</span>
+</span>
+<span class="muted">
+tokens and 24 components · changed 2 weeks ago
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/spark-shell">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Spark Shell
+<span class="pill">
+App shell
+</span>
+</span>
+<span class="muted">
+2 layouts, all built · changed 2 weeks ago
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/architecture">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span class="item-title">
+Architecture
+<span class="pill">
+Architecture
+</span>
+</span>
+<span class="muted">
+14 parts and 9 decisions · changed 4 days ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Applications
+<span class="muted">
+3
+</span>
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/loan-application">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Loan application
+</span>
+<span class="muted">
+6 pages, all built · changed last week
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/prequalification">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Prequalification
+<span class="pill">
+Ready to build
+</span>
+</span>
+<span class="muted">
+4 pages, all approved · changed yesterday
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/d/rate-lock">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Rate lock
+</span>
+<span class="muted">
+3 pages, all built · changed yesterday
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Servicing
+<span class="muted">
+1
+</span>
+</h3>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/borrower-profile">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Borrower profile
+</span>
+<span class="muted">
+4 pages, all built · changed last week
+</span>
+</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="stack gap-1">
+<h3 class="group-label">
+Merged lately
+</h3>
+<ul class="stack gap-1 merged">
+<li class="muted">
+<code>
+prelude/rate-lock
+</code>
+merged into main yesterday. Its worktree and branch were tidied up.
+</li>
+<li class="muted">
+<code>
+prelude/borrower-profile
+</code>
+merged into main last week. Its worktree and branch were tidied up.
+</li>
+</ul>
+</div>
+</div>
+<div class="notice danger" role="alert" visible-when-unreachable="designList">
+<p>
+Prelude couldn’t read this project’s designs. Try again in a moment.
+</p>
+<div class="cluster actions">
+<button class="btn small" command="--koda-retry" ko-for="designList" type="button">
+Try again
+</button>
+</div>
+</div>
+</section>
+</div>
+<aside aria-label="The project’s setup" class="side stack gap-6">
+<section aria-labelledby="reference-title" class="card" id="reference">
+<h2 id="reference-title">
+Reference
+</h2>
+<p class="secondary">
+What every design and build here follows.
+</p>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/system">
+<span aria-hidden="true" class="icon icon-design-system">
+</span>
+<span class="item-text">
+<span class="item-title">
+Spark Design System
+</span>
+<span class="muted">
+Tokens, 24 components and the guidelines
+</span>
+</span>
+</a>
+</li>
+<li>
+<a class="item" href="/f/spark-lending/architecture">
+<span aria-hidden="true" class="icon icon-document">
+</span>
+<span class="item-text">
+<span class="item-title">
+Architecture
+</span>
+<span class="muted">
+14 parts and 9 decisions
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="app-title" class="card" id="app" ko-as="app" ko-invoke="event:projects-changed event:app-changed" ko-source="/f/spark-lending/app">
+<h2 id="app-title">
+The app
+</h2>
+<p class="secondary">
+Node with Eta, in
+<code>
+app/
+</code>
+. Each design’s Build page builds its features into it.
+</p>
+<form action="/f/spark-lending/app/run/start" class="stack gap-2" ko-target="app" method="post">
+<input name="state" type="hidden" value="starting">
+<div class="cluster actions">
+<button class="btn small" type="submit">
+<span aria-hidden="true" class="icon icon-run">
+</span>
+Run the app
+</button>
+</div>
+<p class="muted">
+Runs
+<code>
+npm start --prefix app
+</code>
+in
+<span class="project-path">
+C:\Projects\spark-lending
+</span>
+, at
+<code>
+http://localhost:3100
+</code>
+.
+</p>
+</form>
+<details class="disclosure">
+<summary>
+Change how it runs
+</summary>
+<form action="/f/spark-lending/app/run" class="stack gap-3" ko-target="runFields" method="post">
+<div class="stack gap-3" ko-as="runFields">
+<label class="field">
+<span class="label">
+Command
+</span>
+<input autocomplete="off" name="command" placeholder="npm start" spellcheck="false" value="npm start --prefix app">
+<span class="hint">
+Run in the project’s folder, as you would in a terminal.
+</span>
+</label>
+<label class="field">
+<span class="label">
+Address
+</span>
+<input autocomplete="off" name="url" placeholder="http://localhost:3100" spellcheck="false" value="http://localhost:3100">
+<span class="hint">
+On this computer, and not the design host’s. Its port is given to the command as PORT.
+</span>
+</label>
+</div>
+<div class="cluster actions">
+<button class="btn small" type="submit">
+Save
+</button>
+</div>
+</form>
+</details>
+<div class="cluster gap-2">
+<span class="muted">
+This app uses Koda 0.1.4; Prelude knows 0.1.5. It’s being upgraded on
+<a href="/f/spark-lending/d/fixes/upgrade-koda-to-0-1-5">
+<code>
+prelude/fixes/upgrade-koda-to-0-1-5
+</code>
+</a>
+.
+</span>
+</div>
+<p class="muted">
+Designs here use
+<a href="/f/spark-lending/d/spark-design-system">
+Spark Design System
+</a>
+, and render in
+<a href="/f/spark-lending/d/spark-shell">
+Spark Shell
+</a>
+.
+</p>
+</section>
+<section aria-labelledby="reading-title" class="card" id="reading">
+<h2 id="reading-title">
+What the agent can read
+</h2>
+<p class="secondary">
+This project, and any folders you add here. Nothing else on this computer. The agent writes only inside the design it’s working on.
+</p>
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+This project
+</span>
+<span class="muted project-path">
+C:\Projects\spark-lending
+</span>
+</span>
+</span>
+</li>
+</ul>
+<div ko-as="references">
+<ul class="list">
+<li>
+<span class="item">
+<span aria-hidden="true" class="icon icon-folder">
+</span>
+<span class="item-text">
+<span class="item-title">
+spark-ui
+</span>
+<span class="muted project-path">
+C:\Projects\spark-ui
+</span>
+</span>
+<form action="/f/spark-lending/references/r-1/remove" ko-target="references" method="post">
+<button aria-label="Stop reading spark-ui" class="icon-btn small" type="submit">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</form>
+</span>
+</li>
+</ul>
+</div>
+<form action="/f/spark-lending/references" class="stack gap-1" ko-target="referenceField" method="post">
+<div class="stack gap-1" ko-as="referenceField">
+<label class="label" for="reference-path">
+Add a folder
+</label>
+<div class="inline">
+<input autocomplete="off" id="reference-path" name="path" placeholder="C:\Projects\another-app" spellcheck="false" value="">
+<button class="btn small" data-desktop-only data-pick-folder type="button">
+Choose…
+</button>
+<button class="btn small" type="submit">
+Add
+</button>
+</div>
+</div>
+</form>
+</section>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<section aria-label="Notices" class="shell-notice">
+<div aria-live="polite" id="notice" ko-focus="none" ko-region>
+</div>
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="notice" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<aside aria-label="Drawer" class="shell-drawer">
+<button aria-label="Close the drawer" class="icon-btn small" command="--koda-empty" commandfor="drawer" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="drawer" ko-focus="region" ko-region tabindex="-1">
+</div>
+</aside>
+<dialog aria-label="Question" class="shell-modal" id="modal-dialog">
+<button aria-label="Close" class="icon-btn small" command="--koda-empty" commandfor="modal" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+<div id="modal" ko-focus="region" ko-location="/f/spark-lending/branches/f3k9a1/publish" ko-region tabindex="-1">
+<div class="stack gap-4">
+<h2>
+Push Upgrade Koda to 0.1.5?
+</h2>
+<div class="notice warn">
+<p>
+This pushes
+<code>
+prelude/fixes/upgrade-koda-to-0-1-5
+</code>
+to
+<code>
+origin
+</code>
+, where others can see it, and opens a pull request for it into main.
+</p>
+<p>
+Its check hasn’t run yet. Reviewers will see the branch as it is.
+</p>
+</div>
+<form action="/f/spark-lending/branches/f3k9a1/publish" class="cluster actions" method="post">
+<input name="confirm" type="hidden" value="yes">
+<input name="pushed" type="hidden" value="true">
+<button class="btn primary" type="submit">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open the pull request
+</button>
+<button class="btn ghost" command="--koda-empty" commandfor="modal" type="button">
+Not now
+</button>
+</form>
+</div>
+</div>
+</dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
+<div hidden ko-connect="/_prelude/live">
+</div>
+<script type="module">
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
+</script>
+<script src="/static/desktop.js" type="module">
+</script>
+<script type="module">
+import { start } from '@kodalang/core'; start(document);
+</script>
+</body>
+</html>

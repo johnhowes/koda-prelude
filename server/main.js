@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { appBuildPrompt, architectureBrief, askPrompt, buildPrompt, connectAppPrompt, createCliRunner, fixPrompt, layoutsBuildPrompt, storyPrompt } from './agent.js';
 import { PRELUDE_DIR, SPECIAL_KINDS, createDesign, designIdOf, findDesign, findShell, findSystem, listDesigns } from './designs.js';
-import { fixSlug, listFixes } from './fixes.js';
+import { createFix, findFix, fixSlug, listFixes } from './fixes.js';
 import { datasetOf, designHostOf, eventMessages, designOrigin, handleDesignHost, isHosted, listStates, matchRoute, pickable, readPostRoutes, readRoutes, renderPath, reviewDesign, shellLayoutLinks, unbuiltLayouts } from './host.js';
 import { readSnapshots, writeSnapshot, writeSnapshots } from './snapshots.js';
 import { backlogOf } from './backlog.js';
@@ -25,11 +25,12 @@ import { ACROSS, acrossChanges, changesOf, createStoryWriter, fingerprintOf, has
 import { checkView, readCheck, readResult, resultView, screensOf, shotView, writeCheck, writeResult } from './check.js';
 import { incrementOf } from './increment.js';
 import { baselineOf, beforeRemoval, buildable, changedSince, createBranches, designCommitsSince, fetchRemote, filesChangedSince, gitState, gitUser, headOf, mainBranch, remoteOf, removedUnder, repositoryOf, textAt } from './branches.js';
-import { DEFAULT_STACK, appOf, chooseStack, markExisting } from './app-config.js';
+import { DEFAULT_STACK, appOf, chooseStack, kodaOf, markExisting } from './app-config.js';
 import { createChannels, readEvents } from './events.js';
 import { createHosts, readHostConfig } from './hosts.js';
 import { createRenderers } from './renderers.js';
 import { checkRun, createRuns } from './runs.js';
+import { createInstalls } from './installs.js';
 import { canonical, cleanPath, createFolders, createReferences, refuseFolder } from './folders.js';
 import { createDesignState, designChannel } from './design-state.js';
 import { capture } from './capture.js';
@@ -121,6 +122,8 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
     hosts: createHosts({ home }),
     // The apps run from their projects' pages, apart from the design hosts (R-h2w).
     runs: createRuns({ home, onChange: () => tell(app, { running: true }) }),
+    // The app's Koda, installed once the person approves the command (D-k7v).
+    installs: createInstalls({ onChange: () => tell(app, { running: true }) }),
     designs: createDesignState({ live }),
     channels: createChannels(),   // server events' live channels, per design (6e)
     drafts: createDrafts({ home }),          // each session's unsent message
@@ -147,7 +150,7 @@ export function createServer({ home = defaultHome(), runner = createCliRunner(),
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 66000;
   // Renderer processes would outlive the server; stop them with it.
-  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.runs.closeAll(); app.channels.closeAll(); app.dictation.closeAll(); });
+  server.on('close', () => { app.renderers.closeAll(); app.hosts.closeAll(); app.runs.closeAll(); app.installs.closeAll(); app.channels.closeAll(); app.dictation.closeAll(); });
   return server;
 }
 
@@ -334,7 +337,11 @@ async function handle(req, res, app) {
     //   POST /f/<id>/app/build                 start the app build: the app
     //   POST /f/<id>/app/run                   how the app runs from here (and run it): the fields, and the app
     //   POST /f/<id>/app/run/<start or stop>   run the app from here, or stop it: the app
-    //   POST /f/<id>/references                add a folder: the field, and the list
+    //   GET  /f/<id>/app/koda                  Upgrade Koda: asked first, in the modal (R-q7w)
+    //   POST /f/<id>/app/koda                  start the upgrade fix: the app
+    //   GET  /f/<id>/app/koda/install          Install Koda in your folder: asked first, in the modal (R-n6t)
+    //   POST /f/<id>/app/koda/install          install it: the app
+    //   POST /f/<id>/references              add a folder: the field, and the list
     //   POST /f/<id>/references/<r>/remove     stop reading one: the list
     const here = `/f/${folder.id}`;
     const query = Object.fromEntries(url.searchParams.entries());
@@ -361,7 +368,7 @@ async function handle(req, res, app) {
     };
     const helpers = { branchOf: (entry, design) => branchState(app, entry, design), storiesOf };
     /** The page's model (project.js), with the request's query for its views. */
-    const projectModel = (options = {}) => ({ ...projectOf(app, folder, { ...helpers, query, ...options }), $query: query });
+    const projectModel = (options = {}) => ({ ...projectOf(app, folder, { ...helpers, query, kodaLatest: kodaVersion, ...options }), $query: query });
 
     // One URL, two shapes: a Koda region asking for the page gets it alone,
     // unless it asked from a page in another layout (askedFromLayout). A cold
@@ -577,6 +584,67 @@ async function handle(req, res, app) {
       app.runs.stop(folder);
       tell(app, { running: true });
       return appPart();
+    }
+
+    // The app's Koda (D-k7v), each asked first in the modal, showing the
+    // command that runs. Upgrading starts a fix on a branch of its own,
+    // installs the version Prelude knows in that fix's worktree alone, then
+    // starts the agent there; the person's own folder isn't touched until
+    // the fix is merged (R-q7w). Never a second while one is under way
+    // (R-k2d), nor before a merged one is installed here (R-n6t). Installing
+    // here runs only once the person confirms. Each answers with the modal
+    // closed and the app; one refused, with the question again, which says why.
+    const kodaNow = () => projectModel({ parts: { work: false, designs: false } });
+    const kodaAnswer = (status, error = null) => {
+      if (error) console.error(`Koda: ${error}`);
+      if (!fragment) return error ? projectPage(status, { model: projectModel({ appError: error }) }) : redirect(res, `${here}#app`);
+      return send(res, status, [envelope('modal?'), envelope('app', render('./projects/_app', kodaNow())), ...(error ? [envelope('notice?', `<p role="alert">${escapeHtml(error)}</p>`)] : [])].join('\n'));
+    };
+    if (rest === '/app/koda' && req.method === 'GET' && !folder.branch) return overlay(200, render('./projects/_koda', kodaNow()));
+    if (rest === '/app/koda/install' && req.method === 'GET' && !folder.branch) return overlay(200, render('./projects/_koda-install', kodaNow()));
+    if (rest === '/app/koda' && req.method === 'POST' && !folder.branch) {
+      await readForm(req);
+      const model = kodaNow(), koda = model.app.koda;
+      if (model.app.status !== 'built' || !koda.behind || koda.upgradeUrl || koda.checkout.state || !koda.install) return overlay(409, render('./projects/_koda', model));
+      const title = `Upgrade Koda to ${koda.latest}`;
+      const taken = new Set([
+        ...listFixes(folder.path).map(fix => fix.slug),
+        ...app.branches.of(folder.id).filter(other => other.design.startsWith('fixes/')).map(other => other.design.slice(6)),
+        ...app.asked.list(folder).map(other => other.slug),
+      ]);
+      const slug = fixSlug(title, taken);
+      const made = branchFor(`fixes/${slug}`, title);
+      if (made.error) return kodaAnswer(409, made.error);
+      const created = createFix(made.entry.path, { title, slug });
+      if (created.errors) return kodaAnswer(409, Object.values(created.errors)[0]);
+      app.branches.commit(made.entry, `${title}: a fix (committed by Prelude)`);
+      tell(app, { needs: true, projects: true });
+      // The command the person saw, in the fix's copy of the app; one that
+      // would differ there (its lockfile isn't committed) isn't run.
+      const there = kodaOf(made.entry.path).dir ?? made.entry.path;
+      const command = app.installs.command(there, koda.latest, { root: made.entry.path });
+      const installed = command === koda.install
+        ? app.installs.run(there, koda.latest, { root: made.entry.path })
+        : Promise.resolve({ ok: false, log: `The fix’s copy of the app would install with \`${command}\`, not the \`${koda.install}\` you approved, so nothing was run.` });
+      const fix = findFix(made.entry.path, ['fixes', created.fix.slug]);
+      // Its first turn waits for the install, so the agent reads the new Koda.
+      installed.then(({ ok, log }) => {
+        app.installs.clear(there);
+        const message = ok
+          ? `Upgrade the app’s Koda from ${koda.wanted} to ${koda.latest}. Prelude has installed it in this branch (\`${koda.install}\`), so package.json and the lockfile ask for ${koda.latest} now. Read ${koda.latest}’s reference and skills, and change the app’s views where the new version needs it.`
+          : `Upgrade the app’s Koda from ${koda.wanted} to ${koda.latest}. Prelude couldn’t install it in this branch, so don’t change the app: say in a few words what went wrong, from the last of what the install said:\n\n${log.trim().slice(-1500)}`;
+        return startConversation({ req, res: { headersSent: false, writeHead() {}, setHeader() {}, end() {} }, page: () => {}, app, folder: made.worktree, design: { ...fix.design, dir: fix.dir }, fields: [['message', message]] });
+      }).catch(error => console.error(error));
+      return kodaAnswer(200);
+    }
+    if (rest === '/app/koda/install' && req.method === 'POST' && !folder.branch) {
+      await readForm(req);
+      const model = kodaNow(), koda = model.app.koda;
+      if (!['ready', 'failed'].includes(koda.checkout.state) || !koda.checkout.command) return overlay(409, render('./projects/_koda-install', model));
+      const dir = kodaOf(folder.path).dir ?? folder.path;
+      app.installs.run(dir, koda.wanted, { root: folder.path, checkout: true });
+      tell(app, { running: true });
+      return kodaAnswer(200);
     }
 
     if (rest === '' && req.method === 'GET') {

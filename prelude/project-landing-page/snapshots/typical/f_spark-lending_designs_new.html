@@ -41,15 +41,15 @@ Needs you
 </span>
 </a>
 </div>
-<details class="menu" ko-as="projects">
-<summary class="btn small ghost">
+<div class="menu">
+<button class="btn small ghost" ko-for="projects" popovertarget type="button">
 <span aria-hidden="true" class="icon icon-folder">
 </span>
 Projects
-</summary>
-<ul class="menu-list">
+</button>
+<ul class="menu-list" ko-as="projects" popover>
 <li>
-<a href="/f/spark-lending" ko-set="projects.open = false">
+<a href="/f/spark-lending">
 <span class="item-title">
 spark-lending
 </span>
@@ -59,7 +59,7 @@ C:\Projects\spark-lending
 </a>
 </li>
 <li>
-<a href="/f/borrower-portal" ko-set="projects.open = false">
+<a href="/f/borrower-portal">
 <span class="item-title">
 borrower-portal
 </span>
@@ -69,7 +69,7 @@ C:\Projects\borrower-portal
 </a>
 </li>
 <li>
-<a href="/f/prelude" ko-set="projects.open = false">
+<a href="/f/prelude">
 <span class="item-title">
 Prelude
 </span>
@@ -79,14 +79,14 @@ C:\Projects\Prelude
 </a>
 </li>
 <li>
-<a href="/" ko-set="projects.open = false">
+<a href="/">
 <span class="item-title">
 Open a project…
 </span>
 </a>
 </li>
 </ul>
-</details>
+</div>
 </header>
 <main class="shell-main" id="workspace" ko-history ko-location="/f/spark-lending" ko-scope="/">
 <div class="center wide project" ko-item>
@@ -953,10 +953,18 @@ Create design
 </div>
 </div>
 </dialog>
+<section aria-label="Koda's warnings" class="shell-warnings">
+<ol id="warnings" ko-warnings>
+</ol>
+<button aria-label="Clear the warnings" class="icon-btn small" command="--koda-empty" commandfor="warnings" type="button">
+<span aria-hidden="true" class="icon icon-close">
+</span>
+</button>
+</section>
 <div hidden ko-connect="/_prelude/live">
 </div>
 <script type="module">
-// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow();
+// The modal is a real dialog, open while its region holds something. // Koda fills and empties the region; showModal() is the platform's, and no // attribute calls it, so this follows the region. Escape closes the dialog, // and then empties the region too, so it forgets what it showed. A form in // it that goes to another page (Open a project) lands in the main region, // so the modal closes when the main region moves. The dialog is named by // the first heading of what's in it. const dialog = document.getElementById('modal-dialog'); const region = document.getElementById('modal'); const close = dialog.querySelector('[commandfor="modal"]'); const follow = () => { const filled = region.childElementCount > 0; const heading = region.querySelector('h1, h2, h3'); if (heading) dialog.setAttribute('aria-label', heading.textContent.trim()); if (filled && !dialog.open) dialog.showModal(); if (!filled && dialog.open) dialog.close(); }; new MutationObserver(follow).observe(region, { childList: true }); dialog.addEventListener('close', () => { if (region.childElementCount > 0) close.click(); }); const main = document.querySelector('body > main'); new MutationObserver(records => { if (dialog.open && records.some(record => record.oldValue !== main.getAttribute('ko-location'))) dialog.close(); }).observe(main, { attributes: true, attributeFilter: ['ko-location'], attributeOldValue: true }); follow(); // A menu is a popover (the design system's), which the browser closes on a // click outside it or Escape. A row pressed inside it doesn't leave the // page here: Koda swaps the page in or sends the form, and the bar or panel // stays put. So pressing a row closes its menu, as the person expects; a // form's own .btn (Use this size) isn't a row, and leaves it to its form. document.addEventListener('click', event => { const row = event.target.closest?.('.menu-list[popover] :is(a, button):not(.btn)'); const menu = row?.closest('.menu-list[popover]'); if (menu?.matches(':popover-open')) menu.hidePopover(); });
 </script>
 <script src="/static/desktop.js" type="module">
 </script>

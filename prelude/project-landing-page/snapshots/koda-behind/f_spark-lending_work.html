@@ -1,0 +1,190 @@
+<section aria-labelledby="needs-title" class="card">
+<h2 id="needs-title">
+Needs you
+</h2>
+<ul class="list">
+<li>
+<a class="item" href="/f/spark-lending/d/rate-lock/build">
+<span aria-hidden="true" class="icon icon-code">
+</span>
+<span class="item-text">
+<span class="item-title">
+Rate lock
+<span class="pill warn">
+Build stopped
+</span>
+</span>
+<span class="secondary">
+The build stopped: 1 page doesn’t render in the app.
+</span>
+<span class="muted">
+25 minutes ago
+</span>
+</span>
+</a>
+</li>
+</ul>
+</section>
+<section aria-labelledby="in-progress-title" class="card">
+<div class="cluster gap-2">
+<h2 id="in-progress-title">
+In progress
+<span class="muted">
+2
+</span>
+</h2>
+</div>
+<ul class="stack gap-6 in-progress">
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/loan-offers">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Loan offers
+</span>
+<span class="muted">
+Applications · prelude/loan-offers
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/loan-offers
+</code>
+</span>
+<span class="pill">
+Not checked yet
+</span>
+</div>
+<div class="cluster actions">
+<a class="btn small" href="/f/spark-lending/branches/a41c07/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+<span class="spacer">
+</span>
+<a class="btn small ghost" href="/f/spark-lending/branches/a41c07/discard" ko-target="modal?" title="Discard prelude/loan-offers and its worktree without merging it or opening a pull request.">
+Discard…
+</a>
+</div>
+</div>
+</li>
+<li class="stack gap-2">
+<a class="item" href="/f/spark-lending/d/repayment-schedule">
+<span aria-hidden="true" class="icon icon-screen">
+</span>
+<span class="item-text">
+<span class="item-title">
+Repayment schedule
+</span>
+<span class="muted">
+Servicing · prelude/repayment-schedule
+</span>
+</span>
+</a>
+<div class="stack gap-3">
+<div class="cluster gap-2">
+<span class="muted">
+<code>
+prelude/repayment-schedule
+</code>
+</span>
+<span class="pill good">
+Check passes
+</span>
+<span class="pill warn">
+2 commits behind main
+</span>
+</div>
+<details class="disclosure">
+<summary>
+2 stories · 1 to build
+</summary>
+<ul aria-label="Stories on this branch" class="stack gap-2 stories">
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/repayment-schedule/build">
+Schedule
+</a>
+<span class="pill ">
+Built
+</span>
+<a class="muted" href="/f/spark-lending/d/repayment-schedule/sessions/s-2kq">
+Build session
+</a>
+</span>
+<span class="secondary">
+Every payment of the loan, with what goes to principal and to interest.
+</span>
+</li>
+<li class="stack gap-1">
+<span class="cluster gap-2">
+<a href="/f/spark-lending/d/repayment-schedule/build">
+Pay extra
+</a>
+<span class="pill ">
+To build
+</span>
+</span>
+<span class="secondary">
+An extra payment, and how much sooner the loan ends because of it.
+</span>
+</li>
+</ul>
+</details>
+<p class="muted">
+The app on this branch is running at
+<code>
+http://localhost:3000
+</code>
+·
+<a href="/f/spark-lending/branches/c90f13/app" target="_blank">
+Open it
+<span aria-hidden="true" class="icon icon-external">
+</span>
+</a>
+</p>
+<div class="cluster actions">
+<form action="/f/spark-lending/branches/c90f13/update" ko-target="work" method="post">
+<input name="behind" type="hidden" value="0">
+<button class="btn small" title="Merge main into this branch, so it carries on from what’s there now." type="submit">
+Update from main
+</button>
+</form>
+<a class="btn small" href="/f/spark-lending/branches/c90f13/publish" ko-target="modal?">
+<span aria-hidden="true" class="icon icon-push">
+</span>
+Push and open a pull request…
+</a>
+<span class="spacer">
+</span>
+<a class="btn small ghost" href="/f/spark-lending/branches/c90f13/discard" ko-target="modal?" title="Discard prelude/repayment-schedule and its worktree without merging it or opening a pull request.">
+Discard…
+</a>
+</div>
+</div>
+</li>
+</ul>
+<details class="disclosure" ko-item>
+<summary>
+Copy every story still to build
+</summary>
+<div class="stack gap-2">
+<textarea aria-label="Every story still to build" class="story" ko-as="stories" readonly rows="12">
+Pay extra As a borrower, I can make an extra payment toward principal and see how many months sooner my loan ends.
+</textarea>
+<div class="cluster actions">
+<button class="btn small" ko-as="copyAll" type="button">
+Copy
+</button>
+</div>
+</div>
+<script type="koda">
+// Copying to the clipboard is an action on the platform, not a value. const { stories, copyAll } = koda.scope(); copyAll.element.addEventListener('click', async () => { await navigator.clipboard.writeText(stories.element.value); copyAll.element.textContent = 'Copied'; });
+</script>
+</details>
+</section>

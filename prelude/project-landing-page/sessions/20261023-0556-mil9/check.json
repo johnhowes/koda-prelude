@@ -1,0 +1,615 @@
+{
+  "at": "2026-10-23T11:05:21.708Z",
+  "shots": [
+    {
+      "id": "typical~f_spark-lending",
+      "key": "typical/f_spark-lending",
+      "path": "/f/spark-lending",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_app_koda",
+      "key": "typical/f_spark-lending_app_koda",
+      "path": "/f/spark-lending/app/koda",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_app_koda_install",
+      "key": "typical/f_spark-lending_app_koda_install",
+      "path": "/f/spark-lending/app/koda/install",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_branches_a41c07_discard",
+      "key": "typical/f_spark-lending_branches_a41c07_discard",
+      "path": "/f/spark-lending/branches/a41c07/discard",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_cleanup",
+      "key": "typical/f_spark-lending_cleanup",
+      "path": "/f/spark-lending/cleanup",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_designs_new",
+      "key": "typical/f_spark-lending_designs_new",
+      "path": "/f/spark-lending/designs/new",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "typical~f_spark-lending_branches_a41c07_publish",
+      "key": "typical/f_spark-lending_branches_a41c07_publish",
+      "path": "/f/spark-lending/branches/a41c07/publish",
+      "stateId": "typical",
+      "state": "Typical",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer",
+      "key": "new-project/f_rate-sheet-importer",
+      "path": "/f/rate-sheet-importer",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer_app_koda",
+      "key": "new-project/f_rate-sheet-importer_app_koda",
+      "path": "/f/rate-sheet-importer/app/koda",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer_app_koda_install",
+      "key": "new-project/f_rate-sheet-importer_app_koda_install",
+      "path": "/f/rate-sheet-importer/app/koda/install",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer_cleanup",
+      "key": "new-project/f_rate-sheet-importer_cleanup",
+      "path": "/f/rate-sheet-importer/cleanup",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "new-project~f_rate-sheet-importer_designs_new",
+      "key": "new-project/f_rate-sheet-importer_designs_new",
+      "path": "/f/rate-sheet-importer/designs/new",
+      "stateId": "new-project",
+      "state": "New project",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal",
+      "key": "app-being-built/f_borrower-portal",
+      "path": "/f/borrower-portal",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_app_koda",
+      "key": "app-being-built/f_borrower-portal_app_koda",
+      "path": "/f/borrower-portal/app/koda",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_app_koda_install",
+      "key": "app-being-built/f_borrower-portal_app_koda_install",
+      "path": "/f/borrower-portal/app/koda/install",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_branches_e03b51_discard",
+      "key": "app-being-built/f_borrower-portal_branches_e03b51_discard",
+      "path": "/f/borrower-portal/branches/e03b51/discard",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_cleanup",
+      "key": "app-being-built/f_borrower-portal_cleanup",
+      "path": "/f/borrower-portal/cleanup",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_designs_new",
+      "key": "app-being-built/f_borrower-portal_designs_new",
+      "path": "/f/borrower-portal/designs/new",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "app-being-built~f_borrower-portal_branches_e03b51_publish",
+      "key": "app-being-built/f_borrower-portal_branches_e03b51_publish",
+      "path": "/f/borrower-portal/branches/e03b51/publish",
+      "stateId": "app-being-built",
+      "state": "App being built",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal",
+      "key": "update-clashed/f_borrower-portal",
+      "path": "/f/borrower-portal",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_app_koda",
+      "key": "update-clashed/f_borrower-portal_app_koda",
+      "path": "/f/borrower-portal/app/koda",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_app_koda_install",
+      "key": "update-clashed/f_borrower-portal_app_koda_install",
+      "path": "/f/borrower-portal/app/koda/install",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_branches_e03b51_discard",
+      "key": "update-clashed/f_borrower-portal_branches_e03b51_discard",
+      "path": "/f/borrower-portal/branches/e03b51/discard",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_cleanup",
+      "key": "update-clashed/f_borrower-portal_cleanup",
+      "path": "/f/borrower-portal/cleanup",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_designs_new",
+      "key": "update-clashed/f_borrower-portal_designs_new",
+      "path": "/f/borrower-portal/designs/new",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "update-clashed~f_borrower-portal_branches_e03b51_publish",
+      "key": "update-clashed/f_borrower-portal_branches_e03b51_publish",
+      "path": "/f/borrower-portal/branches/e03b51/publish",
+      "stateId": "update-clashed",
+      "state": "Update clashed",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination",
+      "key": "long-names/f_mortgage-origination",
+      "path": "/f/mortgage-origination",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_app_koda",
+      "key": "long-names/f_mortgage-origination_app_koda",
+      "path": "/f/mortgage-origination/app/koda",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_app_koda_install",
+      "key": "long-names/f_mortgage-origination_app_koda_install",
+      "path": "/f/mortgage-origination/app/koda/install",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_branches_d81a6c_discard",
+      "key": "long-names/f_mortgage-origination_branches_d81a6c_discard",
+      "path": "/f/mortgage-origination/branches/d81a6c/discard",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_cleanup",
+      "key": "long-names/f_mortgage-origination_cleanup",
+      "path": "/f/mortgage-origination/cleanup",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_designs_new",
+      "key": "long-names/f_mortgage-origination_designs_new",
+      "path": "/f/mortgage-origination/designs/new",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "long-names~f_mortgage-origination_branches_d81a6c_publish",
+      "key": "long-names/f_mortgage-origination_branches_d81a6c_publish",
+      "path": "/f/mortgage-origination/branches/d81a6c/publish",
+      "stateId": "long-names",
+      "state": "Long names",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform",
+      "key": "large-project/f_spark-platform",
+      "path": "/f/spark-platform",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_app_koda",
+      "key": "large-project/f_spark-platform_app_koda",
+      "path": "/f/spark-platform/app/koda",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_app_koda_install",
+      "key": "large-project/f_spark-platform_app_koda_install",
+      "path": "/f/spark-platform/app/koda/install",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_branches_b01_discard",
+      "key": "large-project/f_spark-platform_branches_b01_discard",
+      "path": "/f/spark-platform/branches/b01/discard",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_cleanup",
+      "key": "large-project/f_spark-platform_cleanup",
+      "path": "/f/spark-platform/cleanup",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_designs_new",
+      "key": "large-project/f_spark-platform_designs_new",
+      "path": "/f/spark-platform/designs/new",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "large-project~f_spark-platform_branches_b01_publish",
+      "key": "large-project/f_spark-platform_branches_b01_publish",
+      "path": "/f/spark-platform/branches/b01/publish",
+      "stateId": "large-project",
+      "state": "Large project",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending",
+      "key": "koda-behind/f_spark-lending",
+      "path": "/f/spark-lending",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_app_koda",
+      "key": "koda-behind/f_spark-lending_app_koda",
+      "path": "/f/spark-lending/app/koda",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "differs"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_app_koda_install",
+      "key": "koda-behind/f_spark-lending_app_koda_install",
+      "path": "/f/spark-lending/app/koda/install",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_branches_a41c07_discard",
+      "key": "koda-behind/f_spark-lending_branches_a41c07_discard",
+      "path": "/f/spark-lending/branches/a41c07/discard",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_cleanup",
+      "key": "koda-behind/f_spark-lending_cleanup",
+      "path": "/f/spark-lending/cleanup",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_designs_new",
+      "key": "koda-behind/f_spark-lending_designs_new",
+      "path": "/f/spark-lending/designs/new",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-behind~f_spark-lending_branches_a41c07_publish",
+      "key": "koda-behind/f_spark-lending_branches_a41c07_publish",
+      "path": "/f/spark-lending/branches/a41c07/publish",
+      "stateId": "koda-behind",
+      "state": "Koda behind",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending",
+      "key": "koda-upgrading/f_spark-lending",
+      "path": "/f/spark-lending",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_app_koda",
+      "key": "koda-upgrading/f_spark-lending_app_koda",
+      "path": "/f/spark-lending/app/koda",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_app_koda_install",
+      "key": "koda-upgrading/f_spark-lending_app_koda_install",
+      "path": "/f/spark-lending/app/koda/install",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_branches_f3k9a1_discard",
+      "key": "koda-upgrading/f_spark-lending_branches_f3k9a1_discard",
+      "path": "/f/spark-lending/branches/f3k9a1/discard",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_cleanup",
+      "key": "koda-upgrading/f_spark-lending_cleanup",
+      "path": "/f/spark-lending/cleanup",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_designs_new",
+      "key": "koda-upgrading/f_spark-lending_designs_new",
+      "path": "/f/spark-lending/designs/new",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-upgrading~f_spark-lending_branches_f3k9a1_publish",
+      "key": "koda-upgrading/f_spark-lending_branches_f3k9a1_publish",
+      "path": "/f/spark-lending/branches/f3k9a1/publish",
+      "stateId": "koda-upgrading",
+      "state": "Koda upgrading",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending",
+      "key": "koda-to-install/f_spark-lending",
+      "path": "/f/spark-lending",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Project",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_app_koda",
+      "key": "koda-to-install/f_spark-lending_app_koda",
+      "path": "/f/spark-lending/app/koda",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Upgrade Koda",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_app_koda_install",
+      "key": "koda-to-install/f_spark-lending_app_koda_install",
+      "path": "/f/spark-lending/app/koda/install",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Install Koda in your folder",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_branches_a41c07_discard",
+      "key": "koda-to-install/f_spark-lending_branches_a41c07_discard",
+      "path": "/f/spark-lending/branches/a41c07/discard",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Discard a branch",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_cleanup",
+      "key": "koda-to-install/f_spark-lending_cleanup",
+      "path": "/f/spark-lending/cleanup",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Clean up",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_designs_new",
+      "key": "koda-to-install/f_spark-lending_designs_new",
+      "path": "/f/spark-lending/designs/new",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "New design",
+      "group": "Project",
+      "status": "matches"
+    },
+    {
+      "id": "koda-to-install~f_spark-lending_branches_a41c07_publish",
+      "key": "koda-to-install/f_spark-lending_branches_a41c07_publish",
+      "path": "/f/spark-lending/branches/a41c07/publish",
+      "stateId": "koda-to-install",
+      "state": "Koda to install",
+      "page": "Push a branch",
+      "group": "Project",
+      "status": "matches"
+    }
+  ]
+}
