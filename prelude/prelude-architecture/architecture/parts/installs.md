@@ -9,8 +9,8 @@ Runs the project's package manager in a fix's worktree, so the worktree has the 
 
 ## Responsible for
 - Choosing npm, pnpm or yarn by the app folder's lockfile
-- `install @kodalang/core@<version>` for an upgrade, and a plain install after a turn changes `package.json` or the lockfile
-- The fence: only in a worktree `branches` made, `--ignore-scripts`, a time limit, output kept for the chat
+- `install @kodalang/core@<version>` for an upgrade, and no other package
+- The fence: only in a worktree `branches` made, only once the person approves the command (scripts and all), a time limit, output kept for the chat
 
 ## Not its job
 - Deciding when to upgrade (pages, server) or which Koda the agent reads (designs)
