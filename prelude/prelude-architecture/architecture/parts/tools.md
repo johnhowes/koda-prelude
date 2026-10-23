@@ -9,7 +9,7 @@ Small scripts run from npm. `check.js` runs the whole after-turn check for CI, `
 
 ## Responsible for
 - `npm run check <folder>`: render every route in every state, exit 1 on a failure or a difference (`--approve` approves instead)
-- `npm run skills` after a Koda upgrade
+- Copying Koda's skills after every `npm install` (postinstall), so a Koda upgrade brings its skills; `npm run skills` by hand
 - Showing other stacks what a host must answer
 
 ## Not its job

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node start.js",
+    "postinstall": "node tools/copy-skills.js",
     "test": "node --test \"test/*.test.js\"",
     "skills": "node tools/copy-skills.js",
     "icons": "tauri icon server/public/icon.svg --output tauri/src-tauri/icons",
@@ -17,7 +18,7 @@
     "check": "node tools/check.js"
   },
   "dependencies": {
-    "@kodalang/core": "0.1.4",
+    "@kodalang/core": "0.1.5",
     "eta": "4.6.0"
   },
   "devDependencies": {
