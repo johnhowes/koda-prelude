@@ -1,0 +1,3 @@
+# Fix: server/installs.js, in Installs, doesn’t match the…
+
+What's wrong, the cause, what changed, and what to check - written as the fix goes.
